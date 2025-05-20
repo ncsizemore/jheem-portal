@@ -4,8 +4,8 @@ import { usePathname } from 'next/navigation';
 import React from 'react';
 
 // URLs are now sourced from environment variables
-const PRERUN_URL = process.env.NEXT_PUBLIC_SHINY_PRERUN_URL || "http://localhost:3838/default-prerun"; // Fallback URL
-const CUSTOM_URL = process.env.NEXT_PUBLIC_SHINY_CUSTOM_URL || "http://localhost:3838/default-custom"; // Fallback URL
+const PRERUN_URL = process.env.NEXT_PUBLIC_SHINY_PRERUN_URL || "https://jheem.shinyapps.io/ryan-white-prerun/"; // Fallback URL
+const CUSTOM_URL = process.env.NEXT_PUBLIC_SHINY_CUSTOM_URL || "https://jheem.shinyapps.io/ryan-white-custom/"; // Fallback URL
 
 interface AppViewManagerProps {
     children: React.ReactNode;
