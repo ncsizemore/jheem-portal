@@ -55,6 +55,69 @@ export default function TestPlotViewer() {
     }
   };
 
+  const fetchPlotsWithDiscovery = async () => {
+    setLoading(true);
+    setError(null);
+    setPlotData(null); // Clear single plot data when loading multiple plots
+
+    try {
+      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+
+      console.log('🔍 Step 1: Discovering available plots...');
+
+      // Step 1: Discover available plots
+      const searchUrl = `${baseUrl}/plots/search?city=C.12580&scenario=cessation`;
+      console.log('Discovery URL:', searchUrl);
+
+      const searchResponse = await fetch(searchUrl);
+      if (!searchResponse.ok) {
+        const errorData = await searchResponse.json();
+        throw new Error(`Discovery failed: ${errorData.error || `HTTP ${searchResponse.status}`}`);
+      }
+
+      const discoveryData = await searchResponse.json();
+      console.log('🎯 Discovery result:', discoveryData);
+
+      if (!discoveryData.plots || discoveryData.plots.length === 0) {
+        throw new Error('No plots found for this city/scenario combination');
+      }
+
+      console.log(`📊 Found ${discoveryData.total_plots} plots. Loading plot data...`);
+
+      // Step 2: Fetch actual plot data for discovered plots
+      const plotPromises = discoveryData.plots.map(async (plotMeta) => {
+        const plotUrl = `${baseUrl}/plot?plotKey=${encodeURIComponent(plotMeta.s3_key)}`;
+        console.log(`Fetching ${plotMeta.outcome} from:`, plotUrl);
+
+        const response = await fetch(plotUrl);
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(`Failed to fetch ${plotMeta.outcome}: ${errorData.error || `HTTP ${response.status}`}`);
+        }
+
+        const data = await response.json();
+        return { 
+          data, 
+          title: plotMeta.outcome.charAt(0).toUpperCase() + plotMeta.outcome.slice(1).replace(/\./g, ' ')
+        };
+      });
+
+      const results = await Promise.all(plotPromises);
+
+      const plots = results.map(result => result.data);
+      const titles = results.map(result => result.title);
+
+      setMultiPlotData({ plots, titles });
+      console.log('✅ Successfully loaded plots via dynamic discovery:', titles);
+
+    } catch (err) {
+      console.error('❌ Error in dynamic discovery:', err);
+      setError(err instanceof Error ? err.message : 'Unknown error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const fetchMultiplePlots = async () => {
     setLoading(true);
     setError(null);
@@ -134,13 +197,21 @@ export default function TestPlotViewer() {
           </button>
         </div>
 
-        <div>
+        <div className="space-y-2">
           <button
             onClick={fetchMultiplePlots}
             disabled={loading}
-            className="px-6 py-2 bg-purple-500 text-white rounded hover:bg-purple-600 disabled:opacity-50 font-semibold"
+            className="px-6 py-2 bg-purple-500 text-white rounded hover:bg-purple-600 disabled:opacity-50 font-semibold mr-4"
           >
-            Load Multiple Outcomes
+            🚀 Load Multiple Outcomes (Hardcoded)
+          </button>
+
+          <button
+            onClick={fetchPlotsWithDiscovery}
+            disabled={loading}
+            className="px-6 py-2 bg-emerald-500 text-white rounded hover:bg-emerald-600 disabled:opacity-50 font-semibold"
+          >
+            🔍 Dynamic Discovery Demo
           </button>
         </div>
       </div>
