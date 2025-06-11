@@ -63,52 +63,60 @@ export default function TestPlotViewer() {
     try {
       const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-      console.log('🔍 Step 1: Discovering available plots...');
+      console.log('🔍 Step 1: Discovering plots from multiple cities and scenarios...');
 
-      // Step 1: Discover available plots
-      const searchUrl = `${baseUrl}/plots/search?city=C.12580&scenario=cessation`;
-      console.log('Discovery URL:', searchUrl);
+      // Define multiple city/scenario combinations to demonstrate expanded capabilities
+      const searchCombinations = [
+        { city: 'C.12580', scenario: 'cessation', label: 'C.12580 - Cessation' },
+        { city: 'C.12940', scenario: 'cessation', label: 'C.12940 - Cessation (NEW CITY)' },
+        { city: 'C.12580', scenario: 'brief_interruption', label: 'C.12580 - Brief Interruption (NEW SCENARIO)' }
+      ];
 
-      const searchResponse = await fetch(searchUrl);
-      if (!searchResponse.ok) {
-        const errorData = await searchResponse.json();
-        throw new Error(`Discovery failed: ${errorData.error || `HTTP ${searchResponse.status}`}`);
-      }
+      let allPlots = [];
+      let allTitles = [];
 
-      const discoveryData = await searchResponse.json();
-      console.log('🎯 Discovery result:', discoveryData);
+      // Step 1: Discover plots from each combination
+      for (const combo of searchCombinations) {
+        const searchUrl = `${baseUrl}/plots/search?city=${combo.city}&scenario=${combo.scenario}`;
+        console.log(`🔍 Discovering plots for ${combo.label}:`, searchUrl);
 
-      if (!discoveryData.plots || discoveryData.plots.length === 0) {
-        throw new Error('No plots found for this city/scenario combination');
-      }
-
-      console.log(`📊 Found ${discoveryData.total_plots} plots. Loading plot data...`);
-
-      // Step 2: Fetch actual plot data for discovered plots
-      const plotPromises = discoveryData.plots.map(async (plotMeta) => {
-        const plotUrl = `${baseUrl}/plot?plotKey=${encodeURIComponent(plotMeta.s3_key)}`;
-        console.log(`Fetching ${plotMeta.outcome} from:`, plotUrl);
-
-        const response = await fetch(plotUrl);
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(`Failed to fetch ${plotMeta.outcome}: ${errorData.error || `HTTP ${response.status}`}`);
+        const searchResponse = await fetch(searchUrl);
+        if (!searchResponse.ok) {
+          console.warn(`⚠️  Discovery failed for ${combo.label}`);
+          continue; // Skip this combination if it fails
         }
 
-        const data = await response.json();
-        return { 
-          data, 
-          title: plotMeta.outcome.charAt(0).toUpperCase() + plotMeta.outcome.slice(1).replace(/\./g, ' ')
-        };
-      });
+        const discoveryData = await searchResponse.json();
+        console.log(`🎯 ${combo.label}: Found ${discoveryData.total_plots} plots`);
 
-      const results = await Promise.all(plotPromises);
+        if (discoveryData.plots && discoveryData.plots.length > 0) {
+          // Step 2: Fetch plot data for discovered plots
+          for (const plotMeta of discoveryData.plots) {
+            const plotUrl = `${baseUrl}/plot?plotKey=${encodeURIComponent(plotMeta.s3_key)}`;
+            console.log(`📊 Fetching ${plotMeta.outcome} from ${combo.label}`);
 
-      const plots = results.map(result => result.data);
-      const titles = results.map(result => result.title);
+            try {
+              const response = await fetch(plotUrl);
+              if (response.ok) {
+                const data = await response.json();
+                const title = `${plotMeta.outcome.charAt(0).toUpperCase() + plotMeta.outcome.slice(1).replace(/\./g, ' ')} - ${combo.label}`;
+                
+                allPlots.push(data);
+                allTitles.push(title);
+              }
+            } catch (plotErr) {
+              console.warn(`⚠️  Failed to fetch ${plotMeta.outcome} from ${combo.label}`);
+            }
+          }
+        }
+      }
 
-      setMultiPlotData({ plots, titles });
-      console.log('✅ Successfully loaded plots via dynamic discovery:', titles);
+      if (allPlots.length === 0) {
+        throw new Error('No plots found across any city/scenario combinations');
+      }
+
+      setMultiPlotData({ plots: allPlots, titles: allTitles });
+      console.log(`✅ Successfully loaded ${allPlots.length} plots from multiple combinations:`, allTitles);
 
     } catch (err) {
       console.error('❌ Error in dynamic discovery:', err);
@@ -260,7 +268,7 @@ export default function TestPlotViewer() {
       {/* Multi-plot display */}
       {multiPlotData && !loading && (
         <div className="mb-4">
-          <h2 className="text-xl font-semibold mb-4">Multiple Outcomes for C.12580 - Cessation Scenario:</h2>
+          <h2 className="text-xl font-semibold mb-4">Plots from Multiple Cities & Scenarios (Dynamic Discovery):</h2>
           <div className="space-y-6">
             {multiPlotData.plots.map((plot, index) => (
               <div key={index} className="border rounded p-4 overflow-hidden">
