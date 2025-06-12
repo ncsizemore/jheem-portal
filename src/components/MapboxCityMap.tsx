@@ -16,30 +16,30 @@ export default function MapboxCityMap({ cities, onCitySelect, selectedCity, load
   const [viewState, setViewState] = useState({
     longitude: -95.7,
     latitude: 37.1,
-    zoom: 3.5,
+    zoom: 4.4, // Slightly out to keep California visible
     pitch: 35, // This gives us the 3D tilt effect
     bearing: 0
   });
-  
+
   const [hoveredCity, setHoveredCity] = useState<string | null>(null);
   const mapRef = useRef<any>(null);
 
   // Alternative: Use Mapbox's minimal style (requires token)
   const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN || 'pk.your-token-here';
-  
+
   // Debugging: log the token (first few chars only)
   console.log('Mapbox token starts with:', MAPBOX_TOKEN?.substring(0, 10));
 
   // Use a simple style that should work
-  const mapStyle = MAPBOX_TOKEN && MAPBOX_TOKEN !== 'pk.your-token-here' 
-    ? "mapbox://styles/mapbox/streets-v12"  // Try basic streets first
-    : "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json"; // Fallback
+  const mapStyle = MAPBOX_TOKEN && MAPBOX_TOKEN !== 'pk.your-token-here'
+    ? "https://basemaps.cartocdn.com/gl/dark-matter-nolabels-gl-style/style.json"  // Force CartoDB dark no labels
+    : "https://basemaps.cartocdn.com/gl/dark-matter-nolabels-gl-style/style.json"; // Fallback without labels
 
   return (
     <div className="relative h-screen w-screen overflow-hidden">
       {/* Beautiful gradient overlay for depth */}
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-slate-900/20 pointer-events-none z-10"></div>
-      
+
       {/* Glassmorphism header */}
       <div className="absolute top-6 left-6 z-20">
         <div className="bg-black/20 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl p-6 max-w-sm">
@@ -129,7 +129,7 @@ export default function MapboxCityMap({ cities, onCitySelect, selectedCity, load
         {cities.map((city) => {
           const isHovered = hoveredCity === city.name;
           const isSelected = selectedCity?.code === city.code;
-          
+
           return (
             <Marker
               key={city.code}
@@ -138,24 +138,22 @@ export default function MapboxCityMap({ cities, onCitySelect, selectedCity, load
               anchor="center"
             >
               <div
-                className={`relative cursor-pointer transition-all duration-300 transform ${
-                  isHovered ? 'scale-125' : isSelected ? 'scale-110' : 'scale-100'
-                }`}
+                className={`relative cursor-pointer transition-all duration-300 transform ${isHovered ? 'scale-125' : isSelected ? 'scale-110' : 'scale-100'
+                  }`}
                 onMouseEnter={() => setHoveredCity(city.name)}
                 onMouseLeave={() => setHoveredCity(null)}
                 onClick={() => onCitySelect(city)}
                 style={{
-                  filter: isHovered || isSelected 
-                    ? `drop-shadow(0 0 20px ${isSelected ? '#06b6d4' : '#3b82f6'})` 
+                  filter: isHovered || isSelected
+                    ? `drop-shadow(0 0 20px ${isSelected ? '#06b6d4' : '#3b82f6'})`
                     : 'drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3))'
                 }}
               >
                 {/* Pulsing ring for selected/hovered */}
                 {(isHovered || isSelected) && (
-                  <div 
-                    className={`absolute inset-0 rounded-full animate-ping ${
-                      isSelected ? 'bg-cyan-400/40' : 'bg-blue-400/40'
-                    }`}
+                  <div
+                    className={`absolute inset-0 rounded-full animate-ping ${isSelected ? 'bg-cyan-400/40' : 'bg-blue-400/40'
+                      }`}
                     style={{
                       width: '32px',
                       height: '32px',
@@ -164,24 +162,23 @@ export default function MapboxCityMap({ cities, onCitySelect, selectedCity, load
                     }}
                   />
                 )}
-                
+
                 {/* Main marker */}
                 <div
-                  className={`w-4 h-4 rounded-full border-2 border-white shadow-lg ${
-                    isSelected 
-                      ? 'bg-gradient-to-br from-cyan-400 to-cyan-600' 
-                      : isHovered 
+                  className={`w-4 h-4 rounded-full border-2 border-white shadow-lg ${isSelected
+                    ? 'bg-gradient-to-br from-cyan-400 to-cyan-600'
+                    : isHovered
                       ? 'bg-gradient-to-br from-blue-400 to-blue-600'
                       : 'bg-gradient-to-br from-cyan-500 to-blue-500'
-                  }`}
+                    }`}
                 />
-                
+
                 {/* Inner highlight */}
                 <div className="absolute top-1 left-1 w-2 h-2 bg-white/60 rounded-full pointer-events-none" />
-                
+
                 {/* City label for selected */}
                 {isSelected && (
-                  <div 
+                  <div
                     className="absolute top-6 left-1/2 transform -translate-x-1/2 bg-black/80 text-white px-2 py-1 rounded text-xs font-semibold whitespace-nowrap"
                     style={{ filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5))' }}
                   >
