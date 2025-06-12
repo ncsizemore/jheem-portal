@@ -47,9 +47,6 @@ export default function RootLayout({
         <main className="flex flex-col flex-grow min-h-0"> {/* Removed container, mx-auto, p-4 */}
           <AppViewManager>{children}</AppViewManager>
         </main>
-        <footer className="bg-gray-200 text-center p-4 text-sm text-gray-600">
-          © {new Date().getFullYear()} JHEEM Portal
-        </footer>
       </body>
     </html>
   );
