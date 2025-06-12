@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useAvailableCities } from '../../hooks/useAvailableCities';
-import CityMap from '../../components/CityMap';
+import MapboxCityMap from '../../components/MapboxCityMap';
 import FloatingPanel from '../../components/FloatingPanel';
 import MapPlotOverlay from '../../components/MapPlotOverlay';
 import { CityData } from '../../data/cities';
@@ -114,7 +114,7 @@ export default function MapExplorer() {
   return (
     <div className="relative h-screen w-screen overflow-hidden">
       {/* Main Map */}
-      <CityMap
+      <MapboxCityMap
         cities={availableCities}
         onCitySelect={handleCitySelect}
         selectedCity={selectedCity}
