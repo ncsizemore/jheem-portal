@@ -1,9 +1,10 @@
 'use client';
 
 import { useState } from 'react';
+import { motion } from 'framer-motion';
 import { useAvailableCities } from '../../hooks/useAvailableCities';
 import MapboxCityMap from '../../components/MapboxCityMap';
-import FloatingPanel from '../../components/FloatingPanel';
+import PlotExplorationSidebar from '../../components/PlotExplorationSidebar';
 import MapPlotOverlay from '../../components/MapPlotOverlay';
 import { CityData } from '../../data/cities';
 
@@ -70,8 +71,8 @@ export default function MapExplorer() {
       
       setPlotTitle(`${outcomeName} - ${cityShortName} (${scenarioName})`);
       
-      // Close the floating panel
-      setSelectedCity(null);
+      // DON'T close the sidebar - keep it open for easy navigation
+      // setSelectedCity(null);
       
       console.log('✅ Plot loaded successfully');
 
@@ -83,6 +84,18 @@ export default function MapExplorer() {
     }
   };
 
+  const handleMultiPlotSelect = async (city: CityData, scenario: string, plots: PlotMetadata[]) => {
+    // For now, let's be more conservative and just select a meaningful subset
+    // Maybe the first 2-3 most common demographic breakdowns
+    console.log(`🔥 Multi-plot request: ${plots.length} plots available`);
+    
+    // For now, just show the first plot but keep this as a placeholder for future enhancement
+    if (plots.length > 0) {
+      await handlePlotSelect(city, scenario, plots[0]);
+      // TODO: Implement actual multi-plot grid view with 2-3 key demographics
+    }
+  };
+
   const handleClosePanel = () => {
     setSelectedCity(null);
   };
@@ -91,6 +104,16 @@ export default function MapExplorer() {
     setPlotData(null);
     setPlotTitle('');
     setPlotError(null);
+  };
+
+  const handleBackToSelection = () => {
+    // Keep the plot open but make sure the sidebar is visible for more exploration
+    // Don't close the plot, just ensure sidebar is accessible
+    if (!selectedCity) {
+      // If sidebar was closed, we need to reopen it somehow
+      // For now, just close the plot to go back to map selection
+      handleClosePlot();
+    }
   };
 
   // Show error state if discovery failed
@@ -113,12 +136,25 @@ export default function MapExplorer() {
 
   return (
     <div className="relative h-screen w-screen overflow-hidden">
+      {/* Cinematic Map Overlay when plot is active */}
+      {plotData && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.4 }}
+          className="fixed inset-0 bg-black/30 backdrop-blur-[2px] z-20 pointer-events-none"
+        />
+      )}
+
       {/* Main Map */}
       <MapboxCityMap
         cities={availableCities}
         onCitySelect={handleCitySelect}
         selectedCity={selectedCity}
         loading={loading}
+        sidebarOpen={!!selectedCity}
+        plotOpen={!!plotData}
       />
 
       {/* Discovery Progress (shown during initial loading) */}
@@ -135,11 +171,12 @@ export default function MapExplorer() {
         </div>
       )}
 
-      {/* Floating Panel for Plot Selection */}
-      <FloatingPanel
+      {/* Sidebar for Plot Selection */}
+      <PlotExplorationSidebar
         city={selectedCity}
         onClose={handleClosePanel}
         onPlotSelect={handlePlotSelect}
+        onMultiPlotSelect={handleMultiPlotSelect}
       />
 
       {/* Plot Loading Overlay */}
@@ -187,6 +224,7 @@ export default function MapExplorer() {
         plotData={plotData}
         plotTitle={plotTitle}
         onClose={handleClosePlot}
+        onBackToSelection={handleBackToSelection}
       />
     </div>
   );

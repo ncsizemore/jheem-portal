@@ -32,12 +32,18 @@ export const useAvailableCities = (): UseAvailableCitiesReturn => {
 
       try {
         console.log('🔍 Fetching all available cities with single API call...');
+        console.log('🌐 API URL:', `${baseUrl}/plots/cities`);
         
         // SINGLE API call instead of 96 calls
         const response = await fetch(`${baseUrl}/plots/cities`);
         
+        console.log('📡 Response status:', response.status);
+        console.log('📡 Response ok:', response.ok);
+        
         if (!response.ok) {
-          throw new Error(`Failed to fetch cities: ${response.status}`);
+          const errorText = await response.text();
+          console.error('❌ Response error:', errorText);
+          throw new Error(`Failed to fetch cities: ${response.status} - ${errorText}`);
         }
 
         const data = await response.json();

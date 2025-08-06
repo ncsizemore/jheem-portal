@@ -25,69 +25,146 @@ interface MapPlotOverlayProps {
   plotData: PlotData | null;
   plotTitle?: string;
   onClose: () => void;
+  onBackToSelection?: () => void;
 }
 
-export default function MapPlotOverlay({ plotData, plotTitle, onClose }: MapPlotOverlayProps) {
+export default function MapPlotOverlay({ plotData, plotTitle, onClose, onBackToSelection }: MapPlotOverlayProps) {
   if (!plotData) return null;
 
   return (
     <AnimatePresence>
       <motion.div
-        initial={{ opacity: 0, y: '100%' }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: '100%' }}
-        transition={{ duration: 0.4, ease: "easeOut" }}
-        className="fixed bottom-0 left-0 right-0 bg-white shadow-2xl z-40 border-t border-gray-200"
-        style={{ height: '65vh' }}
+        initial={{ opacity: 0, scale: 0.8, y: 100 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.8, y: 100 }}
+        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        className="fixed inset-4 bg-black/80 backdrop-blur-xl shadow-2xl z-40 rounded-3xl border border-white/20 overflow-hidden"
       >
-        {/* Header */}
-        <div className="flex justify-between items-center p-4 border-b border-gray-200 bg-gray-50">
-          <div className="flex-1">
-            <h3 className="text-lg font-bold text-gray-900 tracking-tight">
-              {plotTitle || 'Analysis Results'}
-            </h3>
-            <p className="text-sm text-gray-600 mt-1">
-              Interactive visualization of HIV transmission modeling results
-            </p>
-          </div>
+        {/* Cinematic Header */}
+        <div className="relative p-8 border-b border-white/10">
+          {/* Background gradient */}
+          <div className="absolute inset-0 bg-gradient-to-br from-slate-900/90 via-blue-900/90 to-indigo-900/90"></div>
           
-          {/* Controls */}
-          <div className="flex items-center gap-3">
-            <button
-              onClick={onClose}
-              className="text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded-lg p-2 transition-colors"
-              title="Close plot"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
+          {/* Content */}
+          <div className="relative flex justify-between items-start">
+            <div className="flex-1">
+              <motion.h3 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2, duration: 0.5 }}
+                className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white via-cyan-100 to-blue-100 tracking-tight mb-2"
+              >
+                {plotTitle || 'Analysis Results'}
+              </motion.h3>
+              <motion.p 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3, duration: 0.5 }}
+                className="text-white/80 text-lg font-medium"
+              >
+                HIV Transmission Impact Analysis
+              </motion.p>
+              
+              {/* Floating data points */}
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.5, duration: 0.5 }}
+                className="flex items-center gap-6 mt-4"
+              >
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 bg-cyan-400 rounded-full animate-pulse shadow-lg shadow-cyan-400/50"></div>
+                  <span className="text-white/70 text-sm font-medium">Live Data</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 bg-emerald-400 rounded-full animate-pulse shadow-lg shadow-emerald-400/50"></div>
+                  <span className="text-white/70 text-sm font-medium">Interactive</span>
+                </div>
+              </motion.div>
+            </div>
+            
+            {/* Cinematic Controls */}
+            <div className="flex items-center gap-4">
+              {onBackToSelection && (
+                <motion.button
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.4, duration: 0.5 }}
+                  onClick={onBackToSelection}
+                  className="flex items-center gap-3 text-white/80 hover:text-white hover:bg-white/10 rounded-xl px-4 py-3 transition-all duration-300 backdrop-blur-sm border border-white/20"
+                  title="Explore other analyses"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                  <span className="font-medium">Explore More</span>
+                </motion.button>
+              )}
+              <motion.button
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.5, duration: 0.5 }}
+                onClick={onClose}
+                className="text-white/60 hover:text-white hover:bg-white/10 rounded-xl p-3 transition-all duration-300 backdrop-blur-sm border border-white/20"
+                title="Return to map"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </motion.button>
+            </div>
           </div>
         </div>
 
-        {/* Plot Container */}
-        <div className="p-4 h-full">
-          <div className="w-full h-full bg-white rounded-lg border border-gray-200">
+        {/* Cinematic Plot Container */}
+        <div className="flex-1 p-8">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.3, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+            className="w-full h-full bg-white/95 backdrop-blur-sm rounded-2xl border border-white/20 shadow-2xl overflow-hidden"
+            style={{ height: 'calc(100% - 2rem)' }}
+          >
             {plotData && (
               <Plot
                 data={plotData.data}
                 layout={{
                   ...plotData.layout,
                   autosize: true,
-                  margin: { l: 60, r: 40, t: 40, b: 60 },
+                  margin: { l: 80, r: 60, t: 80, b: 80 },
                   font: {
                     family: 'Inter, system-ui, sans-serif',
-                    size: 12,
-                    color: '#374151'
+                    size: 14,
+                    color: '#1f2937'
                   },
-                  paper_bgcolor: '#ffffff',
-                  plot_bgcolor: '#fafafa',
+                  paper_bgcolor: 'rgba(255, 255, 255, 0.95)',
+                  plot_bgcolor: 'rgba(248, 250, 252, 0.8)',
                   showlegend: true,
                   legend: {
                     orientation: 'v',
                     x: 1.02,
                     y: 1,
-                    font: { size: 11 }
+                    font: { size: 13 },
+                    bgcolor: 'rgba(255, 255, 255, 0.9)',
+                    bordercolor: 'rgba(0, 0, 0, 0.1)',
+                    borderwidth: 1
+                  },
+                  title: {
+                    font: { size: 18, color: '#1f2937', family: 'Inter, system-ui, sans-serif' },
+                    x: 0.05,
+                    xanchor: 'left',
+                    pad: { t: 20 }
+                  },
+                  // Enhanced grid and styling
+                  xaxis: {
+                    ...plotData.layout.xaxis,
+                    gridcolor: 'rgba(0, 0, 0, 0.1)',
+                    zerolinecolor: 'rgba(0, 0, 0, 0.2)'
+                  },
+                  yaxis: {
+                    ...plotData.layout.yaxis,
+                    gridcolor: 'rgba(0, 0, 0, 0.1)',
+                    zerolinecolor: 'rgba(0, 0, 0, 0.2)'
                   }
                 }}
                 style={{ width: '100%', height: '100%' }}
@@ -99,27 +176,21 @@ export default function MapPlotOverlay({ plotData, plotTitle, onClose }: MapPlot
                     'pan2d',
                     'lasso2d',
                     'select2d',
-                    'autoScale2d',
-                    'hoverClosestCartesian',
-                    'hoverCompareCartesian',
-                    'toggleSpikelines'
+                    'autoScale2d'
                   ],
                   toImageButtonOptions: {
                     format: 'png',
                     filename: 'jheem_analysis',
-                    height: 600,
-                    width: 1000,
+                    height: 1000,
+                    width: 1400,
                     scale: 2
                   }
                 }}
                 useResizeHandler={true}
               />
             )}
-          </div>
+          </motion.div>
         </div>
-
-        {/* Resize handle (visual indicator) */}
-        <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1 w-12 h-1 bg-gray-300 rounded-full"></div>
       </motion.div>
     </AnimatePresence>
   );
