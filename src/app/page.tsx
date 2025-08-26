@@ -171,12 +171,12 @@ export default function Home() {
         >
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Funding Sources</h3>
           <p className="text-gray-600 mb-4">
-            This work is supported by the following grants from the National Institutes of Health:
+            This project is supported by grants from the National Institute of Mental Health and the National Institute of Allergy and Infectious Diseases:
           </p>
           <div className="flex flex-wrap justify-center gap-4 text-sm text-gray-700">
-            <span className="bg-gray-100 px-3 py-1 rounded-full">R01 AI146555</span>
-            <span className="bg-gray-100 px-3 py-1 rounded-full">R01 DA047952</span>
-            <span className="bg-gray-100 px-3 py-1 rounded-full">DP2 DA049295</span>
+            <span className="bg-gray-100 px-3 py-1 rounded-full">K08MH118094</span>
+            <span className="bg-gray-100 px-3 py-1 rounded-full">K01AI138853</span>
+            <span className="bg-gray-100 px-3 py-1 rounded-full">P30-AI094189</span>
           </div>
           <div className="mt-6 text-gray-600">
             <p className="font-medium">Johns Hopkins Bloomberg School of Public Health</p>
