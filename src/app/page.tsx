@@ -162,11 +162,43 @@ export default function Home() {
           </div>
         </motion.div>
 
-        {/* Funding Information */}
+        {/* Publications */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.6 }}
+          className="bg-white rounded-xl shadow-lg p-8 mb-16"
+        >
+          <h3 className="text-2xl font-semibold text-gray-900 text-center mb-8">Key Publications</h3>
+          <div className="max-w-4xl mx-auto">
+            <ul className="space-y-4 text-gray-700">
+              <li className="flex items-start">
+                <div className="w-2 h-2 bg-hopkins-blue rounded-full mt-2 mr-4 flex-shrink-0"></div>
+                <p className="text-sm leading-relaxed">
+                  Perry A, Kasaie P, Dowdy DW, Shah M. What Will It Take to Reduce HIV Incidence in the United States: A Mathematical Modeling Analysis. <em>Open Forum Infect Dis</em>. 2018;5(2):ofy008.
+                </p>
+              </li>
+              <li className="flex items-start">
+                <div className="w-2 h-2 bg-hopkins-blue rounded-full mt-2 mr-4 flex-shrink-0"></div>
+                <p className="text-sm leading-relaxed">
+                  Shah M, Perry A, Risher K, et al. Effect of the US National HIV/AIDS Strategy targets for improved HIV care engagement: a modelling study. <em>Lancet HIV</em>. 2016;3(3):e140-146.
+                </p>
+              </li>
+              <li className="flex items-start">
+                <div className="w-2 h-2 bg-hopkins-blue rounded-full mt-2 mr-4 flex-shrink-0"></div>
+                <p className="text-sm leading-relaxed">
+                  Shah M, Risher K, Berry SA, Dowdy DW. The Epidemiologic and Economic Impact of Improving HIV Testing, Linkage, and Retention in Care in the United States. <em>Clin Infect Dis</em>. 2016;62(2):220-229.
+                </p>
+              </li>
+            </ul>
+          </div>
+        </motion.div>
+
+        {/* Funding Information */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.8 }}
           className="text-center bg-white rounded-xl shadow-lg p-8"
         >
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Funding Sources</h3>
