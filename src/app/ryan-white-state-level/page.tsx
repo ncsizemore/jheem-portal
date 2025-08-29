@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
+import Footer from '@/components/Footer';
 
 export default function RyanWhiteStateLevelPage() {
   const [loading, setLoading] = useState(false);
@@ -172,6 +173,7 @@ export default function RyanWhiteStateLevelPage() {
           </motion.div>
         </div>
 
+        <Footer />
       </div>
     );
   }
@@ -255,7 +257,7 @@ export default function RyanWhiteStateLevelPage() {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.3 }}
-          className="absolute inset-0 bg-white z-30 overflow-auto"
+          className="fixed inset-0 bg-white z-30 overflow-auto"
         >
           <div className="min-h-screen bg-white">
             {/* Hero Section */}
@@ -362,7 +364,7 @@ export default function RyanWhiteStateLevelPage() {
               </div>
             </section>
 
-
+            <Footer />
           </div>
         </motion.div>
       )}
