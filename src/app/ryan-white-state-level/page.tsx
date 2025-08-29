@@ -1,47 +1,213 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import { motion } from 'framer-motion';
 
 export default function RyanWhiteStateLevelPage() {
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [showLanding, setShowLanding] = useState(true); // Always start with landing page
+  const [appLoaded, setAppLoaded] = useState(false); // Always start with app not loaded
+  const [appMinimized, setAppMinimized] = useState(false); // Always start not minimized
+  
 
-  useEffect(() => {
-    // Simulate brief loading for iframe setup
-    const timer = setTimeout(() => setLoading(false), 1000);
-    return () => clearTimeout(timer);
-  }, []);
+  const handleLaunchApp = () => {
+    setLoading(true);
+    setShowLanding(false);
+    // Extended loading time to account for actual Shiny app initialization
+    setTimeout(() => {
+      setAppLoaded(true);
+      setLoading(false);
+    }, 3000);
+  };
 
+  const handleMinimizeApp = () => {
+    setShowLanding(true); // Go back to landing page
+    setAppMinimized(true); // But keep app running in background
+  };
+
+  const handleRestoreApp = () => {
+    setShowLanding(false); // Leave landing page
+    setAppMinimized(false); // Show the app
+  };
+
+  const handleCloseApplication = () => {
+    setShowLanding(true);
+    setAppLoaded(false);
+    setAppMinimized(false);
+  };
+
+  // Show initial landing page (before app is loaded)
+  if (showLanding && !appLoaded) {
+    return (
+      <div className="min-h-screen bg-white">
+        {/* Hero Section */}
+        <section className="border-b border-gray-100">
+          <div className="max-w-7xl mx-auto px-6 py-24">
+            <div className="grid lg:grid-cols-5 gap-16">
+              <div className="lg:col-span-3">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8 }}
+                >
+                  <p className="text-hopkins-blue text-sm font-semibold tracking-widest uppercase mb-6">
+                    State-Level Program Analysis
+                  </p>
+                  <h1 className="text-5xl lg:text-6xl font-extralight text-gray-900 leading-none mb-8 tracking-tight">
+                    Ryan White<br />
+                    <span className="font-medium">State Analysis</span>
+                  </h1>
+                  <p className="text-xl text-gray-600 leading-relaxed mb-8 font-light max-w-lg">
+                    Comprehensive state-level analysis of Ryan White HIV/AIDS Program funding impacts 
+                    on HIV care continuum and transmission dynamics.
+                  </p>
+                </motion.div>
+              </div>
+              
+              <div className="lg:col-span-2">
+                <motion.div
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.8, delay: 0.2 }}
+                  className="bg-gradient-to-br from-slate-50 to-blue-50/50 p-8 h-full flex flex-col justify-center rounded-2xl"
+                >
+                  <div className="text-center mb-8">
+                    <div className="text-4xl font-light text-hopkins-blue mb-2">50</div>
+                    <p className="text-sm text-gray-600 uppercase tracking-wide">US States & Territories</p>
+                  </div>
+                  <div className="space-y-4 text-sm text-gray-700">
+                    <p>Comprehensive state-level policy modeling</p>
+                    <p>HIV care cascade analysis by jurisdiction</p>
+                    <p>Population-level transmission impact assessment</p>
+                  </div>
+                </motion.div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Key Features */}
+        <section className="py-16 border-b border-gray-100">
+          <div className="max-w-7xl mx-auto px-6">
+            <div className="grid lg:grid-cols-3 gap-8">
+              <div className="text-center">
+                <div className="w-16 h-16 bg-gradient-to-br from-hopkins-blue to-hopkins-spirit-blue rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">State Comparisons</h3>
+                <p className="text-gray-600 text-sm">Compare HIV outcomes and program effectiveness across all US states and territories</p>
+              </div>
+              
+              <div className="text-center">
+                <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Policy Scenarios</h3>
+                <p className="text-gray-600 text-sm">Model different funding scenarios and their population-level health impacts</p>
+              </div>
+              
+              <div className="text-center">
+                <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-violet-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-1.447-.894L15 10m0 7V10m0 0L9 7" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Interactive Analysis</h3>
+                <p className="text-gray-600 text-sm">Dynamic parameter adjustment with real-time visualization of model outcomes</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Safe space for floating panel */}
+        <section className="py-32 bg-gradient-to-br from-slate-50/50 to-blue-50/30">
+          <div className="max-w-7xl mx-auto px-6">
+            <div className="max-w-3xl"> {/* Left-aligned, doesn't extend into right panel area */}
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.4 }}
+              >
+                <h2 className="text-3xl font-extralight text-gray-900 mb-6">
+                  Comprehensive <span className="font-medium">Policy Impact Analysis</span>
+                </h2>
+                <p className="text-lg text-gray-600 mb-8 font-light max-w-lg">
+                  Mathematical modeling of HIV care outcomes and transmission dynamics across 
+                  all US states and territories with customizable intervention scenarios.
+                </p>
+              </motion.div>
+            </div>
+          </div>
+        </section>
+
+        {/* Launch Panel - positioned over initial landing page */}
+        <div className="fixed bottom-6 right-6 z-50">
+          <motion.div
+            initial={{ opacity: 0, y: 20, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.4, type: "spring", stiffness: 200 }}
+            className="bg-gradient-to-br from-hopkins-blue to-hopkins-spirit-blue text-white rounded-2xl shadow-2xl p-6 max-w-sm"
+          >
+            <div className="text-center">
+              <h4 className="font-bold text-lg mb-2">Ready to Begin?</h4>
+              <p className="text-blue-100 text-sm mb-4 leading-relaxed">
+                Launch the state-level analysis tool to explore Ryan White program impacts.
+              </p>
+              <motion.button
+                onClick={handleLaunchApp}
+                whileHover={{ scale: 1.05, y: -2 }}
+                whileTap={{ scale: 0.95 }}
+                className="bg-white text-hopkins-blue px-6 py-3 rounded-xl font-bold hover:shadow-lg transition-all duration-300 w-full"
+              >
+                Launch Analysis Tool
+              </motion.button>
+              <p className="text-blue-200 text-xs mt-3">
+                May take 30-60 seconds to initialize
+              </p>
+            </div>
+          </motion.div>
+        </div>
+
+      </div>
+    );
+  }
+
+  // Main container - always rendered after initial launch
   return (
     <div className="h-screen w-screen flex flex-col bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-semibold text-gray-900">
-              JHEEM Ryan White State Level Model
-            </h1>
-            <p className="text-sm text-gray-600 mt-1">
-              Interactive HIV transmission modeling for state-level policy analysis
+      {/* Enhanced Loading State */}
+      {(loading || !appLoaded) && (
+        <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50/30">
+          <div className="text-center max-w-md">
+            <div className="relative mb-8">
+              <div className="w-20 h-20 border-4 border-hopkins-blue/20 rounded-full mx-auto"></div>
+              <div className="w-20 h-20 border-4 border-hopkins-blue border-t-transparent rounded-full animate-spin absolute top-0 left-1/2 transform -translate-x-1/2"></div>
+            </div>
+            <h3 className="text-2xl font-light text-gray-900 mb-4">
+              Initializing State Analysis Tool
+            </h3>
+            <p className="text-gray-600 mb-2">
+              Loading JHEEM State Level Model interface...
             </p>
-          </div>
-          <div className="text-xs text-gray-500">
-            Powered by Johns Hopkins Bloomberg School of Public Health
-          </div>
-        </div>
-      </div>
-
-      {/* Loading State */}
-      {loading && (
-        <div className="flex-1 flex items-center justify-center">
-          <div className="text-center">
-            <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading JHEEM State Level Model...</p>
+            <p className="text-sm text-gray-500">
+              This may take up to 60 seconds as the Shiny application starts up
+            </p>
+            <div className="mt-6 flex items-center justify-center gap-2">
+              <div className="w-2 h-2 bg-hopkins-blue rounded-full animate-pulse"></div>
+              <div className="w-2 h-2 bg-hopkins-blue rounded-full animate-pulse" style={{animationDelay: '0.2s'}}></div>
+              <div className="w-2 h-2 bg-hopkins-blue rounded-full animate-pulse" style={{animationDelay: '0.4s'}}></div>
+            </div>
           </div>
         </div>
       )}
 
-      {/* Iframe Container */}
-      {!loading && (
+
+      {/* Iframe Container - Always rendered when app is loaded, never moves */}
+      {!loading && appLoaded && (
         <div className="flex-1 relative">
           <iframe
             src="https://jheem.shinyapps.io/ryan-white-state-level/"
@@ -79,6 +245,205 @@ export default function RyanWhiteStateLevelPage() {
               </a>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Landing Page Overlay - shown when minimized (showLanding && appLoaded) */}
+      {showLanding && appLoaded && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.3 }}
+          className="absolute inset-0 bg-white z-30 overflow-auto"
+        >
+          <div className="min-h-screen bg-white">
+            {/* Hero Section */}
+            <section className="border-b border-gray-100">
+              <div className="max-w-7xl mx-auto px-6 py-24">
+                <div className="grid lg:grid-cols-5 gap-16">
+                  <div className="lg:col-span-3">
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.8 }}
+                    >
+                      <p className="text-hopkins-blue text-sm font-semibold tracking-widest uppercase mb-6">
+                        State-Level Program Analysis
+                      </p>
+                      <h1 className="text-5xl lg:text-6xl font-extralight text-gray-900 leading-none mb-8 tracking-tight">
+                        Ryan White<br />
+                        <span className="font-medium">State Analysis</span>
+                      </h1>
+                      <p className="text-xl text-gray-600 leading-relaxed mb-8 font-light max-w-lg">
+                        Comprehensive state-level analysis of Ryan White HIV/AIDS Program funding impacts 
+                        on HIV care continuum and transmission dynamics.
+                      </p>
+                    </motion.div>
+                  </div>
+                  
+                  <div className="lg:col-span-2">
+                    <motion.div
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.8, delay: 0.2 }}
+                      className="bg-gradient-to-br from-slate-50 to-blue-50/50 p-8 h-full flex flex-col justify-center rounded-2xl"
+                    >
+                      <div className="text-center mb-8">
+                        <div className="text-4xl font-light text-hopkins-blue mb-2">50</div>
+                        <p className="text-sm text-gray-600 uppercase tracking-wide">US States & Territories</p>
+                      </div>
+                      <div className="space-y-4 text-sm text-gray-700">
+                        <p>Comprehensive state-level policy modeling</p>
+                        <p>HIV care cascade analysis by jurisdiction</p>
+                        <p>Population-level transmission impact assessment</p>
+                      </div>
+                    </motion.div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {/* Key Features */}
+            <section className="py-16 border-b border-gray-100">
+              <div className="max-w-7xl mx-auto px-6">
+                <div className="grid lg:grid-cols-3 gap-8">
+                  <div className="text-center">
+                    <div className="w-16 h-16 bg-gradient-to-br from-hopkins-blue to-hopkins-spirit-blue rounded-2xl flex items-center justify-center mx-auto mb-4">
+                      <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                      </svg>
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">State Comparisons</h3>
+                    <p className="text-gray-600 text-sm">Compare HIV outcomes and program effectiveness across all US states and territories</p>
+                  </div>
+                  
+                  <div className="text-center">
+                    <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                      <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                      </svg>
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Policy Scenarios</h3>
+                    <p className="text-gray-600 text-sm">Model different funding scenarios and their population-level health impacts</p>
+                  </div>
+                  
+                  <div className="text-center">
+                    <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-violet-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                      <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-1.447-.894L15 10m0 7V10m0 0L9 7" />
+                      </svg>
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Interactive Analysis</h3>
+                    <p className="text-gray-600 text-sm">Dynamic parameter adjustment with real-time visualization of model outcomes</p>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {/* Safe space for restore panel - matches initial landing page bottom section */}
+            <section className="py-32 bg-gradient-to-br from-slate-50/50 to-blue-50/30">
+              <div className="max-w-7xl mx-auto px-6">
+                <div className="max-w-3xl"> {/* Left-aligned, doesn't extend into right panel area */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.8, delay: 0.4 }}
+                  >
+                    <h2 className="text-3xl font-extralight text-gray-900 mb-6">
+                      Comprehensive <span className="font-medium">Policy Impact Analysis</span>
+                    </h2>
+                    <p className="text-lg text-gray-600 mb-8 font-light max-w-lg">
+                      Mathematical modeling of HIV care outcomes and transmission dynamics across 
+                      all US states and territories with customizable intervention scenarios.
+                    </p>
+                  </motion.div>
+                </div>
+              </div>
+            </section>
+
+
+          </div>
+        </motion.div>
+      )}
+
+      {/* Restore Panel - shown when app is minimized */}
+      {!loading && appLoaded && showLanding && (
+        <div className="fixed bottom-6 right-6 z-50">
+          <motion.div
+            initial={{ opacity: 0, y: 20, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.4, type: "spring", stiffness: 200 }}
+            className="bg-gradient-to-br from-green-600 to-emerald-700 text-white rounded-2xl shadow-2xl p-6 max-w-sm"
+          >
+            <div className="text-center">
+              <div className="flex items-center justify-center gap-2 mb-3">
+                <div className="w-3 h-3 bg-green-300 rounded-full animate-pulse"></div>
+                <h4 className="font-bold text-lg">Session Active</h4>
+              </div>
+              <p className="text-green-100 text-sm mb-4 leading-relaxed">
+                Your analysis session is running in the background. Restore to continue where you left off.
+              </p>
+              <div className="flex gap-2">
+                <motion.button
+                  onClick={handleRestoreApp}
+                  whileHover={{ scale: 1.05, y: -2 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="bg-white text-green-700 px-4 py-2.5 rounded-lg font-bold hover:shadow-lg transition-all duration-300 flex-1"
+                >
+                  Restore
+                </motion.button>
+                <motion.button
+                  onClick={handleCloseApplication}
+                  whileHover={{ scale: 1.05, y: -2 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="bg-red-500 text-white px-4 py-2.5 rounded-lg font-medium hover:bg-red-600 transition-all duration-300"
+                >
+                  End
+                </motion.button>
+              </div>
+              <p className="text-green-200 text-xs mt-3">
+                Navigating to other models will end this session
+              </p>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
+      {/* App Controls - shown when app is running */}
+      {!loading && appLoaded && !showLanding && (
+        <div className="fixed top-20 right-6 z-50">
+          <motion.div
+            initial={{ opacity: 0, y: -10, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.4, type: "spring", stiffness: 200 }}
+            className="bg-gradient-to-br from-white via-gray-50 to-gray-100 border border-gray-300 rounded-2xl shadow-xl px-4 py-3"
+          >
+            <div className="flex items-center gap-3">
+              <motion.button
+                onClick={handleMinimizeApp}
+                whileHover={{ scale: 1.1, y: -1 }}
+                whileTap={{ scale: 0.95 }}
+                className="flex items-center gap-2 bg-hopkins-blue/10 hover:bg-hopkins-blue text-hopkins-blue hover:text-white px-4 py-2.5 rounded-xl font-medium text-sm transition-all duration-300 shadow-sm hover:shadow-md"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
+                </svg>
+                Overview
+              </motion.button>
+              <motion.button
+                onClick={handleCloseApplication}
+                whileHover={{ scale: 1.1, y: -1 }}
+                whileTap={{ scale: 0.95 }}
+                className="flex items-center gap-2 bg-red-50 hover:bg-red-500 text-red-600 hover:text-white px-4 py-2.5 rounded-xl font-medium text-sm transition-all duration-300 shadow-sm hover:shadow-md"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+                Close
+              </motion.button>
+            </div>
+          </motion.div>
         </div>
       )}
     </div>
