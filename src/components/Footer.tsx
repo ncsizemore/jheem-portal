@@ -4,14 +4,14 @@ import { motion } from 'framer-motion';
 
 export default function Footer() {
   return (
-    <section className="bg-gradient-to-br from-hopkins-blue via-hopkins-spirit-blue to-slate-900 py-20">
+    <section className="py-24 bg-gradient-to-br from-slate-900 via-hopkins-blue to-hopkins-spirit-blue">
       <div className="max-w-7xl mx-auto px-6">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.2 }}
         >
-          <div className="grid lg:grid-cols-2 gap-16 items-start">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div>
               <div className="w-12 h-px bg-gradient-to-r from-hopkins-gold to-transparent mb-8"></div>
               <h2 className="text-3xl font-extralight text-white mb-8 leading-tight">

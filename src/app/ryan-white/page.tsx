@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import Footer from '@/components/Footer';
 
 export default function RyanWhiteLandingPage() {
   return (
@@ -231,6 +232,8 @@ export default function RyanWhiteLandingPage() {
           </motion.div>
         </div>
       </section>
+      
+      <Footer />
     </div>
   );
 }
