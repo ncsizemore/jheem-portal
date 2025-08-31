@@ -123,7 +123,7 @@ export default function PlotVariationControls({
 
   if (loading) {
     return (
-      <div className="fixed bottom-6 left-6 right-6 z-[45]">
+      <div className="fixed bottom-6 left-6 right-6 z-[70]">
         <div className="bg-white/95 backdrop-blur-xl border border-gray-200 rounded-xl shadow-xl p-4">
           <div className="flex items-center justify-center gap-3 text-gray-600">
             <div className="w-4 h-4 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>
@@ -140,7 +140,7 @@ export default function PlotVariationControls({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 20 }}
       transition={{ duration: 0.3 }}
-      className="fixed bottom-6 left-6 right-6 z-[45]"
+      className="fixed bottom-6 left-6 right-6 z-[70]"
     >
       <div className="bg-white/95 backdrop-blur-xl border border-gray-200 rounded-xl shadow-xl p-4">
         <div className="flex items-center justify-between mb-3">

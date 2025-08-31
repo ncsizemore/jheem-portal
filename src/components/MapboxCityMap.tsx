@@ -83,8 +83,8 @@ const CityMarker = memo(({
         <div className="absolute inset-0.5 rounded-full bg-white/20"></div>
       </div>
 
-      {/* City label for selected OR hovered */}
-      {(isSelected || isHovered) && (
+      {/* City label for selected only (hide on hover since we show tooltip) */}
+      {isSelected && !isHovered && (
         <div
           className="absolute top-6 left-1/2 transform -translate-x-1/2 bg-black/90 text-white px-2 py-1 rounded text-xs font-semibold whitespace-nowrap"
           style={{ filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5))' }}
