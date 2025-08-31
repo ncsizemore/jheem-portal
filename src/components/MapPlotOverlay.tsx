@@ -85,22 +85,6 @@ export default function MapPlotOverlay({ plotData, plotTitle, onClose, onBackToS
                 HIV Transmission Impact Analysis
               </motion.p>
               
-              {/* Floating data points */}
-              <motion.div 
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.5, duration: 0.5 }}
-                className="flex items-center gap-6 mt-4"
-              >
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-cyan-400 rounded-full animate-pulse shadow-lg shadow-cyan-400/50"></div>
-                  <span className="text-white/70 text-sm font-medium">Live Data</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-emerald-400 rounded-full animate-pulse shadow-lg shadow-emerald-400/50"></div>
-                  <span className="text-white/70 text-sm font-medium">Interactive</span>
-                </div>
-              </motion.div>
             </div>
             
             {/* Cinematic Controls */}

@@ -5,7 +5,9 @@ import { motion } from 'framer-motion';
 import { useAvailableCities } from '../../hooks/useAvailableCities';
 import MapboxCityMap from '../../components/MapboxCityMap';
 import ScenarioSelectionPopup from '../../components/ScenarioSelectionPopup';
+import CityHoverTooltip from '../../components/CityHoverTooltip';
 import MapPlotOverlay from '../../components/MapPlotOverlay';
+import PlotVariationControls from '../../components/PlotVariationControls';
 import { CityData } from '../../data/cities';
 
 
@@ -14,39 +16,96 @@ interface PlotData {
   layout: Record<string, unknown>;
 }
 
+interface PlotMetadata {
+  outcome: string;
+  statistic_type: string;
+  facet_choice: string;
+  s3_key: string;
+  file_size: number;
+  created_at: string;
+}
+
 export default function MapExplorer() {
   const { availableCities, loading, error, totalChecked, totalCities } = useAvailableCities();
   const [hoveredCity, setHoveredCity] = useState<CityData | null>(null);
+  const [hoveredCityPosition, setHoveredCityPosition] = useState<{ x: number; y: number } | null>(null);
+  const [selectedCity, setSelectedCity] = useState<CityData | null>(null);
   const [showScenarioPopup, setShowScenarioPopup] = useState(false);
   const [plotData, setPlotData] = useState<PlotData | null>(null);
   const [plotTitle, setPlotTitle] = useState<string>('');
   const [plotLoading, setPlotLoading] = useState(false);
   const [plotError, setPlotError] = useState<string | null>(null);
+  const [currentPlotMeta, setCurrentPlotMeta] = useState<PlotMetadata | null>(null);
+  const [currentScenario, setCurrentScenario] = useState<string>('');
 
-  const handleCityHover = (city: CityData) => {
+  const handleCityHover = (city: CityData, position: { x: number; y: number }) => {
     setHoveredCity(city);
+    setHoveredCityPosition(position);
+  };
+
+  const handleCityLeave = () => {
+    setHoveredCity(null);
+    setHoveredCityPosition(null);
+  };
+
+  const handleCityClick = (city: CityData) => {
+    setSelectedCity(city);
     setShowScenarioPopup(true);
-    // Close any open plot when hovering new city
+    // Close any open plot when clicking new city
     if (plotData) {
       setPlotData(null);
       setPlotTitle('');
       setPlotError(null);
+      setCurrentPlotMeta(null);
+      setCurrentScenario('');
     }
   };
 
-  const handleCityLeave = () => {
-    // Don't close popup immediately - let user move to it
-    setTimeout(() => {
-      if (!showScenarioPopup) {
-        setHoveredCity(null);
+  const loadPlot = async (city: CityData, scenario: string, plotMeta: PlotMetadata) => {
+    setPlotLoading(true);
+    setPlotError(null);
+
+    try {
+      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+      const plotUrl = `${baseUrl}/plot?plotKey=${encodeURIComponent(plotMeta.s3_key)}`;
+      
+      console.log(`📊 Loading plot: ${plotMeta.outcome} for ${city.name} - ${scenario}`);
+      
+      const plotResponse = await fetch(plotUrl);
+      if (!plotResponse.ok) {
+        throw new Error(`Failed to load plot: ${plotResponse.status}`);
       }
-    }, 100);
+
+      const plotData = await plotResponse.json();
+      setPlotData(plotData);
+      setCurrentPlotMeta(plotMeta);
+      
+      // Create descriptive title
+      const cityShortName = city.name.split(',')[0];
+      const scenarioName = scenario
+        .split('_')
+        .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+      const outcomeName = plotMeta.outcome
+        .replace(/\./g, ' ')
+        .split('_')
+        .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+      
+      setPlotTitle(`${outcomeName} - ${cityShortName} (${scenarioName})`);
+      console.log('✅ Plot loaded successfully');
+
+    } catch (err) {
+      console.error('❌ Error loading plot:', err);
+      setPlotError(err instanceof Error ? err.message : 'Failed to load plot');
+    } finally {
+      setPlotLoading(false);
+    }
   };
 
   const handleScenarioSelect = async (city: CityData, scenario: string) => {
     setShowScenarioPopup(false);
-    setPlotLoading(true);
-    setPlotError(null);
+    setCurrentScenario(scenario);
 
     try {
       const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -63,33 +122,9 @@ export default function MapExplorer() {
       console.log('📊 Available plots:', data);
 
       if (data.plots && data.plots.length > 0) {
-        // Load the first available plot as default (most common case)
+        // Load the first available plot as default
         const defaultPlot = data.plots[0];
-        const plotUrl = `${baseUrl}/plot?plotKey=${encodeURIComponent(defaultPlot.s3_key)}`;
-        
-        const plotResponse = await fetch(plotUrl);
-        if (!plotResponse.ok) {
-          throw new Error(`Failed to load plot: ${plotResponse.status}`);
-        }
-
-        const plotData = await plotResponse.json();
-        setPlotData(plotData);
-        
-        // Create descriptive title
-        const cityShortName = city.name.split(',')[0];
-        const scenarioName = scenario
-          .split('_')
-          .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
-          .join(' ');
-        const outcomeName = defaultPlot.outcome
-          .replace(/\./g, ' ')
-          .split('_')
-          .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
-          .join(' ');
-        
-        setPlotTitle(`${outcomeName} - ${cityShortName} (${scenarioName})`);
-        console.log('✅ Default plot loaded successfully');
-
+        await loadPlot(city, scenario, defaultPlot);
       } else {
         throw new Error('No plots available for this city/scenario combination');
       }
@@ -97,21 +132,27 @@ export default function MapExplorer() {
     } catch (err) {
       console.error('❌ Error loading scenario data:', err);
       setPlotError(err instanceof Error ? err.message : 'Failed to load analysis data');
-    } finally {
-      setPlotLoading(false);
+    }
+  };
+
+  const handlePlotVariationChange = async (plotMeta: PlotMetadata) => {
+    if (selectedCity) {
+      await loadPlot(selectedCity, currentScenario, plotMeta);
     }
   };
 
   const handleCloseScenarioPopup = () => {
     setShowScenarioPopup(false);
-    setHoveredCity(null);
+    setSelectedCity(null);
   };
 
   const handleClosePlot = () => {
     setPlotData(null);
     setPlotTitle('');
     setPlotError(null);
-    setHoveredCity(null);
+    setCurrentPlotMeta(null);
+    setCurrentScenario('');
+    setSelectedCity(null);
   };
 
   const handleBackToSelection = () => {
@@ -154,9 +195,11 @@ export default function MapExplorer() {
       {/* Main Map */}
       <MapboxCityMap
         cities={availableCities}
-        onCitySelect={handleCityHover}
+        onCityHover={handleCityHover}
         onCityLeave={handleCityLeave}
-        selectedCity={hoveredCity}
+        onCityClick={handleCityClick}
+        selectedCity={selectedCity}
+        hoveredCity={hoveredCity}
         loading={loading}
         sidebarOpen={false}
         plotOpen={!!plotData}
@@ -176,10 +219,18 @@ export default function MapExplorer() {
         </div>
       )}
 
+      {/* City Hover Tooltip */}
+      {hoveredCity && hoveredCityPosition && (
+        <CityHoverTooltip
+          city={hoveredCity}
+          position={hoveredCityPosition}
+        />
+      )}
+
       {/* Scenario Selection Popup */}
       {showScenarioPopup && (
         <ScenarioSelectionPopup
-          city={hoveredCity}
+          city={selectedCity}
           onScenarioSelect={handleScenarioSelect}
           onClose={handleCloseScenarioPopup}
         />
@@ -232,6 +283,16 @@ export default function MapExplorer() {
         onClose={handleClosePlot}
         onBackToSelection={handleBackToSelection}
       />
+
+      {/* Plot Variation Controls */}
+      {plotData && selectedCity && currentPlotMeta && currentScenario && (
+        <PlotVariationControls
+          city={selectedCity}
+          scenario={currentScenario}
+          currentPlot={currentPlotMeta}
+          onPlotChange={handlePlotVariationChange}
+        />
+      )}
     </div>
   );
 }

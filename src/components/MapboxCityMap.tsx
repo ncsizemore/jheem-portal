@@ -7,9 +7,11 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 
 interface MapboxCityMapProps {
   cities: CityData[];
-  onCitySelect: (city: CityData) => void;
+  onCityHover?: (city: CityData, position: { x: number; y: number }) => void;
   onCityLeave?: () => void;
+  onCityClick?: (city: CityData) => void;
   selectedCity?: CityData | null;
+  hoveredCity?: CityData | null;
   loading?: boolean;
   sidebarOpen?: boolean;
   plotOpen?: boolean;
@@ -27,7 +29,7 @@ const CityMarker = memo(({
   city: CityData;
   isHovered: boolean;
   isSelected: boolean;
-  onHover: () => void;
+  onHover: (e: React.MouseEvent) => void;
   onLeave: () => void;
   onClick: () => void;
 }) => (
@@ -40,7 +42,7 @@ const CityMarker = memo(({
     <div
       className={`relative cursor-pointer transition-all duration-300 transform ${isHovered ? 'scale-125' : isSelected ? 'scale-110' : 'scale-100'
         }`}
-      onMouseEnter={onHover}
+      onMouseEnter={(e) => onHover(e)}
       onMouseLeave={onLeave}
       onClick={onClick}
       style={{
@@ -98,9 +100,11 @@ CityMarker.displayName = 'CityMarker';
 
 export default function MapboxCityMap({
   cities,
-  onCitySelect,
+  onCityHover,
   onCityLeave,
+  onCityClick,
   selectedCity,
+  hoveredCity,
   loading,
   sidebarOpen,
   plotOpen
@@ -113,7 +117,7 @@ export default function MapboxCityMap({
     bearing: 0
   });
 
-  const [hoveredCity, setHoveredCity] = useState<string | null>(null);
+  const [localHoveredCity, setLocalHoveredCity] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   // Map ref removed to fix TypeScript compatibility issues
 
@@ -227,12 +231,12 @@ export default function MapboxCityMap({
                   {displayCities.map((city) => (
                     <button
                       key={city.code}
-                      onClick={() => onCitySelect(city)}
-                      onMouseEnter={() => setHoveredCity(city.name)}
-                      onMouseLeave={() => setHoveredCity(null)}
+                      onClick={() => onCityClick?.(city)}
+                      onMouseEnter={() => setLocalHoveredCity(city.name)}
+                      onMouseLeave={() => setLocalHoveredCity(null)}
                       className={`w-full text-left p-2 rounded-lg text-sm transition-all duration-200 ${selectedCity?.code === city.code
                           ? 'bg-cyan-500/20 text-cyan-100 border border-cyan-400/30'
-                          : hoveredCity === city.name
+                          : localHoveredCity === city.name
                             ? 'bg-blue-500/20 text-blue-100 border border-blue-400/30'
                             : 'text-white/80 border border-transparent'
                         }`}
@@ -293,17 +297,24 @@ export default function MapboxCityMap({
           <CityMarker
             key={city.code}
             city={city}
-            isHovered={hoveredCity === city.name}
+            isHovered={hoveredCity?.code === city.code}
             isSelected={selectedCity?.code === city.code}
-            onHover={() => {
-              setHoveredCity(city.name);
-              onCitySelect(city);
+            onHover={(e: React.MouseEvent) => {
+              setLocalHoveredCity(city.name);
+              if (onCityHover) {
+                const rect = (e.target as HTMLElement).getBoundingClientRect();
+                const position = {
+                  x: rect.left + rect.width / 2,
+                  y: rect.top
+                };
+                onCityHover(city, position);
+              }
             }}
             onLeave={() => {
-              setHoveredCity(null);
+              setLocalHoveredCity(null);
               onCityLeave?.();
             }}
-            onClick={() => onCitySelect(city)}
+            onClick={() => onCityClick?.(city)}
           />
         ))}
       </Map>
