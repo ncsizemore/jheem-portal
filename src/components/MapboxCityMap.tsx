@@ -62,20 +62,23 @@ const CityMarker = memo(({
         />
       )}
 
-      {/* Clean, modern marker */}
+      {/* Enhanced clickable marker with visual feedback */}
       <div
-        className={`w-4 h-4 rounded-full ${isSelected
-            ? 'bg-gradient-to-br from-cyan-400 to-cyan-600'
+        className={`w-4 h-4 rounded-full border-2 transition-all duration-200 ${isSelected
+            ? 'bg-gradient-to-br from-cyan-400 to-cyan-600 border-cyan-300'
             : isHovered
-              ? 'bg-gradient-to-br from-blue-400 to-blue-600'
-              : 'bg-gradient-to-br from-cyan-500 to-blue-500'
+              ? 'bg-gradient-to-br from-blue-400 to-blue-600 border-blue-300'
+              : 'bg-gradient-to-br from-cyan-500 to-blue-500 border-white/40 hover:border-cyan-300'
           }`}
         style={{
           boxShadow: isSelected || isHovered
-            ? `0 0 12px ${isSelected ? 'rgba(6, 182, 212, 0.6)' : 'rgba(59, 130, 246, 0.6)'}`
-            : '0 2px 4px rgba(0, 0, 0, 0.2)'
+            ? `0 0 16px ${isSelected ? 'rgba(6, 182, 212, 0.8)' : 'rgba(59, 130, 246, 0.8)'}`
+            : '0 3px 6px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.3)'
         }}
-      />
+      >
+        {/* Click affordance - subtle inner highlight */}
+        <div className="absolute inset-0.5 rounded-full bg-white/20"></div>
+      </div>
 
       {/* City label for selected OR hovered */}
       {(isSelected || isHovered) && (
@@ -138,19 +141,33 @@ export default function MapboxCityMap({
       {/* Beautiful gradient overlay for depth */}
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-slate-900/20 pointer-events-none z-10"></div>
 
-      {/* Glassmorphism header */}
+      {/* Enhanced header with clear instructions */}
       <div className="absolute top-6 left-6 z-20">
         <div className="bg-black/20 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl p-6 max-w-sm">
           <h1 className="text-transparent bg-clip-text bg-gradient-to-r from-white via-cyan-100 to-blue-100 font-bold text-2xl mb-2 tracking-tight">
             JHEEM Plot Explorer
           </h1>
-          <p className="text-white/90 text-sm font-medium leading-relaxed">
+          <p className="text-white/90 text-sm font-medium leading-relaxed mb-3">
             Ryan White HIV/AIDS Program Analysis
           </p>
-          <div className="mt-4 flex items-center gap-3">
+          
+          {/* Clear instruction with visual cue */}
+          <div className="bg-white/10 border border-cyan-400/30 rounded-lg p-3 mb-3">
+            <div className="flex items-center gap-2 mb-2">
+              <svg className="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+              </svg>
+              <span className="text-cyan-100 text-sm font-semibold">How to Start</span>
+            </div>
+            <p className="text-white/80 text-xs leading-relaxed">
+              Click any <span className="text-cyan-300 font-medium">blue dot</span> on the map to explore HIV funding scenarios and outcomes for that city
+            </p>
+          </div>
+          
+          <div className="flex items-center gap-3">
             <div className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse shadow-lg shadow-cyan-400/50"></div>
-            <span className="text-white/80 text-xs font-medium tracking-wide">
-              Interactive 3D Discovery
+            <span className="text-white/70 text-xs font-medium tracking-wide">
+              {loading ? 'Discovering available cities...' : `${cities.length} cities ready to explore`}
             </span>
           </div>
         </div>
@@ -303,23 +320,44 @@ export default function MapboxCityMap({
         </div>
       )}
 
-      {/* Success indicator */}
-      {!loading && cities.length > 0 && (
+      {/* Encouraging interaction hint when no city selected */}
+      {!loading && cities.length > 0 && !sidebarOpen && !plotOpen && (
         <div className="absolute bottom-8 right-8 z-20">
-          <div className="bg-emerald-500/20 backdrop-blur-xl border border-emerald-400/30 rounded-xl shadow-xl p-4">
-            <div className="flex items-center gap-3 text-emerald-300">
-              <div className="relative">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+          <div className="bg-blue-500/20 backdrop-blur-xl border border-blue-400/30 rounded-xl shadow-xl p-4 max-w-64">
+            <div className="flex items-start gap-3 text-blue-100">
+              <div className="relative mt-1">
+                <svg className="w-5 h-5 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <div className="absolute inset-0 animate-ping">
-                  <svg className="w-5 h-5 opacity-75" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                <div className="absolute inset-0 animate-ping opacity-75">
+                  <svg className="w-5 h-5 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
               </div>
+              <div>
+                <span className="text-sm font-semibold block mb-1">
+                  Ready to Explore
+                </span>
+                <p className="text-xs text-blue-200 leading-relaxed">
+                  Click any city dot to see HIV funding analysis data
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Success indicator when city is selected */}
+      {!loading && cities.length > 0 && sidebarOpen && (
+        <div className="absolute bottom-8 right-8 z-20">
+          <div className="bg-emerald-500/20 backdrop-blur-xl border border-emerald-400/30 rounded-xl shadow-xl p-4">
+            <div className="flex items-center gap-3 text-emerald-300">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
               <span className="text-sm font-semibold">
-                Discovery Complete
+                City Selected
               </span>
             </div>
           </div>
