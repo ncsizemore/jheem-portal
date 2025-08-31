@@ -67,7 +67,7 @@ export default function RyanWhiteLandingPage() {
                 Program Overview
               </h2>
               <p className="text-gray-600 leading-relaxed font-light">
-                The nation's HIV care safety net, serving over 500,000 people annually with essential services and ADAP medications.
+                The nation&apos;s HIV care safety net, serving over 500,000 people annually with essential services and ADAP medications.
               </p>
             </div>
             

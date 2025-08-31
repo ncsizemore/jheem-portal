@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import dynamic from 'next/dynamic';
 
 // Dynamically import Plotly to avoid SSR issues
@@ -72,8 +72,8 @@ export default function TestPlotViewer() {
         { city: 'C.12580', scenario: 'brief_interruption', label: 'C.12580 - Brief Interruption (NEW SCENARIO)' }
       ];
 
-      let allPlots = [];
-      let allTitles = [];
+      const allPlots = [];
+      const allTitles = [];
 
       // Step 1: Discover plots from each combination
       for (const combo of searchCombinations) {
@@ -104,7 +104,7 @@ export default function TestPlotViewer() {
                 allPlots.push(data);
                 allTitles.push(title);
               }
-            } catch (plotErr) {
+            } catch {
               console.warn(`⚠️  Failed to fetch ${plotMeta.outcome} from ${combo.label}`);
             }
           }

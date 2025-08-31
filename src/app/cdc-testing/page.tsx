@@ -8,7 +8,7 @@ export default function CdcTestingPage() {
   const [loading, setLoading] = useState(false);
   const [showLanding, setShowLanding] = useState(true); // Always start with landing page
   const [appLoaded, setAppLoaded] = useState(false); // Always start with app not loaded
-  const [appMinimized, setAppMinimized] = useState(false); // Always start not minimized
+  // Note: appMinimized state removed as it wasn't being used in the logic
   
 
   const handleLaunchApp = () => {
@@ -23,18 +23,18 @@ export default function CdcTestingPage() {
 
   const handleMinimizeApp = () => {
     setShowLanding(true); // Go back to landing page
-    setAppMinimized(true); // But keep app running in background
+    // App continues running in background
   };
 
   const handleRestoreApp = () => {
     setShowLanding(false); // Leave landing page
-    setAppMinimized(false); // Show the app
+    // Show the app (no additional state needed)
   };
 
   const handleCloseApplication = () => {
     setShowLanding(true);
     setAppLoaded(false);
-    setAppMinimized(false);
+    // Reset to initial state
   };
 
   // Show initial landing page (before app is loaded)
@@ -215,8 +215,9 @@ export default function CdcTestingPage() {
             src="https://jheem.shinyapps.io/cdc-testing/"
             className="absolute inset-0 w-full h-full border-0"
             title="JHEEM CDC Testing Model"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-top-navigation"
+            allow="encrypted-media"
+            sandbox="allow-same-origin allow-scripts allow-forms"
+            referrerPolicy="strict-origin-when-cross-origin"
           />
           
           {/* Error Fallback - in case iframe fails to load */}

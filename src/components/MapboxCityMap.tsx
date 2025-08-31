@@ -90,6 +90,8 @@ const CityMarker = memo(({
   </Marker>
 ));
 
+CityMarker.displayName = 'CityMarker';
+
 export default function MapboxCityMap({
   cities,
   onCitySelect,
