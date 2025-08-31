@@ -20,22 +20,22 @@ interface ScenarioInfo {
 const SCENARIO_INFO: ScenarioInfo[] = [
   {
     id: 'cessation',
-    title: 'Complete Funding Cessation',
-    description: 'What happens if Ryan White funding stops entirely?',
+    title: 'Cessation',
+    description: 'Ryan White funding completely ceases',
     icon: '🛑',
     color: 'red'
   },
   {
     id: 'brief_interruption', 
-    title: 'Brief Funding Pause',
-    description: 'What if funding is interrupted for 6-12 months?',
+    title: 'Brief Interruption',
+    description: 'Ryan White funding is briefly interrupted',
     icon: '⏸️',
     color: 'orange'
   },
   {
     id: 'prolonged_interruption',
-    title: 'Extended Funding Pause', 
-    description: 'What if funding is paused for 1-2 years?',
+    title: 'Prolonged Interruption', 
+    description: 'Ryan White funding is interrupted for an extended period',
     icon: '⏳',
     color: 'amber'
   }
@@ -61,7 +61,7 @@ export default function ScenarioSelectionPopup({
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         onClick={onClose}
-        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[55] flex items-center justify-center p-4"
       >
         {/* Popup Content */}
         <motion.div
@@ -92,11 +92,10 @@ export default function ScenarioSelectionPopup({
               </button>
             </div>
             
-            <div className="mt-4 flex items-center gap-2 text-sm text-slate-300">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 00-2-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H9z" />
-              </svg>
-              <span>Choose a funding scenario to analyze</span>
+            <div className="mt-4">
+              <p className="text-slate-300 text-sm">
+                Select whether Ryan White funding is briefly interrupted, completely ceases, or interrupted for an extended period
+              </p>
             </div>
           </div>
 

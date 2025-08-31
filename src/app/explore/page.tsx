@@ -16,20 +16,31 @@ interface PlotData {
 
 export default function MapExplorer() {
   const { availableCities, loading, error, totalChecked, totalCities } = useAvailableCities();
-  const [selectedCity, setSelectedCity] = useState<CityData | null>(null);
+  const [hoveredCity, setHoveredCity] = useState<CityData | null>(null);
   const [showScenarioPopup, setShowScenarioPopup] = useState(false);
   const [plotData, setPlotData] = useState<PlotData | null>(null);
   const [plotTitle, setPlotTitle] = useState<string>('');
   const [plotLoading, setPlotLoading] = useState(false);
   const [plotError, setPlotError] = useState<string | null>(null);
 
-  const handleCitySelect = (city: CityData) => {
-    setSelectedCity(city);
+  const handleCityHover = (city: CityData) => {
+    setHoveredCity(city);
     setShowScenarioPopup(true);
-    // Close any open plot when selecting a new city
-    setPlotData(null);
-    setPlotTitle('');
-    setPlotError(null);
+    // Close any open plot when hovering new city
+    if (plotData) {
+      setPlotData(null);
+      setPlotTitle('');
+      setPlotError(null);
+    }
+  };
+
+  const handleCityLeave = () => {
+    // Don't close popup immediately - let user move to it
+    setTimeout(() => {
+      if (!showScenarioPopup) {
+        setHoveredCity(null);
+      }
+    }, 100);
   };
 
   const handleScenarioSelect = async (city: CityData, scenario: string) => {
@@ -93,14 +104,14 @@ export default function MapExplorer() {
 
   const handleCloseScenarioPopup = () => {
     setShowScenarioPopup(false);
-    setSelectedCity(null);
+    setHoveredCity(null);
   };
 
   const handleClosePlot = () => {
     setPlotData(null);
     setPlotTitle('');
     setPlotError(null);
-    setSelectedCity(null);
+    setHoveredCity(null);
   };
 
   const handleBackToSelection = () => {
@@ -143,8 +154,9 @@ export default function MapExplorer() {
       {/* Main Map */}
       <MapboxCityMap
         cities={availableCities}
-        onCitySelect={handleCitySelect}
-        selectedCity={selectedCity}
+        onCitySelect={handleCityHover}
+        onCityLeave={handleCityLeave}
+        selectedCity={hoveredCity}
         loading={loading}
         sidebarOpen={false}
         plotOpen={!!plotData}
@@ -167,7 +179,7 @@ export default function MapExplorer() {
       {/* Scenario Selection Popup */}
       {showScenarioPopup && (
         <ScenarioSelectionPopup
-          city={selectedCity}
+          city={hoveredCity}
           onScenarioSelect={handleScenarioSelect}
           onClose={handleCloseScenarioPopup}
         />

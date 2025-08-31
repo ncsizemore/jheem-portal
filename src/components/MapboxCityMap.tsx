@@ -8,6 +8,7 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 interface MapboxCityMapProps {
   cities: CityData[];
   onCitySelect: (city: CityData) => void;
+  onCityLeave?: () => void;
   selectedCity?: CityData | null;
   loading?: boolean;
   sidebarOpen?: boolean;
@@ -98,6 +99,7 @@ CityMarker.displayName = 'CityMarker';
 export default function MapboxCityMap({
   cities,
   onCitySelect,
+  onCityLeave,
   selectedCity,
   loading,
   sidebarOpen,
@@ -293,8 +295,14 @@ export default function MapboxCityMap({
             city={city}
             isHovered={hoveredCity === city.name}
             isSelected={selectedCity?.code === city.code}
-            onHover={() => setHoveredCity(city.name)}
-            onLeave={() => setHoveredCity(null)}
+            onHover={() => {
+              setHoveredCity(city.name);
+              onCitySelect(city);
+            }}
+            onLeave={() => {
+              setHoveredCity(null);
+              onCityLeave?.();
+            }}
             onClick={() => onCitySelect(city)}
           />
         ))}

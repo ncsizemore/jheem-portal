@@ -58,7 +58,7 @@ export default function MapPlotOverlay({ plotData, plotTitle, onClose, onBackToS
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.8, y: 100 }}
         transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-        className="fixed inset-4 bg-black/80 backdrop-blur-xl shadow-2xl z-40 rounded-3xl border border-white/20 overflow-hidden"
+        className="fixed inset-4 bg-black/80 backdrop-blur-xl shadow-2xl z-[60] rounded-3xl border border-white/20 overflow-hidden"
       >
         {/* Cinematic Header */}
         <div className="relative p-8 border-b border-white/10">
