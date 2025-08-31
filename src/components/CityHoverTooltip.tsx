@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { motion } from 'framer-motion';
 import { CityData } from '../data/cities';
 
@@ -8,7 +9,7 @@ interface CityHoverTooltipProps {
   position: { x: number; y: number };
 }
 
-export default function CityHoverTooltip({ city, position }: CityHoverTooltipProps) {
+export default React.memo(function CityHoverTooltip({ city, position }: CityHoverTooltipProps) {
   const scenarioCount = city.availableScenarios?.length || 0;
   const cityShortName = city.name.split(',')[0];
 
@@ -56,4 +57,4 @@ export default function CityHoverTooltip({ city, position }: CityHoverTooltipPro
       />
     </motion.div>
   );
-}
+});

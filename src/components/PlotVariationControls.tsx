@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { CityData } from '../data/cities';
 
@@ -27,7 +27,7 @@ interface PlotOptions {
   plotsMap: Map<string, PlotMetadata>;
 }
 
-export default function PlotVariationControls({
+export default React.memo(function PlotVariationControls({
   city,
   scenario,
   currentPlot,
@@ -50,22 +50,71 @@ export default function PlotVariationControls({
       setLoading(true);
       try {
         const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+        if (!baseUrl) {
+          throw new Error('API base URL not configured');
+        }
+        
         const searchUrl = `${baseUrl}/plots/search?city=${city.code}&scenario=${scenario}`;
         
-        const response = await fetch(searchUrl);
-        if (!response.ok) throw new Error('Failed to fetch plot options');
+        // Add timeout for plot options fetch
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+        
+        const response = await fetch(searchUrl, {
+          signal: controller.signal,
+          headers: {
+            'Accept': 'application/json',
+          }
+        });
+        
+        clearTimeout(timeoutId);
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          if (response.status === 404) {
+            throw new Error('No plot options found for this city and scenario');
+          } else if (response.status >= 500) {
+            throw new Error('Server error occurred while loading plot options');
+          } else {
+            throw new Error(`Failed to fetch plot options: ${response.status} - ${errorText}`);
+          }
+        }
 
         const data = await response.json();
+        
+        // Validate response structure
+        if (!data || typeof data !== 'object') {
+          throw new Error('Invalid response format for plot options');
+        }
+        
         const plots = data.plots || [];
         
+        if (!Array.isArray(plots)) {
+          throw new Error('Plot options data is not in expected format');
+        }
+        
+        // Validate plot structure and filter out invalid plots
+        const validPlots = plots.filter((p: unknown): p is PlotMetadata => {
+          if (typeof p !== 'object' || p === null) return false;
+          const plot = p as Record<string, unknown>;
+          return typeof plot.outcome === 'string' && 
+                 typeof plot.statistic_type === 'string' && 
+                 typeof plot.facet_choice === 'string' &&
+                 typeof plot.s3_key === 'string';
+        });
+        
+        if (validPlots.length === 0) {
+          throw new Error('No valid plots found for this city and scenario');
+        }
+        
         // Organize plots by dimensions
-        const outcomes = [...new Set(plots.map((p: PlotMetadata) => p.outcome))] as string[];
-        const statisticTypes = [...new Set(plots.map((p: PlotMetadata) => p.statistic_type))] as string[];
-        const facetChoices = [...new Set(plots.map((p: PlotMetadata) => p.facet_choice))] as string[];
+        const outcomes = [...new Set(validPlots.map(p => p.outcome))] as string[];
+        const statisticTypes = [...new Set(validPlots.map(p => p.statistic_type))] as string[];
+        const facetChoices = [...new Set(validPlots.map(p => p.facet_choice))] as string[];
         
         // Create lookup map: "outcome|statistic|facet" -> PlotMetadata
         const plotsMap = new Map();
-        plots.forEach((plot: PlotMetadata) => {
+        validPlots.forEach((plot: PlotMetadata) => {
           const key = `${plot.outcome}|${plot.statistic_type}|${plot.facet_choice}`;
           plotsMap.set(key, plot);
         });
@@ -81,6 +130,15 @@ export default function PlotVariationControls({
 
       } catch (err) {
         console.error('Error fetching plot options:', err);
+        
+        // For plot options errors, we'll just show an empty state
+        // rather than breaking the entire component
+        setPlotOptions({
+          outcomes: [],
+          statisticTypes: [],
+          facetChoices: [],
+          plotsMap: new Map()
+        });
       } finally {
         setLoading(false);
       }
@@ -90,7 +148,7 @@ export default function PlotVariationControls({
   }, [city.code, scenario, currentPlot]);
 
   // Handle option changes
-  const handleSelectionChange = (type: 'outcome' | 'statistic' | 'facet', value: string) => {
+  const handleSelectionChange = useCallback((type: 'outcome' | 'statistic' | 'facet', value: string) => {
     let newOutcome = selectedOutcome;
     let newStatistic = selectedStatistic;
     let newFacet = selectedFacet;
@@ -110,16 +168,16 @@ export default function PlotVariationControls({
     if (matchingPlot) {
       onPlotChange(matchingPlot);
     }
-  };
+  }, [selectedOutcome, selectedStatistic, selectedFacet, plotOptions.plotsMap, onPlotChange]);
 
   // Format display names
-  const formatName = (name: string) => {
+  const formatName = useCallback((name: string) => {
     return name
       .replace(/\./g, ' ')
       .split('_')
       .map(word => word.charAt(0).toUpperCase() + word.slice(1))
       .join(' ');
-  };
+  }, []);
 
   if (loading) {
     return (
@@ -131,6 +189,28 @@ export default function PlotVariationControls({
           </div>
         </div>
       </div>
+    );
+  }
+
+  // Show empty state if no plot options available
+  if (plotOptions.outcomes.length === 0) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: 20 }}
+        transition={{ duration: 0.3 }}
+        className="fixed bottom-6 left-6 right-6 z-[70]"
+      >
+        <div className="bg-white/95 backdrop-blur-xl border border-gray-200 rounded-xl shadow-xl p-4">
+          <div className="flex items-center justify-center gap-3 text-gray-600">
+            <svg className="w-5 h-5 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span className="text-sm">No plot variations available for this selection</span>
+          </div>
+        </div>
+      </motion.div>
     );
   }
 
@@ -218,4 +298,4 @@ export default function PlotVariationControls({
       </div>
     </motion.div>
   );
-}
+});

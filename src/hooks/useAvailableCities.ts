@@ -34,8 +34,18 @@ export const useAvailableCities = (): UseAvailableCitiesReturn => {
         console.log('🔍 Fetching all available cities with single API call...');
         console.log('🌐 API URL:', `${baseUrl}/plots/cities`);
         
-        // SINGLE API call instead of 96 calls
-        const response = await fetch(`${baseUrl}/plots/cities`);
+        // Add timeout for API calls
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+        
+        const response = await fetch(`${baseUrl}/plots/cities`, {
+          signal: controller.signal,
+          headers: {
+            'Accept': 'application/json',
+          }
+        });
+        
+        clearTimeout(timeoutId);
         
         console.log('📡 Response status:', response.status);
         console.log('📡 Response ok:', response.ok);
@@ -43,16 +53,42 @@ export const useAvailableCities = (): UseAvailableCitiesReturn => {
         if (!response.ok) {
           const errorText = await response.text();
           console.error('❌ Response error:', errorText);
-          throw new Error(`Failed to fetch cities: ${response.status} - ${errorText}`);
+          
+          // Provide more specific error messages
+          if (response.status === 404) {
+            throw new Error('Cities data endpoint not found. Please check API configuration.');
+          } else if (response.status >= 500) {
+            throw new Error('Server error occurred. Please try again later.');
+          } else if (response.status === 403) {
+            throw new Error('Access denied. Please check API permissions.');
+          } else {
+            throw new Error(`Failed to fetch cities: ${response.status} - ${errorText}`);
+          }
         }
 
         const data = await response.json();
+        
+        // Validate response structure
+        if (!data || typeof data !== 'object') {
+          throw new Error('Invalid response format: expected JSON object');
+        }
+        
+        if (!data.cities || typeof data.cities !== 'object') {
+          throw new Error('Invalid response format: missing or invalid cities data');
+        }
+        
         console.log('✅ Received city data:', data);
 
         // Map backend data to frontend city data with coordinates
         const citiesWithData: CityData[] = [];
         
         for (const [cityCode, scenarios] of Object.entries(data.cities)) {
+          // Validate scenarios is an array
+          if (!Array.isArray(scenarios)) {
+            console.warn(`⚠️ Invalid scenarios data for city ${cityCode}:`, scenarios);
+            continue;
+          }
+          
           // Find the city info with coordinates from our static data
           const cityInfo = ALL_CITIES.find(c => c.code === cityCode);
           
@@ -61,10 +97,14 @@ export const useAvailableCities = (): UseAvailableCitiesReturn => {
               ...cityInfo,
               availableScenarios: scenarios as string[]
             });
-            console.log(`🎯 ${cityInfo.name}: ${(scenarios as string[]).length} scenarios available`);
+            console.log(`🎯 ${cityInfo.name}: ${scenarios.length} scenarios available`);
           } else {
             console.warn(`⚠️ City ${cityCode} found in database but not in static city list`);
           }
+        }
+
+        if (citiesWithData.length === 0) {
+          throw new Error('No valid cities found with available data');
         }
 
         setAvailableCities(citiesWithData);
@@ -72,7 +112,16 @@ export const useAvailableCities = (): UseAvailableCitiesReturn => {
 
       } catch (err) {
         console.error('❌ Error during city discovery:', err);
-        setError(err instanceof Error ? err.message : 'Unknown error during discovery');
+        
+        if (err instanceof Error) {
+          if (err.name === 'AbortError') {
+            setError('Request timed out. Please check your internet connection and try again.');
+          } else {
+            setError(err.message);
+          }
+        } else {
+          setError('Unknown error during discovery');
+        }
       } finally {
         setLoading(false);
       }
