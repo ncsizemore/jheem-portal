@@ -4,18 +4,10 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useAvailableCities } from '../../hooks/useAvailableCities';
 import MapboxCityMap from '../../components/MapboxCityMap';
-import PlotExplorationSidebar from '../../components/PlotExplorationSidebar';
+import ScenarioSelectionPopup from '../../components/ScenarioSelectionPopup';
 import MapPlotOverlay from '../../components/MapPlotOverlay';
 import { CityData } from '../../data/cities';
 
-interface PlotMetadata {
-  outcome: string;
-  statistic_type: string;
-  facet_choice: string;
-  s3_key: string;
-  file_size: number;
-  created_at: string;
-}
 
 interface PlotData {
   data: Record<string, unknown>[];
@@ -25,6 +17,7 @@ interface PlotData {
 export default function MapExplorer() {
   const { availableCities, loading, error, totalChecked, totalCities } = useAvailableCities();
   const [selectedCity, setSelectedCity] = useState<CityData | null>(null);
+  const [showScenarioPopup, setShowScenarioPopup] = useState(false);
   const [plotData, setPlotData] = useState<PlotData | null>(null);
   const [plotTitle, setPlotTitle] = useState<string>('');
   const [plotLoading, setPlotLoading] = useState(false);
@@ -32,71 +25,74 @@ export default function MapExplorer() {
 
   const handleCitySelect = (city: CityData) => {
     setSelectedCity(city);
+    setShowScenarioPopup(true);
     // Close any open plot when selecting a new city
     setPlotData(null);
     setPlotTitle('');
     setPlotError(null);
   };
 
-  const handlePlotSelect = async (city: CityData, scenario: string, plotMeta: PlotMetadata) => {
+  const handleScenarioSelect = async (city: CityData, scenario: string) => {
+    setShowScenarioPopup(false);
     setPlotLoading(true);
     setPlotError(null);
 
     try {
       const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
-      const plotUrl = `${baseUrl}/plot?plotKey=${encodeURIComponent(plotMeta.s3_key)}`;
+      const searchUrl = `${baseUrl}/plots/search?city=${city.code}&scenario=${scenario}`;
       
-      console.log(`📊 Loading plot: ${plotMeta.outcome} for ${city.name} - ${scenario}`);
+      console.log(`🔍 Fetching plots for ${city.name} - ${scenario}`);
       
-      const response = await fetch(plotUrl);
+      const response = await fetch(searchUrl);
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || `HTTP ${response.status}`);
+        throw new Error(`Failed to fetch plots: ${response.status}`);
       }
 
       const data = await response.json();
-      setPlotData(data);
-      
-      // Create descriptive title
-      const cityShortName = city.name.split(',')[0];
-      const scenarioName = scenario
-        .split('_')
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(' ');
-      const outcomeName = plotMeta.outcome
-        .replace(/\./g, ' ')
-        .split('_')
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(' ');
-      
-      setPlotTitle(`${outcomeName} - ${cityShortName} (${scenarioName})`);
-      
-      // DON'T close the sidebar - keep it open for easy navigation
-      // setSelectedCity(null);
-      
-      console.log('✅ Plot loaded successfully');
+      console.log('📊 Available plots:', data);
+
+      if (data.plots && data.plots.length > 0) {
+        // Load the first available plot as default (most common case)
+        const defaultPlot = data.plots[0];
+        const plotUrl = `${baseUrl}/plot?plotKey=${encodeURIComponent(defaultPlot.s3_key)}`;
+        
+        const plotResponse = await fetch(plotUrl);
+        if (!plotResponse.ok) {
+          throw new Error(`Failed to load plot: ${plotResponse.status}`);
+        }
+
+        const plotData = await plotResponse.json();
+        setPlotData(plotData);
+        
+        // Create descriptive title
+        const cityShortName = city.name.split(',')[0];
+        const scenarioName = scenario
+          .split('_')
+          .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(' ');
+        const outcomeName = defaultPlot.outcome
+          .replace(/\./g, ' ')
+          .split('_')
+          .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(' ');
+        
+        setPlotTitle(`${outcomeName} - ${cityShortName} (${scenarioName})`);
+        console.log('✅ Default plot loaded successfully');
+
+      } else {
+        throw new Error('No plots available for this city/scenario combination');
+      }
 
     } catch (err) {
-      console.error('❌ Error loading plot:', err);
-      setPlotError(err instanceof Error ? err.message : 'Failed to load plot');
+      console.error('❌ Error loading scenario data:', err);
+      setPlotError(err instanceof Error ? err.message : 'Failed to load analysis data');
     } finally {
       setPlotLoading(false);
     }
   };
 
-  const handleMultiPlotSelect = async (city: CityData, scenario: string, plots: PlotMetadata[]) => {
-    // For now, let's be more conservative and just select a meaningful subset
-    // Maybe the first 2-3 most common demographic breakdowns
-    console.log(`🔥 Multi-plot request: ${plots.length} plots available`);
-    
-    // For now, just show the first plot but keep this as a placeholder for future enhancement
-    if (plots.length > 0) {
-      await handlePlotSelect(city, scenario, plots[0]);
-      // TODO: Implement actual multi-plot grid view with 2-3 key demographics
-    }
-  };
-
-  const handleClosePanel = () => {
+  const handleCloseScenarioPopup = () => {
+    setShowScenarioPopup(false);
     setSelectedCity(null);
   };
 
@@ -104,16 +100,13 @@ export default function MapExplorer() {
     setPlotData(null);
     setPlotTitle('');
     setPlotError(null);
+    setSelectedCity(null);
   };
 
   const handleBackToSelection = () => {
-    // Keep the plot open but make sure the sidebar is visible for more exploration
-    // Don't close the plot, just ensure sidebar is accessible
-    if (!selectedCity) {
-      // If sidebar was closed, we need to reopen it somehow
-      // For now, just close the plot to go back to map selection
-      handleClosePlot();
-    }
+    // TODO: In future, this could reopen scenario selection for the same city
+    // For now, just close the plot entirely
+    handleClosePlot();
   };
 
   // Show error state if discovery failed
@@ -153,7 +146,7 @@ export default function MapExplorer() {
         onCitySelect={handleCitySelect}
         selectedCity={selectedCity}
         loading={loading}
-        sidebarOpen={!!selectedCity}
+        sidebarOpen={false}
         plotOpen={!!plotData}
       />
 
@@ -171,13 +164,14 @@ export default function MapExplorer() {
         </div>
       )}
 
-      {/* Sidebar for Plot Selection */}
-      <PlotExplorationSidebar
-        city={selectedCity}
-        onClose={handleClosePanel}
-        onPlotSelect={handlePlotSelect}
-        onMultiPlotSelect={handleMultiPlotSelect}
-      />
+      {/* Scenario Selection Popup */}
+      {showScenarioPopup && (
+        <ScenarioSelectionPopup
+          city={selectedCity}
+          onScenarioSelect={handleScenarioSelect}
+          onClose={handleCloseScenarioPopup}
+        />
+      )}
 
       {/* Plot Loading Overlay */}
       {plotLoading && (
