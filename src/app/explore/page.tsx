@@ -18,8 +18,8 @@ interface PlotMetadata {
 }
 
 interface PlotData {
-  data: any[];
-  layout: any;
+  data: Record<string, unknown>[];
+  layout: Record<string, unknown>;
 }
 
 export default function MapExplorer() {

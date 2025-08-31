@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, memo } from 'react';
+import { useState, memo } from 'react';
 import Map, { Marker } from 'react-map-gl/mapbox';
 import { CityData } from '../data/cities';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -110,7 +110,7 @@ export default function MapboxCityMap({
 
   const [hoveredCity, setHoveredCity] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const mapRef = useRef<any>(null);
+  // Map ref removed to fix TypeScript compatibility issues
 
   // Safe token management
   const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
@@ -256,7 +256,6 @@ export default function MapboxCityMap({
 
       {/* Mapbox GL Map with 3D tilt */}
       <Map
-        ref={mapRef}
         {...viewState}
         onMove={evt => setViewState(evt.viewState)}
         mapboxAccessToken={MAPBOX_TOKEN}

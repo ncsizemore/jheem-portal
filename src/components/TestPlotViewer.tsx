@@ -10,8 +10,8 @@ const Plot = dynamic(() => import('react-plotly.js'), {
 });
 
 interface PlotData {
-  data: any[];
-  layout: any;
+  data: Record<string, unknown>[];
+  layout: Record<string, unknown>;
 }
 
 interface MultiPlotData {

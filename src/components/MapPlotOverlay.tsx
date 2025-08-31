@@ -16,9 +16,29 @@ const Plot = dynamic(() => import('react-plotly.js'), {
   )
 });
 
+interface PlotlyDataPoint extends Record<string, unknown> {
+  x?: number[] | string[];
+  y?: number[] | string[];
+  type?: string;
+  mode?: string;
+  name?: string;
+  line?: Record<string, unknown>;
+  marker?: Record<string, unknown>;
+}
+
+interface PlotlyLayout extends Record<string, unknown> {
+  title?: string | Record<string, unknown>;
+  xaxis?: Record<string, unknown>;
+  yaxis?: Record<string, unknown>;
+  width?: number;
+  height?: number;
+  margin?: Record<string, unknown>;
+  showlegend?: boolean;
+}
+
 interface PlotData {
-  data: any[];
-  layout: any;
+  data: PlotlyDataPoint[];
+  layout: PlotlyLayout;
 }
 
 interface MapPlotOverlayProps {
