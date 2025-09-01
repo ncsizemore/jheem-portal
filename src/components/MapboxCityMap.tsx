@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, memo, useEffect, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import Map, { Marker } from 'react-map-gl/mapbox';
 import { CityData } from '../data/cities';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -166,9 +167,17 @@ export default function MapboxCityMap({
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-slate-900/20 pointer-events-none z-10"></div>
 
       {/* Enhanced header with clear instructions */}
-      {showInstructions && (
-        <div className="absolute top-6 left-6 z-20">
-          <div className="bg-black/20 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl p-6 max-w-sm relative">
+      <AnimatePresence mode="wait">
+        {showInstructions && (
+          <motion.div
+            key="instructions"
+            initial={{ opacity: 0, y: -20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20, scale: 0.95 }}
+            transition={{ duration: 0.4, ease: "easeInOut" }}
+            className="absolute top-6 left-6 z-20"
+          >
+            <div className="bg-black/20 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl p-6 max-w-sm relative">
           <h1 className="text-transparent bg-clip-text bg-gradient-to-r from-white via-cyan-100 to-blue-100 font-bold text-2xl mb-2 tracking-tight">
             JHEEM Plot Explorer
           </h1>
@@ -206,14 +215,36 @@ export default function MapboxCityMap({
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
-          </div>
-        </div>
-      )}
+            </div>
+          </motion.div>
+        )}
+        
+        {/* Ready to Explore hint - shows after instructions dismiss */}
+        {!showInstructions && !loading && cities.length > 0 && (
+          <motion.div
+            key="ready-hint"
+            initial={{ opacity: 0, y: -20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20, scale: 0.95 }}
+            transition={{ duration: 0.4, ease: "easeInOut", delay: 0.2 }}
+            className="absolute top-6 left-6 z-20"
+          >
+            <div className="bg-black/15 backdrop-blur-xl border border-cyan-400/20 rounded-xl shadow-xl p-4 max-w-xs">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse shadow-lg shadow-cyan-400/50"></div>
+                <span className="text-cyan-100 font-semibold text-sm">Ready to Explore</span>
+              </div>
+              <p className="text-white/80 text-xs leading-relaxed">
+                Click any <span className="text-cyan-300 font-medium">city dot</span> to see HIV funding analysis data
+              </p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Interactive city list with search - hide when plot is open for cinematic effect */}
       {!plotOpen && (
-        <div className={`absolute bottom-6 z-20 transition-all duration-300 ${sidebarOpen ? 'right-[400px]' : 'right-6'
-          }`}>
+        <div className="absolute bottom-6 left-6 z-20 transition-all duration-300">
           <div className="bg-black/20 backdrop-blur-xl border border-white/20 rounded-xl shadow-2xl p-3 w-64">
             <div className="flex items-center gap-2 mb-2">
               <div className="relative">
