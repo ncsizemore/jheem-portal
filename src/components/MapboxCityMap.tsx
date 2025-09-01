@@ -218,9 +218,9 @@ export default function MapboxCityMap({
             </div>
           </motion.div>
         )}
-        
+
         {/* Ready to Explore hint - shows after instructions dismiss */}
-        {!showInstructions && !loading && cities.length > 0 && (
+        {!showInstructions && !loading && cities.length > 0 && !plotOpen && (
           <motion.div
             key="ready-hint"
             initial={{ opacity: 0, y: -20, scale: 0.95 }}
@@ -229,14 +229,27 @@ export default function MapboxCityMap({
             transition={{ duration: 0.4, ease: "easeInOut", delay: 0.2 }}
             className="absolute top-6 left-6 z-20"
           >
-            <div className="bg-black/15 backdrop-blur-xl border border-cyan-400/20 rounded-xl shadow-xl p-4 max-w-xs">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse shadow-lg shadow-cyan-400/50"></div>
-                <span className="text-cyan-100 font-semibold text-sm">Ready to Explore</span>
+            <div className="bg-blue-500/20 backdrop-blur-xl border border-blue-400/30 rounded-xl shadow-xl p-4 max-w-64">
+              <div className="flex items-start gap-3 text-blue-100">
+                <div className="relative mt-1">
+                  <svg className="w-5 h-5 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <div className="absolute inset-0 animate-ping opacity-75">
+                    <svg className="w-5 h-5 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                </div>
+                <div>
+                  <span className="text-sm font-semibold block mb-1">
+                    Ready to Explore
+                  </span>
+                  <p className="text-xs text-blue-200 leading-relaxed">
+                    Click any city dot to see HIV funding analysis data
+                  </p>
+                </div>
               </div>
-              <p className="text-white/80 text-xs leading-relaxed">
-                Click any <span className="text-cyan-300 font-medium">city dot</span> to see HIV funding analysis data
-              </p>
             </div>
           </motion.div>
         )}
@@ -398,34 +411,6 @@ export default function MapboxCityMap({
                 <p className="font-semibold text-lg">Discovering Cities</p>
                 <p className="text-white/70 text-sm font-medium">
                   Scanning for available analysis data...
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Encouraging interaction hint when no city selected */}
-      {!loading && cities.length > 0 && !sidebarOpen && !plotOpen && (
-        <div className="absolute bottom-8 right-8 z-20">
-          <div className="bg-blue-500/20 backdrop-blur-xl border border-blue-400/30 rounded-xl shadow-xl p-4 max-w-64">
-            <div className="flex items-start gap-3 text-blue-100">
-              <div className="relative mt-1">
-                <svg className="w-5 h-5 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <div className="absolute inset-0 animate-ping opacity-75">
-                  <svg className="w-5 h-5 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-              </div>
-              <div>
-                <span className="text-sm font-semibold block mb-1">
-                  Ready to Explore
-                </span>
-                <p className="text-xs text-blue-200 leading-relaxed">
-                  Click any city dot to see HIV funding analysis data
                 </p>
               </div>
             </div>
