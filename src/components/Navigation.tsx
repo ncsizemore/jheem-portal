@@ -17,8 +17,7 @@ export default function Navigation() {
   // Check if we should show Ryan White submenu
   const showRyanWhiteSubmenu = pathname === '/ryan-white' || 
                                pathname === '/prerun' || 
-                               pathname === '/custom' || 
-                               pathname === '/explore';
+                               pathname === '/custom';
 
   const isRyanWhiteActive = pathname === '/ryan-white' || showRyanWhiteSubmenu;
   const isStateLevelActive = pathname === '/ryan-white-state-level';
@@ -155,9 +154,7 @@ export default function Navigation() {
                         </svg>
                         Interactive Explorer
                       </span>
-                      <span className={`absolute bottom-0 left-0 h-0.5 bg-hopkins-gold transition-all duration-300 ${
-                        pathname === '/explore' ? 'w-full' : 'w-0 group-hover:w-full'
-                      }`}></span>
+                      <span className={`absolute bottom-0 left-0 h-0.5 bg-hopkins-gold transition-all duration-300 w-0 group-hover:w-full`}></span>
                     </Link>
                   </div>
                 </div>
@@ -246,11 +243,7 @@ export default function Navigation() {
                       </Link>
                       <Link 
                         href="/explore"
-                        className={`flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors relative ${
-                          pathname === '/explore'
-                            ? 'bg-blue-600 text-white' 
-                            : 'text-slate-300 hover:text-white hover:bg-slate-700/50'
-                        }`}
+                        className="flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors relative text-slate-300 hover:text-white hover:bg-slate-700/50"
                       >
                         <span className="absolute -top-1 left-1 bg-gradient-to-r from-emerald-400 to-emerald-500 text-emerald-900 text-xs font-bold px-1.5 py-0.5 rounded-full">
                           NEW

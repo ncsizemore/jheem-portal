@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, memo } from 'react';
+import { useState, memo, useEffect, useCallback } from 'react';
 import Map, { Marker } from 'react-map-gl/mapbox';
 import { CityData } from '../data/cities';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -119,6 +119,24 @@ export default function MapboxCityMap({
 
   const [localHoveredCity, setLocalHoveredCity] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [showInstructions, setShowInstructions] = useState(true);
+  
+  // Auto-hide instructions after 15 seconds
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowInstructions(false);
+    }, 15000);
+    
+    return () => clearTimeout(timer);
+  }, []);
+  
+  // Hide instructions on first city interaction
+  const hideInstructionsOnInteraction = useCallback(() => {
+    if (showInstructions) {
+      setShowInstructions(false);
+    }
+  }, [showInstructions]);
+  
   // Map ref removed to fix TypeScript compatibility issues
 
   // Safe token management
@@ -148,8 +166,9 @@ export default function MapboxCityMap({
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-slate-900/20 pointer-events-none z-10"></div>
 
       {/* Enhanced header with clear instructions */}
-      <div className="absolute top-6 left-6 z-20">
-        <div className="bg-black/20 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl p-6 max-w-sm">
+      {showInstructions && (
+        <div className="absolute top-6 left-6 z-20">
+          <div className="bg-black/20 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl p-6 max-w-sm relative">
           <h1 className="text-transparent bg-clip-text bg-gradient-to-r from-white via-cyan-100 to-blue-100 font-bold text-2xl mb-2 tracking-tight">
             JHEEM Plot Explorer
           </h1>
@@ -176,15 +195,27 @@ export default function MapboxCityMap({
               {loading ? 'Discovering available cities...' : `${cities.length} cities ready to explore`}
             </span>
           </div>
+          
+          {/* Dismiss button */}
+          <button
+            onClick={() => setShowInstructions(false)}
+            className="absolute top-3 right-3 text-white/60 hover:text-white transition-colors group"
+            aria-label="Dismiss instructions"
+          >
+            <svg className="w-4 h-4 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Interactive city list with search - hide when plot is open for cinematic effect */}
       {!plotOpen && (
-        <div className={`absolute top-6 z-20 transition-all duration-300 ${sidebarOpen ? 'right-[400px]' : 'right-6'
+        <div className={`absolute bottom-6 z-20 transition-all duration-300 ${sidebarOpen ? 'right-[400px]' : 'right-6'
           }`}>
-          <div className="bg-black/20 backdrop-blur-xl border border-white/20 rounded-xl shadow-2xl p-4 w-80">
-            <div className="flex items-center gap-3 mb-3">
+          <div className="bg-black/20 backdrop-blur-xl border border-white/20 rounded-xl shadow-2xl p-3 w-64">
+            <div className="flex items-center gap-2 mb-2">
               <div className="relative">
                 <div className="w-3 h-3 bg-gradient-to-r from-cyan-400 to-blue-400 rounded-full animate-pulse shadow-lg shadow-blue-400/50"></div>
                 <div className="absolute inset-0 w-3 h-3 bg-gradient-to-r from-cyan-400 to-blue-400 rounded-full animate-ping opacity-75"></div>
@@ -206,7 +237,7 @@ export default function MapboxCityMap({
             {!loading && cities.length > 0 && (
               <>
                 {/* Search input */}
-                <div className="mb-3">
+                <div className="mb-2">
                   <div className="relative">
                     <input
                       type="text"
@@ -227,18 +258,18 @@ export default function MapboxCityMap({
                 </div>
 
                 {/* City list */}
-                <div className="space-y-2 max-h-64 overflow-y-auto custom-scrollbar">
+                <div className="space-y-1.5 max-h-48 overflow-y-auto custom-scrollbar">
                   {displayCities.map((city) => (
                     <button
                       key={city.code}
                       onClick={() => onCityClick?.(city)}
                       onMouseEnter={() => setLocalHoveredCity(city.name)}
                       onMouseLeave={() => setLocalHoveredCity(null)}
-                      className={`w-full text-left p-2 rounded-lg text-sm transition-all duration-200 ${selectedCity?.code === city.code
+                      className={`w-full text-left px-2 py-1.5 rounded-lg text-xs transition-all duration-200 ${selectedCity?.code === city.code
                           ? 'bg-cyan-500/20 text-cyan-100 border border-cyan-400/30'
                           : localHoveredCity === city.name
                             ? 'bg-blue-500/20 text-blue-100 border border-blue-400/30'
-                            : 'text-white/80 border border-transparent'
+                            : 'text-white/80 border border-transparent hover:bg-white/5'
                         }`}
                     >
                       {city.name.split(',')[0]}
@@ -300,6 +331,7 @@ export default function MapboxCityMap({
             isHovered={hoveredCity?.code === city.code}
             isSelected={selectedCity?.code === city.code}
             onHover={(e: React.MouseEvent) => {
+              hideInstructionsOnInteraction();
               setLocalHoveredCity(city.name);
               if (onCityHover) {
                 const rect = (e.target as HTMLElement).getBoundingClientRect();
@@ -314,7 +346,10 @@ export default function MapboxCityMap({
               setLocalHoveredCity(null);
               onCityLeave?.();
             }}
-            onClick={() => onCityClick?.(city)}
+            onClick={() => {
+              hideInstructionsOnInteraction();
+              onCityClick?.(city);
+            }}
           />
         ))}
       </Map>
