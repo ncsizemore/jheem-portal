@@ -99,7 +99,7 @@ const CityMarker = memo(({
 
 CityMarker.displayName = 'CityMarker';
 
-export default function MapboxCityMap({
+const MapboxCityMap = memo(function MapboxCityMap({
   cities,
   onCityHover,
   onCityLeave,
@@ -435,4 +435,8 @@ export default function MapboxCityMap({
       )}
     </div>
   );
-}
+});
+
+MapboxCityMap.displayName = 'MapboxCityMap';
+
+export default MapboxCityMap;

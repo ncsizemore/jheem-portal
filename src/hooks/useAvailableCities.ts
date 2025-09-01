@@ -31,8 +31,6 @@ export const useAvailableCities = (): UseAvailableCitiesReturn => {
       }
 
       try {
-        console.log('🔍 Fetching all available cities with single API call...');
-        console.log('🌐 API URL:', `${baseUrl}/plots/cities`);
         
         // Add timeout for API calls
         const controller = new AbortController();
@@ -47,8 +45,6 @@ export const useAvailableCities = (): UseAvailableCitiesReturn => {
         
         clearTimeout(timeoutId);
         
-        console.log('📡 Response status:', response.status);
-        console.log('📡 Response ok:', response.ok);
         
         if (!response.ok) {
           const errorText = await response.text();
@@ -77,7 +73,6 @@ export const useAvailableCities = (): UseAvailableCitiesReturn => {
           throw new Error('Invalid response format: missing or invalid cities data');
         }
         
-        console.log('✅ Received city data:', data);
 
         // Map backend data to frontend city data with coordinates
         const citiesWithData: CityData[] = [];
@@ -97,9 +92,7 @@ export const useAvailableCities = (): UseAvailableCitiesReturn => {
               ...cityInfo,
               availableScenarios: scenarios as string[]
             });
-            console.log(`🎯 ${cityInfo.name}: ${scenarios.length} scenarios available`);
           } else {
-            console.warn(`⚠️ City ${cityCode} found in database but not in static city list`);
           }
         }
 
@@ -108,7 +101,6 @@ export const useAvailableCities = (): UseAvailableCitiesReturn => {
         }
 
         setAvailableCities(citiesWithData);
-        console.log(`🚀 Discovery complete: ${citiesWithData.length} cities with data (single API call)`);
 
       } catch (err) {
         console.error('❌ Error during city discovery:', err);

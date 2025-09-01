@@ -62,7 +62,7 @@ export default function MapExplorer() {
     }
   }, [plotData]);
 
-  const loadPlot = async (city: CityData, scenario: string, plotMeta: PlotMetadata) => {
+  const loadPlot = useCallback(async (city: CityData, scenario: string, plotMeta: PlotMetadata) => {
     setPlotLoading(true);
     setPlotError(null);
 
@@ -74,7 +74,6 @@ export default function MapExplorer() {
       
       const plotUrl = `${baseUrl}/plot?plotKey=${encodeURIComponent(plotMeta.s3_key)}`;
       
-      console.log(`📊 Loading plot: ${plotMeta.outcome} for ${city.name} - ${scenario}`);
       
       // Add timeout for plot loading
       const controller = new AbortController();
@@ -132,7 +131,6 @@ export default function MapExplorer() {
         .join(' ');
       
       setPlotTitle(`${outcomeName} - ${cityShortName} (${scenarioName})`);
-      console.log('✅ Plot loaded successfully');
 
     } catch (err) {
       console.error('❌ Error loading plot:', err);
@@ -149,9 +147,9 @@ export default function MapExplorer() {
     } finally {
       setPlotLoading(false);
     }
-  };
+  }, []);
 
-  const handleScenarioSelect = async (city: CityData, scenario: string) => {
+  const handleScenarioSelect = useCallback(async (city: CityData, scenario: string) => {
     setShowScenarioPopup(false);
     setCurrentScenario(scenario);
 
@@ -163,7 +161,6 @@ export default function MapExplorer() {
       
       const searchUrl = `${baseUrl}/plots/search?city=${city.code}&scenario=${scenario}`;
       
-      console.log(`🔍 Fetching plots for ${city.name} - ${scenario}`);
       
       // Add timeout for scenario search
       const controller = new AbortController();
@@ -197,7 +194,6 @@ export default function MapExplorer() {
         throw new Error('Invalid response format when searching for plots');
       }
       
-      console.log('📊 Available plots:', data);
 
       if (data.plots && Array.isArray(data.plots) && data.plots.length > 0) {
         // Validate first plot structure
@@ -224,13 +220,13 @@ export default function MapExplorer() {
         setPlotError('Failed to load analysis data');
       }
     }
-  };
+  }, [loadPlot]);
 
   const handlePlotVariationChange = useCallback(async (plotMeta: PlotMetadata) => {
     if (selectedCity) {
       await loadPlot(selectedCity, currentScenario, plotMeta);
     }
-  }, [selectedCity, currentScenario]);
+  }, [selectedCity, currentScenario, loadPlot]);
 
   const handleCloseScenarioPopup = useCallback(() => {
     setShowScenarioPopup(false);

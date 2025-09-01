@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CityData } from '../data/cities';
 
@@ -26,7 +26,7 @@ interface PlotHierarchy {
   };
 }
 
-export default function PlotExplorationSidebar({ 
+const PlotExplorationSidebar = memo(function PlotExplorationSidebar({ 
   city, 
   onClose, 
   onPlotSelect, 
@@ -38,23 +38,23 @@ export default function PlotExplorationSidebar({
   const [plotsByScenario, setPlotsByScenario] = useState<{[key: string]: PlotHierarchy}>({});
   const [loading, setLoading] = useState<{[key: string]: boolean}>({});
 
-  // Format names for display
-  const formatScenarioName = (scenario: string): string => {
+  // Format names for display - memoized for performance
+  const formatScenarioName = useCallback((scenario: string): string => {
     return scenario
       .split('_')
       .map(word => word.charAt(0).toUpperCase() + word.slice(1))
       .join(' ');
-  };
+  }, []);
 
-  const formatOutcomeName = (outcome: string): string => {
+  const formatOutcomeName = useCallback((outcome: string): string => {
     return outcome
       .replace(/\./g, ' ')
       .split('_')
       .map(word => word.charAt(0).toUpperCase() + word.slice(1))
       .join(' ');
-  };
+  }, []);
 
-  const getOutcomeDescription = (outcome: string): string => {
+  const getOutcomeDescription = useCallback((outcome: string): string => {
     const descriptions: {[key: string]: string} = {
       'incidence': 'New HIV infections over time',
       'diagnosed_prevalence': 'Number of people diagnosed with HIV',
@@ -63,17 +63,17 @@ export default function PlotExplorationSidebar({
       'adap_proportion': 'ADAP program utilization rates'
     };
     return descriptions[outcome] || 'Analysis outcome data';
-  };
+  }, []);
 
-  const getStatisticDescription = (statType: string): string => {
+  const getStatisticDescription = useCallback((statType: string): string => {
     if (statType.includes('count')) return 'Absolute numbers';
     if (statType.includes('rate')) return 'Rates per population';
     if (statType.includes('proportion')) return 'Percentage breakdown';
     return 'Statistical measure';
-  };
+  }, []);
 
-  // Organize plots into hierarchy
-  const organizePlots = (plots: PlotMetadata[]): PlotHierarchy => {
+  // Organize plots into hierarchy - memoized for performance
+  const organizePlots = useCallback((plots: PlotMetadata[]): PlotHierarchy => {
     const hierarchy: PlotHierarchy = {};
     
     plots.forEach(plot => {
@@ -87,10 +87,10 @@ export default function PlotExplorationSidebar({
     });
     
     return hierarchy;
-  };
+  }, []);
 
-  // Fetch plots for a specific scenario
-  const fetchPlotsForScenario = async (scenario: string) => {
+  // Fetch plots for a specific scenario - memoized with dependencies
+  const fetchPlotsForScenario = useCallback(async (scenario: string) => {
     if (!city || plotsByScenario[scenario]) return;
 
     setLoading(prev => ({ ...prev, [scenario]: true }));
@@ -112,8 +112,7 @@ export default function PlotExplorationSidebar({
         [scenario]: organizedPlots
       }));
 
-    } catch (err) {
-      console.error('Error fetching plots:', err);
+    } catch {
       setPlotsByScenario(prev => ({
         ...prev,
         [scenario]: {}
@@ -121,10 +120,10 @@ export default function PlotExplorationSidebar({
     } finally {
       setLoading(prev => ({ ...prev, [scenario]: false }));
     }
-  };
+  }, [city, plotsByScenario, organizePlots]);
 
-  // Handle scenario toggle
-  const toggleScenario = (scenario: string) => {
+  // Handle scenario toggle - memoized for performance
+  const toggleScenario = useCallback((scenario: string) => {
     if (expandedScenario === scenario) {
       setExpandedScenario(null);
       setSelectedOutcome(null);
@@ -135,7 +134,7 @@ export default function PlotExplorationSidebar({
       setSelectedStatistic(null);
       fetchPlotsForScenario(scenario);
     }
-  };
+  }, [expandedScenario, fetchPlotsForScenario]);
 
   // Reset when city changes
   useEffect(() => {
@@ -146,20 +145,20 @@ export default function PlotExplorationSidebar({
     setLoading({});
   }, [city]);
 
-  // Get current plots for selected outcome/statistic
-  const getCurrentPlots = (): PlotMetadata[] => {
+  // Get current plots for selected outcome/statistic - memoized
+  const getCurrentPlots = useCallback((): PlotMetadata[] => {
     if (!expandedScenario || !selectedOutcome || !selectedStatistic) return [];
     return plotsByScenario[expandedScenario]?.[selectedOutcome]?.[selectedStatistic] || [];
-  };
+  }, [expandedScenario, selectedOutcome, selectedStatistic, plotsByScenario]);
 
-  // Handle multi-plot selection
-  const handleViewAllFacets = () => {
+  // Handle multi-plot selection - memoized
+  const handleViewAllFacets = useCallback(() => {
     if (!expandedScenario || !selectedOutcome || !selectedStatistic) return;
     const plots = getCurrentPlots();
     if (plots.length > 1 && onMultiPlotSelect) {
       onMultiPlotSelect(city!, expandedScenario, plots);
     }
-  };
+  }, [expandedScenario, selectedOutcome, selectedStatistic, getCurrentPlots, onMultiPlotSelect, city]);
 
   if (!city) return null;
 
@@ -425,4 +424,8 @@ export default function PlotExplorationSidebar({
       </motion.div>
     </AnimatePresence>
   );
-}
+});
+
+PlotExplorationSidebar.displayName = 'PlotExplorationSidebar';
+
+export default PlotExplorationSidebar;

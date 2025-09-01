@@ -34,7 +34,6 @@ export default function TestPlotViewer() {
       const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
       const url = `${baseUrl}/plot?plotKey=${encodeURIComponent(plotKey)}`;
 
-      console.log('Fetching plot from:', url);
 
       const response = await fetch(url);
 
@@ -44,7 +43,6 @@ export default function TestPlotViewer() {
       }
 
       const data = await response.json();
-      console.log('Received plot data:', data);
       setPlotData(data);
 
     } catch (err) {
@@ -63,7 +61,6 @@ export default function TestPlotViewer() {
     try {
       const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-      console.log('🔍 Step 1: Discovering plots from multiple cities and scenarios...');
 
       // Define multiple city/scenario combinations to demonstrate expanded capabilities
       const searchCombinations = [
@@ -78,22 +75,18 @@ export default function TestPlotViewer() {
       // Step 1: Discover plots from each combination
       for (const combo of searchCombinations) {
         const searchUrl = `${baseUrl}/plots/search?city=${combo.city}&scenario=${combo.scenario}`;
-        console.log(`🔍 Discovering plots for ${combo.label}:`, searchUrl);
 
         const searchResponse = await fetch(searchUrl);
         if (!searchResponse.ok) {
-          console.warn(`⚠️  Discovery failed for ${combo.label}`);
           continue; // Skip this combination if it fails
         }
 
         const discoveryData = await searchResponse.json();
-        console.log(`🎯 ${combo.label}: Found ${discoveryData.total_plots} plots`);
 
         if (discoveryData.plots && discoveryData.plots.length > 0) {
           // Step 2: Fetch plot data for discovered plots
           for (const plotMeta of discoveryData.plots) {
             const plotUrl = `${baseUrl}/plot?plotKey=${encodeURIComponent(plotMeta.s3_key)}`;
-            console.log(`📊 Fetching ${plotMeta.outcome} from ${combo.label}`);
 
             try {
               const response = await fetch(plotUrl);
@@ -105,7 +98,6 @@ export default function TestPlotViewer() {
                 allTitles.push(title);
               }
             } catch {
-              console.warn(`⚠️  Failed to fetch ${plotMeta.outcome} from ${combo.label}`);
             }
           }
         }
@@ -116,7 +108,6 @@ export default function TestPlotViewer() {
       }
 
       setMultiPlotData({ plots: allPlots, titles: allTitles });
-      console.log(`✅ Successfully loaded ${allPlots.length} plots from multiple combinations:`, allTitles);
 
     } catch (err) {
       console.error('❌ Error in dynamic discovery:', err);
@@ -140,12 +131,10 @@ export default function TestPlotViewer() {
         { key: 'plots/adap_proportion_test.json', title: 'ADAP Proportion' }
       ];
 
-      console.log('Fetching multiple plots...');
 
       // Fetch all plots in parallel
       const promises = plotConfigs.map(async (config) => {
         const url = `${baseUrl}/plot?plotKey=${encodeURIComponent(config.key)}`;
-        console.log(`Fetching ${config.title} from:`, url);
 
         const response = await fetch(url);
         if (!response.ok) {
@@ -163,7 +152,6 @@ export default function TestPlotViewer() {
       const titles = results.map(result => result.title);
 
       setMultiPlotData({ plots, titles });
-      console.log('Successfully loaded multiple plots:', titles);
 
     } catch (err) {
       console.error('Error fetching multiple plots:', err);
