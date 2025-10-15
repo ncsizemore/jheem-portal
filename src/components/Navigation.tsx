@@ -22,6 +22,7 @@ export default function Navigation() {
   const isRyanWhiteActive = pathname === '/ryan-white' || showRyanWhiteSubmenu;
   const isStateLevelActive = pathname === '/ryan-white-state-level';
   const isCdcTestingActive = pathname === '/cdc-testing';
+  const isHIVAgeProjectionsActive = pathname === '/hiv-age-projections';
 
   return (
     <header className="bg-hopkins-blue shadow-lg sticky top-0 z-50 border-b border-hopkins-blue/30">
@@ -68,13 +69,22 @@ export default function Navigation() {
                 isStateLevelActive ? 'w-full' : 'w-0 group-hover:w-full'
               }`}></span>
             </Link>
-            <Link 
-              href="/cdc-testing" 
+            <Link
+              href="/cdc-testing"
               className="text-white hover:text-hopkins-gold font-medium transition-all relative group py-2"
             >
               <span>CDC Testing Model</span>
               <span className={`absolute bottom-0 left-0 h-0.5 bg-hopkins-gold transition-all duration-300 ${
                 isCdcTestingActive ? 'w-full' : 'w-0 group-hover:w-full'
+              }`}></span>
+            </Link>
+            <Link
+              href="/hiv-age-projections"
+              className="text-white hover:text-hopkins-gold font-medium transition-all relative group py-2"
+            >
+              <span>HIV Age Projections</span>
+              <span className={`absolute bottom-0 left-0 h-0.5 bg-hopkins-gold transition-all duration-300 ${
+                isHIVAgeProjectionsActive ? 'w-full' : 'w-0 group-hover:w-full'
               }`}></span>
             </Link>
           </nav>
@@ -196,15 +206,25 @@ export default function Navigation() {
                   >
                     State Level Model
                   </Link>
-                  <Link 
+                  <Link
                     href="/cdc-testing"
                     className={`block px-3 py-2 rounded-lg font-medium transition-colors ${
-                      isCdcTestingActive 
-                        ? 'bg-blue-600 text-white' 
+                      isCdcTestingActive
+                        ? 'bg-blue-600 text-white'
                         : 'text-slate-300 hover:text-white hover:bg-slate-700/50'
                     }`}
                   >
                     CDC Testing Model
+                  </Link>
+                  <Link
+                    href="/hiv-age-projections"
+                    className={`block px-3 py-2 rounded-lg font-medium transition-colors ${
+                      isHIVAgeProjectionsActive
+                        ? 'bg-blue-600 text-white'
+                        : 'text-slate-300 hover:text-white hover:bg-slate-700/50'
+                    }`}
+                  >
+                    HIV Age Projections
                   </Link>
                 </div>
                 
