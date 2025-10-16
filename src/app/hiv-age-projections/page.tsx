@@ -18,16 +18,22 @@ function MultiStateComparison() {
   const selectedStates = getStatesByNames(selectedStateNames);
 
   return (
-    <div className="bg-white rounded-xl p-6 shadow-lg space-y-6">
+    <div className="bg-white rounded-xl p-8 shadow-lg space-y-8">
       {/* Controls Section */}
-      <div className="border-b border-gray-200 pb-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          Multi-State Comparison
-        </h3>
+      <div className="space-y-5">
+        <div>
+          <h3 className="text-xl font-semibold text-gray-900 mb-1">
+            Multi-State Comparison
+          </h3>
+          <p className="text-sm text-gray-500">
+            Select states and adjust display settings to compare age distribution patterns
+          </p>
+        </div>
 
-        <div className="grid lg:grid-cols-2 gap-6">
+        {/* Controls Row */}
+        <div className="flex flex-col lg:flex-row gap-5">
           {/* State Selector */}
-          <div>
+          <div className="flex-1 bg-gray-50 rounded-lg p-4 border border-gray-200">
             <StateSelector
               selectedStates={selectedStateNames}
               onStateChange={setSelectedStateNames}
@@ -35,32 +41,8 @@ function MultiStateComparison() {
             />
           </div>
 
-          {/* Right Column: Display Mode + Timeline */}
-          <div className="space-y-6">
-            {/* Display Mode Toggle */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Display Mode:
-              </label>
-              <button
-                onClick={() => setNormalized(!normalized)}
-                className={`w-full px-4 py-3 rounded-lg font-medium transition-all ${
-                  normalized
-                    ? 'bg-hopkins-blue text-white shadow-md hover:bg-hopkins-spirit-blue'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                }`}
-              >
-                {normalized ? '📊 Proportional (%)' : '📈 Cases'}
-              </button>
-              <p className="text-xs text-gray-500 mt-1">
-                {normalized
-                  ? 'Shows percentage distribution within each state'
-                  : 'Shows case counts by age group'
-                }
-              </p>
-            </div>
-
-            {/* Timeline Controls */}
+          {/* Timeline Controls */}
+          <div className="lg:w-[400px] bg-gray-50 rounded-lg p-4 border border-gray-200">
             <TimelineControls
               yearRange={yearRange}
               onYearRangeChange={setYearRange}
@@ -71,11 +53,15 @@ function MultiStateComparison() {
         </div>
       </div>
 
+      {/* Divider */}
+      <div className="border-t border-gray-200" />
+
       {/* Chart Grid */}
       <MultiStateChartGrid
         states={selectedStates}
         normalized={normalized}
         yearRange={yearRange}
+        onNormalizedChange={setNormalized}
       />
 
       {/* Quick Stats */}

@@ -42,13 +42,13 @@ const TimelineControls = memo(({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <label className="block text-sm font-medium text-gray-700">
-          Timeline Range:
+        <label className="block text-sm font-semibold text-gray-700">
+          Timeline Range
         </label>
-        <div className="text-sm font-semibold text-hopkins-blue">
-          {startYear} - {endYear}
+        <div className="text-sm font-bold text-hopkins-blue">
+          {startYear}–{endYear}
         </div>
       </div>
 
@@ -111,8 +111,8 @@ const TimelineControls = memo(({
       </div>
 
       {/* Info text */}
-      <p className="text-xs text-gray-500">
-        Showing {endYear - startYear + 1} years of projection data
+      <p className="text-xs text-gray-500 leading-relaxed">
+        Showing {endYear - startYear + 1} year{endYear - startYear + 1 !== 1 ? 's' : ''} of projection data
         {endYear - startYear + 1 < maxYear - minYear + 1 && ' (filtered view)'}
       </p>
 

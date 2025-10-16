@@ -9,6 +9,7 @@ interface MultiStateChartGridProps {
   states: StateAgeData[];
   normalized?: boolean;
   yearRange?: [number, number];
+  onNormalizedChange?: (normalized: boolean) => void;
 }
 
 // Smart grid layout calculator
@@ -49,7 +50,8 @@ function getGridLayout(stateCount: number, screenWidth: number = 1200) {
 const MultiStateChartGrid = memo(({
   states,
   normalized = false,
-  yearRange = [2025, 2040]
+  yearRange = [2025, 2040],
+  onNormalizedChange
 }: MultiStateChartGridProps) => {
   // Calculate layout based on number of states
   const gridLayout = useMemo(() => getGridLayout(states.length), [states.length]);
@@ -77,14 +79,35 @@ const MultiStateChartGrid = memo(({
 
   return (
     <div className="space-y-6">
-      {/* Grid Statistics */}
-      <div className="flex items-center justify-between">
+      {/* Grid Statistics and Display Controls */}
+      <div className="flex items-center justify-between gap-4 flex-wrap">
         <div className="text-sm text-gray-600">
           Comparing <span className="font-semibold text-hopkins-blue">{states.length}</span> state{states.length !== 1 ? 's' : ''}
-          {normalized ? ' (proportional view)' : ' (case counts)'}
         </div>
-        <div className="text-xs text-gray-500">
-          {yearRange[0]} - {yearRange[1]}
+
+        <div className="flex items-center gap-4">
+          {/* Display Mode Toggle */}
+          {onNormalizedChange && (
+            <div className="flex items-center gap-2">
+              <label className="text-xs font-medium text-gray-600 whitespace-nowrap">
+                Display:
+              </label>
+              <button
+                onClick={() => onNormalizedChange(!normalized)}
+                className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all border-2 ${
+                  normalized
+                    ? 'bg-hopkins-blue text-white border-hopkins-blue shadow-sm hover:bg-hopkins-spirit-blue'
+                    : 'bg-white text-gray-700 border-gray-300 hover:border-hopkins-blue hover:bg-gray-50'
+                }`}
+              >
+                {normalized ? '📊 Proportional (%)' : '📈 Cases'}
+              </button>
+            </div>
+          )}
+
+          <div className="text-xs text-gray-500 whitespace-nowrap">
+            {yearRange[0]}–{yearRange[1]}
+          </div>
         </div>
       </div>
 
