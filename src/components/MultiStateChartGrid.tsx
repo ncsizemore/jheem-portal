@@ -39,16 +39,11 @@ function getGridLayout(stateCount: number, screenWidth: number = 1200) {
     gridClass: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3',
     gap: 'gap-5'
   };
-  if (stateCount <= 9) return {
+  // For 7+ states, always use 3 columns max
+  return {
     cols: screenWidth < 768 ? 1 : 3,
     chartHeight: 340,
     gridClass: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3',
-    gap: 'gap-5'
-  };
-  return {
-    cols: screenWidth < 768 ? 1 : 4,
-    chartHeight: 320,
-    gridClass: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4',
     gap: 'gap-4'
   };
 }

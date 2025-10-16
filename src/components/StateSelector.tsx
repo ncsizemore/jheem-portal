@@ -28,27 +28,41 @@ const StateSelector = memo(({
     onStateChange([]);
   };
 
+  const handleSelectAll = () => {
+    onStateChange(HIV_AGE_PROJECTIONS.map(s => s.state_name));
+  };
+
   return (
     <div className="space-y-2.5">
       {/* Header with count and controls */}
       <div className="flex items-center justify-between">
         <div className="text-xs font-medium text-gray-600">
           {selectedStates.length === 0 ? (
-            'Select up to 9 states'
+            `Select states (up to ${maxStates})`
           ) : (
             <span>
               <span className="text-hopkins-blue font-semibold">{selectedStates.length}</span>/{maxStates} selected
             </span>
           )}
         </div>
-        {selectedStates.length > 0 && (
-          <button
-            onClick={handleClearAll}
-            className="text-xs text-gray-600 hover:text-gray-900 underline transition-colors"
-          >
-            Clear all
-          </button>
-        )}
+        <div className="flex gap-3">
+          {selectedStates.length < HIV_AGE_PROJECTIONS.length && (
+            <button
+              onClick={handleSelectAll}
+              className="text-xs text-gray-600 hover:text-gray-900 underline transition-colors"
+            >
+              Select all
+            </button>
+          )}
+          {selectedStates.length > 0 && (
+            <button
+              onClick={handleClearAll}
+              className="text-xs text-gray-600 hover:text-gray-900 underline transition-colors"
+            >
+              Clear all
+            </button>
+          )}
+        </div>
       </div>
 
       {/* State Grid */}
