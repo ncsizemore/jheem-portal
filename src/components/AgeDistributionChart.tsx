@@ -73,32 +73,58 @@ const AgeDistributionChart = memo(({
       const total = payload.reduce((sum: number, entry: TooltipPayload) => sum + (entry.value || 0), 0);
 
       return (
-        <div className="bg-white p-4 border border-gray-200 rounded-lg shadow-lg">
-          <p className="font-semibold text-gray-900 mb-2">{`${stateName} - ${label}`}</p>
-          {payload.reverse().map((entry: TooltipPayload, index: number) => {
-            const cohort = entry.dataKey.split('_').slice(-1)[0];
-            const value = entry.value || 0;
-            const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : '0.0';
+        <div className="bg-white/95 backdrop-blur-sm p-4 border border-gray-300 rounded-xl shadow-xl">
+          {/* Header */}
+          <div className="mb-3 pb-2 border-b border-gray-200">
+            <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+              {stateName}
+            </p>
+            <p className="text-lg font-bold text-hopkins-blue">
+              {label}
+            </p>
+          </div>
 
-            return (
-              <div key={index} className="flex items-center gap-2 text-sm">
-                <div
-                  className="w-3 h-3 rounded-sm"
-                  style={{ backgroundColor: entry.color }}
-                />
-                <span className="font-medium">{cohort} years:</span>
-                <span>
-                  {normalized
-                    ? `${value.toFixed(1)}%`
-                    : `${value.toLocaleString()} (${percentage}%)`
-                  }
-                </span>
-              </div>
-            );
-          })}
+          {/* Age cohort data */}
+          <div className="space-y-2">
+            {payload.reverse().map((entry: TooltipPayload, index: number) => {
+              const cohort = entry.dataKey.split('_').slice(-1)[0];
+              const value = entry.value || 0;
+              const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : '0.0';
+
+              return (
+                <div key={index} className="flex items-center justify-between gap-4 text-sm">
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <div
+                      className="w-3 h-3 rounded-sm shadow-sm"
+                      style={{ backgroundColor: entry.color }}
+                    />
+                    <span className="font-medium text-gray-700">{cohort}</span>
+                  </div>
+                  <div className="text-right">
+                    <span className="font-semibold text-gray-900">
+                      {normalized
+                        ? `${value.toFixed(1)}%`
+                        : value.toLocaleString()
+                      }
+                    </span>
+                    {!normalized && (
+                      <span className="text-xs text-gray-500 ml-1.5">
+                        ({percentage}%)
+                      </span>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Total (for non-normalized view) */}
           {!normalized && (
-            <div className="border-t border-gray-200 mt-2 pt-2">
-              <span className="text-sm font-medium">Total: {total.toLocaleString()}</span>
+            <div className="mt-3 pt-2 border-t border-gray-200">
+              <div className="flex items-center justify-between text-sm">
+                <span className="font-semibold text-gray-700">Total</span>
+                <span className="font-bold text-gray-900">{total.toLocaleString()}</span>
+              </div>
             </div>
           )}
         </div>
@@ -114,7 +140,7 @@ const AgeDistributionChart = memo(({
   // Custom interactive legend - always shows all cohorts
   const CustomLegend = () => {
     return (
-      <div className="flex flex-wrap justify-center gap-3 mt-4">
+      <div className="flex flex-wrap justify-center gap-2.5 mt-4">
         {allCohorts.map((cohort) => {
           const isVisible = visibleCohorts.has(cohort);
           const color = AGE_COHORT_COLORS[cohort];
@@ -123,38 +149,30 @@ const AgeDistributionChart = memo(({
             <button
               key={cohort}
               onClick={() => toggleCohort(cohort)}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all border ${
+              className={`group flex items-center gap-2 px-3 py-1.5 rounded-md transition-all ${
                 isVisible
-                  ? 'bg-white border-gray-200 hover:border-hopkins-blue hover:shadow-sm'
-                  : 'bg-gray-50 border-gray-200 border-dashed'
+                  ? 'bg-white hover:bg-gray-50'
+                  : 'bg-transparent'
               }`}
               title={isVisible ? 'Click to hide this age group' : 'Click to show this age group'}
             >
               <div
-                className={`w-3 h-3 rounded-sm transition-all ${
-                  isVisible ? '' : 'opacity-40'
+                className={`w-3.5 h-3.5 rounded-sm transition-all ${
+                  isVisible
+                    ? 'shadow-sm'
+                    : 'opacity-30 grayscale'
                 }`}
                 style={{
                   backgroundColor: color,
-                  ...(isVisible ? {} : {
-                    backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(255,255,255,0.5) 2px, rgba(255,255,255,0.5) 4px)`
-                  })
                 }}
               />
               <span className={`text-sm transition-all ${
                 isVisible
                   ? 'text-gray-700 font-medium'
-                  : 'text-gray-400 line-through'
+                  : 'text-gray-400'
               }`}>
-                {cohort} years
+                {cohort}
               </span>
-              {!isVisible && (
-                <svg className="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                  <line x1="3" y1="3" x2="21" y2="21" stroke="currentColor" strokeWidth={2} strokeLinecap="round"/>
-                </svg>
-              )}
             </button>
           );
         })}
