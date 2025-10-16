@@ -12,38 +12,44 @@ interface MultiStateChartGridProps {
   onNormalizedChange?: (normalized: boolean) => void;
 }
 
-// Smart grid layout calculator
+// Smart grid layout calculator with optimized spacing
 function getGridLayout(stateCount: number, screenWidth: number = 1200) {
-  if (stateCount === 0) return { cols: 0, chartHeight: 0, gridClass: '' };
+  if (stateCount === 0) return { cols: 0, chartHeight: 0, gridClass: '', gap: 'gap-6' };
   if (stateCount === 1) return {
     cols: 1,
     chartHeight: 500,
-    gridClass: 'grid-cols-1'
+    gridClass: 'grid-cols-1',
+    gap: 'gap-6'
   };
   if (stateCount === 2) return {
     cols: 2,
     chartHeight: 450,
-    gridClass: 'grid-cols-1 md:grid-cols-2'
+    gridClass: 'grid-cols-1 md:grid-cols-2',
+    gap: 'gap-6'
   };
   if (stateCount <= 4) return {
     cols: 2,
-    chartHeight: 400,
-    gridClass: 'grid-cols-1 md:grid-cols-2'
+    chartHeight: 420,
+    gridClass: 'grid-cols-1 md:grid-cols-2',
+    gap: 'gap-6'
   };
   if (stateCount <= 6) return {
     cols: screenWidth < 768 ? 1 : 3,
-    chartHeight: 350,
-    gridClass: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
+    chartHeight: 380,
+    gridClass: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3',
+    gap: 'gap-5'
   };
   if (stateCount <= 9) return {
     cols: screenWidth < 768 ? 1 : 3,
-    chartHeight: 300,
-    gridClass: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
+    chartHeight: 340,
+    gridClass: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3',
+    gap: 'gap-5'
   };
   return {
     cols: screenWidth < 768 ? 1 : 4,
-    chartHeight: 280,
-    gridClass: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
+    chartHeight: 320,
+    gridClass: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4',
+    gap: 'gap-4'
   };
 }
 
@@ -112,7 +118,7 @@ const MultiStateChartGrid = memo(({
       </div>
 
       {/* Responsive Chart Grid */}
-      <div className={`grid gap-6 ${gridLayout.gridClass}`}>
+      <div className={`grid ${gridLayout.gap} ${gridLayout.gridClass}`}>
         {states.map((state, index) => {
           const statePrefix = state.state_name.replace(/\s+/g, '_');
 
@@ -123,7 +129,7 @@ const MultiStateChartGrid = memo(({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 20 }}
               transition={{ delay: index * 0.1, duration: 0.4 }}
-              className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow p-4"
+              className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow p-5"
             >
               <AgeDistributionChart
                 data={chartData}
@@ -149,7 +155,7 @@ const MultiStateChartGrid = memo(({
       {/* Grid Layout Info (for debugging/development) */}
       {process.env.NODE_ENV === 'development' && (
         <div className="text-xs text-gray-400 bg-gray-50 p-2 rounded">
-          Grid: {gridLayout.cols} cols, Height: {gridLayout.chartHeight}px, Class: {gridLayout.gridClass}
+          Grid: {gridLayout.cols} cols, Height: {gridLayout.chartHeight}px, Gap: {gridLayout.gap}, Class: {gridLayout.gridClass}
         </div>
       )}
     </div>

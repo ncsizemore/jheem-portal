@@ -73,7 +73,7 @@ const AgeDistributionChart = memo(({
       const total = payload.reduce((sum: number, entry: TooltipPayload) => sum + (entry.value || 0), 0);
 
       return (
-        <div className="bg-white/95 backdrop-blur-sm p-4 border border-gray-300 rounded-xl shadow-xl">
+        <div className="relative z-50 bg-white/95 backdrop-blur-sm p-4 border border-gray-300 rounded-xl shadow-xl">
           {/* Header */}
           <div className="mb-3 pb-2 border-b border-gray-200">
             <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
@@ -138,9 +138,12 @@ const AgeDistributionChart = memo(({
   const allCohorts: AgeCohort[] = ['13-24', '25-34', '35-44', '45-54', '55+'];
 
   // Custom interactive legend - always shows all cohorts
+  // Make it more compact for smaller charts
+  const isCompact = height < 380;
+
   const CustomLegend = () => {
     return (
-      <div className="flex flex-wrap justify-center gap-2.5 mt-4">
+      <div className={`flex flex-wrap justify-center ${isCompact ? 'gap-1.5 mt-2' : 'gap-2.5 mt-4'}`}>
         {allCohorts.map((cohort) => {
           const isVisible = visibleCohorts.has(cohort);
           const color = AGE_COHORT_COLORS[cohort];
@@ -149,7 +152,7 @@ const AgeDistributionChart = memo(({
             <button
               key={cohort}
               onClick={() => toggleCohort(cohort)}
-              className={`group flex items-center gap-2 px-3 py-1.5 rounded-md transition-all ${
+              className={`group flex items-center ${isCompact ? 'gap-1.5 px-2 py-1' : 'gap-2 px-3 py-1.5'} rounded-md transition-all ${
                 isVisible
                   ? 'bg-white hover:bg-gray-50'
                   : 'bg-transparent'
@@ -157,7 +160,7 @@ const AgeDistributionChart = memo(({
               title={isVisible ? 'Click to hide this age group' : 'Click to show this age group'}
             >
               <div
-                className={`w-3.5 h-3.5 rounded-sm transition-all ${
+                className={`${isCompact ? 'w-2.5 h-2.5' : 'w-3.5 h-3.5'} rounded-sm transition-all ${
                   isVisible
                     ? 'shadow-sm'
                     : 'opacity-30 grayscale'
@@ -166,7 +169,7 @@ const AgeDistributionChart = memo(({
                   backgroundColor: color,
                 }}
               />
-              <span className={`text-sm transition-all ${
+              <span className={`${isCompact ? 'text-xs' : 'text-sm'} transition-all ${
                 isVisible
                   ? 'text-gray-700 font-medium'
                   : 'text-gray-400'
@@ -217,7 +220,11 @@ const AgeDistributionChart = memo(({
               return value >= 1000 ? `${(value / 1000).toFixed(0)}k` : value.toString();
             }}
           />
-          <Tooltip content={<CustomTooltip />} />
+          <Tooltip
+            content={<CustomTooltip />}
+            wrapperStyle={{ zIndex: 1000 }}
+            cursor={{ fill: 'rgba(0, 45, 114, 0.05)' }}
+          />
           <Legend content={<CustomLegend />} />
 
           {/* Stacked bars for each age cohort - conditionally rendered based on visibility */}
