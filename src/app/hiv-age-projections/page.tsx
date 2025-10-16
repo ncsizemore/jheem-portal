@@ -3,69 +3,96 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import Footer from '@/components/Footer';
-import AgeDistributionChart from '@/components/AgeDistributionChart';
-import {
-  HIV_AGE_PROJECTIONS,
-  getStateByName,
-  transformDataForChart
-} from '@/data/hiv-age-projections';
+import StateSelector from '@/components/StateSelector';
+import MultiStateChartGrid from '@/components/MultiStateChartGrid';
+import TimelineControls from '@/components/TimelineControls';
+import { getStatesByNames } from '@/data/hiv-age-projections';
 
-// Test component to demonstrate the chart
-function ChartTestComponent() {
+// Multi-state comparison component
+function MultiStateComparison() {
+  const [selectedStateNames, setSelectedStateNames] = useState<string[]>(['California', 'Texas']);
   const [normalized, setNormalized] = useState(false);
-  const [selectedState, setSelectedState] = useState('California');
+  const [yearRange, setYearRange] = useState<[number, number]>([2025, 2040]);
 
-  const stateData = getStateByName(selectedState);
-  const chartData = stateData ? transformDataForChart([stateData], [2025, 2040], normalized) : [];
-  const statePrefix = selectedState.replace(/\s+/g, '_');
+  // Get state data objects from names
+  const selectedStates = getStatesByNames(selectedStateNames);
 
   return (
-    <div className="bg-white rounded-xl p-6 shadow-lg">
-      {/* Controls */}
-      <div className="flex flex-col sm:flex-row gap-4 mb-6">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Select State:
-          </label>
-          <select
-            value={selectedState}
-            onChange={(e) => setSelectedState(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-hopkins-blue focus:border-transparent"
-          >
-            {HIV_AGE_PROJECTIONS.slice(0, 10).map(state => (
-              <option key={state.state_code} value={state.state_name}>
-                {state.state_name}
-              </option>
-            ))}
-          </select>
-        </div>
+    <div className="bg-white rounded-xl p-6 shadow-lg space-y-6">
+      {/* Controls Section */}
+      <div className="border-b border-gray-200 pb-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          Multi-State Comparison
+        </h3>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Display Mode:
-          </label>
-          <button
-            onClick={() => setNormalized(!normalized)}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-              normalized
-                ? 'bg-hopkins-blue text-white'
-                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-            }`}
-          >
-            {normalized ? 'Proportional (%)' : 'Absolute Numbers'}
-          </button>
+        <div className="grid lg:grid-cols-2 gap-6">
+          {/* State Selector */}
+          <div>
+            <StateSelector
+              selectedStates={selectedStateNames}
+              onStateChange={setSelectedStateNames}
+              maxStates={9}
+            />
+          </div>
+
+          {/* Right Column: Display Mode + Timeline */}
+          <div className="space-y-6">
+            {/* Display Mode Toggle */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Display Mode:
+              </label>
+              <button
+                onClick={() => setNormalized(!normalized)}
+                className={`w-full px-4 py-3 rounded-lg font-medium transition-all ${
+                  normalized
+                    ? 'bg-hopkins-blue text-white shadow-md hover:bg-hopkins-spirit-blue'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+              >
+                {normalized ? '📊 Proportional (%)' : '📈 Cases'}
+              </button>
+              <p className="text-xs text-gray-500 mt-1">
+                {normalized
+                  ? 'Shows percentage distribution within each state'
+                  : 'Shows case counts by age group'
+                }
+              </p>
+            </div>
+
+            {/* Timeline Controls */}
+            <TimelineControls
+              yearRange={yearRange}
+              onYearRangeChange={setYearRange}
+              minYear={2025}
+              maxYear={2040}
+            />
+          </div>
         </div>
       </div>
 
-      {/* Chart */}
-      {chartData.length > 0 && (
-        <AgeDistributionChart
-          data={chartData}
-          statePrefix={statePrefix}
-          stateName={selectedState}
-          normalized={normalized}
-          height={500}
-        />
+      {/* Chart Grid */}
+      <MultiStateChartGrid
+        states={selectedStates}
+        normalized={normalized}
+        yearRange={yearRange}
+      />
+
+      {/* Quick Stats */}
+      {selectedStates.length > 0 && (
+        <div className="bg-gray-50 rounded-lg p-4 text-sm text-gray-600">
+          <div className="flex flex-wrap gap-4">
+            <div>
+              <span className="font-medium">Time Period:</span> {yearRange[0]}-{yearRange[1]}
+            </div>
+            <div>
+              <span className="font-medium">Age Cohorts:</span> 5 groups (13-24, 25-34, 35-44, 45-54, 55+)
+            </div>
+            <div>
+              <span className="font-medium">View:</span> {normalized ? 'Normalized' : 'Absolute'}
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
@@ -76,43 +103,60 @@ export default function HIVAgeProjectionsPage() {
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
       <section className="border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-6 py-24">
-          <div className="grid lg:grid-cols-5 gap-16">
-            <div className="lg:col-span-3">
+        <div className="max-w-7xl mx-auto px-6 py-20">
+          <div className="grid lg:grid-cols-3 gap-12">
+            <div className="lg:col-span-2">
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8 }}
               >
-                <p className="text-hopkins-blue text-sm font-semibold tracking-widest uppercase mb-6">
-                  Demographic Analysis
+                <p className="text-hopkins-blue text-sm font-semibold tracking-widest uppercase mb-4">
+                  JHEEM Modeling Analysis
                 </p>
-                <h1 className="text-5xl lg:text-6xl font-extralight text-gray-900 leading-none mb-8 tracking-tight">
-                  HIV Age<br />
-                  <span className="font-medium">Projections</span>
+                <h1 className="text-4xl lg:text-5xl font-light text-gray-900 leading-tight mb-6">
+                  Projected Aging Among<br />
+                  <span className="font-semibold">People with HIV</span>
                 </h1>
-                <p className="text-xl text-gray-600 leading-relaxed mb-8 font-light max-w-lg">
-                  Interactive exploration of projected HIV age distributions across US states
-                  from 2025 to 2040, revealing demographic shifts in the HIV epidemic.
+                <p className="text-lg text-gray-700 leading-relaxed mb-6 max-w-2xl">
+                  By 2040, the median age of adults with diagnosed HIV across 24 US states
+                  will rise from 51 to 62 years. State-level patterns vary substantially:
+                  more populous, urban states with older epidemics will age significantly,
+                  while rural states with younger populations may see little change.
+                </p>
+                <p className="text-base text-gray-600 leading-relaxed max-w-2xl">
+                  This interactive tool allows you to explore how aging dynamics differ by state
+                  and demographic group, informing planning for age-related comorbidities among
+                  people living with HIV.
                 </p>
               </motion.div>
             </div>
 
-            <div className="lg:col-span-2">
+            <div className="lg:col-span-1">
               <motion.div
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.8, delay: 0.2 }}
-                className="bg-gradient-to-br from-slate-50 to-blue-50/50 p-8 h-full flex flex-col justify-center rounded-2xl"
+                className="bg-gradient-to-br from-hopkins-blue/5 to-hopkins-spirit-blue/10 p-6 rounded-xl space-y-6"
               >
-                <div className="text-center mb-8">
-                  <div className="text-4xl font-light text-hopkins-blue mb-2">2025-2040</div>
-                  <p className="text-sm text-gray-600 uppercase tracking-wide">Projection Period</p>
+                <div className="border-b border-hopkins-blue/20 pb-4">
+                  <div className="text-3xl font-light text-hopkins-blue mb-1">24 States</div>
+                  <p className="text-xs text-gray-600 uppercase tracking-wide">86% of Diagnosed Cases</p>
                 </div>
-                <div className="space-y-4 text-sm text-gray-700">
-                  <p>Age cohort projections across US states</p>
-                  <p>Interactive temporal analysis and comparison</p>
-                  <p>Demographic transition visualization</p>
+
+                <div className="space-y-3 text-sm">
+                  <div className="flex items-start gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-hopkins-blue mt-1.5 flex-shrink-0" />
+                    <p className="text-gray-700">Median age rising 11 years (51→62) by 2040</p>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-hopkins-blue mt-1.5 flex-shrink-0" />
+                    <p className="text-gray-700">Over 50% aged 65+ by 2040</p>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-hopkins-blue mt-1.5 flex-shrink-0" />
+                    <p className="text-gray-700">Substantial variation across states</p>
+                  </div>
                 </div>
               </motion.div>
             </div>
@@ -120,8 +164,8 @@ export default function HIVAgeProjectionsPage() {
         </div>
       </section>
 
-      {/* Main App Area - Chart Test */}
-      <section className="py-20">
+      {/* Main App Area */}
+      <section className="py-16">
         <div className="max-w-7xl mx-auto px-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -129,31 +173,12 @@ export default function HIVAgeProjectionsPage() {
             transition={{ duration: 0.6, delay: 0.4 }}
           >
             <div className="bg-gradient-to-br from-hopkins-blue/5 to-hopkins-spirit-blue/10 rounded-2xl p-8">
-              <h2 className="text-3xl font-light text-gray-900 mb-8 text-center">
-                Interactive Visualization Demo
+              <h2 className="text-2xl font-light text-gray-900 mb-6 text-center">
+                Interactive State-Level Analysis
               </h2>
 
-              {/* Test Chart */}
-              <ChartTestComponent />
-
-              {/* Feature Preview */}
-              <div className="grid md:grid-cols-3 gap-6 text-center mt-12">
-                <div className="bg-white rounded-xl p-6 shadow-sm">
-                  <div className="text-2xl mb-2">📊</div>
-                  <h3 className="font-medium text-gray-900 mb-2">Multi-State Comparison</h3>
-                  <p className="text-sm text-gray-600">Side-by-side state analysis</p>
-                </div>
-                <div className="bg-white rounded-xl p-6 shadow-sm">
-                  <div className="text-2xl mb-2">⚖️</div>
-                  <h3 className="font-medium text-gray-900 mb-2">Normalization Toggle</h3>
-                  <p className="text-sm text-gray-600">Absolute vs. proportional views</p>
-                </div>
-                <div className="bg-white rounded-xl p-6 shadow-sm">
-                  <div className="text-2xl mb-2">📈</div>
-                  <h3 className="font-medium text-gray-900 mb-2">Timeline Controls</h3>
-                  <p className="text-sm text-gray-600">Year range selection</p>
-                </div>
-              </div>
+              {/* Multi-State Comparison */}
+              <MultiStateComparison />
             </div>
           </motion.div>
         </div>

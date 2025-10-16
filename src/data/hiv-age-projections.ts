@@ -137,12 +137,18 @@ export const AGE_COHORT_COLORS = {
   '55+': '#10B981'    // Dark green for oldest
 } as const;
 
+// Chart data type for transformed data
+export interface ChartDataPoint {
+  year: number;
+  [key: string]: number;
+}
+
 // Transform data for Recharts stacked area chart
 export function transformDataForChart(
   states: StateAgeData[],
   yearRange: [number, number] = [2025, 2040],
   normalized: boolean = false
-): any[] {
+): ChartDataPoint[] {
   if (states.length === 0) return [];
 
   const [startYear, endYear] = yearRange;
@@ -152,7 +158,7 @@ export function transformDataForChart(
   );
 
   return years.map(year => {
-    const yearData: any = { year };
+    const yearData: ChartDataPoint = { year };
 
     states.forEach(state => {
       const yearProjection = state.data.find(d => d.year === year);
