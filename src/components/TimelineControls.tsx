@@ -85,9 +85,6 @@ const TimelineControls = memo(({
               opacity: 1,
               boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
             },
-            dot: {
-              display: 'none',
-            },
           }}
           className="timeline-slider"
         />
