@@ -73,13 +73,13 @@ const AgeDistributionChart = memo(({
       const total = payload.reduce((sum: number, entry: TooltipPayload) => sum + (entry.value || 0), 0);
 
       return (
-        <div className="relative z-50 bg-white/95 backdrop-blur-sm p-4 border border-gray-300 rounded-xl shadow-xl">
+        <div className="relative z-50 bg-white/98 backdrop-blur-xl p-4 border-2 border-gray-200/60 rounded-2xl shadow-2xl ring-1 ring-black/5">
           {/* Header */}
-          <div className="mb-3 pb-2 border-b border-gray-200">
-            <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+          <div className="mb-3 pb-2 border-b border-gray-200/70">
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
               {stateName}
             </p>
-            <p className="text-lg font-bold text-hopkins-blue">
+            <p className="text-xl font-bold text-hopkins-blue bg-gradient-to-r from-hopkins-blue to-hopkins-spirit-blue bg-clip-text">
               {label}
             </p>
           </div>
@@ -152,21 +152,23 @@ const AgeDistributionChart = memo(({
             <button
               key={cohort}
               onClick={() => toggleCohort(cohort)}
-              className={`group flex items-center ${isCompact ? 'gap-1.5 px-2 py-1' : 'gap-2 px-3 py-1.5'} rounded-md transition-all ${
+              className={`group flex items-center ${isCompact ? 'gap-1.5 px-2 py-1' : 'gap-2 px-3 py-1.5'} rounded-lg border transition-all duration-200 ${
                 isVisible
-                  ? 'bg-white hover:bg-gray-50'
-                  : 'bg-transparent'
+                  ? 'bg-white/90 hover:bg-white border-gray-200 hover:border-gray-300 shadow-sm hover:shadow-md hover:scale-105'
+                  : 'bg-transparent border-transparent hover:bg-gray-50'
               }`}
               title={isVisible ? 'Click to hide this age group' : 'Click to show this age group'}
+              aria-label={`${isVisible ? 'Hide' : 'Show'} age group ${cohort}`}
             >
               <div
-                className={`${isCompact ? 'w-2.5 h-2.5' : 'w-3.5 h-3.5'} rounded-sm transition-all ${
+                className={`${isCompact ? 'w-2.5 h-2.5' : 'w-3.5 h-3.5'} rounded transition-all duration-200 ${
                   isVisible
-                    ? 'shadow-sm'
+                    ? 'shadow-sm group-hover:shadow-md'
                     : 'opacity-30 grayscale'
                 }`}
                 style={{
                   backgroundColor: color,
+                  boxShadow: isVisible ? `0 0 8px ${color}40` : 'none',
                 }}
               />
               <span className={`${isCompact ? 'text-xs' : 'text-sm'} transition-all ${
@@ -202,15 +204,41 @@ const AgeDistributionChart = memo(({
             bottom: 5,
           }}
         >
-          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+          {/* Gradient Definitions for Modern Look */}
+          <defs>
+            <linearGradient id="gradient-13-24" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#F59E0B" stopOpacity={0.95} />
+              <stop offset="100%" stopColor="#F59E0B" stopOpacity={0.7} />
+            </linearGradient>
+            <linearGradient id="gradient-25-34" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#3B82F6" stopOpacity={0.95} />
+              <stop offset="100%" stopColor="#3B82F6" stopOpacity={0.7} />
+            </linearGradient>
+            <linearGradient id="gradient-35-44" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#EF4444" stopOpacity={0.95} />
+              <stop offset="100%" stopColor="#EF4444" stopOpacity={0.7} />
+            </linearGradient>
+            <linearGradient id="gradient-45-54" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#84CC16" stopOpacity={0.95} />
+              <stop offset="100%" stopColor="#84CC16" stopOpacity={0.7} />
+            </linearGradient>
+            <linearGradient id="gradient-55+" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#10B981" stopOpacity={0.95} />
+              <stop offset="100%" stopColor="#10B981" stopOpacity={0.7} />
+            </linearGradient>
+          </defs>
+
+          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" opacity={0.6} />
           <XAxis
             dataKey="year"
-            tick={{ fontSize: 12 }}
-            stroke="#666"
+            tick={{ fontSize: 12, fill: '#6b7280' }}
+            stroke="#d1d5db"
+            tickLine={{ stroke: '#d1d5db' }}
           />
           <YAxis
-            tick={{ fontSize: 12 }}
-            stroke="#666"
+            tick={{ fontSize: 12, fill: '#6b7280' }}
+            stroke="#d1d5db"
+            tickLine={{ stroke: '#d1d5db' }}
             domain={normalized ? [0, 100] : [0, 'auto']}
             ticks={normalized ? [0, 25, 50, 75, 100] : undefined}
             tickFormatter={(value) => {
@@ -223,44 +251,49 @@ const AgeDistributionChart = memo(({
           <Tooltip
             content={<CustomTooltip />}
             wrapperStyle={{ zIndex: 1000 }}
-            cursor={{ fill: 'rgba(0, 45, 114, 0.05)' }}
+            cursor={{ fill: 'rgba(0, 45, 114, 0.08)', radius: 8 }}
           />
           <Legend content={<CustomLegend />} />
 
-          {/* Stacked bars for each age cohort - conditionally rendered based on visibility */}
+          {/* Stacked bars with gradient fills */}
           {visibleCohorts.has('13-24') && (
             <Bar
               dataKey={`${statePrefix}_13-24`}
               stackId="1"
-              fill={AGE_COHORT_COLORS['13-24']}
+              fill="url(#gradient-13-24)"
+              radius={[0, 0, 0, 0]}
             />
           )}
           {visibleCohorts.has('25-34') && (
             <Bar
               dataKey={`${statePrefix}_25-34`}
               stackId="1"
-              fill={AGE_COHORT_COLORS['25-34']}
+              fill="url(#gradient-25-34)"
+              radius={[0, 0, 0, 0]}
             />
           )}
           {visibleCohorts.has('35-44') && (
             <Bar
               dataKey={`${statePrefix}_35-44`}
               stackId="1"
-              fill={AGE_COHORT_COLORS['35-44']}
+              fill="url(#gradient-35-44)"
+              radius={[0, 0, 0, 0]}
             />
           )}
           {visibleCohorts.has('45-54') && (
             <Bar
               dataKey={`${statePrefix}_45-54`}
               stackId="1"
-              fill={AGE_COHORT_COLORS['45-54']}
+              fill="url(#gradient-45-54)"
+              radius={[0, 0, 0, 0]}
             />
           )}
           {visibleCohorts.has('55+') && (
             <Bar
               dataKey={`${statePrefix}_55+`}
               stackId="1"
-              fill={AGE_COHORT_COLORS['55+']}
+              fill="url(#gradient-55+)"
+              radius={[4, 4, 0, 0]}
             />
           )}
         </BarChart>

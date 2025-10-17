@@ -55,20 +55,20 @@ function MultiStateComparison() {
       {/* Quick Stats */}
       {selectedStates.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg p-4 border border-gray-200">
-            <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Time Period</div>
-            <div className="text-lg font-semibold text-gray-900">{yearRange[0]}–{yearRange[1]}</div>
-            <div className="text-xs text-gray-600 mt-0.5">{yearRange[1] - yearRange[0] + 1} years</div>
+          <div className="group bg-gradient-to-br from-hopkins-blue/5 via-white to-gray-50 rounded-xl p-5 border border-gray-200/60 shadow-sm hover:shadow-lg hover:scale-[1.02] transition-all duration-300">
+            <div className="text-xs font-bold text-hopkins-blue uppercase tracking-wider mb-2">Time Period</div>
+            <div className="text-2xl font-bold text-gray-900 mb-1">{yearRange[0]}–{yearRange[1]}</div>
+            <div className="text-xs text-gray-600 font-medium">{yearRange[1] - yearRange[0] + 1} years of projection</div>
           </div>
-          <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg p-4 border border-gray-200">
-            <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Age Cohorts</div>
-            <div className="text-lg font-semibold text-gray-900">5 Groups</div>
-            <div className="text-xs text-gray-600 mt-0.5">13-24, 25-34, 35-44, 45-54, 55+</div>
+          <div className="group bg-gradient-to-br from-hopkins-spirit-blue/5 via-white to-gray-50 rounded-xl p-5 border border-gray-200/60 shadow-sm hover:shadow-lg hover:scale-[1.02] transition-all duration-300">
+            <div className="text-xs font-bold text-hopkins-spirit-blue uppercase tracking-wider mb-2">Age Cohorts</div>
+            <div className="text-2xl font-bold text-gray-900 mb-1">5 Groups</div>
+            <div className="text-xs text-gray-600 font-medium">13-24, 25-34, 35-44, 45-54, 55+</div>
           </div>
-          <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg p-4 border border-gray-200">
-            <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Display Mode</div>
-            <div className="text-lg font-semibold text-gray-900">{normalized ? 'Proportional (%)' : 'Cases'}</div>
-            <div className="text-xs text-gray-600 mt-0.5">{normalized ? 'Within-state distribution' : 'Absolute case counts'}</div>
+          <div className="group bg-gradient-to-br from-hopkins-gold/10 via-white to-gray-50 rounded-xl p-5 border border-gray-200/60 shadow-sm hover:shadow-lg hover:scale-[1.02] transition-all duration-300">
+            <div className="text-xs font-bold text-hopkins-blue uppercase tracking-wider mb-2">Display Mode</div>
+            <div className="text-2xl font-bold text-gray-900 mb-1">{normalized ? 'Proportional (%)' : 'Cases'}</div>
+            <div className="text-xs text-gray-600 font-medium">{normalized ? 'Within-state distribution' : 'Absolute case counts'}</div>
           </div>
         </div>
       )}

@@ -76,12 +76,13 @@ const StateSelector = memo(({
               key={state.state_code}
               onClick={() => !isDisabled && handleStateToggle(state.state_name)}
               disabled={isDisabled}
-              className={`px-2 py-1.5 text-xs rounded-md border-2 transition-all disabled:opacity-30 disabled:cursor-not-allowed ${
+              className={`group px-2 py-1.5 text-xs rounded-lg border-2 transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed ${
                 isSelected
-                  ? 'bg-hopkins-blue text-white border-hopkins-blue font-semibold'
-                  : 'bg-white text-gray-700 border-gray-300 hover:border-hopkins-blue hover:bg-gray-50'
+                  ? 'bg-gradient-to-br from-hopkins-blue to-hopkins-spirit-blue text-white border-hopkins-blue font-semibold shadow-md hover:shadow-lg scale-105'
+                  : 'bg-white text-gray-700 border-gray-300 hover:border-hopkins-blue hover:bg-gray-50 hover:scale-105 hover:shadow-sm'
               }`}
               title={state.state_name}
+              aria-label={`${isSelected ? 'Deselect' : 'Select'} ${state.state_name}`}
             >
               <div className="flex items-center justify-between gap-1.5">
                 <span className="truncate">

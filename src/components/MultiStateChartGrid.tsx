@@ -87,26 +87,33 @@ const MultiStateChartGrid = memo(({
         </div>
 
         <div className="flex items-center gap-4">
-          {/* Display Mode Toggle */}
+          {/* Enhanced Display Mode Toggle */}
           {onNormalizedChange && (
-            <div className="flex items-center gap-2">
-              <label className="text-xs font-medium text-gray-600 whitespace-nowrap">
+            <div className="flex items-center gap-3 bg-gradient-to-r from-gray-50 to-gray-100 px-4 py-2 rounded-xl border border-gray-200 shadow-sm">
+              <label className="text-xs font-semibold text-gray-600 whitespace-nowrap">
                 Display:
               </label>
               <button
                 onClick={() => onNormalizedChange(!normalized)}
-                className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all border-2 ${
+                className={`group relative px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-300 shadow-sm hover:shadow-md ${
                   normalized
-                    ? 'bg-hopkins-blue text-white border-hopkins-blue shadow-sm hover:bg-hopkins-spirit-blue'
-                    : 'bg-white text-gray-700 border-gray-300 hover:border-hopkins-blue hover:bg-gray-50'
+                    ? 'bg-gradient-to-r from-hopkins-blue to-hopkins-spirit-blue text-white scale-105'
+                    : 'bg-white text-gray-700 border-2 border-gray-300 hover:border-hopkins-blue hover:scale-105'
                 }`}
+                title={normalized ? 'Switch to absolute case counts' : 'Switch to proportional view'}
               >
-                {normalized ? '📊 Proportional (%)' : '📈 Cases'}
+                <span className="flex items-center gap-2">
+                  <span className="text-lg">{normalized ? '📊' : '📈'}</span>
+                  <span>{normalized ? 'Proportional (%)' : 'Cases'}</span>
+                </span>
+                {normalized && (
+                  <div className="absolute inset-0 rounded-lg bg-white/20 blur-sm -z-10"></div>
+                )}
               </button>
             </div>
           )}
 
-          <div className="text-xs text-gray-500 whitespace-nowrap">
+          <div className="text-xs text-gray-500 whitespace-nowrap font-medium">
             {yearRange[0]}–{yearRange[1]}
           </div>
         </div>
@@ -117,14 +124,19 @@ const MultiStateChartGrid = memo(({
         {states.map((state, index) => {
           const statePrefix = state.state_name.replace(/\s+/g, '_');
 
+          // Smart animation delays: reduce delay for large state counts
+          const animationDelay = states.length > 6
+            ? Math.min(index * 0.03, 0.3) // Max 300ms total delay for many states
+            : index * 0.1; // Normal stagger for few states
+
           return (
             <motion.div
               key={state.state_code}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 20 }}
-              transition={{ delay: index * 0.1, duration: 0.4 }}
-              className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow p-5"
+              transition={{ delay: animationDelay, duration: 0.4 }}
+              className="group bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-lg hover:scale-[1.02] transition-all duration-300 p-5"
             >
               <AgeDistributionChart
                 data={chartData}
