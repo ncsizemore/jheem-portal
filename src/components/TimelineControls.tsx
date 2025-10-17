@@ -42,18 +42,18 @@ const TimelineControls = memo(({
   };
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4 w-full">
       <div className="flex items-center justify-between">
         <label className="block text-sm font-semibold text-gray-700">
           Timeline Range
         </label>
-        <div className="text-sm font-bold text-hopkins-blue">
+        <div className="text-lg font-bold text-hopkins-blue">
           {startYear}–{endYear}
         </div>
       </div>
 
-      {/* Range Slider */}
-      <div className="px-2 pt-2 pb-8">
+      {/* Range Slider - larger */}
+      <div className="px-2 pt-3 pb-10">
         <Slider
           range
           min={minYear}
@@ -65,23 +65,23 @@ const TimelineControls = memo(({
           styles={{
             track: {
               backgroundColor: '#002D72', // hopkins-blue
-              height: 8,
+              height: 10,
             },
             tracks: {
               backgroundColor: '#002D72',
-              height: 8,
+              height: 10,
             },
             rail: {
               backgroundColor: '#e5e7eb', // gray-200
-              height: 8,
+              height: 10,
             },
             handle: {
               backgroundColor: '#fff',
               borderColor: '#002D72',
               borderWidth: 3,
-              width: 20,
-              height: 20,
-              marginTop: -6,
+              width: 24,
+              height: 24,
+              marginTop: -7,
               opacity: 1,
               boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
             },
@@ -90,18 +90,18 @@ const TimelineControls = memo(({
         />
       </div>
 
-      {/* Quick Preset Buttons */}
-      <div className="flex flex-wrap gap-2">
+      {/* Quick Preset Buttons - full width grid */}
+      <div className="grid grid-cols-2 gap-2">
         {presets.map((preset) => {
           const isActive = preset.range[0] === startYear && preset.range[1] === endYear;
           return (
             <button
               key={preset.label}
               onClick={() => onYearRangeChange(preset.range)}
-              className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
+              className={`px-4 py-2.5 text-sm font-semibold rounded-lg transition-all shadow-sm ${
                 isActive
-                  ? 'bg-hopkins-blue text-white shadow-sm'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  ? 'bg-gradient-to-br from-hopkins-blue to-hopkins-spirit-blue text-white shadow-md hover:shadow-lg'
+                  : 'bg-white text-gray-700 border-2 border-gray-300 hover:border-hopkins-blue hover:bg-gray-50'
               }`}
             >
               {preset.label}
@@ -111,7 +111,7 @@ const TimelineControls = memo(({
       </div>
 
       {/* Info text */}
-      <p className="text-xs text-gray-500 leading-relaxed">
+      <p className="text-xs text-gray-500 leading-relaxed text-center">
         Showing {endYear - startYear + 1} year{endYear - startYear + 1 !== 1 ? 's' : ''} of projection data
         {endYear - startYear + 1 < maxYear - minYear + 1 && ' (filtered view)'}
       </p>
@@ -129,6 +129,7 @@ const TimelineControls = memo(({
           box-shadow: 0 0 0 4px rgba(104, 172, 229, 0.3) !important;
         }
 
+        /* Year marker text */
         .timeline-slider .rc-slider-mark-text {
           font-size: 11px;
           color: #9ca3af;
@@ -138,6 +139,11 @@ const TimelineControls = memo(({
         .timeline-slider .rc-slider-mark-text-active {
           color: #002D72;
           font-weight: 500;
+        }
+
+        /* Year marker dots - hide them, they look awkward */
+        .timeline-slider .rc-slider-dot {
+          display: none;
         }
       `}</style>
     </div>

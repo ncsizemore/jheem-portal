@@ -19,7 +19,7 @@ function MultiStateComparison() {
 
   return (
     <div className="bg-white rounded-xl p-8 shadow-lg space-y-8">
-      {/* Controls Section - Equal width columns */}
+      {/* Controls Section - Equal width columns with matching heights */}
       <div className="flex flex-col lg:flex-row gap-5">
         {/* State Selector - 50% width on desktop */}
         <div className="lg:flex-1 bg-gray-50 rounded-lg p-4 border border-gray-200">
@@ -51,27 +51,6 @@ function MultiStateComparison() {
         yearRange={yearRange}
         onNormalizedChange={setNormalized}
       />
-
-      {/* Quick Stats */}
-      {selectedStates.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="group bg-gradient-to-br from-hopkins-blue/5 via-white to-gray-50 rounded-xl p-5 border border-gray-200/60 shadow-sm hover:shadow-lg hover:scale-[1.02] transition-all duration-300">
-            <div className="text-xs font-bold text-hopkins-blue uppercase tracking-wider mb-2">Time Period</div>
-            <div className="text-2xl font-bold text-gray-900 mb-1">{yearRange[0]}–{yearRange[1]}</div>
-            <div className="text-xs text-gray-600 font-medium">{yearRange[1] - yearRange[0] + 1} years of projection</div>
-          </div>
-          <div className="group bg-gradient-to-br from-hopkins-spirit-blue/5 via-white to-gray-50 rounded-xl p-5 border border-gray-200/60 shadow-sm hover:shadow-lg hover:scale-[1.02] transition-all duration-300">
-            <div className="text-xs font-bold text-hopkins-spirit-blue uppercase tracking-wider mb-2">Age Cohorts</div>
-            <div className="text-2xl font-bold text-gray-900 mb-1">5 Groups</div>
-            <div className="text-xs text-gray-600 font-medium">13-24, 25-34, 35-44, 45-54, 55+</div>
-          </div>
-          <div className="group bg-gradient-to-br from-hopkins-gold/10 via-white to-gray-50 rounded-xl p-5 border border-gray-200/60 shadow-sm hover:shadow-lg hover:scale-[1.02] transition-all duration-300">
-            <div className="text-xs font-bold text-hopkins-blue uppercase tracking-wider mb-2">Display Mode</div>
-            <div className="text-2xl font-bold text-gray-900 mb-1">{normalized ? 'Proportional (%)' : 'Cases'}</div>
-            <div className="text-xs text-gray-600 font-medium">{normalized ? 'Within-state distribution' : 'Absolute case counts'}</div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
@@ -152,10 +131,6 @@ export default function HIVAgeProjectionsPage() {
             transition={{ duration: 0.6, delay: 0.4 }}
           >
             <div className="bg-gradient-to-br from-hopkins-blue/5 to-hopkins-spirit-blue/10 rounded-2xl p-8">
-              <h2 className="text-2xl font-light text-gray-900 mb-8 text-center">
-                Compare age distribution patterns across states over time
-              </h2>
-
               {/* Multi-State Comparison */}
               <MultiStateComparison />
             </div>

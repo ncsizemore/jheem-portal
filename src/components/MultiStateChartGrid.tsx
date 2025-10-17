@@ -1,6 +1,6 @@
 'use client';
 
-import React, { memo, useMemo, useState, useEffect } from 'react';
+import React, { memo, useMemo, useState, useEffect, useDeferredValue } from 'react';
 import { motion } from 'framer-motion';
 import AgeDistributionChart from './AgeDistributionChart';
 import { StateAgeData, transformDataForChart } from '@/data/hiv-age-projections';
@@ -76,14 +76,17 @@ const MultiStateChartGrid = memo(({
     }
   }, [renderedCount, states.length]);
 
+  // Defer normalized value to keep UI responsive during toggle
+  const deferredNormalized = useDeferredValue(normalized);
+
   // Calculate layout based on number of states
   const gridLayout = useMemo(() => getGridLayout(states.length), [states.length]);
 
-  // Transform data for all states
+  // Transform data for all states - use deferred normalized for smoother transitions
   const chartData = useMemo(() => {
     if (states.length === 0) return [];
-    return transformDataForChart(states, yearRange, normalized);
-  }, [states, yearRange, normalized]);
+    return transformDataForChart(states, yearRange, deferredNormalized);
+  }, [states, yearRange, deferredNormalized]);
 
   // If no states selected, show placeholder
   if (states.length === 0) {
