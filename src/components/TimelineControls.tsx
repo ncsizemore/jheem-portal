@@ -42,18 +42,18 @@ const TimelineControls = memo(({
   };
 
   return (
-    <div className="space-y-4 w-full">
+    <div className="space-y-2 w-full">
       <div className="flex items-center justify-between">
-        <label className="block text-sm font-semibold text-gray-700">
+        <label className="block text-xs font-semibold text-gray-700">
           Timeline Range
         </label>
-        <div className="text-lg font-bold text-hopkins-blue">
+        <div className="text-base font-bold text-hopkins-blue">
           {startYear}–{endYear}
         </div>
       </div>
 
-      {/* Range Slider - larger */}
-      <div className="px-2 pt-3 pb-10">
+      {/* Range Slider */}
+      <div className="px-2 pt-2 pb-8">
         <Slider
           range
           min={minYear}
@@ -98,7 +98,7 @@ const TimelineControls = memo(({
             <button
               key={preset.label}
               onClick={() => onYearRangeChange(preset.range)}
-              className={`px-4 py-2.5 text-sm font-semibold rounded-lg transition-all shadow-sm ${
+              className={`px-3 py-2 text-xs font-semibold rounded-lg transition-all shadow-sm ${
                 isActive
                   ? 'bg-gradient-to-br from-hopkins-blue to-hopkins-spirit-blue text-white shadow-md hover:shadow-lg'
                   : 'bg-white text-gray-700 border-2 border-gray-300 hover:border-hopkins-blue hover:bg-gray-50'
@@ -109,12 +109,6 @@ const TimelineControls = memo(({
           );
         })}
       </div>
-
-      {/* Info text */}
-      <p className="text-xs text-gray-500 leading-relaxed text-center">
-        Showing {endYear - startYear + 1} year{endYear - startYear + 1 !== 1 ? 's' : ''} of projection data
-        {endYear - startYear + 1 < maxYear - minYear + 1 && ' (filtered view)'}
-      </p>
 
       {/* Custom styling for rc-slider hover/active states */}
       <style jsx global>{`

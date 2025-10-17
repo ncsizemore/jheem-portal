@@ -1,7 +1,8 @@
 'use client';
 
-import React, { memo, useMemo, useState, useEffect } from 'react';
+import React, { memo, useMemo, useState, useEffect, useRef, useCallback } from 'react';
 import { motion } from 'framer-motion';
+import html2canvas from 'html2canvas';
 import AgeDistributionChart from './AgeDistributionChart';
 import { StateAgeData, transformDataForChart } from '@/data/hiv-age-projections';
 
@@ -9,7 +10,6 @@ interface MultiStateChartGridProps {
   states: StateAgeData[];
   normalized?: boolean;
   yearRange?: [number, number];
-  onNormalizedChange?: (normalized: boolean) => void;
 }
 
 // Smart grid layout calculator with optimized spacing
@@ -51,8 +51,7 @@ function getGridLayout(stateCount: number, screenWidth: number = 1200) {
 const MultiStateChartGrid = memo(({
   states,
   normalized = false,
-  yearRange = [2025, 2040],
-  onNormalizedChange
+  yearRange = [2025, 2040]
 }: MultiStateChartGridProps) => {
   // Staggered rendering: progressively render charts for better perceived performance
   const INITIAL_RENDER_COUNT = 6; // Show first 6 immediately
@@ -60,6 +59,7 @@ const MultiStateChartGrid = memo(({
   const BATCH_DELAY = 100; // 100ms between batches
 
   const [renderedCount, setRenderedCount] = useState(INITIAL_RENDER_COUNT);
+  const gridRef = useRef<HTMLDivElement>(null);
 
   // Reset rendered count when states, normalized, or yearRange changes
   // This triggers progressive re-rendering for smoother updates
@@ -86,6 +86,78 @@ const MultiStateChartGrid = memo(({
     return transformDataForChart(states, yearRange, normalized);
   }, [states, yearRange, normalized]);
 
+  // Export all charts as PNG
+  const handleExportCharts = useCallback(async () => {
+    if (!gridRef.current) return;
+
+    try {
+      // Wait a moment for any animations to complete
+      await new Promise(resolve => setTimeout(resolve, 300));
+
+      const canvas = await html2canvas(gridRef.current, {
+        backgroundColor: '#ffffff',
+        scale: 2, // Higher resolution
+        logging: false,
+        useCORS: true,
+        // Ignore elements that might have problematic color functions
+        ignoreElements: (element) => {
+          // Skip elements with data-html2canvas-ignore attribute
+          return element.hasAttribute('data-html2canvas-ignore');
+        },
+        onclone: (clonedDoc) => {
+          // Convert any lab() colors to hex before rendering
+          const elements = clonedDoc.querySelectorAll('*');
+          elements.forEach((el) => {
+            const htmlEl = el as HTMLElement;
+            const computedStyle = window.getComputedStyle(el);
+
+            // Fix background colors
+            if (computedStyle.backgroundColor && computedStyle.backgroundColor.includes('lab')) {
+              htmlEl.style.backgroundColor = 'rgb(255, 255, 255)';
+            }
+
+            // Fix text colors
+            if (computedStyle.color && computedStyle.color.includes('lab')) {
+              htmlEl.style.color = 'rgb(0, 0, 0)';
+            }
+
+            // Fix border colors
+            if (computedStyle.borderColor && computedStyle.borderColor.includes('lab')) {
+              htmlEl.style.borderColor = 'rgb(200, 200, 200)';
+            }
+          });
+        }
+      });
+
+      // Convert to blob and download
+      canvas.toBlob((blob) => {
+        if (blob) {
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          const timestamp = new Date().toISOString().split('T')[0];
+          const stateNames = states.length <= 3
+            ? states.map(s => s.state_name.replace(/\s+/g, '_')).join('_')
+            : `${states.length}_states`;
+          link.download = `hiv_age_projections_${stateNames}_${timestamp}.png`;
+          link.href = url;
+          link.click();
+          URL.revokeObjectURL(url);
+        }
+      });
+    } catch (error) {
+      console.error('Failed to export charts:', error);
+    }
+  }, [states]);
+
+  // Listen for export event from parent
+  useEffect(() => {
+    const handleExport = () => {
+      handleExportCharts();
+    };
+    window.addEventListener('exportCharts', handleExport);
+    return () => window.removeEventListener('exportCharts', handleExport);
+  }, [handleExportCharts]);
+
   // If no states selected, show placeholder
   if (states.length === 0) {
     return (
@@ -102,48 +174,9 @@ const MultiStateChartGrid = memo(({
   }
 
   return (
-    <div className="space-y-6">
-      {/* Grid Statistics and Display Controls */}
-      <div className="flex items-center justify-between gap-4 flex-wrap">
-        <div className="text-sm text-gray-600">
-          Comparing <span className="font-semibold text-hopkins-blue">{states.length}</span> state{states.length !== 1 ? 's' : ''}
-        </div>
-
-        <div className="flex items-center gap-4">
-          {/* Enhanced Display Mode Toggle */}
-          {onNormalizedChange && (
-            <div className="flex items-center gap-3 bg-gradient-to-r from-gray-50 to-gray-100 px-4 py-2 rounded-xl border border-gray-200 shadow-sm">
-              <label className="text-xs font-semibold text-gray-600 whitespace-nowrap">
-                Display:
-              </label>
-              <button
-                onClick={() => onNormalizedChange(!normalized)}
-                className={`group relative px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-300 shadow-sm hover:shadow-md ${
-                  normalized
-                    ? 'bg-gradient-to-r from-hopkins-blue to-hopkins-spirit-blue text-white scale-105'
-                    : 'bg-white text-gray-700 border-2 border-gray-300 hover:border-hopkins-blue hover:scale-105'
-                }`}
-                title={normalized ? 'Switch to absolute case counts' : 'Switch to proportional view'}
-              >
-                <span className="flex items-center gap-2">
-                  <span className="text-lg">{normalized ? '📊' : '📈'}</span>
-                  <span>{normalized ? 'Proportional (%)' : 'Cases'}</span>
-                </span>
-                {normalized && (
-                  <div className="absolute inset-0 rounded-lg bg-white/20 blur-sm -z-10"></div>
-                )}
-              </button>
-            </div>
-          )}
-
-          <div className="text-xs text-gray-500 whitespace-nowrap font-medium">
-            {yearRange[0]}–{yearRange[1]}
-          </div>
-        </div>
-      </div>
-
+    <div>
       {/* Responsive Chart Grid */}
-      <div className={`grid ${gridLayout.gap} ${gridLayout.gridClass}`}>
+      <div ref={gridRef} className={`grid ${gridLayout.gap} ${gridLayout.gridClass}`}>
         {states.map((state, index) => {
           const statePrefix = state.state_name.replace(/\s+/g, '_');
           const isRendered = index < renderedCount;
@@ -160,7 +193,7 @@ const MultiStateChartGrid = memo(({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 20 }}
               transition={{ delay: animationDelay, duration: 0.4 }}
-              className="group bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-lg hover:scale-[1.02] transition-all duration-300 p-5"
+              className="group bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-lg hover:scale-[1.02] transition-all duration-300 p-3"
             >
               {isRendered ? (
                 <>

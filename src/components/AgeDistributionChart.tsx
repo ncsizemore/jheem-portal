@@ -87,16 +87,18 @@ const AgeDistributionChart = memo(({
           {/* Age cohort data */}
           <div className="space-y-2">
             {payload.reverse().map((entry: TooltipPayload, index: number) => {
-              const cohort = entry.dataKey.split('_').slice(-1)[0];
+              const cohort = entry.dataKey.split('_').slice(-1)[0] as AgeCohort;
               const value = entry.value || 0;
               const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : '0.0';
+              // Use actual color from AGE_COHORT_COLORS, not gradient URL
+              const actualColor = AGE_COHORT_COLORS[cohort];
 
               return (
                 <div key={index} className="flex items-center justify-between gap-4 text-sm">
                   <div className="flex items-center gap-2 flex-shrink-0">
                     <div
                       className="w-3 h-3 rounded-sm shadow-sm"
-                      style={{ backgroundColor: entry.color }}
+                      style={{ backgroundColor: actualColor }}
                     />
                     <span className="font-medium text-gray-700">{cohort}</span>
                   </div>
@@ -187,20 +189,17 @@ const AgeDistributionChart = memo(({
 
   return (
     <div className="w-full">
-      <div className="mb-4 text-center">
-        <h3 className="text-lg font-semibold text-gray-900">{stateName}</h3>
-        <p className="text-sm text-gray-600">
-          {normalized ? 'Proportional Distribution' : 'Case Counts'}
-        </p>
+      <div className="mb-2 text-center">
+        <h3 className="text-base font-semibold text-gray-900">{stateName}</h3>
       </div>
 
       <ResponsiveContainer width="100%" height={height}>
         <BarChart
           data={data}
           margin={{
-            top: 10,
-            right: 30,
-            left: 20,
+            top: 5,
+            right: 10,
+            left: 10,
             bottom: 5,
           }}
         >

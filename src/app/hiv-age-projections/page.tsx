@@ -19,10 +19,10 @@ function MultiStateComparison() {
 
   return (
     <div className="bg-white rounded-xl p-8 shadow-lg space-y-8">
-      {/* Controls Section - Equal width columns with matching heights */}
-      <div className="flex flex-col lg:flex-row gap-5">
-        {/* State Selector - 50% width on desktop */}
-        <div className="lg:flex-1 bg-gray-50 rounded-lg p-4 border border-gray-200">
+      {/* Controls Section - 3 columns */}
+      <div className="flex flex-col lg:flex-row gap-4">
+        {/* State Selector - ~40% width */}
+        <div className="lg:w-[38%] bg-gray-50 rounded-lg p-3 border border-gray-200">
           <StateSelector
             selectedStates={selectedStateNames}
             onStateChange={setSelectedStateNames}
@@ -30,8 +30,8 @@ function MultiStateComparison() {
           />
         </div>
 
-        {/* Timeline Controls - 50% width on desktop */}
-        <div className="lg:flex-1 bg-gray-50 rounded-lg p-4 border border-gray-200">
+        {/* Timeline Controls - ~40% width */}
+        <div className="lg:w-[38%] bg-gray-50 rounded-lg p-3 border border-gray-200">
           <TimelineControls
             yearRange={yearRange}
             onYearRangeChange={setYearRange}
@@ -39,17 +39,55 @@ function MultiStateComparison() {
             maxYear={2040}
           />
         </div>
-      </div>
 
-      {/* Divider */}
-      <div className="border-t border-gray-200" />
+        {/* Display Mode and Export - ~20% width, stacked */}
+        <div className="lg:w-[24%] flex flex-col gap-2">
+          {/* Display Mode Toggle */}
+          <div className="bg-gray-50 rounded-lg p-2.5 border border-gray-200 flex flex-col items-center justify-center h-full">
+            <label className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
+              Display Mode
+            </label>
+            <button
+              onClick={() => setNormalized(!normalized)}
+              className={`w-full px-3 py-2 rounded-md text-xs font-semibold transition-all duration-300 shadow-sm hover:shadow-md ${
+                normalized
+                  ? 'bg-gradient-to-r from-hopkins-blue to-hopkins-spirit-blue text-white'
+                  : 'bg-white text-gray-700 border border-gray-300 hover:border-hopkins-blue'
+              }`}
+              title={normalized ? 'Switch to absolute case counts' : 'Switch to proportional view'}
+            >
+              <div className="flex flex-col items-center gap-1">
+                <span className="text-lg">{normalized ? '📊' : '📈'}</span>
+                <span>{normalized ? 'Proportional %' : 'Case Counts'}</span>
+              </div>
+            </button>
+          </div>
+
+          {/* Export PNG - Takes remaining space */}
+          <div className="bg-gray-50 rounded-lg p-2.5 border border-gray-200 flex items-center justify-center">
+            <button
+              onClick={() => {
+                // We'll need to expose this from MultiStateChartGrid
+                const event = new CustomEvent('exportCharts');
+                window.dispatchEvent(event);
+              }}
+              className="w-full flex flex-col items-center gap-1 px-3 py-2 text-xs font-semibold rounded-md bg-white border border-gray-300 text-gray-700 hover:border-hopkins-blue hover:bg-gray-50 transition-all shadow-sm hover:shadow-md"
+              title="Export all charts as PNG image"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+              <span>Export PNG</span>
+            </button>
+          </div>
+        </div>
+      </div>
 
       {/* Chart Grid */}
       <MultiStateChartGrid
         states={selectedStates}
         normalized={normalized}
         yearRange={yearRange}
-        onNormalizedChange={setNormalized}
       />
     </div>
   );
