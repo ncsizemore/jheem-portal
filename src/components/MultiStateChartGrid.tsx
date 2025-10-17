@@ -1,6 +1,6 @@
 'use client';
 
-import React, { memo, useMemo } from 'react';
+import React, { memo, useMemo, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import AgeDistributionChart from './AgeDistributionChart';
 import { StateAgeData, transformDataForChart } from '@/data/hiv-age-projections';
@@ -54,6 +54,28 @@ const MultiStateChartGrid = memo(({
   yearRange = [2025, 2040],
   onNormalizedChange
 }: MultiStateChartGridProps) => {
+  // Staggered rendering: progressively render charts for better perceived performance
+  const INITIAL_RENDER_COUNT = 6; // Show first 6 immediately
+  const BATCH_SIZE = 6; // Render 6 more at a time
+  const BATCH_DELAY = 100; // 100ms between batches
+
+  const [renderedCount, setRenderedCount] = useState(INITIAL_RENDER_COUNT);
+
+  // Reset rendered count when states change
+  useEffect(() => {
+    setRenderedCount(Math.min(INITIAL_RENDER_COUNT, states.length));
+  }, [states.length]);
+
+  // Progressively increase rendered count
+  useEffect(() => {
+    if (renderedCount < states.length) {
+      const timer = setTimeout(() => {
+        setRenderedCount(prev => Math.min(prev + BATCH_SIZE, states.length));
+      }, BATCH_DELAY);
+      return () => clearTimeout(timer);
+    }
+  }, [renderedCount, states.length]);
+
   // Calculate layout based on number of states
   const gridLayout = useMemo(() => getGridLayout(states.length), [states.length]);
 
@@ -123,6 +145,7 @@ const MultiStateChartGrid = memo(({
       <div className={`grid ${gridLayout.gap} ${gridLayout.gridClass}`}>
         {states.map((state, index) => {
           const statePrefix = state.state_name.replace(/\s+/g, '_');
+          const isRendered = index < renderedCount;
 
           // Smart animation delays: reduce delay for large state counts
           const animationDelay = states.length > 6
@@ -138,20 +161,43 @@ const MultiStateChartGrid = memo(({
               transition={{ delay: animationDelay, duration: 0.4 }}
               className="group bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-lg hover:scale-[1.02] transition-all duration-300 p-5"
             >
-              <AgeDistributionChart
-                data={chartData}
-                statePrefix={statePrefix}
-                stateName={state.state_name}
-                normalized={normalized}
-                height={gridLayout.chartHeight}
-              />
+              {isRendered ? (
+                <>
+                  <AgeDistributionChart
+                    data={chartData}
+                    statePrefix={statePrefix}
+                    stateName={state.state_name}
+                    normalized={normalized}
+                    height={gridLayout.chartHeight}
+                  />
 
-              {/* State-specific info */}
-              {state.state_name === 'Total' && (
-                <div className="mt-2 text-center">
-                  <span className="inline-block bg-hopkins-gold text-hopkins-blue text-xs font-bold px-2 py-1 rounded-full">
-                    AGGREGATE
-                  </span>
+                  {/* State-specific info */}
+                  {state.state_name === 'Total' && (
+                    <div className="mt-2 text-center">
+                      <span className="inline-block bg-hopkins-gold text-hopkins-blue text-xs font-bold px-2 py-1 rounded-full">
+                        AGGREGATE
+                      </span>
+                    </div>
+                  )}
+                </>
+              ) : (
+                /* Skeleton placeholder while chart loads */
+                <div className="w-full animate-pulse">
+                  <div className="mb-4 text-center space-y-2">
+                    <div className="h-5 bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 rounded-md w-3/4 mx-auto"></div>
+                    <div className="h-3 bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 rounded-md w-1/2 mx-auto"></div>
+                  </div>
+                  <div className="relative" style={{ height: `${gridLayout.chartHeight}px` }}>
+                    <div className="absolute inset-0 flex items-end justify-around gap-2 px-8 pb-8">
+                      {Array.from({ length: 8 }).map((_, i) => (
+                        <div
+                          key={i}
+                          className="flex-1 bg-gradient-to-t from-gray-300 via-gray-200 to-gray-100 rounded-t-md"
+                          style={{ height: `${Math.random() * 60 + 40}%` }}
+                        ></div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               )}
             </motion.div>
@@ -162,7 +208,8 @@ const MultiStateChartGrid = memo(({
       {/* Grid Layout Info (for debugging/development) */}
       {process.env.NODE_ENV === 'development' && (
         <div className="text-xs text-gray-400 bg-gray-50 p-2 rounded">
-          Grid: {gridLayout.cols} cols, Height: {gridLayout.chartHeight}px, Gap: {gridLayout.gap}, Class: {gridLayout.gridClass}
+          Grid: {gridLayout.cols} cols, Height: {gridLayout.chartHeight}px, Gap: {gridLayout.gap}, Class: {gridLayout.gridClass} |
+          Rendered: {renderedCount}/{states.length} charts
         </div>
       )}
     </div>

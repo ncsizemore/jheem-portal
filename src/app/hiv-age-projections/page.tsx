@@ -19,10 +19,10 @@ function MultiStateComparison() {
 
   return (
     <div className="bg-white rounded-xl p-8 shadow-lg space-y-8">
-      {/* Controls Section */}
-      <div className="flex flex-col lg:flex-row gap-5 lg:items-center">
-        {/* State Selector */}
-        <div className="flex-1 bg-gray-50 rounded-lg p-4 border border-gray-200">
+      {/* Controls Section - Equal width columns */}
+      <div className="flex flex-col lg:flex-row gap-5">
+        {/* State Selector - 50% width on desktop */}
+        <div className="lg:flex-1 bg-gray-50 rounded-lg p-4 border border-gray-200">
           <StateSelector
             selectedStates={selectedStateNames}
             onStateChange={setSelectedStateNames}
@@ -30,8 +30,8 @@ function MultiStateComparison() {
           />
         </div>
 
-        {/* Timeline Controls */}
-        <div className="lg:w-[400px] bg-gray-50 rounded-lg p-4 border border-gray-200">
+        {/* Timeline Controls - 50% width on desktop */}
+        <div className="lg:flex-1 bg-gray-50 rounded-lg p-4 border border-gray-200">
           <TimelineControls
             yearRange={yearRange}
             onYearRangeChange={setYearRange}

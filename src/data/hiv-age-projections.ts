@@ -29,6 +29,35 @@ export const AVAILABLE_STATES = [
   'Texas', 'Virginia', 'Washington', 'Wisconsin', 'Total'
 ] as const;
 
+// State abbreviations mapping for compact display
+export const STATE_ABBREVIATIONS: Record<string, string> = {
+  'Alabama': 'AL',
+  'Arkansas': 'AR',
+  'Arizona': 'AZ',
+  'California': 'CA',
+  'Colorado': 'CO',
+  'Florida': 'FL',
+  'Georgia': 'GA',
+  'Illinois': 'IL',
+  'Kentucky': 'KY',
+  'Louisiana': 'LA',
+  'Maryland': 'MD',
+  'Michigan': 'MI',
+  'Missouri': 'MO',
+  'Mississippi': 'MS',
+  'North Carolina': 'NC',
+  'New York': 'NY',
+  'Ohio': 'OH',
+  'Oklahoma': 'OK',
+  'South Carolina': 'SC',
+  'Tennessee': 'TN',
+  'Texas': 'TX',
+  'Virginia': 'VA',
+  'Washington': 'WA',
+  'Wisconsin': 'WI',
+  'Total': 'ALL'
+};
+
 // Generate realistic synthetic data that matches the patterns visible in the figure
 // The data shows:
 // - Generally aging HIV population (more 55+ over time, fewer 13-24)
