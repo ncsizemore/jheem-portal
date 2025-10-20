@@ -130,7 +130,8 @@ const StateSelector = memo(({
               key={state.state_code}
               onClick={() => !isDisabled && handleStateToggle(state.state_name)}
               disabled={isDisabled}
-              className={`group relative px-2 py-2 text-xs font-semibold rounded-lg border-2 transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed ${
+              title={isDisabled ? `Maximum states reached (${maxStates} max)` : ''}
+              className={`group relative px-2 py-2 text-xs font-semibold rounded-lg border-2 transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed disabled:grayscale ${
                 isTotal ? 'col-span-2' : ''
               } ${
                 isTotal

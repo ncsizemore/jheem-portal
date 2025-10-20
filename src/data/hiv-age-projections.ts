@@ -1,5 +1,8 @@
 // HIV Age Distribution Projections Data
 // Based on "Figure 2: Projected Age Distribution of People with Diagnosed HIV over Time"
+// Now using real JHEEM model outputs!
+
+import realDataAggregated from './hiv-age-projections-aggregated.json';
 
 export interface AgeCohortsData {
   '13-24': number;
@@ -7,6 +10,15 @@ export interface AgeCohortsData {
   '35-44': number;
   '45-54': number;
   '55+': number;
+}
+
+// Internal interface for loaded data (includes CI, will use median for now)
+interface AgeCohortsDataWithCI {
+  '13-24 years': { median: number; lower: number; upper: number };
+  '25-34 years': { median: number; lower: number; upper: number };
+  '35-44 years': { median: number; lower: number; upper: number };
+  '45-54 years': { median: number; lower: number; upper: number };
+  '55+ years': { median: number; lower: number; upper: number };
 }
 
 export interface YearProjection {
@@ -58,87 +70,70 @@ export const STATE_ABBREVIATIONS: Record<string, string> = {
   'Total': 'ALL'
 };
 
-// Generate realistic synthetic data that matches the patterns visible in the figure
-// The data shows:
+// Reverse mapping: Code to Name
+export const STATE_CODE_TO_NAME: Record<string, string> = Object.entries(STATE_ABBREVIATIONS).reduce(
+  (acc, [name, code]) => ({ ...acc, [code]: name }),
+  {} as Record<string, string>
+);
+
+// Helper: Convert state name to code
+export function getStateCode(stateName: string): string {
+  // Handle "Total" special case
+  if (stateName === 'Total') return 'total';
+
+  // Look up in mapping
+  const code = STATE_ABBREVIATIONS[stateName];
+  if (code) return code;
+
+  // Fallback: assume it's already a code
+  return stateName;
+}
+
+// Helper: Convert state code to name
+export function getStateName(stateCode: string): string {
+  // Handle "total" special case
+  if (stateCode === 'total') return 'Total';
+
+  // Look up in reverse mapping
+  const name = STATE_CODE_TO_NAME[stateCode.toUpperCase()];
+  if (name) return name;
+
+  // Fallback: return the code
+  return stateCode;
+}
+
+// Helper: Validate if a state code exists
+export function isValidStateCode(code: string): boolean {
+  return code === 'total' || code.toUpperCase() in STATE_CODE_TO_NAME;
+}
+
+// Helper: Validate if a state name exists
+export function isValidStateName(name: string): boolean {
+  return name === 'Total' || name in STATE_ABBREVIATIONS;
+}
+
+// Transform real data from JSON to app format (extract median, strip " years" suffix)
+// The real data shows the expected aging HIV population pattern:
 // - Generally aging HIV population (more 55+ over time, fewer 13-24)
 // - Significant state variation in absolute numbers
 // - Consistent demographic trends across states
+export const HIV_AGE_PROJECTIONS: StateAgeData[] = realDataAggregated.states.map(state => ({
+  state_code: state.state_code,
+  state_name: state.state_name,
+  data: state.data.map(yearData => ({
+    year: yearData.year,
+    age_cohorts: {
+      '13-24': (yearData.age_cohorts as AgeCohortsDataWithCI)['13-24 years'].median,
+      '25-34': (yearData.age_cohorts as AgeCohortsDataWithCI)['25-34 years'].median,
+      '35-44': (yearData.age_cohorts as AgeCohortsDataWithCI)['35-44 years'].median,
+      '45-54': (yearData.age_cohorts as AgeCohortsDataWithCI)['45-54 years'].median,
+      '55+': (yearData.age_cohorts as AgeCohortsDataWithCI)['55+ years'].median,
+    }
+  }))
+}));
 
-function generateStateProjections(
-  stateName: string,
-  basePopulation: number
-): YearProjection[] {
-  const years = Array.from({ length: 16 }, (_, i) => 2025 + i);
-
-  return years.map((year, index) => {
-    const yearProgress = index / 15; // 0 to 1 over 15 years
-
-    // Aging trend: decrease younger cohorts, increase older ones
-    const ageingFactor = yearProgress * 0.3; // 30% shift over 15 years
-
-    // Base distributions that change over time
-    const base13_24 = Math.max(0.08 - ageingFactor * 0.04, 0.04); // 8% -> 4%
-    const base25_34 = Math.max(0.20 - ageingFactor * 0.05, 0.15); // 20% -> 15%
-    const base35_44 = 0.25 - ageingFactor * 0.02; // 25% -> 23%
-    const base45_54 = 0.25 + ageingFactor * 0.02; // 25% -> 27%
-    const base55Plus = 0.22 + ageingFactor * 0.09; // 22% -> 31%
-
-    // Add some state-specific variation
-    const stateVariation = Math.sin(stateName.length * year) * 0.02;
-
-    return {
-      year,
-      age_cohorts: {
-        '13-24': Math.round(basePopulation * (base13_24 + stateVariation)),
-        '25-34': Math.round(basePopulation * (base25_34 + stateVariation)),
-        '35-44': Math.round(basePopulation * (base35_44 + stateVariation)),
-        '45-54': Math.round(basePopulation * (base45_54 + stateVariation)),
-        '55+': Math.round(basePopulation * (base55Plus + stateVariation))
-      }
-    };
-  });
-}
-
-// State population bases roughly matching the scale visible in the figure
-const STATE_POPULATION_BASES: Record<string, number> = {
-  'California': 120000, // Largest in figure
-  'Florida': 100000,
-  'Texas': 95000,
-  'New York': 110000,
-  'Georgia': 60000,
-  'North Carolina': 45000,
-  'Illinois': 35000,
-  'Maryland': 30000,
-  'Virginia': 25000,
-  'Ohio': 28000,
-  'Michigan': 20000,
-  'Washington': 18000,
-  'Tennessee': 22000,
-  'Louisiana': 25000,
-  'South Carolina': 20000,
-  'Alabama': 18000,
-  'Mississippi': 12000,
-  'Arkansas': 10000,
-  'Oklahoma': 9000,
-  'Missouri': 15000,
-  'Kentucky': 10000,
-  'Arizona': 16000,
-  'Colorado': 12000,
-  'Wisconsin': 8000,
-  'Total': 1000000 // Aggregate
-};
-
-// Generate the complete dataset
-export const HIV_AGE_PROJECTIONS: StateAgeData[] = AVAILABLE_STATES.map(stateName => {
-  const stateCode = stateName.toUpperCase().replace(/\s+/g, '_');
-  const basePopulation = STATE_POPULATION_BASES[stateName] || 10000;
-
-  return {
-    state_code: stateCode,
-    state_name: stateName,
-    data: generateStateProjections(stateName, basePopulation)
-  };
-});
+// Store full data (with CI) for future use when we add CI visualization
+export const HIV_AGE_PROJECTIONS_FULL = realDataAggregated.states;
 
 // Helper functions for data processing
 export function getStateByName(stateName: string): StateAgeData | undefined {

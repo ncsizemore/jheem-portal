@@ -1,0 +1,205 @@
+'use client';
+
+import { useMemo } from 'react';
+import MultiStateChartGrid from './MultiStateChartGrid';
+import StateSelector from './StateSelector';
+import TimelineControls from './TimelineControls';
+import { getMultiStateRaceData, RACE_CATEGORIES, RaceCategory } from '@/data/hiv-age-projections-race';
+import { StateAgeData, getStateCode } from '@/data/hiv-age-projections';
+
+interface ByRaceViewProps {
+  selectedStateNames: string[];
+  onStateChange: (states: string[]) => void;
+  selectedRaces: RaceCategory[];
+  onRacesChange: (races: RaceCategory[]) => void;
+  normalized: boolean;
+  onNormalizedChange: (normalized: boolean) => void;
+  yearRange: [number, number];
+  onYearRangeChange: (range: [number, number]) => void;
+}
+
+export default function ByRaceView({
+  selectedStateNames,
+  onStateChange,
+  selectedRaces,
+  onRacesChange,
+  normalized,
+  onNormalizedChange,
+  yearRange,
+  onYearRangeChange,
+}: ByRaceViewProps) {
+
+  // Calculate how many charts will be displayed
+  const chartCount = selectedStateNames.length * selectedRaces.length;
+  const maxCharts = 25;
+  const maxStates = Math.floor(maxCharts / selectedRaces.length);
+
+  // Transform race data into format that MultiStateChartGrid expects
+  const chartData: StateAgeData[] = useMemo(() => {
+    // Map state names to codes using centralized utility
+    const stateCodes = selectedStateNames.map(getStateCode);
+
+    const raceData = getMultiStateRaceData(stateCodes, selectedRaces);
+
+    // Transform into "virtual states" for the chart grid
+    // Each state+race combination becomes a virtual state like "CA_Black"
+    return raceData.map(item => ({
+      state_code: `${item.state_code}_${item.race}`,
+      state_name: `${item.state_name} - ${item.race_label}`,
+      data: item.data
+    }));
+  }, [selectedStateNames, selectedRaces]);
+
+  // Toggle race selection
+  const toggleRace = (race: RaceCategory) => {
+    if (selectedRaces.includes(race)) {
+      // Don't allow deselecting all races
+      if (selectedRaces.length > 1) {
+        onRacesChange(selectedRaces.filter(r => r !== race));
+      }
+    } else {
+      onRacesChange([...selectedRaces, race]);
+    }
+  };
+
+  return (
+    <div className="space-y-8">
+      {/* Warning: Approaching Chart Limit */}
+      {chartCount > 20 && chartCount <= 25 && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 flex items-start gap-3">
+          <span className="text-yellow-600 text-lg">⚠️</span>
+          <div className="flex-1">
+            <p className="text-sm font-semibold text-yellow-800">
+              Approaching chart limit ({chartCount}/25)
+            </p>
+            <p className="text-xs text-yellow-700 mt-1">
+              Deselect states or races to add more comparisons.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Info: Available Capacity */}
+      {chartCount < 15 && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-start gap-3">
+          <span className="text-blue-600 text-lg">ℹ️</span>
+          <div className="flex-1">
+            <p className="text-xs text-blue-700">
+              You can select up to {maxStates} states with {selectedRaces.length} race{selectedRaces.length !== 1 ? 's' : ''} selected.
+              Currently showing {chartCount} of 25 charts.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Controls Section */}
+      <div className="flex flex-col lg:flex-row gap-4">
+        {/* State Selector - ~40% width */}
+        <div className="lg:w-[38%] bg-gray-50 rounded-lg p-3 border border-gray-200">
+          <StateSelector
+            selectedStates={selectedStateNames}
+            onStateChange={onStateChange}
+            maxStates={maxStates}
+          />
+          <div className="mt-2 text-xs text-gray-500 text-center">
+            Max {maxStates} states × {selectedRaces.length} {selectedRaces.length === 1 ? 'race' : 'races'} = {chartCount} charts
+          </div>
+        </div>
+
+        {/* Timeline Controls - ~40% width */}
+        <div className="lg:w-[38%] bg-gray-50 rounded-lg p-3 border border-gray-200">
+          <TimelineControls
+            yearRange={yearRange}
+            onYearRangeChange={onYearRangeChange}
+            minYear={2025}
+            maxYear={2040}
+          />
+        </div>
+
+        {/* Display Mode and Race Selector - ~20% width */}
+        <div className="lg:w-[24%] flex flex-col gap-2">
+          {/* Display Mode Toggle */}
+          <div className="bg-gray-50 rounded-lg p-2.5 border border-gray-200 flex flex-col items-center justify-center">
+            <label className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
+              Display Mode
+            </label>
+            <button
+              onClick={() => onNormalizedChange(!normalized)}
+              className={`w-full px-3 py-2 rounded-md text-xs font-semibold transition-all duration-300 shadow-sm hover:shadow-md ${
+                normalized
+                  ? 'bg-gradient-to-r from-hopkins-blue to-hopkins-spirit-blue text-white'
+                  : 'bg-white text-gray-700 border border-gray-300 hover:border-hopkins-blue'
+              }`}
+            >
+              <div className="flex flex-col items-center gap-1">
+                <span className="text-lg">{normalized ? '📊' : '📈'}</span>
+                <span>{normalized ? 'Proportional %' : 'Case Counts'}</span>
+              </div>
+            </button>
+          </div>
+
+          {/* Export PNG */}
+          <div className="bg-gray-50 rounded-lg p-2.5 border border-gray-200 flex items-center justify-center">
+            <button
+              onClick={() => {
+                const event = new CustomEvent('exportCharts');
+                window.dispatchEvent(event);
+              }}
+              className="w-full flex flex-col items-center gap-1 px-3 py-2 text-xs font-semibold rounded-md bg-white border border-gray-300 text-gray-700 hover:border-hopkins-blue hover:bg-gray-50 transition-all shadow-sm hover:shadow-md"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+              <span>Export PNG</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Race Selector */}
+      <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+        <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 block">
+          Select Races
+        </label>
+        <div className="flex flex-wrap gap-3">
+          {(Object.keys(RACE_CATEGORIES) as RaceCategory[]).map((race) => {
+            const isSelected = selectedRaces.includes(race);
+            const raceLabel = RACE_CATEGORIES[race];
+
+            return (
+              <button
+                key={race}
+                onClick={() => toggleRace(race)}
+                className={`px-6 py-2.5 rounded-lg text-sm font-semibold transition-all shadow-sm ${
+                  isSelected
+                    ? 'bg-gradient-to-r from-hopkins-blue to-hopkins-spirit-blue text-white shadow-md'
+                    : 'bg-white text-gray-700 border border-gray-300 hover:border-hopkins-blue'
+                }`}
+              >
+                {raceLabel}
+              </button>
+            );
+          })}
+        </div>
+        {selectedRaces.length < 2 && (
+          <p className="text-xs text-gray-500 mt-2">
+            Select at least 2 races to enable deselection
+          </p>
+        )}
+      </div>
+
+      {/* Chart Grid */}
+      {chartData.length > 0 ? (
+        <MultiStateChartGrid
+          states={chartData}
+          normalized={normalized}
+          yearRange={yearRange}
+        />
+      ) : (
+        <div className="text-center py-12 text-gray-500">
+          <p>Please select at least one state and one race to view data.</p>
+        </div>
+      )}
+    </div>
+  );
+}

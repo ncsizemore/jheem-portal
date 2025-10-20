@@ -1,0 +1,255 @@
+===========================================
+JHEEM AGE RESULTS DATA EXPLORATION FINDINGS
+===========================================
+Date: October 20, 2025
+Exploration Scripts: exploration.R, exploration_race_sex.R
+
+
+===========================================
+1. DATA FILES AVAILABLE
+===========================================
+
+✓ age_results.Rdata           (111.6 MB)  - Aggregated by state, no race/sex
+✓ race_results.Rdata          (378.8 MB)  - Includes race dimension
+✓ race_sex_results.Rdata      (1141.0 MB) - Includes race AND sex dimensions
+✓ total_results.Rdata         (22.1 MB)   - Overall totals
+✓ state_order.Rdata           (tiny)      - State ordering for display
+✓ state_order_names.Rdata     (tiny)      - State name mappings
+
+⚠️  IMPORTANT DISCOVERY: We have 3 separate data files already prepared!
+   This is MUCH simpler than the original plan which assumed we'd need
+   to aggregate race/sex dimensions ourselves from a single array.
+
+
+===========================================
+2. AGE_RESULTS STRUCTURE (For "By State" Tab)
+===========================================
+
+Dimensions: [year, age, sim, outcome, location, intervention]
+            31 x 5 x 1000 x 8 x 24 x 1
+
+year (31 values):
+  - Range: 2010-2040 (31 years)
+  - ⚠️  WIDER than expected (plan assumed 2025-2040)
+  - ✓ We'll extract 2025-2040 (16 years) as planned
+
+age (5 values):
+  - ✓ MATCHES EXPECTED
+  - "13-24 years", "25-34 years", "35-44 years", "45-54 years", "55+ years"
+
+sim (1000 values):
+  - ✓ MATCHES EXPECTED
+  - Simulations numbered 1-1000
+  - Need to calculate median + 95% CI (2.5th and 97.5th percentiles)
+
+outcome (8 values):
+  - "incidence", "diagnosed.prevalence", "new", "suppression",
+    "population", "sexual.transmission.rates", "prep.uptake", "testing"
+  - ✓ Contains "diagnosed.prevalence" (what we need)
+
+location (24 values):
+  - 24 state codes: AL, AR, AZ, CA, CO, FL, GA, IL, KY, LA, MD, MI,
+    MO, MS, NC, NY, OH, OK, SC, TN, TX, VA, WA, WI
+  - ⚠️  NO "total" in this array (unlike the generate script example)
+  - ⚠️  We'll need to calculate "total" by summing all 24 states
+
+intervention (1 value):
+  - "noint" (no intervention scenario)
+
+❌ NO race dimension in age_results
+❌ NO sex dimension in age_results
+
+
+===========================================
+3. RACE_RESULTS STRUCTURE (For "By Race" Tab)
+===========================================
+
+Dimensions: [year, age, race, sim, outcome, location, intervention]
+            31 x 5 x 3 x 1000 x 9 x 24 x 1
+
+All dimensions same as age_results PLUS:
+
+race (3 values):
+  - "black", "hispanic", "other"
+  - ⚠️  Only 3 categories (more aggregated than expected)
+  - "other" likely includes: White, Asian, Native American, Other
+
+outcome (9 values):
+  - Same as age_results plus "infected"
+
+
+===========================================
+4. RACE_SEX_RESULTS STRUCTURE (For "By Sex" Tab)
+===========================================
+
+Dimensions: [year, age, race, sex, sim, outcome, location, intervention]
+            31 x 5 x 3 x 3 x 1000 x 9 x 24 x 1
+
+All dimensions same as race_results PLUS:
+
+sex (3 values):
+  - "heterosexual_male", "msm", "female"
+  - ✓ MATCHES EXPECTED from helpers.R
+  - We'll use map_sex() to transform to "msm" vs "non_msm"
+
+
+===========================================
+5. STATE ORDERING & NAMING
+===========================================
+
+state_order (25 values):
+  - Ordered list for display: CA, FL, NY, TX, GA, NC, IL, MD, OH, VA,
+    LA, AZ, TN, SC, MI, WA, CO, AL, MO, MS, KY, OK, WI, AR, "total"
+  - ✓ Includes "total" (but not in the data arrays - we calculate it)
+
+state_order_names (mapping):
+  - CA = "California"
+  - FL = "Florida"
+  - NY = "New York"
+  - TX = "Texas"
+  - GA = "Georgia"
+  - ... (full state names for display)
+
+
+===========================================
+6. SAMPLE DATA VALIDATION
+===========================================
+
+California 2025 diagnosed.prevalence (median by age):
+  - 13-24 years: 1,856 cases
+  - 25-34 years: 16,939 cases
+  - 35-44 years: 29,144 cases
+  - 45-54 years: 22,498 cases
+  - 55+ years:   70,034 cases
+  - TOTAL:       140,471 cases
+
+95% Confidence Intervals (example for 13-24):
+  - Lower: 1,473 cases
+  - Median: 1,856 cases
+  - Upper: 2,264 cases
+
+✓ get_stats() function works as expected
+✓ Returns array with dimensions [metric, age] where:
+    metric = ["lower", "median", "upper", "mean"]
+
+
+===========================================
+7. KEY DIFFERENCES FROM ORIGINAL PLAN
+===========================================
+
+ASSUMPTION vs. REALITY:
+
+1. Year Range
+   Expected: 2025-2040 (16 years)
+   Actual:   2010-2040 (31 years)
+   → We'll filter to 2025:2040 in processing script
+
+2. Race/Sex Aggregation
+   Expected: Single array with race & sex dimensions to aggregate
+   Actual:   THREE separate arrays already prepared!
+   → age_results:     aggregated (no race/sex)
+   → race_results:    by race only (sex summed)
+   → race_sex_results: by race and sex
+   → MUCH SIMPLER data processing!
+
+3. "Total" Location
+   Expected: "total" in the location dimension
+   Actual:   "total" not in arrays, must be calculated
+   → We'll sum all 24 states to create "total"
+
+4. Race Categories
+   Expected: Unknown count (possibly 5-6: Black, Hispanic, White, Asian, Other)
+   Actual:   3 categories: "black", "hispanic", "other"
+   → "other" is highly aggregated
+
+5. Race in Data Structure
+   Expected: Might be a dimension to aggregate
+   Actual:   Separate files already have appropriate aggregation
+   → No need for complex array manipulation!
+
+
+===========================================
+8. REVISED DATA PROCESSING APPROACH
+===========================================
+
+SIMPLIFIED PLAN:
+
+Step 1: Process age_results → hiv-age-projections-aggregated.json
+  - Extract years 2025-2040
+  - Extract "diagnosed.prevalence" outcome
+  - Apply get_stats() to calculate median + 95% CI
+  - Sum all 24 states to create "total" location
+  - Format for webapp
+
+Step 2: Process race_results → hiv-age-projections-by-race.json
+  - Same as Step 1, but includes race dimension
+  - 3 race categories: "black", "hispanic", "other"
+  - No need to aggregate sex (already done!)
+
+Step 3: Process race_sex_results → hiv-age-projections-by-sex.json
+  - Same as Step 1, but includes race + sex dimensions
+  - Use map_sex() to transform sex from 3 → 2 categories
+  - Sum across race dimension (keep sex separate)
+  - Output: msm vs non_msm
+
+
+===========================================
+9. VALIDATION STATUS
+===========================================
+
+✓ Data files exist and load successfully
+✓ Dimensions verified and documented
+✓ Age groups match expected (5 cohorts)
+✓ Year range covers 2025-2040 (with extra historical years)
+✓ "diagnosed.prevalence" outcome available
+✓ 1000 simulations per scenario
+✓ get_stats() function works correctly
+✓ Sample data extracted and validated
+
+⚠️  Visual comparison to paper not yet done (pending Step 2 completion)
+
+
+===========================================
+10. NEXT STEPS
+===========================================
+
+✅ Step 0 Complete: Data exploration finished
+
+→ Step 1: Create simplified data processing script
+   - Process age_results only first (MVP)
+   - Verify output matches expectations
+   - Compare to paper figure visually
+
+→ Step 2: Integrate aggregated data into web app
+   - Replace synthetic data with real data
+   - Test all 25 states (24 + total)
+
+→ Step 3: Add race_results processing (if Step 2 successful)
+
+→ Step 4: Add race_sex_results processing (if Step 3 successful)
+
+
+===========================================
+11. TECHNICAL NOTES
+===========================================
+
+Array Indexing Example (age_results):
+  age_results["2025", , , "diagnosed.prevalence", "CA", "noint"]
+  → Returns [age, sim] array with dimensions 5 x 1000
+
+Applying get_stats():
+  get_stats(arr, keep.dimensions = c("year", "age", "location"))
+  → Collapses 'sim' dimension
+  → Returns [metric, year, age, location] array
+  → metric = ["lower", "median", "upper", "mean"]
+
+Creating "total" location:
+  total_arr <- apply(age_results[...24 states...],
+                     c("year", "age", "sim"),
+                     sum)
+  → Then combine with state-specific arrays
+
+
+===========================================
+EXPLORATION COMPLETE - READY FOR STEP 1
+===========================================

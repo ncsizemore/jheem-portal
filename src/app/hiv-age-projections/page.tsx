@@ -1,24 +1,188 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import Footer from '@/components/Footer';
 import StateSelector from '@/components/StateSelector';
 import MultiStateChartGrid from '@/components/MultiStateChartGrid';
 import TimelineControls from '@/components/TimelineControls';
-import { getStatesByNames } from '@/data/hiv-age-projections';
+import ByRaceView from '@/components/ByRaceView';
+import { getStatesByNames, getStateName, isValidStateCode } from '@/data/hiv-age-projections';
+import { RACE_CATEGORIES, RaceCategory } from '@/data/hiv-age-projections-race';
 
-// Multi-state comparison component
-function MultiStateComparison() {
+// View mode type
+type ViewMode = 'state' | 'race' | 'sex';
+
+// Multi-state comparison component (inner, uses useSearchParams)
+function MultiStateComparisonInner() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Initialize state from URL or defaults
+  const [viewMode, setViewMode] = useState<ViewMode>('state');
   const [selectedStateNames, setSelectedStateNames] = useState<string[]>(['California', 'Texas']);
+  const [selectedRaces, setSelectedRaces] = useState<RaceCategory[]>(['black', 'hispanic', 'other']);
   const [normalized, setNormalized] = useState(false);
   const [yearRange, setYearRange] = useState<[number, number]>([2025, 2040]);
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  // Parse URL params on mount
+  useEffect(() => {
+    if (isInitialized) return;
+
+    // Parse view mode
+    const urlView = searchParams.get('view');
+    if (urlView === 'race' || urlView === 'sex' || urlView === 'state') {
+      setViewMode(urlView);
+    }
+
+    // Parse states (comma-separated state codes, convert to names)
+    const urlStates = searchParams.get('states');
+    if (urlStates) {
+      const stateCodes = urlStates.split(',').filter(code => isValidStateCode(code));
+      if (stateCodes.length > 0) {
+        const stateNames = stateCodes.map(code => getStateName(code));
+        setSelectedStateNames(stateNames);
+      }
+    }
+
+    // Parse races (comma-separated race categories)
+    const urlRaces = searchParams.get('races');
+    if (urlRaces) {
+      const races = urlRaces.split(',').filter(
+        (race): race is RaceCategory => race in RACE_CATEGORIES
+      );
+      if (races.length > 0) {
+        setSelectedRaces(races);
+      }
+    }
+
+    // Parse normalized (boolean)
+    const urlNormalized = searchParams.get('normalized');
+    if (urlNormalized === 'true') {
+      setNormalized(true);
+    }
+
+    // Parse year range (format: "2025-2035")
+    const urlYears = searchParams.get('years');
+    if (urlYears) {
+      const [start, end] = urlYears.split('-').map(Number);
+      if (!isNaN(start) && !isNaN(end) && start >= 2025 && end <= 2040 && start <= end) {
+        setYearRange([start, end]);
+      }
+    }
+
+    setIsInitialized(true);
+  }, [searchParams, isInitialized]);
+
+  // Auto-truncate states when switching to race view if over limit
+  useEffect(() => {
+    if (!isInitialized) return;
+
+    if (viewMode === 'race') {
+      const maxStates = Math.floor(25 / selectedRaces.length);
+      if (selectedStateNames.length > maxStates) {
+        // Keep first N states, truncate the rest
+        const truncatedStates = selectedStateNames.slice(0, maxStates);
+        setSelectedStateNames(truncatedStates);
+
+        // Optional: Show console message for debugging
+        console.log(`Truncated states from ${selectedStateNames.length} to ${maxStates} for race view`);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [viewMode, selectedRaces.length, isInitialized]);
+
+  // Update URL when state changes
+  useEffect(() => {
+    if (!isInitialized) return; // Don't update URL until we've parsed it once
+
+    const params = new URLSearchParams();
+
+    // Add view mode
+    params.set('view', viewMode);
+
+    // Add states (convert names to codes for shorter URLs)
+    const stateCodes = selectedStateNames.map(name => {
+      if (name === 'Total') return 'total';
+      const code = Object.entries({
+        'Alabama': 'AL', 'Arkansas': 'AR', 'Arizona': 'AZ', 'California': 'CA',
+        'Colorado': 'CO', 'Florida': 'FL', 'Georgia': 'GA', 'Illinois': 'IL',
+        'Kentucky': 'KY', 'Louisiana': 'LA', 'Maryland': 'MD', 'Michigan': 'MI',
+        'Missouri': 'MO', 'Mississippi': 'MS', 'North Carolina': 'NC', 'New York': 'NY',
+        'Ohio': 'OH', 'Oklahoma': 'OK', 'South Carolina': 'SC', 'Tennessee': 'TN',
+        'Texas': 'TX', 'Virginia': 'VA', 'Washington': 'WA', 'Wisconsin': 'WI',
+      }).find(([stateName]) => stateName === name)?.[1];
+      return code || name;
+    });
+    params.set('states', stateCodes.join(','));
+
+    // Add races (only if race view)
+    if (viewMode === 'race') {
+      params.set('races', selectedRaces.join(','));
+    }
+
+    // Add normalized (only if true)
+    if (normalized) {
+      params.set('normalized', 'true');
+    }
+
+    // Add year range (only if not default)
+    if (yearRange[0] !== 2025 || yearRange[1] !== 2040) {
+      params.set('years', `${yearRange[0]}-${yearRange[1]}`);
+    }
+
+    // Update URL without scroll or reload
+    router.replace(`?${params.toString()}`, { scroll: false });
+  }, [viewMode, selectedStateNames, selectedRaces, normalized, yearRange, isInitialized, router]);
 
   // Get state data objects from names
   const selectedStates = getStatesByNames(selectedStateNames);
 
   return (
     <div className="bg-white rounded-xl p-8 shadow-lg space-y-8">
+      {/* Tab Navigation */}
+      <div className="flex gap-2 border-b-2 border-gray-200">
+        <button
+          onClick={() => setViewMode('state')}
+          className={`px-6 py-3 font-semibold text-sm transition-all relative ${
+            viewMode === 'state'
+              ? 'text-hopkins-blue'
+              : 'text-gray-600 hover:text-gray-900'
+          }`}
+        >
+          By State
+          {viewMode === 'state' && (
+            <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-hopkins-blue to-hopkins-spirit-blue rounded-t-full" />
+          )}
+        </button>
+        <button
+          onClick={() => setViewMode('race')}
+          className={`px-6 py-3 font-semibold text-sm transition-all relative ${
+            viewMode === 'race'
+              ? 'text-hopkins-blue'
+              : 'text-gray-600 hover:text-gray-900'
+          }`}
+        >
+          By Race
+          {viewMode === 'race' && (
+            <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-hopkins-blue to-hopkins-spirit-blue rounded-t-full" />
+          )}
+        </button>
+        <button
+          onClick={() => setViewMode('sex')}
+          disabled
+          className="px-6 py-3 font-semibold text-sm text-gray-400 cursor-not-allowed relative"
+          title="Coming soon"
+        >
+          By Sex
+        </button>
+      </div>
+
+      {/* By State View */}
+      {viewMode === 'state' && (
+        <div className="space-y-8">
       {/* Controls Section - 3 columns */}
       <div className="flex flex-col lg:flex-row gap-4">
         {/* State Selector - ~40% width */}
@@ -89,7 +253,48 @@ function MultiStateComparison() {
         normalized={normalized}
         yearRange={yearRange}
       />
+        </div>
+      )}
+
+      {/* By Race View */}
+      {viewMode === 'race' && (
+        <ByRaceView
+          selectedStateNames={selectedStateNames}
+          onStateChange={setSelectedStateNames}
+          selectedRaces={selectedRaces}
+          onRacesChange={setSelectedRaces}
+          normalized={normalized}
+          onNormalizedChange={setNormalized}
+          yearRange={yearRange}
+          onYearRangeChange={setYearRange}
+        />
+      )}
+
+      {/* By Sex View */}
+      {viewMode === 'sex' && (
+        <div className="space-y-8 text-center py-12">
+          <p className="text-gray-600 text-lg">
+            By Sex view coming soon
+          </p>
+        </div>
+      )}
     </div>
+  );
+}
+
+// Wrapper component with Suspense boundary
+function MultiStateComparison() {
+  return (
+    <Suspense fallback={
+      <div className="bg-white rounded-xl p-8 shadow-lg">
+        <div className="animate-pulse space-y-4">
+          <div className="h-10 bg-gray-200 rounded w-1/3"></div>
+          <div className="h-64 bg-gray-200 rounded"></div>
+        </div>
+      </div>
+    }>
+      <MultiStateComparisonInner />
+    </Suspense>
   );
 }
 
