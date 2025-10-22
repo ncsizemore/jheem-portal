@@ -108,25 +108,47 @@ const MultiStateChartGrid = memo(({
           return element.hasAttribute('data-html2canvas-ignore');
         },
         onclone: (clonedDoc) => {
-          // Convert any lab() colors to hex before rendering
+          // Convert unsupported color functions (oklch, lab) to rgb for html2canvas compatibility
           const elements = clonedDoc.querySelectorAll('*');
           elements.forEach((el) => {
             const htmlEl = el as HTMLElement;
             const computedStyle = window.getComputedStyle(el);
 
+            // Helper to check if color uses unsupported functions
+            const hasUnsupportedColor = (color: string) => {
+              return color && (color.includes('oklch') || color.includes('lab'));
+            };
+
+            // Get the actual rendered RGB color from the original element
+            const getRgbColor = (element: Element, property: string): string | null => {
+              const originalEl = document.querySelector(`[class="${element.className}"]`);
+              if (originalEl) {
+                const style = window.getComputedStyle(originalEl);
+                const colorValue = style.getPropertyValue(property);
+                // If it's already rgb/rgba, use it; otherwise fallback
+                if (colorValue && colorValue.startsWith('rgb')) {
+                  return colorValue;
+                }
+              }
+              return null;
+            };
+
             // Fix background colors
-            if (computedStyle.backgroundColor && computedStyle.backgroundColor.includes('lab')) {
-              htmlEl.style.backgroundColor = 'rgb(255, 255, 255)';
+            if (hasUnsupportedColor(computedStyle.backgroundColor)) {
+              const rgb = getRgbColor(el, 'background-color');
+              htmlEl.style.backgroundColor = rgb || 'rgb(255, 255, 255)';
             }
 
             // Fix text colors
-            if (computedStyle.color && computedStyle.color.includes('lab')) {
-              htmlEl.style.color = 'rgb(0, 0, 0)';
+            if (hasUnsupportedColor(computedStyle.color)) {
+              const rgb = getRgbColor(el, 'color');
+              htmlEl.style.color = rgb || 'rgb(0, 0, 0)';
             }
 
             // Fix border colors
-            if (computedStyle.borderColor && computedStyle.borderColor.includes('lab')) {
-              htmlEl.style.borderColor = 'rgb(200, 200, 200)';
+            if (hasUnsupportedColor(computedStyle.borderColor)) {
+              const rgb = getRgbColor(el, 'border-color');
+              htmlEl.style.borderColor = rgb || 'rgb(200, 200, 200)';
             }
           });
         }
