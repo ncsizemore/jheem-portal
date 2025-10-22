@@ -94,19 +94,6 @@ export default function BySexView({
         </div>
       )}
 
-      {/* Info: Available Capacity */}
-      {chartCount < 15 && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-start gap-3">
-          <span className="text-blue-600 text-lg">ℹ️</span>
-          <div className="flex-1">
-            <p className="text-xs text-blue-700">
-              You can select up to {maxStates} states with {selectedSexCategories.length} {selectedSexCategories.length === 1 ? 'category' : 'categories'} selected.
-              Currently showing {chartCount} of 25 charts.
-            </p>
-          </div>
-        </div>
-      )}
-
       {/* Controls Section */}
       <div className="flex flex-col lg:flex-row gap-4">
         {/* State Selector - ~40% width */}
@@ -116,8 +103,8 @@ export default function BySexView({
             onStateChange={onStateChange}
             maxStates={maxStates}
           />
-          <div className="mt-2 text-xs text-gray-500 text-center">
-            Max {maxStates} states × {selectedSexCategories.length} {selectedSexCategories.length === 1 ? 'category' : 'categories'} = {chartCount} charts
+          <div className="mt-2 text-xs text-gray-600 text-center">
+            You can select up to {maxStates} states with {selectedSexCategories.length} {selectedSexCategories.length === 1 ? 'category' : 'categories'} selected. Currently showing {chartCount} of 25 charts.
           </div>
         </div>
 

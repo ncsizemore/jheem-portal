@@ -7,22 +7,26 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Navigation() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [modelsDropdownOpen, setModelsDropdownOpen] = useState(false);
   const pathname = usePathname();
 
   // Close mobile menu when route changes
   useEffect(() => {
     setMobileMenuOpen(false);
+    setModelsDropdownOpen(false);
   }, [pathname]);
 
   // Check if we should show Ryan White submenu
-  const showRyanWhiteSubmenu = pathname === '/ryan-white' || 
-                               pathname === '/prerun' || 
-                               pathname === '/custom';
+  const showRyanWhiteSubmenu = pathname === '/ryan-white' ||
+                               pathname === '/prerun' ||
+                               pathname === '/custom' ||
+                               pathname === '/explore';
 
   const isRyanWhiteActive = pathname === '/ryan-white' || showRyanWhiteSubmenu;
   const isStateLevelActive = pathname === '/ryan-white-state-level';
   const isCdcTestingActive = pathname === '/cdc-testing';
   const isHIVAgeProjectionsActive = pathname === '/hiv-age-projections';
+  const isAnyModelActive = isRyanWhiteActive || isStateLevelActive || isCdcTestingActive || isHIVAgeProjectionsActive;
 
   return (
     <header className="bg-hopkins-blue shadow-lg sticky top-0 z-50 border-b border-hopkins-blue/30">
@@ -49,44 +53,136 @@ export default function Navigation() {
             <div className="absolute bottom-0 left-0 w-0 h-0.5 bg-hopkins-gold transition-all duration-300 group-hover:w-full"></div>
           </Link>
           
-          {/* Desktop Global Model Menu */}
+          {/* Desktop Navigation with Models Dropdown */}
           <nav className="hidden md:flex items-center space-x-8">
-            <Link 
-              href="/ryan-white" 
-              className="text-white hover:text-hopkins-gold font-medium transition-all relative group py-2"
+            <div
+              className="relative"
+              onMouseEnter={() => setModelsDropdownOpen(true)}
+              onMouseLeave={() => setModelsDropdownOpen(false)}
             >
-              <span>Ryan White Model</span>
-              <span className={`absolute bottom-0 left-0 h-0.5 bg-hopkins-gold transition-all duration-300 ${
-                isRyanWhiteActive ? 'w-full' : 'w-0 group-hover:w-full'
-              }`}></span>
-            </Link>
-            <Link 
-              href="/ryan-white-state-level" 
-              className="text-white hover:text-hopkins-gold font-medium transition-all relative group py-2"
-            >
-              <span>State Level Model</span>
-              <span className={`absolute bottom-0 left-0 h-0.5 bg-hopkins-gold transition-all duration-300 ${
-                isStateLevelActive ? 'w-full' : 'w-0 group-hover:w-full'
-              }`}></span>
-            </Link>
-            <Link
-              href="/cdc-testing"
-              className="text-white hover:text-hopkins-gold font-medium transition-all relative group py-2"
-            >
-              <span>CDC Testing Model</span>
-              <span className={`absolute bottom-0 left-0 h-0.5 bg-hopkins-gold transition-all duration-300 ${
-                isCdcTestingActive ? 'w-full' : 'w-0 group-hover:w-full'
-              }`}></span>
-            </Link>
-            <Link
-              href="/hiv-age-projections"
-              className="text-white hover:text-hopkins-gold font-medium transition-all relative group py-2"
-            >
-              <span>HIV Age Projections</span>
-              <span className={`absolute bottom-0 left-0 h-0.5 bg-hopkins-gold transition-all duration-300 ${
-                isHIVAgeProjectionsActive ? 'w-full' : 'w-0 group-hover:w-full'
-              }`}></span>
-            </Link>
+              <button
+                className="text-white hover:text-hopkins-gold font-medium transition-all relative group py-2 flex items-center gap-2"
+              >
+                <span>Models</span>
+                <svg
+                  className={`w-4 h-4 transition-transform duration-200 ${modelsDropdownOpen ? 'rotate-180' : ''}`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+                <span className={`absolute bottom-0 left-0 h-0.5 bg-hopkins-gold transition-all duration-300 ${
+                  isAnyModelActive ? 'w-full' : 'w-0 group-hover:w-full'
+                }`}></span>
+              </button>
+
+              {/* Dropdown Menu */}
+              <AnimatePresence>
+                {modelsDropdownOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2 }}
+                    className="absolute top-full left-0 mt-2 w-64 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden z-50"
+                  >
+                    <div className="py-2">
+                      {/* Ryan White with submenu indicator */}
+                      <Link
+                        href="/ryan-white"
+                        className={`block px-4 py-2.5 text-sm font-medium transition-colors ${
+                          isRyanWhiteActive
+                            ? 'bg-hopkins-blue text-white'
+                            : 'text-gray-700 hover:bg-gray-50'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span>Ryan White Model</span>
+                          {isRyanWhiteActive && (
+                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          )}
+                        </div>
+                      </Link>
+
+                      {/* Show Ryan White submenu if active */}
+                      {isRyanWhiteActive && (
+                        <div className="bg-gray-50 border-t border-b border-gray-200 py-1">
+                          <Link
+                            href="/prerun"
+                            className={`block px-8 py-2 text-xs font-medium transition-colors ${
+                              pathname === '/prerun'
+                                ? 'text-hopkins-blue bg-white'
+                                : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
+                            }`}
+                          >
+                            Prerun Scenarios
+                          </Link>
+                          <Link
+                            href="/custom"
+                            className={`block px-8 py-2 text-xs font-medium transition-colors ${
+                              pathname === '/custom'
+                                ? 'text-hopkins-blue bg-white'
+                                : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
+                            }`}
+                          >
+                            Custom Simulations
+                          </Link>
+                          <Link
+                            href="/explore"
+                            className={`block px-8 py-2 text-xs font-medium transition-colors ${
+                              pathname === '/explore'
+                                ? 'text-hopkins-blue bg-white'
+                                : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
+                            }`}
+                          >
+                            <span className="inline-flex items-center gap-1.5">
+                              Interactive Explorer
+                              <span className="bg-hopkins-gold text-hopkins-blue text-[10px] font-bold px-1.5 py-0.5 rounded-full">NEW</span>
+                            </span>
+                          </Link>
+                        </div>
+                      )}
+
+                      <Link
+                        href="/ryan-white-state-level"
+                        className={`block px-4 py-2.5 text-sm font-medium transition-colors ${
+                          isStateLevelActive
+                            ? 'bg-hopkins-blue text-white'
+                            : 'text-gray-700 hover:bg-gray-50'
+                        }`}
+                      >
+                        State Level Model
+                      </Link>
+
+                      <Link
+                        href="/cdc-testing"
+                        className={`block px-4 py-2.5 text-sm font-medium transition-colors ${
+                          isCdcTestingActive
+                            ? 'bg-hopkins-blue text-white'
+                            : 'text-gray-700 hover:bg-gray-50'
+                        }`}
+                      >
+                        CDC Testing Model
+                      </Link>
+
+                      <Link
+                        href="/hiv-age-projections"
+                        className={`block px-4 py-2.5 text-sm font-medium transition-colors ${
+                          isHIVAgeProjectionsActive
+                            ? 'bg-hopkins-blue text-white'
+                            : 'text-gray-700 hover:bg-gray-50'
+                        }`}
+                      >
+                        HIV Age Projections
+                      </Link>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </nav>
           
           {/* Mobile Menu Button */}
@@ -181,101 +277,97 @@ export default function Navigation() {
               animate={{ height: 'auto', opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
               transition={{ duration: 0.3, ease: "easeInOut" }}
-              className="md:hidden border-t border-slate-600/50 overflow-hidden"
+              className="md:hidden border-t border-white/20 overflow-hidden"
             >
-              <div className="py-4 space-y-3">
-                {/* Mobile Global Menu */}
-                <div className="space-y-1">
-                  <Link 
-                    href="/ryan-white"
-                    className={`block px-3 py-2 rounded-lg font-medium transition-colors ${
-                      isRyanWhiteActive 
-                        ? 'bg-blue-600 text-white' 
-                        : 'text-slate-300 hover:text-white hover:bg-slate-700/50'
-                    }`}
-                  >
-                    Ryan White Model
-                  </Link>
-                  <Link 
-                    href="/ryan-white-state-level"
-                    className={`block px-3 py-2 rounded-lg font-medium transition-colors ${
-                      isStateLevelActive 
-                        ? 'bg-blue-600 text-white' 
-                        : 'text-slate-300 hover:text-white hover:bg-slate-700/50'
-                    }`}
-                  >
-                    State Level Model
-                  </Link>
-                  <Link
-                    href="/cdc-testing"
-                    className={`block px-3 py-2 rounded-lg font-medium transition-colors ${
-                      isCdcTestingActive
-                        ? 'bg-blue-600 text-white'
-                        : 'text-slate-300 hover:text-white hover:bg-slate-700/50'
-                    }`}
-                  >
-                    CDC Testing Model
-                  </Link>
-                  <Link
-                    href="/hiv-age-projections"
-                    className={`block px-3 py-2 rounded-lg font-medium transition-colors ${
-                      isHIVAgeProjectionsActive
-                        ? 'bg-blue-600 text-white'
-                        : 'text-slate-300 hover:text-white hover:bg-slate-700/50'
-                    }`}
-                  >
-                    HIV Age Projections
-                  </Link>
-                </div>
-                
-                {/* Mobile Ryan White Submenu */}
-                {showRyanWhiteSubmenu && (
-                  <div className="border-t border-slate-600/50 pt-3 mt-3">
-                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 px-3">
-                      Ryan White Interfaces
-                    </p>
-                    <div className="space-y-1">
-                      <Link 
-                        href="/prerun"
-                        className={`flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                          pathname === '/prerun'
-                            ? 'bg-emerald-600 text-white' 
-                            : 'text-slate-300 hover:text-white hover:bg-slate-700/50'
-                        }`}
-                      >
-                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                        </svg>
-                        Prerun Scenarios
-                      </Link>
-                      <Link 
-                        href="/custom"
-                        className={`flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                          pathname === '/custom'
-                            ? 'bg-purple-600 text-white' 
-                            : 'text-slate-300 hover:text-white hover:bg-slate-700/50'
-                        }`}
-                      >
-                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4" />
-                        </svg>
-                        Custom Simulations
-                      </Link>
-                      <Link 
-                        href="/explore"
-                        className="flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors relative text-slate-300 hover:text-white hover:bg-slate-700/50"
-                      >
-                        <span className="absolute -top-1 left-1 bg-gradient-to-r from-emerald-400 to-emerald-500 text-emerald-900 text-xs font-bold px-1.5 py-0.5 rounded-full">
-                          NEW
-                        </span>
-                        <svg className="w-4 h-4 mr-2 ml-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-1.447-.894L15 10m0 7V10m0 0L9 7" />
-                        </svg>
-                        Interactive Explorer
-                      </Link>
-                    </div>
+              <div className="py-4 space-y-2">
+                {/* Models Section */}
+                <div className="px-3">
+                  <p className="text-xs font-semibold text-hopkins-gold uppercase tracking-wider mb-2">
+                    Models
+                  </p>
+                  <div className="space-y-1">
+                    <Link
+                      href="/ryan-white"
+                      className={`block px-3 py-2 rounded-lg font-medium transition-colors ${
+                        isRyanWhiteActive
+                          ? 'bg-white/10 text-white'
+                          : 'text-white/80 hover:text-white hover:bg-white/5'
+                      }`}
+                    >
+                      Ryan White Model
+                    </Link>
+
+                    {/* Ryan White Submenu */}
+                    {isRyanWhiteActive && (
+                      <div className="ml-3 space-y-1 border-l-2 border-hopkins-gold/30 pl-3">
+                        <Link
+                          href="/prerun"
+                          className={`block px-3 py-1.5 rounded text-sm transition-colors ${
+                            pathname === '/prerun'
+                              ? 'text-hopkins-gold font-medium'
+                              : 'text-white/70 hover:text-white'
+                          }`}
+                        >
+                          Prerun Scenarios
+                        </Link>
+                        <Link
+                          href="/custom"
+                          className={`block px-3 py-1.5 rounded text-sm transition-colors ${
+                            pathname === '/custom'
+                              ? 'text-hopkins-gold font-medium'
+                              : 'text-white/70 hover:text-white'
+                          }`}
+                        >
+                          Custom Simulations
+                        </Link>
+                        <Link
+                          href="/explore"
+                          className={`block px-3 py-1.5 rounded text-sm transition-colors ${
+                            pathname === '/explore'
+                              ? 'text-hopkins-gold font-medium'
+                              : 'text-white/70 hover:text-white'
+                          }`}
+                        >
+                          <span className="inline-flex items-center gap-1.5">
+                            Interactive Explorer
+                            <span className="bg-hopkins-gold text-hopkins-blue text-[10px] font-bold px-1.5 py-0.5 rounded-full">NEW</span>
+                          </span>
+                        </Link>
+                      </div>
+                    )}
+
+                    <Link
+                      href="/ryan-white-state-level"
+                      className={`block px-3 py-2 rounded-lg font-medium transition-colors ${
+                        isStateLevelActive
+                          ? 'bg-white/10 text-white'
+                          : 'text-white/80 hover:text-white hover:bg-white/5'
+                      }`}
+                    >
+                      State Level Model
+                    </Link>
+                    <Link
+                      href="/cdc-testing"
+                      className={`block px-3 py-2 rounded-lg font-medium transition-colors ${
+                        isCdcTestingActive
+                          ? 'bg-white/10 text-white'
+                          : 'text-white/80 hover:text-white hover:bg-white/5'
+                      }`}
+                    >
+                      CDC Testing Model
+                    </Link>
+                    <Link
+                      href="/hiv-age-projections"
+                      className={`block px-3 py-2 rounded-lg font-medium transition-colors ${
+                        isHIVAgeProjectionsActive
+                          ? 'bg-white/10 text-white'
+                          : 'text-white/80 hover:text-white hover:bg-white/5'
+                      }`}
+                    >
+                      HIV Age Projections
+                    </Link>
                   </div>
-                )}
+                </div>
               </div>
             </motion.div>
           )}
