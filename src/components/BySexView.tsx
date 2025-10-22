@@ -4,76 +4,76 @@ import { useMemo } from 'react';
 import MultiStateChartGrid from './MultiStateChartGrid';
 import StateSelector from './StateSelector';
 import TimelineControls from './TimelineControls';
-import { getMultiStateRaceData, RACE_CATEGORIES, RaceCategory } from '@/data/hiv-age-projections-race';
+import { getMultiStateSexData, SEX_CATEGORIES, SexCategory } from '@/data/hiv-age-projections-sex';
 import { StateAgeData, getStateCode } from '@/data/hiv-age-projections';
 
-interface ByRaceViewProps {
+interface BySexViewProps {
   selectedStateNames: string[];
   onStateChange: (states: string[]) => void;
-  selectedRaces: RaceCategory[];
-  onRacesChange: (races: RaceCategory[]) => void;
+  selectedSexCategories: SexCategory[];
+  onSexCategoriesChange: (sexCategories: SexCategory[]) => void;
   normalized: boolean;
   onNormalizedChange: (normalized: boolean) => void;
   yearRange: [number, number];
   onYearRangeChange: (range: [number, number]) => void;
 }
 
-export default function ByRaceView({
+export default function BySexView({
   selectedStateNames,
   onStateChange,
-  selectedRaces,
-  onRacesChange,
+  selectedSexCategories,
+  onSexCategoriesChange,
   normalized,
   onNormalizedChange,
   yearRange,
   onYearRangeChange,
-}: ByRaceViewProps) {
+}: BySexViewProps) {
 
   // Calculate how many charts will be displayed
-  const chartCount = selectedStateNames.length * selectedRaces.length;
+  const chartCount = selectedStateNames.length * selectedSexCategories.length;
   const maxCharts = 25;
-  const maxStates = Math.floor(maxCharts / selectedRaces.length);
+  const maxStates = Math.floor(maxCharts / selectedSexCategories.length);
 
-  // Transform race data into format that MultiStateChartGrid expects
+  // Transform sex data into format that MultiStateChartGrid expects
   const chartData: StateAgeData[] = useMemo(() => {
     try {
       // Map state names to codes using centralized utility
       const stateCodes = selectedStateNames.map(getStateCode);
 
-      const raceData = getMultiStateRaceData(stateCodes, selectedRaces);
+      const sexData = getMultiStateSexData(stateCodes, selectedSexCategories);
 
       // Validate data
-      if (!raceData || raceData.length === 0) {
+      if (!sexData || sexData.length === 0) {
         if (process.env.NODE_ENV === 'development') {
-          console.warn('No race data available for selected states/races');
+          console.warn('No sex data available for selected states/sex categories');
         }
         return [];
       }
 
       // Transform into "virtual states" for the chart grid
-      // Each state+race combination becomes a virtual state like "CA_Black"
-      return raceData.map(item => ({
-        state_code: `${item.state_code}_${item.race}`,
-        state_name: `${item.state_name} - ${item.race_label}`,
+      // Each state+sex combination becomes a virtual state like "CA_MSM"
+      return sexData.map(item => ({
+        state_code: `${item.state_code}_${item.sex}`,
+        state_name: `${item.state_name} - ${item.sex_label}`,
         data: item.data
       }));
     } catch (error) {
       if (process.env.NODE_ENV === 'development') {
-        console.error('Error loading race data:', error);
+        console.error('Error loading sex data:', error);
       }
       return [];
     }
-  }, [selectedStateNames, selectedRaces]);
+  }, [selectedStateNames, selectedSexCategories]);
 
-  // Toggle race selection
-  const toggleRace = (race: RaceCategory) => {
-    if (selectedRaces.includes(race)) {
-      // Don't allow deselecting all races
-      if (selectedRaces.length > 1) {
-        onRacesChange(selectedRaces.filter(r => r !== race));
+  // Toggle sex category selection
+  const toggleSex = (sex: SexCategory) => {
+    if (selectedSexCategories.includes(sex)) {
+      // Don't allow deselecting all sex categories
+      if (selectedSexCategories.length > 1) {
+        onSexCategoriesChange(selectedSexCategories.filter(s => s !== sex));
       }
     } else {
-      onRacesChange([...selectedRaces, race]);
+      onSexCategoriesChange([...selectedSexCategories, sex]);
     }
   };
 
@@ -88,7 +88,7 @@ export default function ByRaceView({
               Approaching chart limit ({chartCount}/25)
             </p>
             <p className="text-xs text-yellow-700 mt-1">
-              Deselect states or races to add more comparisons.
+              Deselect states or sex categories to add more comparisons.
             </p>
           </div>
         </div>
@@ -100,7 +100,7 @@ export default function ByRaceView({
           <span className="text-blue-600 text-lg">ℹ️</span>
           <div className="flex-1">
             <p className="text-xs text-blue-700">
-              You can select up to {maxStates} states with {selectedRaces.length} race{selectedRaces.length !== 1 ? 's' : ''} selected.
+              You can select up to {maxStates} states with {selectedSexCategories.length} {selectedSexCategories.length === 1 ? 'category' : 'categories'} selected.
               Currently showing {chartCount} of 25 charts.
             </p>
           </div>
@@ -117,7 +117,7 @@ export default function ByRaceView({
             maxStates={maxStates}
           />
           <div className="mt-2 text-xs text-gray-500 text-center">
-            Max {maxStates} states × {selectedRaces.length} {selectedRaces.length === 1 ? 'race' : 'races'} = {chartCount} charts
+            Max {maxStates} states × {selectedSexCategories.length} {selectedSexCategories.length === 1 ? 'category' : 'categories'} = {chartCount} charts
           </div>
         </div>
 
@@ -131,7 +131,7 @@ export default function ByRaceView({
           />
         </div>
 
-        {/* Display Mode and Race Selector - ~20% width */}
+        {/* Display Mode and Export - ~20% width */}
         <div className="lg:w-[24%] flex flex-col gap-2">
           {/* Display Mode Toggle */}
           <div className="bg-gray-50 rounded-lg p-2.5 border border-gray-200 flex flex-col items-center justify-center">
@@ -171,34 +171,34 @@ export default function ByRaceView({
         </div>
       </div>
 
-      {/* Race Selector */}
+      {/* Sex Category Selector */}
       <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
         <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 block">
-          Select Races
+          Select Sex Categories
         </label>
         <div className="flex flex-wrap gap-3">
-          {(Object.keys(RACE_CATEGORIES) as RaceCategory[]).map((race) => {
-            const isSelected = selectedRaces.includes(race);
-            const raceLabel = RACE_CATEGORIES[race];
+          {(Object.keys(SEX_CATEGORIES) as SexCategory[]).map((sex) => {
+            const isSelected = selectedSexCategories.includes(sex);
+            const sexLabel = SEX_CATEGORIES[sex];
 
             return (
               <button
-                key={race}
-                onClick={() => toggleRace(race)}
+                key={sex}
+                onClick={() => toggleSex(sex)}
                 className={`px-6 py-2.5 rounded-lg text-sm font-semibold transition-all shadow-sm ${
                   isSelected
                     ? 'bg-gradient-to-r from-hopkins-blue to-hopkins-spirit-blue text-white shadow-md'
                     : 'bg-white text-gray-700 border border-gray-300 hover:border-hopkins-blue'
                 }`}
               >
-                {raceLabel}
+                {sexLabel}
               </button>
             );
           })}
         </div>
-        {selectedRaces.length < 2 && (
+        {selectedSexCategories.length < 2 && (
           <p className="text-xs text-gray-500 mt-2">
-            Select at least 2 races to enable deselection
+            Select at least 2 categories to enable deselection
           </p>
         )}
       </div>
@@ -212,7 +212,7 @@ export default function ByRaceView({
         />
       ) : (
         <div className="text-center py-12 text-gray-500">
-          <p>Please select at least one state and one race to view data.</p>
+          <p>Please select at least one state and one sex category to view data.</p>
         </div>
       )}
     </div>

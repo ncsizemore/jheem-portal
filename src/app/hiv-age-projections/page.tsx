@@ -8,8 +8,11 @@ import StateSelector from '@/components/StateSelector';
 import MultiStateChartGrid from '@/components/MultiStateChartGrid';
 import TimelineControls from '@/components/TimelineControls';
 import ByRaceView from '@/components/ByRaceView';
-import { getStatesByNames, getStateName, isValidStateCode } from '@/data/hiv-age-projections';
+import BySexView from '@/components/BySexView';
+import ErrorBoundary from '@/components/ErrorBoundary';
+import { getStatesByNames, getStateName, getStateCode, isValidStateCode } from '@/data/hiv-age-projections';
 import { RACE_CATEGORIES, RaceCategory } from '@/data/hiv-age-projections-race';
+import { SEX_CATEGORIES, SexCategory } from '@/data/hiv-age-projections-sex';
 
 // View mode type
 type ViewMode = 'state' | 'race' | 'sex';
@@ -23,6 +26,7 @@ function MultiStateComparisonInner() {
   const [viewMode, setViewMode] = useState<ViewMode>('state');
   const [selectedStateNames, setSelectedStateNames] = useState<string[]>(['California', 'Texas']);
   const [selectedRaces, setSelectedRaces] = useState<RaceCategory[]>(['black', 'hispanic', 'other']);
+  const [selectedSexCategories, setSelectedSexCategories] = useState<SexCategory[]>(['msm', 'non_msm']);
   const [normalized, setNormalized] = useState(false);
   const [yearRange, setYearRange] = useState<[number, number]>([2025, 2040]);
   const [isInitialized, setIsInitialized] = useState(false);
@@ -58,6 +62,17 @@ function MultiStateComparisonInner() {
       }
     }
 
+    // Parse sex categories (comma-separated)
+    const urlSex = searchParams.get('sex');
+    if (urlSex) {
+      const sexCategories = urlSex.split(',').filter(
+        (sex): sex is SexCategory => sex in SEX_CATEGORIES
+      );
+      if (sexCategories.length > 0) {
+        setSelectedSexCategories(sexCategories);
+      }
+    }
+
     // Parse normalized (boolean)
     const urlNormalized = searchParams.get('normalized');
     if (urlNormalized === 'true') {
@@ -76,7 +91,7 @@ function MultiStateComparisonInner() {
     setIsInitialized(true);
   }, [searchParams, isInitialized]);
 
-  // Auto-truncate states when switching to race view if over limit
+  // Auto-truncate states when switching to race/sex view if over limit
   useEffect(() => {
     if (!isInitialized) return;
 
@@ -87,12 +102,26 @@ function MultiStateComparisonInner() {
         const truncatedStates = selectedStateNames.slice(0, maxStates);
         setSelectedStateNames(truncatedStates);
 
-        // Optional: Show console message for debugging
-        console.log(`Truncated states from ${selectedStateNames.length} to ${maxStates} for race view`);
+        // Development-only logging
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`Truncated states from ${selectedStateNames.length} to ${maxStates} for race view`);
+        }
+      }
+    } else if (viewMode === 'sex') {
+      const maxStates = Math.floor(25 / selectedSexCategories.length);
+      if (selectedStateNames.length > maxStates) {
+        // Keep first N states, truncate the rest
+        const truncatedStates = selectedStateNames.slice(0, maxStates);
+        setSelectedStateNames(truncatedStates);
+
+        // Development-only logging
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`Truncated states from ${selectedStateNames.length} to ${maxStates} for sex view`);
+        }
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [viewMode, selectedRaces.length, isInitialized]);
+  }, [viewMode, selectedRaces.length, selectedSexCategories.length, isInitialized]);
 
   // Update URL when state changes
   useEffect(() => {
@@ -104,23 +133,17 @@ function MultiStateComparisonInner() {
     params.set('view', viewMode);
 
     // Add states (convert names to codes for shorter URLs)
-    const stateCodes = selectedStateNames.map(name => {
-      if (name === 'Total') return 'total';
-      const code = Object.entries({
-        'Alabama': 'AL', 'Arkansas': 'AR', 'Arizona': 'AZ', 'California': 'CA',
-        'Colorado': 'CO', 'Florida': 'FL', 'Georgia': 'GA', 'Illinois': 'IL',
-        'Kentucky': 'KY', 'Louisiana': 'LA', 'Maryland': 'MD', 'Michigan': 'MI',
-        'Missouri': 'MO', 'Mississippi': 'MS', 'North Carolina': 'NC', 'New York': 'NY',
-        'Ohio': 'OH', 'Oklahoma': 'OK', 'South Carolina': 'SC', 'Tennessee': 'TN',
-        'Texas': 'TX', 'Virginia': 'VA', 'Washington': 'WA', 'Wisconsin': 'WI',
-      }).find(([stateName]) => stateName === name)?.[1];
-      return code || name;
-    });
+    const stateCodes = selectedStateNames.map(getStateCode);
     params.set('states', stateCodes.join(','));
 
     // Add races (only if race view)
     if (viewMode === 'race') {
       params.set('races', selectedRaces.join(','));
+    }
+
+    // Add sex categories (only if sex view)
+    if (viewMode === 'sex') {
+      params.set('sex', selectedSexCategories.join(','));
     }
 
     // Add normalized (only if true)
@@ -135,7 +158,7 @@ function MultiStateComparisonInner() {
 
     // Update URL without scroll or reload
     router.replace(`?${params.toString()}`, { scroll: false });
-  }, [viewMode, selectedStateNames, selectedRaces, normalized, yearRange, isInitialized, router]);
+  }, [viewMode, selectedStateNames, selectedRaces, selectedSexCategories, normalized, yearRange, isInitialized, router]);
 
   // Get state data objects from names
   const selectedStates = getStatesByNames(selectedStateNames);
@@ -172,11 +195,16 @@ function MultiStateComparisonInner() {
         </button>
         <button
           onClick={() => setViewMode('sex')}
-          disabled
-          className="px-6 py-3 font-semibold text-sm text-gray-400 cursor-not-allowed relative"
-          title="Coming soon"
+          className={`px-6 py-3 font-semibold text-sm transition-all relative ${
+            viewMode === 'sex'
+              ? 'text-hopkins-blue'
+              : 'text-gray-600 hover:text-gray-900'
+          }`}
         >
           By Sex
+          {viewMode === 'sex' && (
+            <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-hopkins-blue to-hopkins-spirit-blue rounded-t-full" />
+          )}
         </button>
       </div>
 
@@ -248,35 +276,46 @@ function MultiStateComparisonInner() {
       </div>
 
       {/* Chart Grid */}
-      <MultiStateChartGrid
-        states={selectedStates}
-        normalized={normalized}
-        yearRange={yearRange}
-      />
+      <ErrorBoundary>
+        <MultiStateChartGrid
+          states={selectedStates}
+          normalized={normalized}
+          yearRange={yearRange}
+        />
+      </ErrorBoundary>
         </div>
       )}
 
       {/* By Race View */}
       {viewMode === 'race' && (
-        <ByRaceView
-          selectedStateNames={selectedStateNames}
-          onStateChange={setSelectedStateNames}
-          selectedRaces={selectedRaces}
-          onRacesChange={setSelectedRaces}
-          normalized={normalized}
-          onNormalizedChange={setNormalized}
-          yearRange={yearRange}
-          onYearRangeChange={setYearRange}
-        />
+        <ErrorBoundary>
+          <ByRaceView
+            selectedStateNames={selectedStateNames}
+            onStateChange={setSelectedStateNames}
+            selectedRaces={selectedRaces}
+            onRacesChange={setSelectedRaces}
+            normalized={normalized}
+            onNormalizedChange={setNormalized}
+            yearRange={yearRange}
+            onYearRangeChange={setYearRange}
+          />
+        </ErrorBoundary>
       )}
 
       {/* By Sex View */}
       {viewMode === 'sex' && (
-        <div className="space-y-8 text-center py-12">
-          <p className="text-gray-600 text-lg">
-            By Sex view coming soon
-          </p>
-        </div>
+        <ErrorBoundary>
+          <BySexView
+            selectedStateNames={selectedStateNames}
+            onStateChange={setSelectedStateNames}
+            selectedSexCategories={selectedSexCategories}
+            onSexCategoriesChange={setSelectedSexCategories}
+            normalized={normalized}
+            onNormalizedChange={setNormalized}
+            yearRange={yearRange}
+            onYearRangeChange={setYearRange}
+          />
+        </ErrorBoundary>
       )}
     </div>
   );
