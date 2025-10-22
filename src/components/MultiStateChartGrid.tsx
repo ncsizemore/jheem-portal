@@ -90,6 +90,9 @@ const MultiStateChartGrid = memo(({
   const handleExportCharts = useCallback(async () => {
     if (!gridRef.current) return;
 
+    // Dispatch export started event
+    window.dispatchEvent(new CustomEvent('exportStatus', { detail: { status: 'exporting' } }));
+
     try {
       // Wait a moment for any animations to complete
       await new Promise(resolve => setTimeout(resolve, 300));
@@ -142,10 +145,35 @@ const MultiStateChartGrid = memo(({
           link.href = url;
           link.click();
           URL.revokeObjectURL(url);
+
+          // Dispatch export success event
+          window.dispatchEvent(new CustomEvent('exportStatus', { detail: { status: 'success' } }));
+        } else {
+          throw new Error('Failed to create blob from canvas');
         }
       });
     } catch (error) {
-      console.error('Failed to export charts:', error);
+      // Log error details for debugging (especially important for Vercel deployment issues)
+      const errorDetails = {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined,
+        browser: typeof navigator !== 'undefined' ? navigator.userAgent : 'unknown',
+        chartCount: states.length,
+        timestamp: new Date().toISOString()
+      };
+
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Failed to export charts:', errorDetails);
+      } else {
+        // In production, log to console for Vercel logs
+        console.error('Export failed:', errorDetails.message, {
+          browser: errorDetails.browser,
+          chartCount: errorDetails.chartCount
+        });
+      }
+
+      // Dispatch export error event
+      window.dispatchEvent(new CustomEvent('exportStatus', { detail: { status: 'error' } }));
     }
   }, [states]);
 

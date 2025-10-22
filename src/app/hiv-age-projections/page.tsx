@@ -31,6 +31,10 @@ function MultiStateComparisonInner() {
   const [yearRange, setYearRange] = useState<[number, number]>([2025, 2040]);
   const [isInitialized, setIsInitialized] = useState(false);
 
+  // Track export status for visual feedback
+  type ExportStatus = 'idle' | 'exporting' | 'success' | 'error';
+  const [exportStatus, setExportStatus] = useState<ExportStatus>('idle');
+
   // Parse URL params on mount
   useEffect(() => {
     if (isInitialized) return;
@@ -160,6 +164,22 @@ function MultiStateComparisonInner() {
     router.replace(`?${params.toString()}`, { scroll: false });
   }, [viewMode, selectedStateNames, selectedRaces, selectedSexCategories, normalized, yearRange, isInitialized, router]);
 
+  // Listen for export status events from MultiStateChartGrid
+  useEffect(() => {
+    const handleExportStatus = (event: Event) => {
+      const customEvent = event as CustomEvent<{ status: ExportStatus }>;
+      setExportStatus(customEvent.detail.status);
+
+      // Auto-reset success/error states after 2 seconds
+      if (customEvent.detail.status === 'success' || customEvent.detail.status === 'error') {
+        setTimeout(() => setExportStatus('idle'), 2000);
+      }
+    };
+
+    window.addEventListener('exportStatus', handleExportStatus);
+    return () => window.removeEventListener('exportStatus', handleExportStatus);
+  }, []);
+
   // Get state data objects from names
   const selectedStates = getStatesByNames(selectedStateNames);
 
@@ -259,17 +279,50 @@ function MultiStateComparisonInner() {
           <div className="bg-gray-50 rounded-lg p-2.5 border border-gray-200 flex items-center justify-center">
             <button
               onClick={() => {
-                // We'll need to expose this from MultiStateChartGrid
                 const event = new CustomEvent('exportCharts');
                 window.dispatchEvent(event);
               }}
-              className="w-full flex flex-col items-center gap-1 px-3 py-2 text-xs font-semibold rounded-md bg-white border border-gray-300 text-gray-700 hover:border-hopkins-blue hover:bg-gray-50 transition-all shadow-sm hover:shadow-md"
-              title="Export all charts as PNG image"
+              disabled={exportStatus === 'exporting'}
+              className={`w-full flex flex-col items-center gap-1 px-3 py-2 text-xs font-semibold rounded-md transition-all shadow-sm ${
+                exportStatus === 'exporting'
+                  ? 'bg-gray-100 border border-gray-300 text-gray-400 cursor-wait'
+                  : exportStatus === 'success'
+                  ? 'bg-green-50 border border-green-300 text-green-700'
+                  : exportStatus === 'error'
+                  ? 'bg-red-50 border border-red-300 text-red-700'
+                  : 'bg-white border border-gray-300 text-gray-700 hover:border-hopkins-blue hover:bg-gray-50 hover:shadow-md'
+              }`}
+              title={
+                exportStatus === 'exporting' ? 'Generating export...' :
+                exportStatus === 'success' ? 'Export successful!' :
+                exportStatus === 'error' ? 'Export failed - please try again' :
+                'Export all charts as PNG image'
+              }
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-              </svg>
-              <span>Export PNG</span>
+              {/* Icon changes based on status */}
+              {exportStatus === 'exporting' ? (
+                <svg className="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+              ) : exportStatus === 'success' ? (
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              ) : exportStatus === 'error' ? (
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              ) : (
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+              )}
+              <span>
+                {exportStatus === 'exporting' ? 'Exporting...' :
+                 exportStatus === 'success' ? 'Exported!' :
+                 exportStatus === 'error' ? 'Failed' :
+                 'Export PNG'}
+              </span>
             </button>
           </div>
         </div>
