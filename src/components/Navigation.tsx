@@ -85,99 +85,134 @@ export default function Navigation() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                     transition={{ duration: 0.2 }}
-                    className="absolute top-full left-0 mt-2 w-64 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden z-50"
+                    className="absolute top-full right-0 pt-2 z-50"
                   >
-                    <div className="py-2">
-                      {/* Ryan White with submenu indicator */}
-                      <Link
-                        href="/ryan-white"
-                        className={`block px-4 py-2.5 text-sm font-medium transition-colors ${
-                          isRyanWhiteActive
-                            ? 'bg-hopkins-blue text-white'
-                            : 'text-gray-700 hover:bg-gray-50'
-                        }`}
-                      >
-                        <div className="flex items-center justify-between">
-                          <span>Ryan White Model</span>
-                          {isRyanWhiteActive && (
-                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                            </svg>
-                          )}
-                        </div>
-                      </Link>
+                    {/* Bridge to prevent hover gap */}
+                    <div className="w-full h-2 bg-transparent -mt-2"></div>
 
-                      {/* Show Ryan White submenu if active */}
-                      {isRyanWhiteActive && (
-                        <div className="bg-gray-50 border-t border-b border-gray-200 py-1">
-                          <Link
-                            href="/prerun"
-                            className={`block px-8 py-2 text-xs font-medium transition-colors ${
-                              pathname === '/prerun'
-                                ? 'text-hopkins-blue bg-white'
-                                : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
-                            }`}
-                          >
-                            Prerun Scenarios
-                          </Link>
-                          <Link
-                            href="/custom"
-                            className={`block px-8 py-2 text-xs font-medium transition-colors ${
-                              pathname === '/custom'
-                                ? 'text-hopkins-blue bg-white'
-                                : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
-                            }`}
-                          >
-                            Custom Simulations
-                          </Link>
-                          <Link
-                            href="/explore"
-                            className={`block px-8 py-2 text-xs font-medium transition-colors ${
-                              pathname === '/explore'
-                                ? 'text-hopkins-blue bg-white'
-                                : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
-                            }`}
-                          >
-                            <span className="inline-flex items-center gap-1.5">
-                              Interactive Explorer
-                              <span className="bg-hopkins-gold text-hopkins-blue text-[10px] font-bold px-1.5 py-0.5 rounded-full">NEW</span>
-                            </span>
-                          </Link>
-                        </div>
-                      )}
+                    <div className="w-96 bg-gradient-to-br from-white to-blue-50 rounded-lg shadow-xl border border-gray-200 overflow-hidden">
+                      <div className="py-2">
+                        {/* Ryan White with submenu indicator */}
+                        <Link
+                          href="/ryan-white"
+                          className={`block px-5 py-3 transition-all duration-200 border-l-4 ${
+                            isRyanWhiteActive
+                              ? 'bg-hopkins-blue/5 border-l-hopkins-blue'
+                              : 'border-l-transparent hover:bg-hopkins-blue/5 hover:border-l-hopkins-blue/30'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex-1">
+                              <div className={`text-sm font-semibold ${
+                                isRyanWhiteActive ? 'text-hopkins-blue' : 'text-gray-900'
+                              }`}>
+                                Ryan White Model
+                              </div>
+                              <div className="text-xs text-gray-500 mt-0.5">
+                                MSA-level Ryan White funding impacts
+                              </div>
+                            </div>
+                            {isRyanWhiteActive && (
+                              <svg className="w-5 h-5 text-hopkins-blue ml-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                              </svg>
+                            )}
+                          </div>
+                        </Link>
 
-                      <Link
-                        href="/ryan-white-state-level"
-                        className={`block px-4 py-2.5 text-sm font-medium transition-colors ${
-                          isStateLevelActive
-                            ? 'bg-hopkins-blue text-white'
-                            : 'text-gray-700 hover:bg-gray-50'
-                        }`}
-                      >
-                        State Level Model
-                      </Link>
+                        {/* Show Ryan White submenu if active */}
+                        {isRyanWhiteActive && (
+                          <div className="bg-gray-50 border-y border-gray-200 py-1">
+                            <Link
+                              href="/prerun"
+                              className={`block px-10 py-2 text-xs font-medium transition-colors ${
+                                pathname === '/prerun'
+                                  ? 'text-hopkins-blue bg-white'
+                                  : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
+                              }`}
+                            >
+                              Prerun Scenarios
+                            </Link>
+                            <Link
+                              href="/custom"
+                              className={`block px-10 py-2 text-xs font-medium transition-colors ${
+                                pathname === '/custom'
+                                  ? 'text-hopkins-blue bg-white'
+                                  : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
+                              }`}
+                            >
+                              Custom Simulations
+                            </Link>
+                            <Link
+                              href="/explore"
+                              className={`block px-10 py-2 text-xs font-medium transition-colors ${
+                                pathname === '/explore'
+                                  ? 'text-hopkins-blue bg-white'
+                                  : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
+                              }`}
+                            >
+                              <span className="inline-flex items-center gap-1.5">
+                                Interactive Explorer
+                                <span className="bg-hopkins-gold text-hopkins-blue text-[10px] font-bold px-1.5 py-0.5 rounded-full">NEW</span>
+                              </span>
+                            </Link>
+                          </div>
+                        )}
 
-                      <Link
-                        href="/cdc-testing"
-                        className={`block px-4 py-2.5 text-sm font-medium transition-colors ${
-                          isCdcTestingActive
-                            ? 'bg-hopkins-blue text-white'
-                            : 'text-gray-700 hover:bg-gray-50'
-                        }`}
-                      >
-                        CDC Testing Model
-                      </Link>
+                        <Link
+                          href="/ryan-white-state-level"
+                          className={`block px-5 py-3 transition-all duration-200 border-l-4 ${
+                            isStateLevelActive
+                              ? 'bg-hopkins-blue/5 border-l-hopkins-blue'
+                              : 'border-l-transparent hover:bg-hopkins-blue/5 hover:border-l-hopkins-blue/30'
+                          }`}
+                        >
+                          <div className={`text-sm font-semibold ${
+                            isStateLevelActive ? 'text-hopkins-blue' : 'text-gray-900'
+                          }`}>
+                            State Level Model
+                          </div>
+                          <div className="text-xs text-gray-500 mt-0.5">
+                            State-level Ryan White funding impacts
+                          </div>
+                        </Link>
 
-                      <Link
-                        href="/hiv-age-projections"
-                        className={`block px-4 py-2.5 text-sm font-medium transition-colors ${
-                          isHIVAgeProjectionsActive
-                            ? 'bg-hopkins-blue text-white'
-                            : 'text-gray-700 hover:bg-gray-50'
-                        }`}
-                      >
-                        HIV Age Projections
-                      </Link>
+                        <Link
+                          href="/cdc-testing"
+                          className={`block px-5 py-3 transition-all duration-200 border-l-4 ${
+                            isCdcTestingActive
+                              ? 'bg-hopkins-blue/5 border-l-hopkins-blue'
+                              : 'border-l-transparent hover:bg-hopkins-blue/5 hover:border-l-hopkins-blue/30'
+                          }`}
+                        >
+                          <div className={`text-sm font-semibold ${
+                            isCdcTestingActive ? 'text-hopkins-blue' : 'text-gray-900'
+                          }`}>
+                            CDC Testing Model
+                          </div>
+                          <div className="text-xs text-gray-500 mt-0.5">
+                            CDC-funded HIV testing program impacts
+                          </div>
+                        </Link>
+
+                        <Link
+                          href="/hiv-age-projections"
+                          className={`block px-5 py-3 transition-all duration-200 border-l-4 ${
+                            isHIVAgeProjectionsActive
+                              ? 'bg-hopkins-blue/5 border-l-hopkins-blue'
+                              : 'border-l-transparent hover:bg-hopkins-blue/5 hover:border-l-hopkins-blue/30'
+                          }`}
+                        >
+                          <div className={`text-sm font-semibold ${
+                            isHIVAgeProjectionsActive ? 'text-hopkins-blue' : 'text-gray-900'
+                          }`}>
+                            HIV Age Projections
+                          </div>
+                          <div className="text-xs text-gray-500 mt-0.5">
+                            Aging trends among people with HIV
+                          </div>
+                        </Link>
+                      </div>
                     </div>
                   </motion.div>
                 )}

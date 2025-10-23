@@ -184,49 +184,43 @@ function MultiStateComparisonInner() {
   const selectedStates = getStatesByNames(selectedStateNames);
 
   return (
-    <div className="bg-white rounded-xl p-8 shadow-lg space-y-8">
-      {/* Tab Navigation */}
-      <div className="flex gap-2 border-b-2 border-gray-200">
+    <div className="space-y-4">
+      {/* Tab Navigation - Outside container */}
+      <div className="flex gap-3">
         <button
           onClick={() => setViewMode('state')}
-          className={`px-6 py-3 font-semibold text-sm transition-all relative ${
+          className={`group px-5 py-2.5 rounded-xl font-semibold text-sm transition-all duration-300 ${
             viewMode === 'state'
-              ? 'text-hopkins-blue'
-              : 'text-gray-600 hover:text-gray-900'
+              ? 'bg-gradient-to-r from-hopkins-blue to-hopkins-spirit-blue text-white shadow-lg shadow-hopkins-blue/30 scale-105 hover:shadow-xl'
+              : 'bg-white text-gray-700 hover:bg-gray-50 hover:scale-105 hover:shadow-md border border-gray-200 shadow-sm'
           }`}
         >
-          By State
-          {viewMode === 'state' && (
-            <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-hopkins-blue to-hopkins-spirit-blue rounded-t-full" />
-          )}
+          States Only
         </button>
         <button
           onClick={() => setViewMode('race')}
-          className={`px-6 py-3 font-semibold text-sm transition-all relative ${
+          className={`group px-5 py-2.5 rounded-xl font-semibold text-sm transition-all duration-300 ${
             viewMode === 'race'
-              ? 'text-hopkins-blue'
-              : 'text-gray-600 hover:text-gray-900'
+              ? 'bg-gradient-to-r from-hopkins-blue to-hopkins-spirit-blue text-white shadow-lg shadow-hopkins-blue/30 scale-105 hover:shadow-xl'
+              : 'bg-white text-gray-700 hover:bg-gray-50 hover:scale-105 hover:shadow-md border border-gray-200 shadow-sm'
           }`}
         >
-          By Race
-          {viewMode === 'race' && (
-            <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-hopkins-blue to-hopkins-spirit-blue rounded-t-full" />
-          )}
+          States × Race
         </button>
         <button
           onClick={() => setViewMode('sex')}
-          className={`px-6 py-3 font-semibold text-sm transition-all relative ${
+          className={`group px-5 py-2.5 rounded-xl font-semibold text-sm transition-all duration-300 ${
             viewMode === 'sex'
-              ? 'text-hopkins-blue'
-              : 'text-gray-600 hover:text-gray-900'
+              ? 'bg-gradient-to-r from-hopkins-blue to-hopkins-spirit-blue text-white shadow-lg shadow-hopkins-blue/30 scale-105 hover:shadow-xl'
+              : 'bg-white text-gray-700 hover:bg-gray-50 hover:scale-105 hover:shadow-md border border-gray-200 shadow-sm'
           }`}
         >
-          By Sex
-          {viewMode === 'sex' && (
-            <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-hopkins-blue to-hopkins-spirit-blue rounded-t-full" />
-          )}
+          States × Sex
         </button>
       </div>
+
+      {/* Main container */}
+      <div className="bg-white rounded-xl p-8 shadow-lg space-y-8">
 
       {/* By State View */}
       {viewMode === 'state' && (
@@ -255,42 +249,42 @@ function MultiStateComparisonInner() {
         {/* Display Mode and Export - ~20% width, stacked */}
         <div className="lg:w-[24%] flex flex-col gap-2">
           {/* Display Mode Toggle */}
-          <div className="bg-gray-50 rounded-lg p-2.5 border border-gray-200 flex flex-col items-center justify-center h-full">
-            <label className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
+          <div className="bg-gray-50 rounded-lg p-2.5 border border-gray-200 flex flex-col items-center justify-center">
+            <label className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-2">
               Display Mode
             </label>
             <button
               onClick={() => setNormalized(!normalized)}
-              className={`w-full px-3 py-2 rounded-md text-xs font-semibold transition-all duration-300 shadow-sm hover:shadow-md ${
+              className={`w-full px-3 py-2 rounded-lg text-xs font-semibold transition-all duration-300 shadow-sm hover:shadow-md hover:scale-105 ${
                 normalized
                   ? 'bg-gradient-to-r from-hopkins-blue to-hopkins-spirit-blue text-white'
                   : 'bg-white text-gray-700 border border-gray-300 hover:border-hopkins-blue'
               }`}
               title={normalized ? 'Switch to absolute case counts' : 'Switch to proportional view'}
             >
-              <div className="flex flex-col items-center gap-1">
-                <span className="text-lg">{normalized ? '📊' : '📈'}</span>
-                <span>{normalized ? 'Proportional %' : 'Case Counts'}</span>
-              </div>
+              {normalized ? 'Proportional %' : 'Case Counts'}
             </button>
           </div>
 
           {/* Export PNG - Takes remaining space */}
-          <div className="bg-gray-50 rounded-lg p-2.5 border border-gray-200 flex items-center justify-center">
+          <div className="bg-gray-50 rounded-lg p-2.5 border border-gray-200 flex flex-col items-center justify-center">
+            <label className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-2">
+              Export
+            </label>
             <button
               onClick={() => {
                 const event = new CustomEvent('exportCharts');
                 window.dispatchEvent(event);
               }}
               disabled={exportStatus === 'exporting'}
-              className={`w-full flex flex-col items-center gap-1 px-3 py-2 text-xs font-semibold rounded-md transition-all shadow-sm ${
+              className={`w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-semibold rounded-lg transition-all shadow-sm ${
                 exportStatus === 'exporting'
                   ? 'bg-gray-100 border border-gray-300 text-gray-400 cursor-wait'
                   : exportStatus === 'success'
-                  ? 'bg-green-50 border border-green-300 text-green-700'
+                  ? 'bg-green-50 border border-green-300 text-green-700 scale-105'
                   : exportStatus === 'error'
                   ? 'bg-red-50 border border-red-300 text-red-700'
-                  : 'bg-white border border-gray-300 text-gray-700 hover:border-hopkins-blue hover:bg-gray-50 hover:shadow-md'
+                  : 'bg-white border border-gray-300 text-gray-700 hover:border-hopkins-blue hover:bg-gray-50 hover:shadow-md hover:scale-105'
               }`}
               title={
                 exportStatus === 'exporting' ? 'Generating export...' :
@@ -301,19 +295,19 @@ function MultiStateComparisonInner() {
             >
               {/* Icon changes based on status */}
               {exportStatus === 'exporting' ? (
-                <svg className="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                 </svg>
               ) : exportStatus === 'success' ? (
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
               ) : exportStatus === 'error' ? (
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               ) : (
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                 </svg>
               )}
@@ -321,7 +315,7 @@ function MultiStateComparisonInner() {
                 {exportStatus === 'exporting' ? 'Exporting...' :
                  exportStatus === 'success' ? 'Exported!' :
                  exportStatus === 'error' ? 'Failed' :
-                 'Export PNG'}
+                 'PNG'}
               </span>
             </button>
           </div>
@@ -370,6 +364,7 @@ function MultiStateComparisonInner() {
           />
         </ErrorBoundary>
       )}
+      </div>
     </div>
   );
 }
@@ -395,7 +390,7 @@ export default function HIVAgeProjectionsPage() {
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
       <section className="border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-6 py-20">
+        <div className="max-w-7xl mx-auto px-6 py-16">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -458,7 +453,7 @@ export default function HIVAgeProjectionsPage() {
       </section>
 
       {/* Main App Area */}
-      <section className="py-16">
+      <section className="py-12">
         <div className="max-w-7xl mx-auto px-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}

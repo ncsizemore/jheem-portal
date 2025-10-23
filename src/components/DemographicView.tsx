@@ -199,40 +199,40 @@ export default function DemographicView<T extends string>({
         <div className="lg:w-[24%] flex flex-col gap-2">
           {/* Display Mode Toggle */}
           <div className="bg-gray-50 rounded-lg p-2.5 border border-gray-200 flex flex-col items-center justify-center">
-            <label className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
+            <label className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-2">
               Display Mode
             </label>
             <button
               onClick={() => onNormalizedChange(!normalized)}
-              className={`w-full px-3 py-2 rounded-md text-xs font-semibold transition-all duration-300 shadow-sm hover:shadow-md ${
+              className={`w-full px-3 py-2 rounded-lg text-xs font-semibold transition-all duration-300 shadow-sm hover:shadow-md hover:scale-105 ${
                 normalized
                   ? 'bg-gradient-to-r from-hopkins-blue to-hopkins-spirit-blue text-white'
                   : 'bg-white text-gray-700 border border-gray-300 hover:border-hopkins-blue'
               }`}
             >
-              <div className="flex flex-col items-center gap-1">
-                <span className="text-lg">{normalized ? '📊' : '📈'}</span>
-                <span>{normalized ? 'Proportional %' : 'Case Counts'}</span>
-              </div>
+              {normalized ? 'Proportional %' : 'Case Counts'}
             </button>
           </div>
 
           {/* Export PNG */}
-          <div className="bg-gray-50 rounded-lg p-2.5 border border-gray-200 flex items-center justify-center">
+          <div className="bg-gray-50 rounded-lg p-2.5 border border-gray-200 flex flex-col items-center justify-center">
+            <label className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-2">
+              Export
+            </label>
             <button
               onClick={() => {
                 const event = new CustomEvent('exportCharts');
                 window.dispatchEvent(event);
               }}
               disabled={exportStatus === 'exporting'}
-              className={`w-full flex flex-col items-center gap-1 px-3 py-2 text-xs font-semibold rounded-md transition-all shadow-sm ${
+              className={`w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-semibold rounded-lg transition-all shadow-sm ${
                 exportStatus === 'exporting'
                   ? 'bg-gray-100 border border-gray-300 text-gray-400 cursor-wait'
                   : exportStatus === 'success'
-                  ? 'bg-green-50 border border-green-300 text-green-700'
+                  ? 'bg-green-50 border border-green-300 text-green-700 scale-105'
                   : exportStatus === 'error'
                   ? 'bg-red-50 border border-red-300 text-red-700'
-                  : 'bg-white border border-gray-300 text-gray-700 hover:border-hopkins-blue hover:bg-gray-50 hover:shadow-md'
+                  : 'bg-white border border-gray-300 text-gray-700 hover:border-hopkins-blue hover:bg-gray-50 hover:shadow-md hover:scale-105'
               }`}
               title={
                 exportStatus === 'exporting' ? 'Generating export...' :
@@ -243,19 +243,19 @@ export default function DemographicView<T extends string>({
             >
               {/* Icon changes based on status */}
               {exportStatus === 'exporting' ? (
-                <svg className="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                 </svg>
               ) : exportStatus === 'success' ? (
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
               ) : exportStatus === 'error' ? (
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               ) : (
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                 </svg>
               )}
@@ -263,7 +263,7 @@ export default function DemographicView<T extends string>({
                 {exportStatus === 'exporting' ? 'Exporting...' :
                  exportStatus === 'success' ? 'Exported!' :
                  exportStatus === 'error' ? 'Failed' :
-                 'Export PNG'}
+                 'PNG'}
               </span>
             </button>
           </div>
@@ -285,10 +285,10 @@ export default function DemographicView<T extends string>({
               <button
                 key={category}
                 onClick={() => toggleCategory(category)}
-                className={`group relative px-6 py-2.5 rounded-lg text-sm font-semibold transition-all shadow-sm ${
+                className={`group relative px-6 py-2.5 rounded-lg text-sm font-semibold transition-all duration-300 shadow-sm ${
                   isSelected
-                    ? 'bg-gradient-to-r from-hopkins-blue to-hopkins-spirit-blue text-white shadow-md'
-                    : 'bg-white text-gray-700 border border-gray-300 hover:border-hopkins-blue'
+                    ? 'bg-gradient-to-r from-hopkins-blue to-hopkins-spirit-blue text-white shadow-md hover:shadow-lg scale-105'
+                    : 'bg-white text-gray-700 border border-gray-300 hover:border-hopkins-blue hover:scale-105 hover:shadow-md'
                 }`}
               >
                 {categoryDisplayLabel}
