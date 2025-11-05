@@ -186,38 +186,61 @@ function MultiStateComparisonInner() {
   return (
     <div className="space-y-4">
       {/* Tab Navigation - Outside container */}
-      <div className="flex gap-3">
+      <div className="flex items-center gap-3">
+        <span className="text-base font-bold text-gray-800 mr-2">
+          Breakdown:
+        </span>
         <button
           onClick={() => setViewMode('state')}
+          title="View overall state-level aging trends without demographic breakdowns"
           className={`group px-5 py-2.5 rounded-xl font-semibold text-sm transition-all duration-300 ${
             viewMode === 'state'
               ? 'bg-gradient-to-r from-hopkins-blue to-hopkins-spirit-blue text-white shadow-lg shadow-hopkins-blue/30 scale-105 hover:shadow-xl'
               : 'bg-white text-gray-700 hover:bg-gray-50 hover:scale-105 hover:shadow-md border border-gray-200 shadow-sm'
           }`}
         >
-          States Only
+          Overall
         </button>
         <button
           onClick={() => setViewMode('race')}
+          title="Compare aging trends across racial/ethnic groups (Black, Hispanic, Other)"
           className={`group px-5 py-2.5 rounded-xl font-semibold text-sm transition-all duration-300 ${
             viewMode === 'race'
               ? 'bg-gradient-to-r from-hopkins-blue to-hopkins-spirit-blue text-white shadow-lg shadow-hopkins-blue/30 scale-105 hover:shadow-xl'
               : 'bg-white text-gray-700 hover:bg-gray-50 hover:scale-105 hover:shadow-md border border-gray-200 shadow-sm'
           }`}
         >
-          States × Race
+          By Race
         </button>
         <button
           onClick={() => setViewMode('sex')}
+          title="Compare aging trends by transmission category: MSM (Men who have Sex with Men) vs Non-MSM populations"
           className={`group px-5 py-2.5 rounded-xl font-semibold text-sm transition-all duration-300 ${
             viewMode === 'sex'
               ? 'bg-gradient-to-r from-hopkins-blue to-hopkins-spirit-blue text-white shadow-lg shadow-hopkins-blue/30 scale-105 hover:shadow-xl'
               : 'bg-white text-gray-700 hover:bg-gray-50 hover:scale-105 hover:shadow-md border border-gray-200 shadow-sm'
           }`}
         >
-          States × Sex
+          By Transmission <span className="text-xs opacity-80">(MSM)</span>
         </button>
       </div>
+
+      {/* Helper text for current view mode */}
+      {viewMode === 'state' && (
+        <div className="text-xs text-gray-600 bg-blue-50 border border-blue-200 rounded-lg px-4 py-2">
+          <span className="font-semibold">Overall view:</span> Compare aging trends across states without demographic breakdowns. Select up to 25 states.
+        </div>
+      )}
+      {viewMode === 'race' && (
+        <div className="text-xs text-gray-600 bg-blue-50 border border-blue-200 rounded-lg px-4 py-2">
+          <span className="font-semibold">Race breakdown:</span> Compare aging trends by racial/ethnic group (<strong>Black</strong>, <strong>Hispanic</strong>, <strong>Other</strong>). Chart limit: 25 total.
+        </div>
+      )}
+      {viewMode === 'sex' && (
+        <div className="text-xs text-gray-600 bg-blue-50 border border-blue-200 rounded-lg px-4 py-2">
+          <span className="font-semibold">Transmission breakdown:</span> Compare trends by transmission category: <strong>MSM</strong> (Men who have Sex with Men) and <strong>Non-MSM</strong> (all other populations). Chart limit: 25 total.
+        </div>
+      )}
 
       {/* Main container */}
       <div className="bg-white rounded-xl p-8 shadow-lg space-y-8">
