@@ -112,11 +112,12 @@ const AgeDistributionChart = memo(({
                         : value.toLocaleString()
                       }
                     </span>
-                    {!normalized && (
-                      <span className="text-xs text-gray-500 ml-1.5">
-                        ({percentage}%)
-                      </span>
-                    )}
+                    <span className="text-xs text-gray-500 ml-1.5">
+                      {normalized
+                        ? `(${Math.round((value / 100) * total).toLocaleString()})`
+                        : `(${percentage}%)`
+                      }
+                    </span>
                   </div>
                 </div>
               );

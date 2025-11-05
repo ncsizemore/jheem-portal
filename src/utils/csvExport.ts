@@ -41,13 +41,19 @@ export function exportToCSV(
         // Add year
         row.push(yearData.year.toString());
 
+        // Calculate total for percentage calculations if needed
+        let total = 0;
+        if (normalized) {
+          total = Object.values(yearData.age_cohorts).reduce((sum, val) => sum + val, 0);
+        }
+
         // Add age cohort data
         row.push(
-          formatValue(yearData.age_cohorts['13-24'], normalized),
-          formatValue(yearData.age_cohorts['25-34'], normalized),
-          formatValue(yearData.age_cohorts['35-44'], normalized),
-          formatValue(yearData.age_cohorts['45-54'], normalized),
-          formatValue(yearData.age_cohorts['55+'], normalized)
+          formatValue(yearData.age_cohorts['13-24'], normalized, total),
+          formatValue(yearData.age_cohorts['25-34'], normalized, total),
+          formatValue(yearData.age_cohorts['35-44'], normalized, total),
+          formatValue(yearData.age_cohorts['45-54'], normalized, total),
+          formatValue(yearData.age_cohorts['55+'], normalized, total)
         );
 
         return row;
@@ -110,10 +116,14 @@ function parseStateName(fullName: string, viewMode: ViewMode): { stateName: stri
 
 /**
  * Format numeric value for CSV (handle normalized percentages)
+ * @param value - Raw case count value
+ * @param normalized - Whether to convert to percentage
+ * @param total - Total for percentage calculation (only used if normalized=true)
  */
-function formatValue(value: number, normalized: boolean): string {
-  if (normalized) {
-    return value.toFixed(1); // 1 decimal place for percentages
+function formatValue(value: number, normalized: boolean, total: number = 0): string {
+  if (normalized && total > 0) {
+    const percentage = (value / total) * 100;
+    return percentage.toFixed(1); // 1 decimal place for percentages
   }
   return value.toFixed(0); // Whole numbers for case counts
 }
