@@ -107,17 +107,12 @@ const AgeDistributionChart = memo(({
                   </div>
                   <div className="text-right">
                     {normalized ? (
-                      // Proportional mode: Show percentage first, then count
-                      <>
-                        <span className="font-semibold text-gray-900">
-                          {value.toFixed(1)}%
-                        </span>
-                        <span className="text-xs text-gray-500 ml-1.5">
-                          ({Math.round((value / 100) * total).toLocaleString()})
-                        </span>
-                      </>
+                      // Proportional mode: Show percentage only
+                      <span className="font-semibold text-gray-900">
+                        {value.toFixed(1)}%
+                      </span>
                     ) : (
-                      // Case counts mode: Show count first, then percentage
+                      // Case counts mode: Show count with percentage in parentheses
                       <>
                         <span className="font-semibold text-gray-900">
                           {value.toLocaleString()}
