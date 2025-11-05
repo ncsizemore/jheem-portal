@@ -19,17 +19,21 @@ const AgingSparkline = memo(({ stateData }: { stateData: typeof HIV_AGE_PROJECTI
     });
   }, [stateData]);
 
-  // Calculate min/max for scaling
-  const min = Math.min(...trend);
-  const max = Math.max(...trend);
-  const range = max - min;
+  // Use fixed scaling for visual comparability across states
+  // Expected range: ~35% to 65% for 55+ age cohort across all states
+  const GLOBAL_MIN = 35;
+  const GLOBAL_MAX = 65;
+  const globalRange = GLOBAL_MAX - GLOBAL_MIN;
 
   // Generate SVG path
   const width = 32;
   const height = 12;
   const points = trend.map((value, index) => {
     const x = (index / (trend.length - 1)) * width;
-    const y = range > 0 ? height - ((value - min) / range) * height : height / 2;
+    // Use fixed scale instead of relative scaling
+    const y = globalRange > 0
+      ? height - ((value - GLOBAL_MIN) / globalRange) * height
+      : height / 2;
     return `${x},${y}`;
   }).join(' ');
 
@@ -155,9 +159,16 @@ const StateSelector = memo(({
                   <div className="font-semibold mb-1">
                     {isTotal ? 'All States Combined' : state.state_name}
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] text-gray-400">55+ trend:</span>
-                    <AgingSparkline stateData={state} />
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[10px] text-gray-400">55+ aging trend:</span>
+                    <div className="flex items-center gap-2">
+                      <AgingSparkline stateData={state} />
+                      <span className="text-[9px] font-semibold text-emerald-400">
+                        {Math.round(state.data[0].age_cohorts['55+'] /
+                          Object.values(state.data[0].age_cohorts).reduce((sum, val) => sum + val, 0) * 100)}% → {Math.round(state.data[state.data.length - 1].age_cohorts['55+'] /
+                          Object.values(state.data[state.data.length - 1].age_cohorts).reduce((sum, val) => sum + val, 0) * 100)}%
+                      </span>
+                    </div>
                   </div>
                   {/* Tooltip arrow */}
                   <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-px">

@@ -82,6 +82,9 @@ const AgeDistributionChart = memo(({
             <p className="text-xl font-bold text-hopkins-blue bg-gradient-to-r from-hopkins-blue to-hopkins-spirit-blue bg-clip-text">
               {label}
             </p>
+            <p className="text-[9px] text-gray-500 mt-1 italic">
+              Median case counts (1000 simulations)
+            </p>
           </div>
 
           {/* Age cohort data */}
