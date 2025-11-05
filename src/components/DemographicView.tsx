@@ -5,6 +5,7 @@ import MultiStateChartGrid from './MultiStateChartGrid';
 import StateSelector from './StateSelector';
 import TimelineControls from './TimelineControls';
 import { StateAgeData, getStateCode } from '@/data/hiv-age-projections';
+import { exportToCSV } from '@/utils/csvExport';
 
 /**
  * Generic interface for demographic data items (race, sex, age group, etc.)
@@ -46,6 +47,7 @@ interface DemographicViewProps<T extends string> {
   onYearRangeChange: (range: [number, number]) => void;
 
   // Configuration: what makes this view unique
+  viewMode: 'race' | 'sex'; // View mode for CSV export
   categoryLabel: string; // "Races" or "Sex Categories"
   categorySingular: string; // "race" or "category"
   categoryOptions: Record<T, string>; // e.g., { black: 'Black', hispanic: 'Hispanic' }
@@ -78,6 +80,7 @@ export default function DemographicView<T extends string>({
   onNormalizedChange,
   yearRange,
   onYearRangeChange,
+  viewMode,
   categoryLabel,
   categoryTooltips,
   categorySingular,
@@ -197,75 +200,100 @@ export default function DemographicView<T extends string>({
 
         {/* Display Mode and Export - ~20% width */}
         <div className="lg:w-[24%] flex flex-col gap-2">
-          {/* Display Mode Toggle */}
+          {/* Display Mode - Segmented Control */}
           <div className="bg-gray-50 rounded-lg p-2.5 border border-gray-200 flex flex-col items-center justify-center">
             <label className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-2">
               Display Mode
             </label>
-            <button
-              onClick={() => onNormalizedChange(!normalized)}
-              className={`w-full px-3 py-2 rounded-lg text-xs font-semibold transition-all duration-300 shadow-sm hover:shadow-md hover:scale-105 ${
-                normalized
-                  ? 'bg-gradient-to-r from-hopkins-blue to-hopkins-spirit-blue text-white'
-                  : 'bg-white text-gray-700 border border-gray-300 hover:border-hopkins-blue'
-              }`}
-            >
-              {normalized ? 'Proportional %' : 'Case Counts'}
-            </button>
+            <div className="w-full flex rounded-lg border border-gray-300 overflow-hidden">
+              <button
+                onClick={() => onNormalizedChange(false)}
+                className={`flex-1 px-2 py-2 text-[11px] font-semibold transition-all duration-200 ${
+                  !normalized
+                    ? 'bg-gradient-to-r from-hopkins-blue to-hopkins-spirit-blue text-white'
+                    : 'bg-white text-gray-700 hover:bg-gray-50'
+                }`}
+                title="Show absolute case counts"
+              >
+                Case Counts
+              </button>
+              <button
+                onClick={() => onNormalizedChange(true)}
+                className={`flex-1 px-2 py-2 text-[11px] font-semibold transition-all duration-200 border-l border-gray-300 ${
+                  normalized
+                    ? 'bg-gradient-to-r from-hopkins-blue to-hopkins-spirit-blue text-white'
+                    : 'bg-white text-gray-700 hover:bg-gray-50'
+                }`}
+                title="Show proportional percentages"
+              >
+                Proportional %
+              </button>
+            </div>
           </div>
 
-          {/* Export PNG */}
+          {/* Export - PNG and CSV side by side */}
           <div className="bg-gray-50 rounded-lg p-2.5 border border-gray-200 flex flex-col items-center justify-center">
             <label className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-2">
               Export
             </label>
-            <button
-              onClick={() => {
-                const event = new CustomEvent('exportCharts');
-                window.dispatchEvent(event);
-              }}
-              disabled={exportStatus === 'exporting'}
-              className={`w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-semibold rounded-lg transition-all shadow-sm ${
-                exportStatus === 'exporting'
-                  ? 'bg-gray-100 border border-gray-300 text-gray-400 cursor-wait'
-                  : exportStatus === 'success'
-                  ? 'bg-green-50 border border-green-300 text-green-700 scale-105'
-                  : exportStatus === 'error'
-                  ? 'bg-red-50 border border-red-300 text-red-700'
-                  : 'bg-white border border-gray-300 text-gray-700 hover:border-hopkins-blue hover:bg-gray-50 hover:shadow-md hover:scale-105'
-              }`}
-              title={
-                exportStatus === 'exporting' ? 'Generating export...' :
-                exportStatus === 'success' ? 'Export successful!' :
-                exportStatus === 'error' ? 'Export failed - please try again' :
-                'Export all charts as PNG image'
-              }
-            >
-              {/* Icon changes based on status */}
-              {exportStatus === 'exporting' ? (
-                <svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            <div className="w-full flex gap-1.5">
+              {/* PNG Export */}
+              <button
+                onClick={() => {
+                  const event = new CustomEvent('exportCharts');
+                  window.dispatchEvent(event);
+                }}
+                disabled={exportStatus === 'exporting'}
+                className={`flex-1 flex items-center justify-center gap-1 px-2 py-2 text-[11px] font-semibold rounded-lg transition-all shadow-sm ${
+                  exportStatus === 'exporting'
+                    ? 'bg-gray-100 border border-gray-300 text-gray-400 cursor-wait'
+                    : exportStatus === 'success'
+                    ? 'bg-green-50 border border-green-300 text-green-700'
+                    : exportStatus === 'error'
+                    ? 'bg-red-50 border border-red-300 text-red-700'
+                    : 'bg-white border border-gray-300 text-gray-700 hover:border-hopkins-blue hover:bg-gray-50 hover:shadow-md'
+                }`}
+                title={
+                  exportStatus === 'exporting' ? 'Generating export...' :
+                  exportStatus === 'success' ? 'Export successful!' :
+                  exportStatus === 'error' ? 'Export failed' :
+                  'Export charts as PNG image'
+                }
+              >
+                {exportStatus === 'exporting' ? (
+                  <svg className="w-3.5 h-3.5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                ) : exportStatus === 'success' ? (
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                ) : exportStatus === 'error' ? (
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                ) : (
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                )}
+                <span className="whitespace-nowrap">PNG</span>
+              </button>
+
+              {/* CSV Export */}
+              <button
+                onClick={() => {
+                  exportToCSV(chartData, yearRange, normalized, viewMode);
+                }}
+                className="flex-1 flex items-center justify-center gap-1 px-2 py-2 text-[11px] font-semibold rounded-lg transition-all shadow-sm bg-white border border-gray-300 text-gray-700 hover:border-hopkins-blue hover:bg-gray-50 hover:shadow-md"
+                title="Export data as CSV file"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
-              ) : exportStatus === 'success' ? (
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-              ) : exportStatus === 'error' ? (
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              ) : (
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                </svg>
-              )}
-              <span>
-                {exportStatus === 'exporting' ? 'Exporting...' :
-                 exportStatus === 'success' ? 'Exported!' :
-                 exportStatus === 'error' ? 'Failed' :
-                 'PNG'}
-              </span>
-            </button>
+                <span className="whitespace-nowrap">CSV</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>

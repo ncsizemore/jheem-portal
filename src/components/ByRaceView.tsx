@@ -55,6 +55,7 @@ export default function ByRaceView({
       onNormalizedChange={onNormalizedChange}
       yearRange={yearRange}
       onYearRangeChange={onYearRangeChange}
+      viewMode="race"
       categoryLabel="Races"
       categorySingular="race"
       categoryOptions={RACE_CATEGORIES}

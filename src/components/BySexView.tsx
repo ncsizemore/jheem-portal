@@ -55,6 +55,7 @@ export default function BySexView({
       onNormalizedChange={onNormalizedChange}
       yearRange={yearRange}
       onYearRangeChange={onYearRangeChange}
+      viewMode="sex"
       categoryLabel="Sex Categories"
       categorySingular="category"
       categoryOptions={SEX_CATEGORIES}
