@@ -46,7 +46,7 @@ export default function Navigation() {
               
               <div className="hidden md:block">
                 <div className="text-white font-bold text-xl group-hover:text-hopkins-gold transition-colors duration-300">JHEEM Portal</div>
-                <div className="text-white/80 text-xs tracking-wider group-hover:text-white transition-colors duration-300">HIV TRANSMISSION MODELING</div>
+                <div className="text-white/80 text-xs tracking-wider group-hover:text-white transition-colors duration-300">Dynamic HIV modeling across US metropolitan areas</div>
               </div>
             </div>
             {/* Subtle hover effect - animated underline */}
@@ -63,7 +63,7 @@ export default function Navigation() {
               <button
                 className="text-white hover:text-hopkins-gold font-medium transition-all relative group py-2 flex items-center gap-2"
               >
-                <span>Models</span>
+                <span>Research Applications</span>
                 <svg
                   className={`w-4 h-4 transition-transform duration-200 ${modelsDropdownOpen ? 'rotate-180' : ''}`}
                   fill="none"
@@ -318,7 +318,7 @@ export default function Navigation() {
                 {/* Models Section */}
                 <div className="px-3">
                   <p className="text-xs font-semibold text-hopkins-gold uppercase tracking-wider mb-2">
-                    Models
+                    Research Applications
                   </p>
                   <div className="space-y-1">
                     <Link
