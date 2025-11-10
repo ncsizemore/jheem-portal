@@ -41,7 +41,7 @@ export default function Footer() {
             </div>
             
             <a
-              href="https://ncsizemore.github.io/jhu-comp-epi/"
+              href="https://jhu-comp-epi.vercel.app/"
               target="_blank"
               rel="noopener noreferrer"
               className="block bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20 hover:bg-white/15 hover:border-white/30 transition-all duration-300 hover:scale-105 group"
