@@ -20,11 +20,12 @@ export default function Footer() {
               </h2>
               
               <p className="text-blue-100 leading-relaxed mb-8 font-light text-lg">
-                This research is supported by grants from the National Institute of Mental Health 
-                and the National Institute of Allergy and Infectious Diseases.
+                This research is supported by grants from the National Institute of Mental Health,
+                the National Institute of Allergy and Infectious Diseases, and the National Institute
+                on Minority Health and Health Disparities.
               </p>
-              
-              <div className="space-y-4">
+
+              <div className="grid grid-cols-2 gap-4">
                 <div className="flex items-center gap-4">
                   <div className="w-2 h-2 bg-hopkins-gold rounded-full"></div>
                   <span className="text-white font-mono text-sm">K08MH118094</span>
@@ -36,6 +37,10 @@ export default function Footer() {
                 <div className="flex items-center gap-4">
                   <div className="w-2 h-2 bg-hopkins-gold rounded-full"></div>
                   <span className="text-white font-mono text-sm">P30-AI094189</span>
+                </div>
+                <div className="flex items-center gap-4">
+                  <div className="w-2 h-2 bg-hopkins-gold rounded-full"></div>
+                  <span className="text-white font-mono text-sm">R01MD018539</span>
                 </div>
               </div>
             </div>
