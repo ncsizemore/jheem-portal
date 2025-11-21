@@ -308,7 +308,7 @@ export default function JheemCapabilities() {
           transition={{ duration: 0.6, delay: 1.1 }}
           className="text-center mt-12"
         >
-          <p className="text-gray-500 text-sm mb-3">Explore JHEEM's modeling applications</p>
+          <p className="text-gray-500 text-sm mb-3">Explore JHEEM&apos;s modeling applications</p>
           <svg className="w-6 h-6 text-hopkins-blue/30 mx-auto animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
           </svg>
