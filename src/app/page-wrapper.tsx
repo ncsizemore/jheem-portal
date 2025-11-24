@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import Footer from '@/components/Footer';
 import RecentPublications from '@/components/RecentPublications';
 import PolicyNetworkIcon from '@/components/PolicyNetworkIcon';
+import TimeProjectionIcon from '@/components/TimeProjectionIcon';
 
 interface Publication {
   id: string;
@@ -129,27 +130,7 @@ export default function HomePageWrapper({ publications }: HomePageWrapperProps) 
                 className="flex items-center gap-8"
               >
                 <div className="w-32 h-32 lg:w-36 lg:h-36 flex-shrink-0">
-                  <svg viewBox="0 0 96 96" className="w-full h-full">
-                    <defs>
-                      <marker id="arrow-large" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
-                        <polygon points="0 0, 12 6, 0 12" fill="#F2C413" />
-                      </marker>
-                    </defs>
-                    {/* Timeline arrow */}
-                    <path d="M 10 48 L 86 48" stroke="#F2C413" strokeWidth="4" markerEnd="url(#arrow-large)" />
-                    {/* Time milestones */}
-                    <circle cx="16" cy="48" r="6" fill="#002D72" />
-                    <text x="16" y="36" textAnchor="middle" fill="#002D72" fontSize="12" fontWeight="700">2025</text>
-                    <text x="16" y="66" textAnchor="middle" fill="#666" fontSize="10">Now</text>
-
-                    <circle cx="48" cy="48" r="7" fill="#F2C413" />
-                    <text x="48" y="36" textAnchor="middle" fill="#002D72" fontSize="12" fontWeight="700">2030</text>
-                    <text x="48" y="66" textAnchor="middle" fill="#666" fontSize="10">5-Year</text>
-
-                    <circle cx="80" cy="48" r="6" fill="#002D72" opacity="0.6" />
-                    <text x="80" y="36" textAnchor="middle" fill="#002D72" fontSize="12" fontWeight="700">2040</text>
-                    <text x="80" y="66" textAnchor="middle" fill="#666" fontSize="10">Long-term</text>
-                  </svg>
+                  <TimeProjectionIcon />
                 </div>
                 <div className="flex-1 max-w-sm">
                   <h3 className="text-xl lg:text-2xl font-semibold text-gray-900 mb-3">Time Horizons</h3>
