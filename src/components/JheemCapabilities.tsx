@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 
 export default function JheemCapabilities() {
   return (
-    <section className="py-24 bg-gradient-to-b from-white via-slate-50/40 to-white relative overflow-hidden">
+    <section className="py-16 bg-gradient-to-b from-white via-slate-50/40 to-white relative overflow-hidden">
       {/* Subtle background pattern */}
       <div className="absolute inset-0 opacity-[0.03]">
         <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
@@ -23,22 +23,21 @@ export default function JheemCapabilities() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.3 }}
-          className="text-center mb-16"
+          className="text-center mb-12"
         >
-          <p className="text-hopkins-blue text-sm font-semibold tracking-widest uppercase mb-4">
+          <p className="text-hopkins-blue text-sm font-semibold tracking-widest uppercase mb-3">
             Model Capabilities
           </p>
-          <h2 className="text-4xl lg:text-5xl font-extralight text-gray-900 mb-6">
+          <h2 className="text-3xl lg:text-4xl font-extralight text-gray-900 mb-4">
             Modeling HIV Across <span className="font-medium">Multiple Dimensions</span>
           </h2>
-          <p className="text-lg text-gray-600 max-w-3xl mx-auto font-light leading-relaxed">
-            JHEEM answers critical policy questions by simulating HIV transmission dynamics
-            across geographic scales, intervention strategies, and time horizons
+          <p className="text-base text-gray-600 max-w-2xl mx-auto font-light leading-relaxed">
+            Simulating HIV transmission dynamics across geographic scales, intervention strategies, and time horizons
           </p>
         </motion.div>
 
         {/* Three Capability Cards */}
-        <div className="grid md:grid-cols-3 gap-8 mb-16">
+        <div className="grid md:grid-cols-3 gap-6 mb-12">
 
           {/* Geographic Scope */}
           <motion.div
@@ -47,7 +46,7 @@ export default function JheemCapabilities() {
             transition={{ duration: 0.6, delay: 0.5 }}
             className="group"
           >
-            <div className="bg-white rounded-2xl p-8 border-2 border-gray-100 hover:border-hopkins-blue/30 hover:shadow-2xl transition-all duration-500 h-full">
+            <div className="bg-white rounded-2xl p-6 border-2 border-gray-100 hover:border-hopkins-blue/30 hover:shadow-2xl transition-all duration-500 h-full">
               {/* Custom SVG Icon - Globe with location pins */}
               <div className="w-20 h-20 mx-auto mb-6 relative">
                 <svg viewBox="0 0 80 80" className="w-full h-full">
@@ -136,7 +135,7 @@ export default function JheemCapabilities() {
             transition={{ duration: 0.6, delay: 0.6 }}
             className="group"
           >
-            <div className="bg-gradient-to-br from-hopkins-blue to-hopkins-spirit-blue rounded-2xl p-8 text-white hover:shadow-2xl transition-all duration-500 h-full transform hover:scale-[1.02]">
+            <div className="bg-gradient-to-br from-hopkins-blue to-hopkins-spirit-blue rounded-2xl p-6 text-white hover:shadow-2xl transition-all duration-500 h-full transform hover:scale-[1.02]">
               {/* Custom SVG Icon - Branching decision tree */}
               <div className="w-20 h-20 mx-auto mb-6 relative">
                 <svg viewBox="0 0 80 80" className="w-full h-full">
@@ -279,39 +278,22 @@ export default function JheemCapabilities() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.9 }}
-          className="bg-gradient-to-r from-slate-50 via-white to-slate-50 rounded-2xl p-8 border border-gray-100"
+          className="bg-gradient-to-r from-slate-50 via-white to-slate-50 rounded-2xl p-6 border border-gray-100"
         >
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-6 text-center">
             <div>
               <div className="text-3xl font-light text-hopkins-blue mb-2">16</div>
               <p className="text-sm text-gray-600 font-medium">JHEEM Publications</p>
             </div>
             <div>
               <div className="text-3xl font-light text-hopkins-blue mb-2">32</div>
-              <p className="text-sm text-gray-600 font-medium">US Metro Areas Modeled</p>
+              <p className="text-sm text-gray-600 font-medium">Metro Areas Modeled</p>
             </div>
             <div>
-              <div className="text-3xl font-light text-hopkins-blue mb-2">86%</div>
-              <p className="text-sm text-gray-600 font-medium">of US HIV Diagnoses Covered</p>
-            </div>
-            <div>
-              <div className="text-3xl font-light text-hopkins-blue mb-2">2025</div>
-              <p className="text-sm text-gray-600 font-medium">Latest Policy Research</p>
+              <div className="text-3xl font-light text-hopkins-blue mb-2">31</div>
+              <p className="text-sm text-gray-600 font-medium">States Analyzed</p>
             </div>
           </div>
-        </motion.div>
-
-        {/* CTA Arrow */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.6, delay: 1.1 }}
-          className="text-center mt-12"
-        >
-          <p className="text-gray-500 text-sm mb-3">Explore JHEEM&apos;s modeling applications</p>
-          <svg className="w-6 h-6 text-hopkins-blue/30 mx-auto animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-          </svg>
         </motion.div>
       </div>
     </section>

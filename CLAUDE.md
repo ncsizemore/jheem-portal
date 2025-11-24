@@ -1,32 +1,124 @@
 # JHEEM Portal - Session Memory
 
 ## Project Context
-- Modeling applications portal transitioning from Shiny apps to React/Next.js/AWS stack
-- **Four major applications live**: Ryan White (interactive map + legacy prerun/custom), HIV Age Projections, State Level, CDC Testing
-- Ryan White map explorer: Interactive city-level analysis with plot exploration
-- HIV Age Projections: Multi-state demographic comparison tool (24 states, 86% of US HIV cases)
-- State level and CDC testing apps: Shiny-only (embedded as iframes with sophisticated landing pages)
+- Modeling applications portal transitioning from Shiny apps to React/Next.js/AWS serverless stack
+- **Four major applications live**: Ryan White Map Explorer, HIV Age Projections, State Level (Shiny), CDC Testing (Shiny)
+- **Three-repository architecture** for Ryan White modernization: jheem-portal (frontend), jheem-backend (API), jheem-container-minimal (R simulation engine)
 - Currently on temporary Vercel domain, preparing for live domain deployment
+
+## 🏗️ Multi-Repository Architecture (Ryan White Modernization)
+
+### Repository Overview
+
+The Ryan White map explorer modernization spans three repositories, replacing legacy Shiny apps with a serverless architecture:
+
+#### 1. **jheem-portal** (This Repository)
+**Purpose**: Next.js frontend with React components
+**Status**: ✅ Production deployed on Vercel
+**URL**: https://jheem-portal.vercel.app/
+
+**Key Routes**:
+- `/explore` - Ryan White Map Explorer (prerun plots)
+- `/hiv-age-projections` - Multi-state HIV aging analysis
+- `/ryan-white-state-level` - Embedded Shiny app (iframe)
+- `/cdc-testing` - Embedded Shiny app (iframe)
+
+#### 2. **jheem-backend** (Serverless API)
+**Location**: `/Users/cristina/wiley/Documents/jheem-backend/`
+**Purpose**: AWS Lambda + API Gateway + DynamoDB + S3
+**Status**: ✅ Deployed to AWS production
+**API**: `https://abre4axci6.execute-api.us-east-1.amazonaws.com/prod`
+
+**Infrastructure**:
+- **Lambda Functions** (Python 3.9): Plot discovery, retrieval, registration, city listing
+- **DynamoDB Table**: `jheem-test-tiny` (composite key: `city_scenario`, `outcome_stat_facet`)
+- **S3 Bucket**: `jheem-test-tiny-bucket` (plot JSON files)
+- **GitHub Actions**: Automated plot generation workflow
+- **Cost**: ~$1-2/month (95% reduction from $50/month Shiny hosting)
+
+**API Endpoints**:
+- `GET /plots/cities` - Discover available cities ✅
+- `GET /plots/search` - Search plots by city/scenario ✅
+- `GET /plot` - Retrieve specific plot data ✅
+- `POST /plots/register` - Register new plots (GitHub Actions) ✅
+
+#### 3. **jheem-container-minimal** (R Simulation Engine)
+**Location**: `/Users/cristina/wiley/Documents/jheem-container-minimal/`
+**Purpose**: Containerized JHEEM simulation model
+**Status**: ✅ Built and published to ECR/DockerHub
+**Image**: `849611540600.dkr.ecr.us-east-1.amazonaws.com/jheem-ryan-white-model:latest`
+
+**Two Operational Modes**:
+1. **Batch Mode (Prerun)** - ✅ Working
+   - `batch_plot_generator.R` - Generates all plot combinations
+   - Used by GitHub Actions for prerun data generation
+   - Produces Plotly JSON plots uploaded to S3/DynamoDB
+
+2. **Lambda Mode (Custom Simulations)** - 🚧 Ready but not deployed
+   - `lambda_handler.R` - AWS Lambda entry point (200 lines complete)
+   - `simulation/interventions.R` - Ryan White parameter handling
+   - `simulation/runner.R` - Simulation execution pipeline
+   - Loads base simulations, applies custom parameters, generates plots on-demand
+
+### Data Flow Architecture
+
+**Prerun Path (Current - Working)**:
+```
+GitHub Actions Workflow
+    ↓ (trigger with config type)
+ECR Container (batch mode)
+    ↓ (downloads base sims from S3)
+R Plot Generation
+    ↓ (generates JSON plots)
+S3 Upload + DynamoDB Registration
+    ↓ (indexed by composite keys)
+Lambda API (Python)
+    ↓ (serves via API Gateway)
+Frontend (Next.js)
+    ↓ (displays in map explorer)
+User sees prerun plots
+```
+
+**Custom Simulation Path (Planned - Infrastructure Ready)**:
+```
+Frontend (parameter form) → NOT BUILT YET
+    ↓ (POST with city + parameters)
+API Gateway → NOT CONFIGURED YET
+    ↓ (async job pattern)
+Lambda (R container) → NOT DEPLOYED YET
+    ↓ (downloads base sim from S3)
+Custom Simulation Execution
+    ↓ (5-7 minute runtime)
+Plot Generation + S3 Upload
+    ↓ (results stored)
+Frontend polling → NOT BUILT YET
+    ↓ (checks status)
+User sees custom results
+```
+
+---
 
 ## Latest Session Summary (2025-10-31)
 
-### 🎉 SESSION ACCOMPLISHMENTS - Comprehensive Code Review
+### 🎉 SESSION ACCOMPLISHMENTS
 
-#### ✅ Production-Ready Code Review Completed
+#### ✅ Comprehensive Code Review Completed (Frontend)
 - **Security Analysis**: Grade A - Zero vulnerabilities confirmed via npm audit
 - **Build Verification**: Zero TypeScript errors, zero ESLint warnings
 - **Error Handling Review**: Comprehensive timeout/validation patterns confirmed
 - **Performance Assessment**: React.memo/useCallback patterns verified
 - **Type Safety Check**: All 'any' types replaced with proper interfaces confirmed
 
-#### 🔍 Key Findings from Review
-1. **Security**: Excellent - CSP headers, secure iframes, zero vulnerabilities
-2. **Error Handling**: Robust - AbortController, specific error messages, validation
-3. **Type Safety**: Complete - Zero TS errors, custom type declarations for Plotly.js
-4. **Bundle Size**: Optimized - 423 kB for largest route (hiv-age-projections)
-5. **Console Statements**: 18 remaining without dev checks (down from 39)
+#### 🔍 Multi-Repository Architecture Assessment Completed
+**Reviewed all three repositories** and documented complete system architecture:
 
-#### 📋 Minor Issues Identified
+1. **jheem-portal**: Frontend production-ready, prerun working, custom UI not built
+2. **jheem-backend**: API deployed and serving, custom simulation endpoint not configured
+3. **jheem-container-minimal**: Container built with complete custom simulation code ready
+
+**Key Finding**: ~70% of custom simulation work is complete (backend infrastructure + R code), but missing deployment + frontend integration.
+
+#### 📋 Minor Issues Identified (Frontend Only)
 1. **URL Encoding**: Missing `encodeURIComponent` in `explore/page.tsx` lines 162, 167
 2. **React.memo Gaps**: `MapboxCityMap` and `PlotExplorationSidebar` need optimization
 3. **Mapbox Token**: Should verify domain restrictions are configured in Mapbox dashboard
@@ -34,16 +126,26 @@
 
 ---
 
-## 🎯 CURRENT STATUS: Production-Ready with Minor Improvements Available
+## 🎯 CURRENT STATUS: Production-Ready Frontend, Incomplete Backend Migration
 
-### ✅ Complete Production Readiness
-- **Security**: Grade A - Zero vulnerabilities, comprehensive security headers
-- **Functionality**: All four major apps working correctly
-- **Build**: Passes cleanly with zero errors or warnings
-- **Deployment**: Ready for live domain with proper CSP and security headers
-- **Error Handling**: Robust error boundaries with graceful fallback experiences
+### ✅ Complete & Working
+- **Frontend (jheem-portal)**: All apps deployed, Grade A code quality
+- **Prerun Infrastructure**: Full pipeline working (GitHub Actions → Container → S3/DynamoDB → Lambda API → Frontend)
+- **Security**: Zero vulnerabilities, comprehensive CSP headers
+- **Error Handling**: Robust boundaries with graceful fallbacks
 
-### 📊 Code Quality Scorecard
+### 🚧 Partially Complete (Ryan White Modernization)
+- **Prerun Plots**: ✅ Working end-to-end, limited dataset (1-6 cities)
+- **Full Dataset**: ⏳ Not generated yet (~64K plots, 2-6 hour job)
+- **Custom Simulations**: ⚠️ Infrastructure 70% complete:
+  - ✅ R container has complete `lambda_handler.R` (200 lines)
+  - ✅ Simulation pipeline ready (`interventions.R`, `runner.R`)
+  - ❌ Lambda function not deployed to AWS
+  - ❌ API Gateway endpoint not configured
+  - ❌ Frontend parameter UI not built
+  - ❌ Async job pattern not implemented
+
+### 📊 Code Quality Scorecard (Frontend)
 | Category | Grade | Status |
 |----------|-------|--------|
 | Security | A | Excellent headers, zero vulnerabilities |
@@ -60,16 +162,24 @@
 
 ## 🚀 MAJOR APPLICATIONS
 
-### 1. Ryan White Map Explorer (`/explore`)
-**Status**: ✅ Fully functional, production-ready
+### 1. Ryan White Map Explorer (`/explore`) 🚧
+**Status**: ✅ Prerun working, ❌ Custom simulations not deployed
+**Priority**: High - Team excited for this modernization
 
-**Key Features**:
+**Current Capabilities (Prerun)**:
 - Interactive US map with city-level HIV data
 - Hover-to-preview, click-to-explore interaction
 - Three-dimensional plot controls (Outcome/Summary/Facet)
-- Multiple scenario comparisons
+- Multiple scenario comparisons (cessation, brief_interruption, etc.)
 - Real-time API discovery of available cities
 - Error boundaries and graceful fallbacks
+
+**Missing Capabilities (Custom Simulations)**:
+- Parameter input form (ADAP/OAHS/Other suppression loss %)
+- "Run Custom Simulation" button
+- Progress indicator for 5-7 minute simulations
+- Results display for custom parameters
+- Comparison with prerun baseline
 
 **Technical Highlights**:
 - Mapbox GL JS integration with Web Workers
@@ -77,8 +187,14 @@
 - Comprehensive error handling with timeouts
 - Type-safe plot interfaces
 
-### 2. HIV Age Projections (`/hiv-age-projections`) 🆕
-**Status**: ✅ Fully functional, most sophisticated app
+**Next Steps**:
+1. Generate full prerun dataset (31 cities, ~64K plots)
+2. Deploy custom simulation Lambda function
+3. Build parameter input UI
+4. Implement async job polling pattern
+
+### 2. HIV Age Projections (`/hiv-age-projections`)
+**Status**: ✅ Fully functional, production-ready
 
 **Key Features**:
 - Multi-state comparison (up to 25 states simultaneously)
@@ -127,6 +243,85 @@
 - Testing scenario analysis (cessation, interruption, restoration)
 - Landing page with policy impact highlights
 - Session management controls
+
+---
+
+## 📋 RYAN WHITE MODERNIZATION ROADMAP
+
+### Phase 1: Complete Prerun Dataset ⏳ Next Priority
+**Timeline**: 1 day (mostly compute time)
+**Effort**: 1 hour setup + 2-6 hours automated runtime
+**Impact**: High - Team gets full production-ready map explorer
+
+**Tasks**:
+1. Trigger GitHub Actions workflow in `jheem-backend`
+   - Select `config_type: full` (31 cities, ~64K plots)
+   - Set `max_parallel: 8` for faster completion
+   - Monitor progress in Actions dashboard
+2. Verify all cities visible in map explorer
+3. Validate plot variety (outcomes, statistics, facets)
+4. Update team documentation
+
+**Deliverable**: Production-ready map explorer with complete prerun dataset
+
+### Phase 2: Deploy Custom Simulations 🚧 Infrastructure Ready
+**Timeline**: 2-3 weeks
+**Effort**: 2-3 days actual development work
+**Impact**: Medium - Completes feature parity with legacy Shiny app
+
+**Tasks**:
+
+#### Week 1: Backend Deployment
+1. **Verify Base Simulations Exist** (1-2 hours)
+   - Check S3: `s3://jheem-data-production/simulations/ryan-white/base/`
+   - Validate format (`.Rdata` files for all cities)
+   - Test local loading with `lambda_handler.R`
+
+2. **Deploy Custom Simulation Lambda** (4-6 hours)
+   - Add Lambda function to `serverless.yml` in jheem-backend
+   - Configure container image as Lambda runtime
+   - Set memory: 10GB, timeout: 900s (15 min)
+   - Deploy with `serverless deploy --stage prod`
+   - Test endpoint with curl
+
+3. **Implement Async Job Pattern** (6-8 hours)
+   - POST `/custom-simulation` returns job ID immediately
+   - Store job status in DynamoDB
+   - Lambda updates status on completion
+   - GET `/simulation-status/{jobId}` for polling
+   - Store results in S3 when complete
+
+#### Week 2: Frontend Integration
+4. **Build Parameter Input UI** (8-12 hours)
+   - Create `CustomSimulationForm` component
+   - Three sliders: ADAP, OAHS, Other suppression loss (0-100%)
+   - "Run Custom Simulation" button
+   - Validation and error handling
+
+5. **Implement Progress Polling** (4-6 hours)
+   - `SimulationProgress` component with estimated time
+   - Poll status every 5 seconds
+   - Handle errors and timeouts
+   - Display results when complete
+
+6. **Results Display** (2-4 hours)
+   - Reuse existing `MapPlotOverlay` component
+   - Add comparison with prerun baseline
+   - Option to save/share results
+
+**Deliverable**: Complete custom simulation capability, feature parity with legacy Shiny app
+
+### Phase 3: Deprecate Legacy Shiny Apps 📅 Future
+**Timeline**: After validation period (1+ month)
+**Prerequisites**: Custom simulations deployed and validated
+
+**Tasks**:
+1. Run both systems in parallel
+2. Collect user feedback
+3. Monitor usage patterns (validate prerun vs custom usage assumptions)
+4. Migrate any missing features
+5. Sunset Shiny apps
+6. Celebrate 95% cost savings!
 
 ---
 
@@ -188,6 +383,12 @@
 
 ## 🏗️ ARCHITECTURAL DECISIONS & PATTERNS
 
+### Multi-Repository Architecture
+- **Frontend/Backend Separation**: Clean API boundaries, independent deployment
+- **Container-Based Simulation**: Reproducible R environment, Lambda-compatible
+- **Pre-computed vs On-Demand**: Smart cost/performance tradeoff (prerun for most users, custom for power users)
+- **Serverless-First Design**: Auto-scaling, pay-per-use, 95% cost reduction
+
 ### Security-First Configuration
 - Comprehensive CSP headers blocking XSS attacks
 - Secure iframe sandboxing with minimal permissions
@@ -214,6 +415,18 @@
 - Specific error messages by HTTP status code
 - Response validation before processing
 - Development-only detailed logging
+
+### Backend Infrastructure (jheem-backend)
+- **Composite Key DynamoDB Schema**: Efficient querying with `city_scenario` + `outcome_stat_facet`
+- **S3 Lifecycle Management**: Cost optimization for plot storage
+- **GitHub Actions Matrix Strategy**: Parallel plot generation across cities
+- **Python Lambda + R Container**: Right tool for each job
+
+### Container Optimization (jheem-container-minimal)
+- **Multi-Stage Docker Build**: Minimizes image size (~5.2 GB)
+- **Pre-built Workspace Pattern**: Fast cold starts (loads `ryan_white_workspace.RData`)
+- **renv + RSPM**: Reproducible R dependencies with binary packages
+- **VERSION.MANAGER Restoration**: Sophisticated state management for jheem2 package
 
 ---
 
@@ -264,7 +477,7 @@
 
 ## 📂 KEY FILES & STRUCTURE
 
-### Applications
+### Applications (This Repository)
 - `/src/app/explore/page.tsx` - Ryan White Map Explorer (432 lines)
 - `/src/app/hiv-age-projections/page.tsx` - HIV Age Projections app (474 lines)
 - `/src/app/ryan-white-state-level/page.tsx` - State Level Shiny embed (43 lines)
@@ -305,32 +518,55 @@
 - `package.json` - Dependencies (Next.js 15.5.2, React 19, Mapbox, Plotly, Recharts)
 - `.env.local` - Environment variables (API base URL, Mapbox token)
 
+### Related Repositories
+- **jheem-backend**: `/Users/cristina/wiley/Documents/jheem-backend/` - Serverless API infrastructure
+- **jheem-container-minimal**: `/Users/cristina/wiley/Documents/jheem-container-minimal/` - R simulation container
+
 ---
 
 ## 🎯 IMMEDIATE NEXT STEPS (Prioritized)
 
-### Before Live Deployment (2-4 hours)
-1. ✅ **Code review complete** - Grade A overall
-2. ❌ **Add URL encoding** - `explore/page.tsx` lines 162, 167
-3. ❌ **Verify Mapbox token** - Check domain restrictions in dashboard
-4. ❌ **Wrap console statements** - Add dev-only checks to remaining 18
+### This Week: Complete Prerun Dataset (Highest Priority)
+1. ⏳ **Generate full prerun dataset** - jheem-backend GitHub Actions
+   - Run "Generate JHEEM Plots" workflow
+   - Select `config_type: full`, `max_parallel: 8`
+   - Monitor progress (2-6 hours runtime)
+   - Verify 31 cities × multiple scenarios/outcomes/facets
 
-### First Sprint After Launch (1-2 weeks)
-1. ❌ **Add React.memo** - `MapboxCityMap` and `PlotExplorationSidebar`
-2. ❌ **Set up testing** - Jest + React Testing Library infrastructure
-3. ❌ **API service layer** - Centralize fetch calls
+2. ✅ **Validate map explorer** with full dataset
+   - Test all cities visible
+   - Verify plot loading performance
+   - Check error handling
 
-### Long-term Improvements (Nice to Have)
-1. ❌ **Accessibility audit** - ARIA labels, keyboard nav, screen readers
-2. ❌ **Error monitoring** - Sentry integration
-3. ❌ **Performance monitoring** - Web Vitals tracking
-4. ❌ **Analytics** - User behavior tracking
+3. 📄 **Demo to team** → Get feedback
+   - Show complete prerun functionality
+   - Discuss custom simulation priority
+   - Validate usage assumptions (prerun vs custom)
+
+**Deliverable**: Production-ready map explorer for team use
+
+### Next Sprint: Custom Simulations (If Prioritized)
+1. ❌ **Verify base simulations** in S3 (`jheem-data-production/simulations/ryan-white/base/`)
+2. ❌ **Deploy custom simulation Lambda** (jheem-backend `serverless.yml`)
+3. ❌ **Build parameter input UI** (jheem-portal `/explore`)
+4. ❌ **Implement async job pattern** (polling, progress indicators)
+5. ❌ **End-to-end integration testing**
+
+**Deliverable**: Feature parity with legacy Shiny app
+
+### Future: Frontend Polish (Lower Priority)
+1. ❌ **Add URL encoding** - `explore/page.tsx` lines 162, 167
+2. ❌ **Add React.memo** - `MapboxCityMap` and `PlotExplorationSidebar`
+3. ❌ **Wrap console statements** - Add dev-only checks to remaining 18
+4. ❌ **Verify Mapbox token** - Check domain restrictions in dashboard
+5. ❌ **Set up testing** - Jest + React Testing Library infrastructure
+6. ❌ **API service layer** - Centralize fetch calls
 
 ---
 
 ## 📈 DEPLOYMENT READINESS
 
-### ✅ Production Ready
+### ✅ Production Ready (Frontend)
 - Zero security vulnerabilities
 - Clean builds (no TS or ESLint errors)
 - Comprehensive error handling
@@ -338,23 +574,35 @@
 - Security headers configured
 - Type safety complete
 
+### 🚧 Partial (Backend Migration)
+- Prerun API deployed and working
+- Limited dataset (need full generation)
+- Custom simulation infrastructure ready but not deployed
+- Frontend custom UI not built
+
 ### 🟡 Minor Improvements Available
 - URL encoding in 2 locations
 - React.memo for 2 large components
 - Console statement cleanup
 - Mapbox token verification
 
-### ❌ Known Gaps (Non-Blocking)
+### ❌ Known Gaps (Non-Blocking for Prerun)
 - No automated tests
 - No error monitoring
 - No analytics
 - No accessibility features
+- Custom simulations not deployed
 
-**Recommendation**: Deploy to production, address minor improvements in first post-launch sprint.
+**Recommendation**:
+1. **Immediate**: Generate full prerun dataset and deploy for team use
+2. **Short-term**: Complete custom simulation deployment if team requests it
+3. **Long-term**: Add testing, monitoring, accessibility
 
 ---
 
 ## Technical Stack
+
+### Frontend (This Repository)
 - **Framework**: Next.js 15.5.2 with TypeScript 5
 - **Styling**: Tailwind CSS 4
 - **Data Visualization**: Recharts, Plotly.js, react-plotly.js
@@ -362,3 +610,20 @@
 - **Animation**: Framer Motion 12.17
 - **Additional**: html2canvas (PNG export), rc-slider (timeline controls)
 - **Embedded Apps**: Shiny apps via secure iframes
+
+### Backend (jheem-backend Repository)
+- **Runtime**: Python 3.9 Lambda functions
+- **Framework**: Serverless Framework
+- **Database**: DynamoDB (composite keys for efficient querying)
+- **Storage**: S3 with lifecycle management
+- **API**: API Gateway with CORS
+- **CI/CD**: GitHub Actions for plot generation
+- **Container Registry**: AWS ECR
+
+### Container (jheem-container-minimal Repository)
+- **Base**: R 4.4.2 with renv
+- **Core Package**: jheem2 from GitHub
+- **Dependencies**: Plotly, jheem2, ggplot2, htmlwidgets, jsonlite
+- **Build**: Multi-stage Docker (3 stages: base, workspace-builder, runtime)
+- **Size**: ~5.2 GB (within Lambda 10GB limit)
+- **Orchestration**: Batch mode (GitHub Actions) + Lambda mode (custom sims)
