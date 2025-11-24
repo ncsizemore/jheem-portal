@@ -4,6 +4,7 @@ import Link from "next/link";
 import { motion } from 'framer-motion';
 import Footer from '@/components/Footer';
 import RecentPublications from '@/components/RecentPublications';
+import PolicyNetworkIcon from '@/components/PolicyNetworkIcon';
 
 interface Publication {
   id: string;
@@ -110,34 +111,7 @@ export default function HomePageWrapper({ publications }: HomePageWrapperProps) 
                 className="flex items-center gap-8 mb-8 pb-8 border-b border-gray-300"
               >
                 <div className="w-32 h-32 lg:w-36 lg:h-36 flex-shrink-0">
-                  <svg viewBox="0 0 96 96" className="w-full h-full">
-                    {/* Central question node */}
-                    <circle cx="48" cy="24" r="10" fill="#002D72" opacity="0.9" />
-                    <text x="48" y="30" textAnchor="middle" fill="white" fontSize="14" fontWeight="bold">?</text>
-                    {/* Branching paths */}
-                    <path d="M 48 34 L 48 45" stroke="#002D72" strokeWidth="3" opacity="0.6" />
-                    <path d="M 48 45 L 24 65" stroke="#002D72" strokeWidth="3" opacity="0.6" />
-                    <path d="M 48 45 L 48 65" stroke="#002D72" strokeWidth="3" opacity="0.6" />
-                    <path d="M 48 45 L 72 65" stroke="#002D72" strokeWidth="3" opacity="0.6" />
-                    {/* End nodes */}
-                    <circle cx="24" cy="65" r="8" fill="#002D72" opacity="0.7" />
-                    <circle cx="48" cy="65" r="8" fill="#002D72" opacity="0.7" />
-                    <circle cx="72" cy="65" r="8" fill="#002D72" opacity="0.7" />
-                    {/* Sub-branches */}
-                    <path d="M 24 73 L 18 85" stroke="#002D72" strokeWidth="2.5" opacity="0.4" />
-                    <path d="M 24 73 L 30 85" stroke="#002D72" strokeWidth="2.5" opacity="0.4" />
-                    <path d="M 48 73 L 42 85" stroke="#002D72" strokeWidth="2.5" opacity="0.4" />
-                    <path d="M 48 73 L 54 85" stroke="#002D72" strokeWidth="2.5" opacity="0.4" />
-                    <path d="M 72 73 L 66 85" stroke="#002D72" strokeWidth="2.5" opacity="0.4" />
-                    <path d="M 72 73 L 78 85" stroke="#002D72" strokeWidth="2.5" opacity="0.4" />
-                    {/* Final nodes */}
-                    <circle cx="18" cy="85" r="5" fill="#002D72" opacity="0.5" />
-                    <circle cx="30" cy="85" r="5" fill="#002D72" opacity="0.5" />
-                    <circle cx="42" cy="85" r="5" fill="#002D72" opacity="0.5" />
-                    <circle cx="54" cy="85" r="5" fill="#002D72" opacity="0.5" />
-                    <circle cx="66" cy="85" r="5" fill="#002D72" opacity="0.5" />
-                    <circle cx="78" cy="85" r="5" fill="#002D72" opacity="0.5" />
-                  </svg>
+                  <PolicyNetworkIcon />
                 </div>
                 <div className="flex-1 max-w-sm">
                   <h3 className="text-xl lg:text-2xl font-semibold text-gray-900 mb-3">Policy Scenarios</h3>
