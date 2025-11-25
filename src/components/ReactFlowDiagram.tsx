@@ -1,12 +1,24 @@
 'use client';
 
-import { useMemo } from 'react';
-import { ReactFlow, Node, Edge } from '@xyflow/react';
+import { useMemo, useState, useCallback } from 'react';
+import { ReactFlow, Node, Edge, NodeMouseHandler } from '@xyflow/react';
 import { AnimatedEdge } from './AnimatedEdge';
 import { CompartmentNode } from './CompartmentNode';
 import '@xyflow/react/dist/style.css';
 
 export default function ReactFlowDiagram() {
+  const [hoveredNode, setHoveredNode] = useState<string | null>(null);
+  const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
+
+  const onNodeMouseEnter: NodeMouseHandler = useCallback((event, node) => {
+    const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+    setTooltipPos({ x: rect.left + rect.width / 2, y: rect.top });
+    setHoveredNode(node.id);
+  }, []);
+
+  const onNodeMouseLeave: NodeMouseHandler = useCallback(() => {
+    setHoveredNode(null);
+  }, []);
   // Define nodes - matching the JHEEM model structure
   const nodes: Node[] = useMemo(() => [
     {
@@ -201,6 +213,8 @@ export default function ReactFlowDiagram() {
         edges={edges}
         edgeTypes={edgeTypes}
         nodeTypes={nodeTypes}
+        onNodeMouseEnter={onNodeMouseEnter}
+        onNodeMouseLeave={onNodeMouseLeave}
         defaultViewport={{ x: 0, y: 0, zoom: 1 }}
         nodesDraggable={false}
         nodesConnectable={false}
@@ -213,6 +227,27 @@ export default function ReactFlowDiagram() {
         proOptions={{ hideAttribution: true }}
         style={{ backgroundColor: 'transparent', width: '100%', height: '100%' }}
       />
+
+      {hoveredNode && (
+        <div
+          style={{
+            position: 'fixed',
+            left: tooltipPos.x,
+            top: tooltipPos.y - 10,
+            transform: 'translateX(-50%) translateY(-100%)',
+            backgroundColor: '#002D72',
+            color: 'white',
+            padding: '4px 8px',
+            borderRadius: '4px',
+            fontSize: '11px',
+            whiteSpace: 'nowrap',
+            zIndex: 1000,
+            pointerEvents: 'none',
+          }}
+        >
+          {String((nodes.find(n => n.id === hoveredNode)?.data as { label?: string })?.label || '')}
+        </div>
+      )}
     </>
   );
 }
