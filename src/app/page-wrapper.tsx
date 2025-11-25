@@ -80,9 +80,9 @@ export default function HomePageWrapper({ publications }: HomePageWrapperProps) 
                   <GeographicScaleIcon />
                 </div>
                 <div className="flex-1 max-w-sm">
-                  <h3 className="text-xl lg:text-2xl font-semibold text-gray-900 mb-3">Population-Level Impact</h3>
+                  <h3 className="text-xl lg:text-2xl font-semibold text-gray-900 mb-3">Demographic Precision at Scale</h3>
                   <p className="text-base lg:text-lg text-gray-600 leading-relaxed">
-                    Individual-level simulation across 32 US metros and 31 states
+                    Detailed disease progression modeled across 32 major metros and 31 states
                   </p>
                 </div>
               </motion.div>
