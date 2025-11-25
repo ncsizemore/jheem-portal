@@ -1,0 +1,2130 @@
+'use client';
+
+/* eslint-disable react/jsx-no-duplicate-props */
+
+/**
+ * JHEEM Logo Design Options
+ * Hexsticker-style logos for academic use
+ *
+ * Usage: Import the specific logo variant you want to use
+ */
+
+interface LogoProps {
+  className?: string;
+  size?: number;
+}
+
+// Option A: Epidemiological Network
+// Network nodes with connections representing HIV transmission dynamics
+export function JheemLogoNetwork({ className = "", size = 200 }: LogoProps) {
+  const height = size * 1.15; // Hex proportions
+
+  return (
+    <svg
+      viewBox="0 0 200 230"
+      className={className}
+      style={{ width: size, height }}
+    >
+      {/* Hexagon border */}
+      <path
+        d="M 100 10 L 180 60 L 180 160 L 100 210 L 20 160 L 20 60 Z"
+        fill="white"
+        stroke="#002D72"
+        strokeWidth="4"
+      />
+
+      {/* Network nodes (representing populations/states) */}
+      <circle cx="70" cy="70" r="11" fill="#002D72" opacity="0.3" />
+      <circle cx="130" cy="70" r="11" fill="#002D72" opacity="0.3" />
+      <circle cx="100" cy="95" r="14" fill="#002D72" opacity="0.8" />
+      <circle cx="65" cy="120" r="9" fill="#002D72" opacity="0.3" />
+      <circle cx="135" cy="120" r="9" fill="#002D72" opacity="0.3" />
+      <circle cx="100" cy="140" r="11" fill="#002D72" opacity="0.3" />
+
+      {/* Connection lines (transmission pathways) */}
+      <line x1="70" y1="70" x2="100" y2="95" stroke="#002D72" strokeWidth="2" opacity="0.3" />
+      <line x1="130" y1="70" x2="100" y2="95" stroke="#002D72" strokeWidth="2" opacity="0.3" />
+      <line x1="100" y1="95" x2="65" y2="120" stroke="#002D72" strokeWidth="2" opacity="0.3" />
+      <line x1="100" y1="95" x2="135" y2="120" stroke="#002D72" strokeWidth="2" opacity="0.3" />
+      <line x1="100" y1="95" x2="100" y2="140" stroke="#002D72" strokeWidth="2" opacity="0.3" />
+      <line x1="65" y1="120" x2="100" y2="140" stroke="#002D72" strokeWidth="2" opacity="0.2" />
+      <line x1="135" y1="120" x2="100" y2="140" stroke="#002D72" strokeWidth="2" opacity="0.2" />
+
+      {/* JHEEM text - fits within hex bounds */}
+      <text
+        x="100"
+        y="180"
+        textAnchor="middle"
+        fontFamily="system-ui, -apple-system, sans-serif"
+        fontSize="28"
+        fontWeight="700"
+        fill="#002D72"
+      >
+        JHEEM
+      </text>
+    </svg>
+  );
+}
+
+// Option B: Compartmental Flow Model
+// Classic SIR-style compartments with arrows
+export function JheemLogoCompartmental({ className = "", size = 200 }: LogoProps) {
+  const height = size * 1.15;
+
+  return (
+    <svg
+      viewBox="0 0 200 230"
+      className={className}
+      style={{ width: size, height }}
+    >
+      {/* Hexagon border */}
+      <path
+        d="M 100 10 L 180 60 L 180 160 L 100 210 L 20 160 L 20 60 Z"
+        fill="white"
+        stroke="#002D72"
+        strokeWidth="4"
+      />
+
+      {/* Three compartments (Susceptible → Infected → Treated) */}
+      <rect x="50" y="65" width="30" height="26" rx="3" fill="none" stroke="#002D72" strokeWidth="2.5" />
+      <rect x="85" y="82" width="30" height="26" rx="3" fill="#002D72" opacity="0.2" stroke="#002D72" strokeWidth="2.5" />
+      <rect x="120" y="65" width="30" height="26" rx="3" fill="none" stroke="#002D72" strokeWidth="2.5" />
+
+      {/* Flow arrows */}
+      <defs>
+        <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+          <polygon points="0 0, 10 3, 0 6" fill="#002D72" />
+        </marker>
+      </defs>
+      <path d="M 65 78 L 85 90" stroke="#002D72" strokeWidth="2.5" fill="none" markerEnd="url(#arrowhead)" />
+      <path d="M 100 95 L 120 83" stroke="#002D72" strokeWidth="2.5" fill="none" markerEnd="url(#arrowhead)" />
+
+      {/* Labels in compartments */}
+      <text x="65" y="81" textAnchor="middle" fontSize="11" fontWeight="600" fill="#002D72">S</text>
+      <text x="100" y="98" textAnchor="middle" fontSize="11" fontWeight="600" fill="#002D72">I</text>
+      <text x="135" y="81" textAnchor="middle" fontSize="11" fontWeight="600" fill="#002D72">T</text>
+
+      {/* Subtitle */}
+      <text
+        x="100"
+        y="128"
+        textAnchor="middle"
+        fontFamily="system-ui, -apple-system, sans-serif"
+        fontSize="8"
+        fontWeight="500"
+        fill="#002D72"
+        opacity="0.5"
+        letterSpacing="0.5"
+      >
+        EPIDEMIOLOGIC MODEL
+      </text>
+
+      {/* JHEEM text - fits within hex bounds */}
+      <text
+        x="100"
+        y="165"
+        textAnchor="middle"
+        fontFamily="system-ui, -apple-system, sans-serif"
+        fontSize="28"
+        fontWeight="700"
+        fill="#002D72"
+      >
+        JHEEM
+      </text>
+    </svg>
+  );
+}
+
+// Option C: Geographic Coverage
+// US map outline with city dots
+export function JheemLogoGeographic({ className = "", size = 200 }: LogoProps) {
+  const height = size * 1.15;
+
+  return (
+    <svg
+      viewBox="0 0 200 230"
+      className={className}
+      style={{ width: size, height }}
+    >
+      {/* Hexagon border */}
+      <path
+        d="M 100 10 L 180 60 L 180 160 L 100 210 L 20 160 L 20 60 Z"
+        fill="white"
+        stroke="#002D72"
+        strokeWidth="4"
+      />
+
+      {/* Simplified US map outline */}
+      <path
+        d="M 60 85 L 70 75 L 90 75 L 100 80 L 115 75 L 130 80 L 140 75 L 145 85 L 140 100 L 135 115 L 125 130 L 115 135 L 100 138 L 85 135 L 75 125 L 65 110 L 60 95 Z"
+        fill="none"
+        stroke="#002D72"
+        strokeWidth="2"
+        opacity="0.4"
+      />
+
+      {/* City dots (32 metropolitan areas) */}
+      {/* West Coast */}
+      <circle cx="70" cy="95" r="3" fill="#002D72" />
+      <circle cx="75" cy="85" r="3" fill="#002D72" />
+      <circle cx="72" cy="105" r="2.5" fill="#002D72" opacity="0.7" />
+
+      {/* Midwest */}
+      <circle cx="100" cy="90" r="3" fill="#002D72" />
+      <circle cx="105" cy="100" r="2.5" fill="#002D72" opacity="0.7" />
+      <circle cx="110" cy="95" r="2.5" fill="#002D72" opacity="0.7" />
+
+      {/* South */}
+      <circle cx="95" cy="120" r="3" fill="#002D72" />
+      <circle cx="105" cy="125" r="3" fill="#002D72" />
+      <circle cx="115" cy="120" r="2.5" fill="#002D72" opacity="0.7" />
+
+      {/* East Coast */}
+      <circle cx="125" cy="95" r="3" fill="#002D72" />
+      <circle cx="130" cy="90" r="3" fill="#002D72" />
+      <circle cx="133" cy="100" r="2.5" fill="#002D72" opacity="0.7" />
+      <circle cx="128" cy="105" r="2.5" fill="#002D72" opacity="0.7" />
+
+      {/* Subtitle */}
+      <text
+        x="100"
+        y="153"
+        textAnchor="middle"
+        fontFamily="system-ui, -apple-system, sans-serif"
+        fontSize="10"
+        fontWeight="500"
+        fill="#002D72"
+        opacity="0.6"
+      >
+        32 US METRO AREAS
+      </text>
+
+      {/* JHEEM text */}
+      <text
+        x="100"
+        y="195"
+        textAnchor="middle"
+        fontFamily="system-ui, -apple-system, sans-serif"
+        fontSize="32"
+        fontWeight="700"
+        fill="#002D72"
+      >
+        JHEEM
+      </text>
+    </svg>
+  );
+}
+
+// Option D: Minimal/Modern
+// Clean typography with subtle accent
+export function JheemLogoMinimal({ className = "", size = 200 }: LogoProps) {
+  const height = size * 1.15;
+
+  return (
+    <svg
+      viewBox="0 0 200 230"
+      className={className}
+      style={{ width: size, height }}
+    >
+      {/* Hexagon border */}
+      <path
+        d="M 100 10 L 180 60 L 180 160 L 100 210 L 20 160 L 20 60 Z"
+        fill="white"
+        stroke="#002D72"
+        strokeWidth="4"
+      />
+
+      {/* Geometric accent - abstract curve representing modeling */}
+      <path
+        d="M 60 85 Q 80 75, 100 85 T 140 85"
+        fill="none"
+        stroke="#002D72"
+        strokeWidth="3"
+        opacity="0.2"
+      />
+      <path
+        d="M 60 105 Q 80 95, 100 105 T 140 105"
+        fill="none"
+        stroke="#002D72"
+        strokeWidth="3"
+        opacity="0.3"
+      />
+      <path
+        d="M 60 125 Q 80 115, 100 125 T 140 125"
+        fill="none"
+        stroke="#002D72"
+        strokeWidth="3"
+        opacity="0.4"
+      />
+
+      {/* JHEEM text - larger, centered */}
+      <text
+        x="100"
+        y="115"
+        textAnchor="middle"
+        fontFamily="system-ui, -apple-system, sans-serif"
+        fontSize="38"
+        fontWeight="700"
+        fill="#002D72"
+      >
+        JHEEM
+      </text>
+
+      {/* Subtitle */}
+      <text
+        x="100"
+        y="145"
+        textAnchor="middle"
+        fontFamily="system-ui, -apple-system, sans-serif"
+        fontSize="9"
+        fontWeight="500"
+        fill="#002D72"
+        opacity="0.6"
+        letterSpacing="1"
+      >
+        HIV EPIDEMIC MODEL
+      </text>
+
+      {/* Johns Hopkins affiliation */}
+      <text
+        x="100"
+        y="185"
+        textAnchor="middle"
+        fontFamily="system-ui, -apple-system, sans-serif"
+        fontSize="10"
+        fontWeight="500"
+        fill="#002D72"
+        opacity="0.5"
+      >
+        Johns Hopkins
+      </text>
+    </svg>
+  );
+}
+
+// Option E: Acronym Breakdown (Hex)
+// Shows what JHEEM stands for with JH highlighted
+export function JheemLogoAcronym({ className = "", size = 200 }: LogoProps) {
+  const height = size * 1.15;
+
+  return (
+    <svg
+      viewBox="0 0 200 230"
+      className={className}
+      style={{ width: size, height }}
+    >
+      {/* Hexagon border */}
+      <path
+        d="M 100 10 L 180 60 L 180 160 L 100 210 L 20 160 L 20 60 Z"
+        fill="white"
+        stroke="#002D72"
+        strokeWidth="4"
+      />
+
+      {/* JH JHEEM split with network accent */}
+      <text
+        x="100"
+        y="75"
+        textAnchor="middle"
+        fontFamily="system-ui, -apple-system, sans-serif"
+        fontSize="32"
+        fontWeight="700"
+        fill="#002D72"
+      >
+        <tspan fill="#002D72" opacity="0.9">JH</tspan>
+        <tspan fill="#002D72" opacity="0.4">EEM</tspan>
+      </text>
+
+      {/* Acronym breakdown */}
+      <text
+        x="50"
+        y="105"
+        fontFamily="system-ui, -apple-system, sans-serif"
+        fontSize="7"
+        fontWeight="600"
+        fill="#002D72"
+        opacity="0.7"
+      >
+        <tspan x="50" dy="0">Johns Hopkins</tspan>
+        <tspan x="50" dy="11">Epidemiologic &amp;</tspan>
+        <tspan x="50" dy="11">Economic Model</tspan>
+      </text>
+
+      {/* Subtitle */}
+      <text
+        x="100"
+        y="155"
+        textAnchor="middle"
+        fontFamily="system-ui, -apple-system, sans-serif"
+        fontSize="8"
+        fontWeight="500"
+        fill="#002D72"
+        opacity="0.5"
+        letterSpacing="0.5"
+      >
+        HIV/AIDS
+      </text>
+    </svg>
+  );
+}
+
+// Option F: Acronym Breakdown (Square)
+// Square version showing full acronym
+export function JheemLogoAcronymSquare({ className = "", size = 200 }: LogoProps) {
+  return (
+    <svg
+      viewBox="0 0 200 200"
+      className={className}
+      style={{ width: size, height: size }}
+    >
+      {/* Square border with rounded corners */}
+      <rect
+        x="10"
+        y="10"
+        width="180"
+        height="180"
+        rx="8"
+        fill="white"
+        stroke="#002D72"
+        strokeWidth="4"
+      />
+
+      {/* JH JHEEM split */}
+      <text
+        x="100"
+        y="70"
+        textAnchor="middle"
+        fontFamily="system-ui, -apple-system, sans-serif"
+        fontSize="36"
+        fontWeight="700"
+        fill="#002D72"
+      >
+        <tspan fill="#002D72">JH</tspan>
+        <tspan fill="#002D72" opacity="0.4">EEM</tspan>
+      </text>
+
+      {/* Acronym breakdown */}
+      <text
+        x="100"
+        y="100"
+        textAnchor="middle"
+        fontFamily="system-ui, -apple-system, sans-serif"
+        fontSize="9"
+        fontWeight="500"
+        fill="#002D72"
+        opacity="0.7"
+      >
+        <tspan x="100" dy="0">Johns Hopkins</tspan>
+        <tspan x="100" dy="14">Epidemiologic &amp; Economic</tspan>
+        <tspan x="100" dy="14">Model</tspan>
+      </text>
+
+      {/* HIV/AIDS subtitle */}
+      <text
+        x="100"
+        y="165"
+        textAnchor="middle"
+        fontFamily="system-ui, -apple-system, sans-serif"
+        fontSize="10"
+        fontWeight="600"
+        fill="#002D72"
+        opacity="0.5"
+        letterSpacing="1"
+      >
+        HIV/AIDS
+      </text>
+    </svg>
+  );
+}
+
+// Option G: Network + JH Split (Hex)
+// Combines network graphic with JH emphasis
+export function JheemLogoNetworkJH({ className = "", size = 200 }: LogoProps) {
+  const height = size * 1.15;
+
+  return (
+    <svg
+      viewBox="0 0 200 230"
+      className={className}
+      style={{ width: size, height }}
+    >
+      {/* Hexagon border */}
+      <path
+        d="M 100 10 L 180 60 L 180 160 L 100 210 L 20 160 L 20 60 Z"
+        fill="white"
+        stroke="#002D72"
+        strokeWidth="4"
+      />
+
+      {/* Compact network at top */}
+      <circle cx="75" cy="55" r="7" fill="#002D72" opacity="0.25" />
+      <circle cx="100" cy="50" r="9" fill="#002D72" opacity="0.6" />
+      <circle cx="125" cy="55" r="7" fill="#002D72" opacity="0.25" />
+      <line x1="75" y1="55" x2="100" y2="50" stroke="#002D72" strokeWidth="1.5" opacity="0.3" />
+      <line x1="125" y1="55" x2="100" y2="50" stroke="#002D72" strokeWidth="1.5" opacity="0.3" />
+      <circle cx="85" cy="70" r="6" fill="#002D72" opacity="0.2" />
+      <circle cx="115" cy="70" r="6" fill="#002D72" opacity="0.2" />
+      <line x1="100" y1="50" x2="85" y2="70" stroke="#002D72" strokeWidth="1.5" opacity="0.25" />
+      <line x1="100" y1="50" x2="115" y2="70" stroke="#002D72" strokeWidth="1.5" opacity="0.25" />
+
+      {/* JH emphasized, EEM lighter */}
+      <text
+        x="100"
+        y="125"
+        textAnchor="middle"
+        fontFamily="system-ui, -apple-system, sans-serif"
+        fontSize="40"
+        fontWeight="700"
+        fill="#002D72"
+      >
+        <tspan>JH</tspan>
+      </text>
+      <text
+        x="100"
+        y="152"
+        textAnchor="middle"
+        fontFamily="system-ui, -apple-system, sans-serif"
+        fontSize="24"
+        fontWeight="600"
+        fill="#002D72"
+        opacity="0.5"
+      >
+        EEM
+      </text>
+
+      {/* Subtitle */}
+      <text
+        x="100"
+        y="175"
+        textAnchor="middle"
+        fontFamily="system-ui, -apple-system, sans-serif"
+        fontSize="7"
+        fontWeight="500"
+        fill="#002D72"
+        opacity="0.5"
+        letterSpacing="0.5"
+      >
+        EPIDEMIC MODEL
+      </text>
+    </svg>
+  );
+}
+
+// Option H: Compartmental + JH Split (Hex)
+// Combines compartmental flow with JH emphasis
+export function JheemLogoCompartmentalJH({ className = "", size = 200 }: LogoProps) {
+  const height = size * 1.15;
+
+  return (
+    <svg
+      viewBox="0 0 200 230"
+      className={className}
+      style={{ width: size, height }}
+    >
+      {/* Hexagon border */}
+      <path
+        d="M 100 10 L 180 60 L 180 160 L 100 210 L 20 160 L 20 60 Z"
+        fill="white"
+        stroke="#002D72"
+        strokeWidth="4"
+      />
+
+      {/* Compact compartments at top */}
+      <rect x="60" y="50" width="22" height="18" rx="2" fill="none" stroke="#002D72" strokeWidth="2" />
+      <rect x="89" y="50" width="22" height="18" rx="2" fill="#002D72" opacity="0.2" stroke="#002D72" strokeWidth="2" />
+      <rect x="118" y="50" width="22" height="18" rx="2" fill="none" stroke="#002D72" strokeWidth="2" />
+
+      {/* Flow arrows */}
+      <defs>
+        <marker id="arrowhead-jh" markerWidth="8" markerHeight="8" refX="7" refY="2.5" orient="auto">
+          <polygon points="0 0, 8 2.5, 0 5" fill="#002D72" />
+        </marker>
+      </defs>
+      <path d="M 82 59 L 89 59" stroke="#002D72" strokeWidth="1.5" fill="none" markerEnd="url(#arrowhead-jh)" />
+      <path d="M 111 59 L 118 59" stroke="#002D72" strokeWidth="1.5" fill="none" markerEnd="url(#arrowhead-jh)" />
+
+      {/* JH emphasized, EEM lighter */}
+      <text
+        x="100"
+        y="125"
+        textAnchor="middle"
+        fontFamily="system-ui, -apple-system, sans-serif"
+        fontSize="40"
+        fontWeight="700"
+        fill="#002D72"
+      >
+        <tspan>JH</tspan>
+      </text>
+      <text
+        x="100"
+        y="152"
+        textAnchor="middle"
+        fontFamily="system-ui, -apple-system, sans-serif"
+        fontSize="24"
+        fontWeight="600"
+        fill="#002D72"
+        opacity="0.5"
+      >
+        EEM
+      </text>
+
+      {/* Subtitle */}
+      <text
+        x="100"
+        y="175"
+        textAnchor="middle"
+        fontFamily="system-ui, -apple-system, sans-serif"
+        fontSize="7"
+        fontWeight="500"
+        fill="#002D72"
+        opacity="0.5"
+        letterSpacing="0.5"
+      >
+        EPIDEMIC MODEL
+      </text>
+    </svg>
+  );
+}
+
+// Option I: Network Integrated
+// Network nodes flow around and behind the JHEEM text
+export function JheemLogoNetworkIntegrated({ className = "", size = 200 }: LogoProps) {
+  const height = size * 1.15;
+
+  return (
+    <svg
+      viewBox="0 0 200 230"
+      className={className}
+      style={{ width: size, height }}
+    >
+      {/* Hexagon border */}
+      <path
+        d="M 100 10 L 180 60 L 180 160 L 100 210 L 20 160 L 20 60 Z"
+        fill="white"
+        stroke="#002D72"
+        strokeWidth="4"
+      />
+
+      {/* Background network layer - larger, more visible */}
+      {/* Top layer nodes */}
+      <circle cx="60" cy="65" r="14" fill="#002D72" opacity="0.08" />
+      <circle cx="140" cy="70" r="16" fill="#002D72" opacity="0.08" />
+      <circle cx="100" cy="55" r="12" fill="#002D72" opacity="0.12" />
+
+      {/* Middle layer - around text */}
+      <circle cx="45" cy="105" r="18" fill="#002D72" opacity="0.06" />
+      <circle cx="155" cy="100" r="15" fill="#002D72" opacity="0.08" />
+      <circle cx="80" cy="90" r="10" fill="#002D72" opacity="0.1" />
+      <circle cx="120" cy="95" r="11" fill="#002D72" opacity="0.1" />
+
+      {/* Bottom layer */}
+      <circle cx="70" cy="130" r="13" fill="#002D72" opacity="0.07" />
+      <circle cx="130" cy="135" r="14" fill="#002D72" opacity="0.07" />
+      <circle cx="100" cy="145" r="17" fill="#002D72" opacity="0.06" />
+
+      {/* Connection lines - subtle web */}
+      <line x1="60" y1="65" x2="100" y2="55" stroke="#002D72" strokeWidth="1.5" opacity="0.08" />
+      <line x1="140" y1="70" x2="100" y2="55" stroke="#002D72" strokeWidth="1.5" opacity="0.08" />
+      <line x1="60" y1="65" x2="45" y2="105" stroke="#002D72" strokeWidth="1.5" opacity="0.06" />
+      <line x1="140" y1="70" x2="155" y2="100" stroke="#002D72" strokeWidth="1.5" opacity="0.06" />
+      <line x1="80" y1="90" x2="120" y2="95" stroke="#002D72" strokeWidth="1.5" opacity="0.08" />
+      <line x1="45" y1="105" x2="70" y2="130" stroke="#002D72" strokeWidth="1.5" opacity="0.05" />
+      <line x1="155" y1="100" x2="130" y2="135" stroke="#002D72" strokeWidth="1.5" opacity="0.05" />
+      <line x1="70" y1="130" x2="100" y2="145" stroke="#002D72" strokeWidth="1.5" opacity="0.06" />
+      <line x1="130" y1="135" x2="100" y2="145" stroke="#002D72" strokeWidth="1.5" opacity="0.06" />
+
+      {/* Foreground nodes - smaller, more prominent */}
+      <circle cx="60" cy="65" r="6" fill="#002D72" opacity="0.35" />
+      <circle cx="140" cy="70" r="7" fill="#002D72" opacity="0.35" />
+      <circle cx="100" cy="55" r="5" fill="#002D72" opacity="0.4" />
+      <circle cx="80" cy="90" r="4" fill="#002D72" opacity="0.3" />
+      <circle cx="120" cy="95" r="4" fill="#002D72" opacity="0.3" />
+      <circle cx="100" cy="145" r="6" fill="#002D72" opacity="0.3" />
+
+      {/* JHEEM text - JH bold, EEM lighter */}
+      <text
+        x="100"
+        y="115"
+        textAnchor="middle"
+        fontFamily="system-ui, -apple-system, sans-serif"
+        fontSize="42"
+        fontWeight="800"
+        fill="#002D72"
+      >
+        <tspan fontWeight="800">JH</tspan>
+        <tspan fontWeight="400" opacity="0.85">EEM</tspan>
+      </text>
+
+      {/* Subtitle - full acronym */}
+      <text
+        x="100"
+        y="170"
+        textAnchor="middle"
+        fontFamily="system-ui, -apple-system, sans-serif"
+        fontSize="7"
+        fontWeight="500"
+        fill="#002D72"
+        opacity="0.6"
+        letterSpacing="0.3"
+      >
+        <tspan x="100">EPIDEMIOLOGIC &amp; ECONOMIC MODEL</tspan>
+      </text>
+    </svg>
+  );
+}
+
+// Option J: Compartmental Flow Through
+// Compartmental boxes flow through/around the text
+export function JheemLogoCompartmentalIntegrated({ className = "", size = 200 }: LogoProps) {
+  const height = size * 1.15;
+
+  return (
+    <svg
+      viewBox="0 0 200 230"
+      className={className}
+      style={{ width: size, height }}
+    >
+      {/* Hexagon border */}
+      <path
+        d="M 100 10 L 180 60 L 180 160 L 100 210 L 20 160 L 20 60 Z"
+        fill="white"
+        stroke="#002D72"
+        strokeWidth="4"
+      />
+
+      {/* Background flow - large compartments with gradient effect */}
+      {/* Left compartment */}
+      <rect x="35" y="70" width="45" height="65" rx="6" fill="#002D72" opacity="0.04" stroke="#002D72" strokeWidth="2" opacity="0.15" />
+
+      {/* Center compartment - highlighted */}
+      <rect x="77" y="65" width="46" height="70" rx="6" fill="#002D72" opacity="0.08" stroke="#002D72" strokeWidth="2.5" opacity="0.2" />
+
+      {/* Right compartment */}
+      <rect x="120" y="70" width="45" height="65" rx="6" fill="#002D72" opacity="0.04" stroke="#002D72" strokeWidth="2" opacity="0.15" />
+
+      {/* Flow arrows between compartments */}
+      <defs>
+        <marker id="arrowhead-integrated" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+          <polygon points="0 0, 10 3, 0 6" fill="#002D72" opacity="0.2" />
+        </marker>
+      </defs>
+      <path d="M 80 102 L 77 102" stroke="#002D72" strokeWidth="2.5" fill="none" markerEnd="url(#arrowhead-integrated)" opacity="0.15" />
+      <path d="M 123 102 L 120 102" stroke="#002D72" strokeWidth="2.5" fill="none" markerEnd="url(#arrowhead-integrated)" opacity="0.15" />
+
+      {/* Small state labels in compartments */}
+      <text x="57" y="60" textAnchor="middle" fontSize="9" fontWeight="600" fill="#002D72" opacity="0.25">S</text>
+      <text x="100" y="57" textAnchor="middle" fontSize="9" fontWeight="600" fill="#002D72" opacity="0.3">I</text>
+      <text x="142" y="60" textAnchor="middle" fontSize="9" fontWeight="600" fill="#002D72" opacity="0.25">T</text>
+
+      {/* JHEEM text - overlays the compartments */}
+      <text
+        x="100"
+        y="115"
+        textAnchor="middle"
+        fontFamily="system-ui, -apple-system, sans-serif"
+        fontSize="42"
+        fontWeight="800"
+        fill="#002D72"
+      >
+        <tspan fontWeight="800">JH</tspan>
+        <tspan fontWeight="400" opacity="0.85">EEM</tspan>
+      </text>
+
+      {/* Subtitle */}
+      <text
+        x="100"
+        y="170"
+        textAnchor="middle"
+        fontFamily="system-ui, -apple-system, sans-serif"
+        fontSize="7"
+        fontWeight="500"
+        fill="#002D72"
+        opacity="0.6"
+        letterSpacing="0.3"
+      >
+        <tspan x="100">EPIDEMIOLOGIC &amp; ECONOMIC MODEL</tspan>
+      </text>
+    </svg>
+  );
+}
+
+// Option K: Data Visualization Abstract
+// Modern abstract data viz with flowing lines and gradients
+export function JheemLogoDataViz({ className = "", size = 200 }: LogoProps) {
+  const height = size * 1.15;
+
+  return (
+    <svg
+      viewBox="0 0 200 230"
+      className={className}
+      style={{ width: size, height }}
+    >
+      {/* Hexagon border */}
+      <path
+        d="M 100 10 L 180 60 L 180 160 L 100 210 L 20 160 L 20 60 Z"
+        fill="white"
+        stroke="#002D72"
+        strokeWidth="4"
+      />
+
+      {/* Gradient definition */}
+      <defs>
+        <linearGradient id="dataGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#002D72" stopOpacity="0.15" />
+          <stop offset="100%" stopColor="#002D72" stopOpacity="0.03" />
+        </linearGradient>
+      </defs>
+
+      {/* Abstract flowing data lines - epidemic curves */}
+      {/* Line 1 - Rising curve */}
+      <path
+        d="M 40 80 Q 60 70, 80 75 T 120 85 T 160 95"
+        fill="none"
+        stroke="#002D72"
+        strokeWidth="3"
+        opacity="0.15"
+      />
+
+      {/* Line 2 - Peak and decline */}
+      <path
+        d="M 40 95 Q 70 85, 100 80 Q 130 75, 160 85"
+        fill="none"
+        stroke="#002D72"
+        strokeWidth="3.5"
+        opacity="0.2"
+      />
+
+      {/* Line 3 - Lower trajectory */}
+      <path
+        d="M 40 110 Q 80 100, 120 105 T 160 115"
+        fill="none"
+        stroke="#002D72"
+        strokeWidth="3"
+        opacity="0.12"
+      />
+
+      {/* Area under curve - subtle fill */}
+      <path
+        d="M 40 95 Q 70 85, 100 80 Q 130 75, 160 85 L 160 130 L 40 130 Z"
+        fill="url(#dataGradient)"
+      />
+
+      {/* Data points on the main curve */}
+      <circle cx="60" cy="87" r="3.5" fill="#002D72" opacity="0.25" />
+      <circle cx="100" cy="80" r="4" fill="#002D72" opacity="0.3" />
+      <circle cx="140" cy="82" r="3.5" fill="#002D72" opacity="0.25" />
+
+      {/* JHEEM text */}
+      <text
+        x="100"
+        y="115"
+        textAnchor="middle"
+        fontFamily="system-ui, -apple-system, sans-serif"
+        fontSize="42"
+        fontWeight="800"
+        fill="#002D72"
+      >
+        <tspan fontWeight="800">JH</tspan>
+        <tspan fontWeight="400" opacity="0.85">EEM</tspan>
+      </text>
+
+      {/* Vertical grid lines - subtle */}
+      <line x1="60" y1="140" x2="60" y2="150" stroke="#002D72" strokeWidth="1" opacity="0.1" />
+      <line x1="100" y1="140" x2="100" y2="150" stroke="#002D72" strokeWidth="1" opacity="0.1" />
+      <line x1="140" y1="140" x2="140" y2="150" stroke="#002D72" strokeWidth="1" opacity="0.1" />
+
+      {/* Subtitle */}
+      <text
+        x="100"
+        y="170"
+        textAnchor="middle"
+        fontFamily="system-ui, -apple-system, sans-serif"
+        fontSize="7"
+        fontWeight="500"
+        fill="#002D72"
+        opacity="0.6"
+        letterSpacing="0.3"
+      >
+        <tspan x="100">EPIDEMIOLOGIC &amp; ECONOMIC MODEL</tspan>
+      </text>
+    </svg>
+  );
+}
+
+// Option L: Modern Geometric - POLISHED
+// Abstract compartments integrated with letterforms, professional typography, two-color palette
+export function JheemLogoModernGeometric({ className = "", size = 200 }: LogoProps) {
+  return (
+    <svg
+      viewBox="0 0 200 200"
+      className={className}
+      style={{ width: size, height: size }}
+    >
+      {/* Square with subtle rounded corners */}
+      <rect
+        x="10"
+        y="10"
+        width="180"
+        height="180"
+        rx="12"
+        fill="white"
+        stroke="#002D72"
+        strokeWidth="3"
+      />
+
+      {/* Abstract compartmental background - geometric shapes */}
+      {/* Large flowing shapes behind text */}
+      <path
+        d="M 40 60 L 70 40 L 100 50 L 130 40 L 160 60 L 160 100 L 130 90 L 100 100 L 70 90 L 40 100 Z"
+        fill="#002D72"
+        opacity="0.04"
+      />
+
+      <path
+        d="M 40 100 L 70 90 L 100 100 L 130 90 L 160 100 L 160 140 L 130 130 L 100 140 L 70 130 L 40 140 Z"
+        fill="#F2C413"
+        opacity="0.06"
+      />
+
+      {/* Geometric accent - compartment lines */}
+      <line x1="70" y1="40" x2="70" y2="140" stroke="#002D72" strokeWidth="1.5" opacity="0.08" />
+      <line x1="100" y1="50" x2="100" y2="140" stroke="#F2C413" strokeWidth="2" opacity="0.12" />
+      <line x1="130" y1="40" x2="130" y2="140" stroke="#002D72" strokeWidth="1.5" opacity="0.08" />
+
+      {/* Horizontal flow lines */}
+      <line x1="40" y1="100" x2="160" y2="100" stroke="#002D72" strokeWidth="1.5" opacity="0.1" />
+
+      {/* Small directional arrows suggesting flow */}
+      <defs>
+        <marker id="arrow-gold" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+          <polygon points="0 0, 6 3, 0 6" fill="#F2C413" opacity="0.4" />
+        </marker>
+      </defs>
+      <path d="M 85 100 L 95 100" stroke="#F2C413" strokeWidth="1.5" opacity="0.3" markerEnd="url(#arrow-gold)" />
+      <path d="M 105 100 L 115 100" stroke="#F2C413" strokeWidth="1.5" opacity="0.3" markerEnd="url(#arrow-gold)" />
+
+      {/* JHEEM - Modern sans with proper tracking */}
+      <text
+        x="100"
+        y="88"
+        textAnchor="middle"
+        fontFamily="Inter, system-ui, -apple-system, sans-serif"
+        fontSize="48"
+        fontWeight="800"
+        fill="#002D72"
+        letterSpacing="-1"
+      >
+        <tspan fontWeight="900">JH</tspan>
+        <tspan fontWeight="500" opacity="0.85">EEM</tspan>
+      </text>
+
+      {/* Refined subtitle with better spacing */}
+      <text
+        x="100"
+        y="120"
+        textAnchor="middle"
+        fontFamily="Inter, system-ui, -apple-system, sans-serif"
+        fontSize="8.5"
+        fontWeight="500"
+        fill="#002D72"
+        opacity="0.65"
+        letterSpacing="0.8"
+      >
+        EPIDEMIOLOGIC &amp; ECONOMIC MODEL
+      </text>
+
+      {/* Small accent line */}
+      <line x1="60" y1="128" x2="140" y2="128" stroke="#F2C413" strokeWidth="2" opacity="0.4" />
+
+      {/* Johns Hopkins */}
+      <text
+        x="100"
+        y="155"
+        textAnchor="middle"
+        fontFamily="Inter, system-ui, -apple-system, sans-serif"
+        fontSize="10"
+        fontWeight="600"
+        fill="#002D72"
+        opacity="0.5"
+        letterSpacing="0.5"
+      >
+        JOHNS HOPKINS
+      </text>
+    </svg>
+  );
+}
+
+// Option M: Data Gradient Flow - POLISHED
+// Flowing gradient curves suggesting epidemic trajectories, modern color palette
+export function JheemLogoGradientFlow({ className = "", size = 200 }: LogoProps) {
+  return (
+    <svg
+      viewBox="0 0 200 200"
+      className={className}
+      style={{ width: size, height: size }}
+    >
+      {/* Rounded square */}
+      <rect
+        x="10"
+        y="10"
+        width="180"
+        height="180"
+        rx="12"
+        fill="white"
+        stroke="#002D72"
+        strokeWidth="3"
+      />
+
+      {/* Gradient definitions */}
+      <defs>
+        <linearGradient id="flowGradient1" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stopColor="#002D72" stopOpacity="0.15" />
+          <stop offset="50%" stopColor="#F2C413" stopOpacity="0.12" />
+          <stop offset="100%" stopColor="#002D72" stopOpacity="0.08" />
+        </linearGradient>
+        <linearGradient id="flowGradient2" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stopColor="#F2C413" stopOpacity="0.2" />
+          <stop offset="100%" stopColor="#002D72" stopOpacity="0.15" />
+        </linearGradient>
+        <linearGradient id="textGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stopColor="#002D72" />
+          <stop offset="60%" stopColor="#002D72" />
+          <stop offset="100%" stopColor="#002D72" stopOpacity="0.8" />
+        </linearGradient>
+      </defs>
+
+      {/* Flowing epidemic curves - more elegant */}
+      {/* Top curve */}
+      <path
+        d="M 30 50 Q 60 45, 80 48 Q 100 52, 120 50 Q 140 48, 170 52"
+        fill="none"
+        stroke="url(#flowGradient1)"
+        strokeWidth="4"
+      />
+
+      {/* Main curve with area fill */}
+      <path
+        d="M 30 70 Q 50 60, 70 62 Q 100 65, 130 63 Q 150 62, 170 68"
+        fill="none"
+        stroke="#002D72"
+        strokeWidth="5"
+        opacity="0.2"
+      />
+
+      {/* Filled area under main curve */}
+      <path
+        d="M 30 70 Q 50 60, 70 62 Q 100 65, 130 63 Q 150 62, 170 68 L 170 90 Q 150 88, 130 86 Q 100 84, 70 86 Q 50 88, 30 90 Z"
+        fill="url(#flowGradient2)"
+      />
+
+      {/* Lower curve */}
+      <path
+        d="M 30 90 Q 70 83, 100 85 Q 130 87, 170 92"
+        fill="none"
+        stroke="url(#flowGradient1)"
+        strokeWidth="3"
+      />
+
+      {/* Accent data points */}
+      <circle cx="70" cy="62" r="3" fill="#F2C413" opacity="0.6" />
+      <circle cx="100" cy="65" r="4" fill="#F2C413" opacity="0.7" />
+      <circle cx="130" cy="63" r="3" fill="#F2C413" opacity="0.6" />
+
+      {/* JHEEM text - clean modern typography */}
+      <text
+        x="100"
+        y="128"
+        textAnchor="middle"
+        fontFamily="Inter, system-ui, -apple-system, sans-serif"
+        fontSize="46"
+        fontWeight="800"
+        fill="url(#textGradient)"
+        letterSpacing="-0.5"
+      >
+        <tspan fontWeight="900">JH</tspan>
+        <tspan fontWeight="500" opacity="0.85">EEM</tspan>
+      </text>
+
+      {/* Subtitle */}
+      <text
+        x="100"
+        y="155"
+        textAnchor="middle"
+        fontFamily="Inter, system-ui, -apple-system, sans-serif"
+        fontSize="8.5"
+        fontWeight="500"
+        fill="#002D72"
+        opacity="0.65"
+        letterSpacing="0.8"
+      >
+        EPIDEMIOLOGIC &amp; ECONOMIC MODEL
+      </text>
+
+      {/* Bottom accent */}
+      <text
+        x="100"
+        y="172"
+        textAnchor="middle"
+        fontFamily="Inter, system-ui, -apple-system, sans-serif"
+        fontSize="9"
+        fontWeight="600"
+        fill="#F2C413"
+        opacity="0.8"
+        letterSpacing="0.5"
+      >
+        JOHNS HOPKINS
+      </text>
+    </svg>
+  );
+}
+
+// Option N: Minimalist Professional - POLISHED
+// Ultra-clean, perfect typography, subtle geometric accent
+export function JheemLogoMinimalistPro({ className = "", size = 200 }: LogoProps) {
+  return (
+    <svg
+      viewBox="0 0 200 200"
+      className={className}
+      style={{ width: size, height: size }}
+    >
+      {/* Border */}
+      <rect
+        x="10"
+        y="10"
+        width="180"
+        height="180"
+        rx="12"
+        fill="white"
+        stroke="#002D72"
+        strokeWidth="3"
+      />
+
+      {/* Subtle geometric accent - abstract compartment concept */}
+      {/* Three vertical zones suggesting S-I-T states */}
+      <rect x="50" y="45" width="30" height="3" rx="1.5" fill="#002D72" opacity="0.15" />
+      <rect x="85" y="45" width="30" height="3" rx="1.5" fill="#F2C413" opacity="0.25" />
+      <rect x="120" y="45" width="30" height="3" rx="1.5" fill="#002D72" opacity="0.15" />
+
+      {/* Connecting flow indicators */}
+      <circle cx="80" cy="46.5" r="1.5" fill="#002D72" opacity="0.2" />
+      <circle cx="115" cy="46.5" r="1.5" fill="#F2C413" opacity="0.3" />
+
+      {/* JHEEM - Perfect typography */}
+      <text
+        x="100"
+        y="105"
+        textAnchor="middle"
+        fontFamily="Inter, system-ui, -apple-system, sans-serif"
+        fontSize="52"
+        fontWeight="800"
+        fill="#002D72"
+        letterSpacing="-1.5"
+      >
+        <tspan fontWeight="900">JH</tspan>
+        <tspan fontWeight="400" opacity="0.85">EEM</tspan>
+      </text>
+
+      {/* Primary descriptor */}
+      <text
+        x="100"
+        y="127"
+        textAnchor="middle"
+        fontFamily="Inter, system-ui, -apple-system, sans-serif"
+        fontSize="9"
+        fontWeight="600"
+        fill="#002D72"
+        opacity="0.7"
+        letterSpacing="1.2"
+      >
+        EPIDEMIOLOGIC &amp; ECONOMIC MODEL
+      </text>
+
+      {/* Divider line - gold accent */}
+      <line x1="55" y1="138" x2="145" y2="138" stroke="#F2C413" strokeWidth="2" opacity="0.5" />
+
+      {/* Secondary info */}
+      <text
+        x="100"
+        y="157"
+        textAnchor="middle"
+        fontFamily="Inter, system-ui, -apple-system, sans-serif"
+        fontSize="10"
+        fontWeight="600"
+        fill="#002D72"
+        opacity="0.5"
+        letterSpacing="0.5"
+      >
+        JOHNS HOPKINS
+      </text>
+
+      {/* Tertiary info */}
+      <text
+        x="100"
+        y="172"
+        textAnchor="middle"
+        fontFamily="Inter, system-ui, -apple-system, sans-serif"
+        fontSize="8"
+        fontWeight="500"
+        fill="#002D72"
+        opacity="0.4"
+        letterSpacing="0.8"
+      >
+        HIV/AIDS
+      </text>
+    </svg>
+  );
+}
+
+// Option O: Compartment Grid - BOLD CONCEPT
+// Dense grid of compartments showing the scale of the 900+ compartment model
+export function JheemLogoCompartmentGrid({ className = "", size = 200 }: LogoProps) {
+  return (
+    <svg
+      viewBox="0 0 200 200"
+      className={className}
+      style={{ width: size, height: size }}
+    >
+      {/* Square border */}
+      <rect
+        x="10"
+        y="10"
+        width="180"
+        height="180"
+        rx="12"
+        fill="white"
+        stroke="#002D72"
+        strokeWidth="3"
+      />
+
+      {/* Dense compartment grid - representing 900+ compartments */}
+      {/* Create a grid pattern that suggests complexity */}
+      <defs>
+        <pattern id="compartmentGrid" x="0" y="0" width="8" height="8" patternUnits="userSpaceOnUse">
+          <rect x="0.5" y="0.5" width="7" height="7" fill="none" stroke="#002D72" strokeWidth="0.5" opacity="0.2" />
+        </pattern>
+      </defs>
+
+      {/* Background grid fills most of the logo */}
+      <rect x="30" y="40" width="140" height="70" fill="url(#compartmentGrid)" />
+
+      {/* Highlight certain compartments to show flow/activity */}
+      {/* Top row - initial states */}
+      <rect x="38" y="48" width="6" height="6" fill="#002D72" opacity="0.3" />
+      <rect x="54" y="48" width="6" height="6" fill="#002D72" opacity="0.25" />
+      <rect x="70" y="48" width="6" height="6" fill="#002D72" opacity="0.3" />
+
+      {/* Middle rows - transition states with gold highlights */}
+      <rect x="46" y="64" width="6" height="6" fill="#F2C413" opacity="0.4" />
+      <rect x="62" y="64" width="6" height="6" fill="#F2C413" opacity="0.5" />
+      <rect x="78" y="64" width="6" height="6" fill="#F2C413" opacity="0.4" />
+      <rect x="94" y="64" width="6" height="6" fill="#002D72" opacity="0.3" />
+
+      <rect x="54" y="80" width="6" height="6" fill="#002D72" opacity="0.35" />
+      <rect x="70" y="80" width="6" height="6" fill="#F2C413" opacity="0.6" />
+      <rect x="86" y="80" width="6" height="6" fill="#002D72" opacity="0.35" />
+      <rect x="102" y="80" width="6" height="6" fill="#002D72" opacity="0.25" />
+
+      {/* Bottom rows - end states */}
+      <rect x="62" y="96" width="6" height="6" fill="#002D72" opacity="0.3" />
+      <rect x="78" y="96" width="6" height="6" fill="#002D72" opacity="0.4" />
+      <rect x="94" y="96" width="6" height="6" fill="#002D72" opacity="0.3" />
+
+      {/* Subtle flow arrows connecting highlighted compartments */}
+      <defs>
+        <marker id="tinyArrow" markerWidth="4" markerHeight="4" refX="3" refY="2" orient="auto">
+          <polygon points="0 0, 4 2, 0 4" fill="#002D72" opacity="0.3" />
+        </marker>
+      </defs>
+      <path d="M 41 54 L 49 67" stroke="#002D72" strokeWidth="0.8" opacity="0.2" markerEnd="url(#tinyArrow)" />
+      <path d="M 73 54 L 73 77" stroke="#F2C413" strokeWidth="0.8" opacity="0.3" markerEnd="url(#tinyArrow)" />
+      <path d="M 65 70 L 73 83" stroke="#F2C413" strokeWidth="0.8" opacity="0.3" markerEnd="url(#tinyArrow)" />
+
+      {/* JHEEM text - bold and simple */}
+      <text
+        x="100"
+        y="145"
+        textAnchor="middle"
+        fontFamily="Inter, system-ui, -apple-system, sans-serif"
+        fontSize="48"
+        fontWeight="900"
+        fill="#002D72"
+        letterSpacing="-1"
+      >
+        <tspan fontWeight="900">JH</tspan>
+        <tspan fontWeight="500">EEM</tspan>
+      </text>
+
+      {/* Small label indicating scale */}
+      <text
+        x="100"
+        y="170"
+        textAnchor="middle"
+        fontFamily="Inter, system-ui, -apple-system, sans-serif"
+        fontSize="7"
+        fontWeight="500"
+        fill="#002D72"
+        opacity="0.5"
+        letterSpacing="1"
+      >
+        900+ COMPARTMENTS
+      </text>
+    </svg>
+  );
+}
+
+// Option P: Flow Network - BOLD CONCEPT
+// Circuit board / network aesthetic showing compartments as connected nodes
+export function JheemLogoFlowNetwork({ className = "", size = 200 }: LogoProps) {
+  return (
+    <svg
+      viewBox="0 0 200 200"
+      className={className}
+      style={{ width: size, height: size }}
+    >
+      {/* Square border */}
+      <rect
+        x="10"
+        y="10"
+        width="180"
+        height="180"
+        rx="12"
+        fill="white"
+        stroke="#002D72"
+        strokeWidth="3"
+      />
+
+      {/* Dense network of nodes - organic/flowing layout */}
+      {/* Left cluster (susceptible population) */}
+      <circle cx="40" cy="50" r="3" fill="#002D72" opacity="0.3" />
+      <circle cx="50" cy="45" r="2.5" fill="#002D72" opacity="0.25" />
+      <circle cx="45" cy="60" r="2" fill="#002D72" opacity="0.2" />
+      <circle cx="55" cy="55" r="2.5" fill="#002D72" opacity="0.25" />
+      <circle cx="35" cy="65" r="2" fill="#002D72" opacity="0.2" />
+
+      {/* Middle cluster (infected/transition states) - gold highlights */}
+      <circle cx="70" cy="50" r="4" fill="#F2C413" opacity="0.5" />
+      <circle cx="80" cy="45" r="3" fill="#F2C413" opacity="0.4" />
+      <circle cx="75" cy="60" r="3.5" fill="#F2C413" opacity="0.45" />
+      <circle cx="85" cy="55" r="3" fill="#002D72" opacity="0.35" />
+      <circle cx="90" cy="48" r="2.5" fill="#002D72" opacity="0.3" />
+      <circle cx="65" cy="55" r="2.5" fill="#F2C413" opacity="0.4" />
+      <circle cx="95" cy="58" r="2.5" fill="#002D72" opacity="0.3" />
+
+      {/* Additional mid-layer nodes */}
+      <circle cx="75" cy="70" r="3" fill="#F2C413" opacity="0.4" />
+      <circle cx="85" cy="68" r="2.5" fill="#002D72" opacity="0.3" />
+      <circle cx="70" cy="75" r="2" fill="#002D72" opacity="0.25" />
+
+      {/* Right cluster (treated/suppressed states) */}
+      <circle cx="110" cy="52" r="3" fill="#002D72" opacity="0.35" />
+      <circle cx="120" cy="48" r="2.5" fill="#002D72" opacity="0.3" />
+      <circle cx="115" cy="60" r="3" fill="#002D72" opacity="0.35" />
+      <circle cx="125" cy="56" r="2.5" fill="#002D72" opacity="0.3" />
+      <circle cx="105" cy="65" r="2" fill="#002D72" opacity="0.25" />
+      <circle cx="130" cy="62" r="2" fill="#002D72" opacity="0.25" />
+
+      {/* Bottom layer - more states */}
+      <circle cx="55" cy="80" r="2.5" fill="#002D72" opacity="0.25" />
+      <circle cx="95" cy="75" r="2.5" fill="#002D72" opacity="0.3" />
+      <circle cx="105" cy="78" r="2" fill="#002D72" opacity="0.25" />
+
+      {/* Connection lines - creating network effect */}
+      {/* Left to middle */}
+      <line x1="40" y1="50" x2="70" y2="50" stroke="#002D72" strokeWidth="1" opacity="0.15" />
+      <line x1="50" y1="45" x2="80" y2="45" stroke="#002D72" strokeWidth="1" opacity="0.12" />
+      <line x1="55" y1="55" x2="75" y2="60" stroke="#F2C413" strokeWidth="1" opacity="0.2" />
+      <line x1="45" y1="60" x2="65" y2="55" stroke="#002D72" strokeWidth="1" opacity="0.12" />
+
+      {/* Middle internal connections */}
+      <line x1="70" y1="50" x2="85" y2="55" stroke="#F2C413" strokeWidth="1" opacity="0.2" />
+      <line x1="80" y1="45" x2="90" y2="48" stroke="#002D72" strokeWidth="1" opacity="0.15" />
+      <line x1="75" y1="60" x2="75" y2="70" stroke="#F2C413" strokeWidth="1" opacity="0.18" />
+      <line x1="85" y1="55" x2="95" y2="58" stroke="#002D72" strokeWidth="1" opacity="0.12" />
+
+      {/* Middle to right */}
+      <line x1="85" y1="55" x2="110" y2="52" stroke="#002D72" strokeWidth="1" opacity="0.15" />
+      <line x1="90" y1="48" x2="120" y2="48" stroke="#002D72" strokeWidth="1" opacity="0.12" />
+      <line x1="95" y1="58" x2="115" y2="60" stroke="#002D72" strokeWidth="1" opacity="0.12" />
+      <line x1="75" y1="70" x2="95" y2="75" stroke="#002D72" strokeWidth="1" opacity="0.1" />
+
+      {/* Additional cross-connections for density */}
+      <line x1="65" y1="55" x2="85" y2="68" stroke="#002D72" strokeWidth="0.8" opacity="0.1" />
+      <line x1="75" y1="70" x2="105" y2="78" stroke="#002D72" strokeWidth="0.8" opacity="0.1" />
+
+      {/* JHEEM text */}
+      <text
+        x="100"
+        y="125"
+        textAnchor="middle"
+        fontFamily="Inter, system-ui, -apple-system, sans-serif"
+        fontSize="48"
+        fontWeight="900"
+        fill="#002D72"
+        letterSpacing="-1"
+      >
+        <tspan fontWeight="900">JH</tspan>
+        <tspan fontWeight="500">EEM</tspan>
+      </text>
+
+      {/* Bottom accent */}
+      <circle cx="100" cy="160" r="2" fill="#F2C413" opacity="0.5" />
+      <line x1="70" y1="160" x2="98" y2="160" stroke="#002D72" strokeWidth="1" opacity="0.2" />
+      <line x1="102" y1="160" x2="130" y2="160" stroke="#002D72" strokeWidth="1" opacity="0.2" />
+    </svg>
+  );
+}
+
+// Option Q: Compartment Matrix - BOLD CONCEPT
+// Matrix/heatmap visualization showing compartment states
+export function JheemLogoCompartmentMatrix({ className = "", size = 200 }: LogoProps) {
+  return (
+    <svg
+      viewBox="0 0 200 200"
+      className={className}
+      style={{ width: size, height: size }}
+    >
+      {/* Square border */}
+      <rect
+        x="10"
+        y="10"
+        width="180"
+        height="180"
+        rx="12"
+        fill="white"
+        stroke="#002D72"
+        strokeWidth="3"
+      />
+
+      {/* Matrix visualization - blocks representing compartment states */}
+      {/* Think: heatmap aesthetic with varying intensities */}
+
+      {/* Top rows - low prevalence */}
+      <rect x="35" y="40" width="5" height="5" fill="#002D72" opacity="0.15" rx="0.5" />
+      <rect x="42" y="40" width="5" height="5" fill="#002D72" opacity="0.12" rx="0.5" />
+      <rect x="49" y="40" width="5" height="5" fill="#002D72" opacity="0.18" rx="0.5" />
+      <rect x="56" y="40" width="5" height="5" fill="#002D72" opacity="0.2" rx="0.5" />
+      <rect x="63" y="40" width="5" height="5" fill="#002D72" opacity="0.15" rx="0.5" />
+      <rect x="70" y="40" width="5" height="5" fill="#F2C413" opacity="0.25" rx="0.5" />
+      <rect x="77" y="40" width="5" height="5" fill="#F2C413" opacity="0.3" rx="0.5" />
+      <rect x="84" y="40" width="5" height="5" fill="#F2C413" opacity="0.25" rx="0.5" />
+      <rect x="91" y="40" width="5" height="5" fill="#002D72" opacity="0.2" rx="0.5" />
+      <rect x="98" y="40" width="5" height="5" fill="#002D72" opacity="0.18" rx="0.5" />
+      <rect x="105" y="40" width="5" height="5" fill="#002D72" opacity="0.15" rx="0.5" />
+      <rect x="112" y="40" width="5" height="5" fill="#002D72" opacity="0.12" rx="0.5" />
+
+      {/* Second row */}
+      <rect x="35" y="47" width="5" height="5" fill="#002D72" opacity="0.18" rx="0.5" />
+      <rect x="42" y="47" width="5" height="5" fill="#002D72" opacity="0.2" rx="0.5" />
+      <rect x="49" y="47" width="5" height="5" fill="#002D72" opacity="0.25" rx="0.5" />
+      <rect x="56" y="47" width="5" height="5" fill="#F2C413" opacity="0.3" rx="0.5" />
+      <rect x="63" y="47" width="5" height="5" fill="#F2C413" opacity="0.4" rx="0.5" />
+      <rect x="70" y="47" width="5" height="5" fill="#F2C413" opacity="0.5" rx="0.5" />
+      <rect x="77" y="47" width="5" height="5" fill="#F2C413" opacity="0.5" rx="0.5" />
+      <rect x="84" y="47" width="5" height="5" fill="#F2C413" opacity="0.4" rx="0.5" />
+      <rect x="91" y="47" width="5" height="5" fill="#F2C413" opacity="0.3" rx="0.5" />
+      <rect x="98" y="47" width="5" height="5" fill="#002D72" opacity="0.25" rx="0.5" />
+      <rect x="105" y="47" width="5" height="5" fill="#002D72" opacity="0.2" rx="0.5" />
+      <rect x="112" y="47" width="5" height="5" fill="#002D72" opacity="0.18" rx="0.5" />
+
+      {/* Third row - peak activity */}
+      <rect x="35" y="54" width="5" height="5" fill="#002D72" opacity="0.2" rx="0.5" />
+      <rect x="42" y="54" width="5" height="5" fill="#002D72" opacity="0.28" rx="0.5" />
+      <rect x="49" y="54" width="5" height="5" fill="#F2C413" opacity="0.35" rx="0.5" />
+      <rect x="56" y="54" width="5" height="5" fill="#F2C413" opacity="0.5" rx="0.5" />
+      <rect x="63" y="54" width="5" height="5" fill="#F2C413" opacity="0.6" rx="0.5" />
+      <rect x="70" y="54" width="5" height="5" fill="#F2C413" opacity="0.7" rx="0.5" />
+      <rect x="77" y="54" width="5" height="5" fill="#F2C413" opacity="0.6" rx="0.5" />
+      <rect x="84" y="54" width="5" height="5" fill="#F2C413" opacity="0.5" rx="0.5" />
+      <rect x="91" y="54" width="5" height="5" fill="#F2C413" opacity="0.35" rx="0.5" />
+      <rect x="98" y="54" width="5" height="5" fill="#002D72" opacity="0.28" rx="0.5" />
+      <rect x="105" y="54" width="5" height="5" fill="#002D72" opacity="0.2" rx="0.5" />
+      <rect x="112" y="54" width="5" height="5" fill="#002D72" opacity="0.18" rx="0.5" />
+
+      {/* Fourth row - declining */}
+      <rect x="35" y="61" width="5" height="5" fill="#002D72" opacity="0.18" rx="0.5" />
+      <rect x="42" y="61" width="5" height="5" fill="#002D72" opacity="0.22" rx="0.5" />
+      <rect x="49" y="61" width="5" height="5" fill="#002D72" opacity="0.3" rx="0.5" />
+      <rect x="56" y="61" width="5" height="5" fill="#F2C413" opacity="0.4" rx="0.5" />
+      <rect x="63" y="61" width="5" height="5" fill="#F2C413" opacity="0.5" rx="0.5" />
+      <rect x="70" y="61" width="5" height="5" fill="#F2C413" opacity="0.5" rx="0.5" />
+      <rect x="77" y="61" width="5" height="5" fill="#F2C413" opacity="0.4" rx="0.5" />
+      <rect x="84" y="61" width="5" height="5" fill="#002D72" opacity="0.3" rx="0.5" />
+      <rect x="91" y="61" width="5" height="5" fill="#002D72" opacity="0.25" rx="0.5" />
+      <rect x="98" y="61" width="5" height="5" fill="#002D72" opacity="0.22" rx="0.5" />
+      <rect x="105" y="61" width="5" height="5" fill="#002D72" opacity="0.18" rx="0.5" />
+      <rect x="112" y="61" width="5" height="5" fill="#002D72" opacity="0.15" rx="0.5" />
+
+      {/* Fifth row - low again */}
+      <rect x="35" y="68" width="5" height="5" fill="#002D72" opacity="0.15" rx="0.5" />
+      <rect x="42" y="68" width="5" height="5" fill="#002D72" opacity="0.18" rx="0.5" />
+      <rect x="49" y="68" width="5" height="5" fill="#002D72" opacity="0.2" rx="0.5" />
+      <rect x="56" y="68" width="5" height="5" fill="#002D72" opacity="0.25" rx="0.5" />
+      <rect x="63" y="68" width="5" height="5" fill="#F2C413" opacity="0.3" rx="0.5" />
+      <rect x="70" y="68" width="5" height="5" fill="#F2C413" opacity="0.35" rx="0.5" />
+      <rect x="77" y="68" width="5" height="5" fill="#F2C413" opacity="0.3" rx="0.5" />
+      <rect x="84" y="68" width="5" height="5" fill="#002D72" opacity="0.25" rx="0.5" />
+      <rect x="91" y="68" width="5" height="5" fill="#002D72" opacity="0.2" rx="0.5" />
+      <rect x="98" y="68" width="5" height="5" fill="#002D72" opacity="0.18" rx="0.5" />
+      <rect x="105" y="68" width="5" height="5" fill="#002D72" opacity="0.15" rx="0.5" />
+      <rect x="112" y="68" width="5" height="5" fill="#002D72" opacity="0.12" rx="0.5" />
+
+      {/* Axis labels suggestion */}
+      <text x="30" y="58" textAnchor="end" fontSize="6" fill="#002D72" opacity="0.4">t</text>
+      <text x="75" y="82" textAnchor="middle" fontSize="6" fill="#002D72" opacity="0.4">states</text>
+
+      {/* JHEEM text */}
+      <text
+        x="100"
+        y="125"
+        textAnchor="middle"
+        fontFamily="Inter, system-ui, -apple-system, sans-serif"
+        fontSize="48"
+        fontWeight="900"
+        fill="#002D72"
+        letterSpacing="-1"
+      >
+        <tspan fontWeight="900">JH</tspan>
+        <tspan fontWeight="500">EEM</tspan>
+      </text>
+
+      {/* Legend hint */}
+      <rect x="60" y="155" width="8" height="3" fill="#002D72" opacity="0.2" rx="0.5" />
+      <text x="70" y="157" fontSize="6" fill="#002D72" opacity="0.5">low</text>
+      <rect x="95" y="155" width="8" height="3" fill="#F2C413" opacity="0.6" rx="0.5" />
+      <text x="105" y="157" fontSize="6" fill="#002D72" opacity="0.5">high</text>
+    </svg>
+  );
+}
+
+// Option R: True Compartmental Flow - CORRECT CONCEPT
+// Based on actual JHEEM model structure - rounded boxes with directional arrows
+export function JheemLogoTrueCompartmental({ className = "", size = 200 }: LogoProps) {
+  return (
+    <svg
+      viewBox="0 0 200 200"
+      className={className}
+      style={{ width: size, height: size }}
+    >
+      {/* Square border */}
+      <rect
+        x="10"
+        y="10"
+        width="180"
+        height="180"
+        rx="12"
+        fill="white"
+        stroke="#002D72"
+        strokeWidth="3"
+      />
+
+      {/* Arrow marker */}
+      <defs>
+        <marker id="flowArrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+          <polygon points="0 0, 8 4, 0 8" fill="#002D72" opacity="0.4" />
+        </marker>
+        <marker id="flowArrowGold" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+          <polygon points="0 0, 8 4, 0 8" fill="#F2C413" opacity="0.5" />
+        </marker>
+      </defs>
+
+      {/* Top row compartments */}
+      <rect x="55" y="30" width="28" height="12" rx="6" fill="none" stroke="#002D72" strokeWidth="1.5" opacity="0.3" />
+      <rect x="110" y="30" width="28" height="12" rx="6" fill="none" stroke="#002D72" strokeWidth="1.5" opacity="0.3" />
+
+      {/* Second row - more compartments */}
+      <rect x="30" y="50" width="28" height="12" rx="6" fill="none" stroke="#002D72" strokeWidth="1.5" opacity="0.35" />
+      <rect x="80" y="50" width="28" height="12" rx="6" fill="#F2C413" opacity="0.08" stroke="#F2C413" strokeWidth="1.5" opacity="0.4" />
+      <rect x="135" y="50" width="28" height="12" rx="6" fill="none" stroke="#002D72" strokeWidth="1.5" opacity="0.35" />
+
+      {/* Third row - central compartments (active) */}
+      <rect x="30" y="70" width="28" height="12" rx="6" fill="none" stroke="#002D72" strokeWidth="1.5" opacity="0.4" />
+      <rect x="80" y="70" width="28" height="12" rx="6" fill="#F2C413" opacity="0.12" stroke="#F2C413" strokeWidth="2" opacity="0.5" />
+      <rect x="135" y="70" width="28" height="12" rx="6" fill="none" stroke="#002D72" strokeWidth="1.5" opacity="0.4" />
+
+      {/* Fourth row */}
+      <rect x="55" y="90" width="28" height="12" rx="6" fill="none" stroke="#002D72" strokeWidth="1.5" opacity="0.35" />
+      <rect x="110" y="90" width="28" height="12" rx="6" fill="#F2C413" opacity="0.08" stroke="#F2C413" strokeWidth="1.5" opacity="0.4" />
+
+      {/* Flow arrows between compartments */}
+      {/* Top to second row */}
+      <path d="M 69 42 L 69 50" stroke="#002D72" strokeWidth="1.2" opacity="0.25" markerEnd="url(#flowArrow)" fill="none" />
+      <path d="M 124 42 L 124 50" stroke="#002D72" strokeWidth="1.2" opacity="0.25" markerEnd="url(#flowArrow)" fill="none" />
+
+      {/* Second to third row */}
+      <path d="M 44 62 L 44 70" stroke="#002D72" strokeWidth="1.2" opacity="0.3" markerEnd="url(#flowArrow)" fill="none" />
+      <path d="M 94 62 L 94 70" stroke="#F2C413" strokeWidth="1.2" opacity="0.35" markerEnd="url(#flowArrowGold)" fill="none" />
+      <path d="M 149 62 L 149 70" stroke="#002D72" strokeWidth="1.2" opacity="0.3" markerEnd="url(#flowArrow)" fill="none" />
+
+      {/* Third to fourth row */}
+      <path d="M 44 82 L 69 90" stroke="#002D72" strokeWidth="1.2" opacity="0.25" markerEnd="url(#flowArrow)" fill="none" />
+      <path d="M 94 82 L 94 90" stroke="#F2C413" strokeWidth="1.2" opacity="0.35" markerEnd="url(#flowArrowGold)" fill="none" />
+      <path d="M 149 82 L 124 90" stroke="#002D72" strokeWidth="1.2" opacity="0.25" markerEnd="url(#flowArrow)" fill="none" />
+
+      {/* Horizontal connections showing transitions */}
+      <path d="M 58 56 L 80 56" stroke="#002D72" strokeWidth="1.2" opacity="0.2" markerEnd="url(#flowArrow)" fill="none" />
+      <path d="M 108 56 L 135 56" stroke="#002D72" strokeWidth="1.2" opacity="0.2" markerEnd="url(#flowArrow)" fill="none" />
+      <path d="M 58 76 L 80 76" stroke="#F2C413" strokeWidth="1.2" opacity="0.25" markerEnd="url(#flowArrowGold)" fill="none" />
+      <path d="M 108 76 L 135 76" stroke="#002D72" strokeWidth="1.2" opacity="0.2" markerEnd="url(#flowArrow)" fill="none" />
+
+      {/* Reverse flows */}
+      <path d="M 149 73 L 149 65" stroke="#002D72" strokeWidth="1" opacity="0.15" markerEnd="url(#flowArrow)" fill="none" />
+
+      {/* JHEEM text */}
+      <text
+        x="100"
+        y="145"
+        textAnchor="middle"
+        fontFamily="Inter, system-ui, -apple-system, sans-serif"
+        fontSize="48"
+        fontWeight="900"
+        fill="#002D72"
+        letterSpacing="-1"
+      >
+        <tspan fontWeight="900">JH</tspan>
+        <tspan fontWeight="500">EEM</tspan>
+      </text>
+    </svg>
+  );
+}
+
+// Option S: Dense Compartmental Flow - MORE SCALE
+// Many more compartments to show the 900+ scale
+export function JheemLogoDenseCompartmental({ className = "", size = 200 }: LogoProps) {
+  return (
+    <svg
+      viewBox="0 0 200 200"
+      className={className}
+      style={{ width: size, height: size }}
+    >
+      {/* Square border */}
+      <rect
+        x="10"
+        y="10"
+        width="180"
+        height="180"
+        rx="12"
+        fill="white"
+        stroke="#002D72"
+        strokeWidth="3"
+      />
+
+      {/* Arrow markers */}
+      <defs>
+        <marker id="tinyFlowArrow" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+          <polygon points="0 0, 6 3, 0 6" fill="#002D72" opacity="0.35" />
+        </marker>
+        <marker id="tinyFlowArrowGold" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+          <polygon points="0 0, 6 3, 0 6" fill="#F2C413" opacity="0.45" />
+        </marker>
+      </defs>
+
+      {/* Many small compartments showing scale */}
+      {/* Row 1 */}
+      <rect x="30" y="30" width="20" height="8" rx="4" fill="none" stroke="#002D72" strokeWidth="1" opacity="0.25" />
+      <rect x="55" y="30" width="20" height="8" rx="4" fill="none" stroke="#002D72" strokeWidth="1" opacity="0.25" />
+      <rect x="80" y="30" width="20" height="8" rx="4" fill="none" stroke="#002D72" strokeWidth="1" opacity="0.25" />
+      <rect x="105" y="30" width="20" height="8" rx="4" fill="none" stroke="#002D72" strokeWidth="1" opacity="0.25" />
+      <rect x="130" y="30" width="20" height="8" rx="4" fill="none" stroke="#002D72" strokeWidth="1" opacity="0.25" />
+      <rect x="155" y="30" width="20" height="8" rx="4" fill="none" stroke="#002D72" strokeWidth="1" opacity="0.25" />
+
+      {/* Row 2 */}
+      <rect x="30" y="43" width="20" height="8" rx="4" fill="none" stroke="#002D72" strokeWidth="1" opacity="0.3" />
+      <rect x="55" y="43" width="20" height="8" rx="4" fill="#F2C413" opacity="0.08" stroke="#F2C413" strokeWidth="1" opacity="0.35" />
+      <rect x="80" y="43" width="20" height="8" rx="4" fill="none" stroke="#002D72" strokeWidth="1" opacity="0.3" />
+      <rect x="105" y="43" width="20" height="8" rx="4" fill="none" stroke="#002D72" strokeWidth="1" opacity="0.3" />
+      <rect x="130" y="43" width="20" height="8" rx="4" fill="#F2C413" opacity="0.08" stroke="#F2C413" strokeWidth="1" opacity="0.35" />
+      <rect x="155" y="43" width="20" height="8" rx="4" fill="none" stroke="#002D72" strokeWidth="1" opacity="0.3" />
+
+      {/* Row 3 - central/active */}
+      <rect x="30" y="56" width="20" height="8" rx="4" fill="none" stroke="#002D72" strokeWidth="1" opacity="0.35" />
+      <rect x="55" y="56" width="20" height="8" rx="4" fill="#F2C413" opacity="0.12" stroke="#F2C413" strokeWidth="1.5" opacity="0.45" />
+      <rect x="80" y="56" width="20" height="8" rx="4" fill="#F2C413" opacity="0.15" stroke="#F2C413" strokeWidth="1.5" opacity="0.5" />
+      <rect x="105" y="56" width="20" height="8" rx="4" fill="#F2C413" opacity="0.12" stroke="#F2C413" strokeWidth="1.5" opacity="0.45" />
+      <rect x="130" y="56" width="20" height="8" rx="4" fill="none" stroke="#002D72" strokeWidth="1" opacity="0.35" />
+      <rect x="155" y="56" width="20" height="8" rx="4" fill="none" stroke="#002D72" strokeWidth="1" opacity="0.35" />
+
+      {/* Row 4 */}
+      <rect x="30" y="69" width="20" height="8" rx="4" fill="none" stroke="#002D72" strokeWidth="1" opacity="0.3" />
+      <rect x="55" y="69" width="20" height="8" rx="4" fill="#F2C413" opacity="0.08" stroke="#F2C413" strokeWidth="1" opacity="0.35" />
+      <rect x="80" y="69" width="20" height="8" rx="4" fill="none" stroke="#002D72" strokeWidth="1" opacity="0.3" />
+      <rect x="105" y="69" width="20" height="8" rx="4" fill="none" stroke="#002D72" strokeWidth="1" opacity="0.3" />
+      <rect x="130" y="69" width="20" height="8" rx="4" fill="#F2C413" opacity="0.08" stroke="#F2C413" strokeWidth="1" opacity="0.35" />
+      <rect x="155" y="69" width="20" height="8" rx="4" fill="none" stroke="#002D72" strokeWidth="1" opacity="0.3" />
+
+      {/* Row 5 */}
+      <rect x="30" y="82" width="20" height="8" rx="4" fill="none" stroke="#002D72" strokeWidth="1" opacity="0.25" />
+      <rect x="55" y="82" width="20" height="8" rx="4" fill="none" stroke="#002D72" strokeWidth="1" opacity="0.25" />
+      <rect x="80" y="82" width="20" height="8" rx="4" fill="none" stroke="#002D72" strokeWidth="1" opacity="0.25" />
+      <rect x="105" y="82" width="20" height="8" rx="4" fill="none" stroke="#002D72" strokeWidth="1" opacity="0.25" />
+      <rect x="130" y="82" width="20" height="8" rx="4" fill="none" stroke="#002D72" strokeWidth="1" opacity="0.25" />
+      <rect x="155" y="82" width="20" height="8" rx="4" fill="none" stroke="#002D72" strokeWidth="1" opacity="0.25" />
+
+      {/* Flow arrows - many connections */}
+      {/* Vertical flows */}
+      <path d="M 40 38 L 40 43" stroke="#002D72" strokeWidth="0.8" opacity="0.2" markerEnd="url(#tinyFlowArrow)" fill="none" />
+      <path d="M 65 38 L 65 43" stroke="#F2C413" strokeWidth="0.8" opacity="0.25" markerEnd="url(#tinyFlowArrowGold)" fill="none" />
+      <path d="M 90 38 L 90 43" stroke="#002D72" strokeWidth="0.8" opacity="0.2" markerEnd="url(#tinyFlowArrow)" fill="none" />
+      <path d="M 115 51 L 115 56" stroke="#F2C413" strokeWidth="0.8" opacity="0.25" markerEnd="url(#tinyFlowArrowGold)" fill="none" />
+      <path d="M 90 64 L 90 69" stroke="#002D72" strokeWidth="0.8" opacity="0.2" markerEnd="url(#tinyFlowArrow)" fill="none" />
+      <path d="M 140 64 L 140 69" stroke="#002D72" strokeWidth="0.8" opacity="0.2" markerEnd="url(#tinyFlowArrow)" fill="none" />
+
+      {/* Horizontal flows */}
+      <path d="M 50 47 L 55 47" stroke="#002D72" strokeWidth="0.8" opacity="0.15" markerEnd="url(#tinyFlowArrow)" fill="none" />
+      <path d="M 75 47 L 80 47" stroke="#F2C413" strokeWidth="0.8" opacity="0.2" markerEnd="url(#tinyFlowArrowGold)" fill="none" />
+      <path d="M 50 60 L 55 60" stroke="#F2C413" strokeWidth="0.8" opacity="0.2" markerEnd="url(#tinyFlowArrowGold)" fill="none" />
+      <path d="M 75 60 L 80 60" stroke="#F2C413" strokeWidth="0.8" opacity="0.25" markerEnd="url(#tinyFlowArrowGold)" fill="none" />
+      <path d="M 100 60 L 105 60" stroke="#F2C413" strokeWidth="0.8" opacity="0.2" markerEnd="url(#tinyFlowArrowGold)" fill="none" />
+      <path d="M 125 60 L 130 60" stroke="#002D72" strokeWidth="0.8" opacity="0.15" markerEnd="url(#tinyFlowArrow)" fill="none" />
+
+      {/* JHEEM text */}
+      <text
+        x="100"
+        y="130"
+        textAnchor="middle"
+        fontFamily="Inter, system-ui, -apple-system, sans-serif"
+        fontSize="48"
+        fontWeight="900"
+        fill="#002D72"
+        letterSpacing="-1"
+      >
+        <tspan fontWeight="900">JH</tspan>
+        <tspan fontWeight="500">EEM</tspan>
+      </text>
+    </svg>
+  );
+}
+
+// Option T: Abstract Compartmental Flow - STYLIZED
+// More abstract/modern take on compartmental structure
+export function JheemLogoAbstractCompartmental({ className = "", size = 200 }: LogoProps) {
+  return (
+    <svg
+      viewBox="0 0 200 200"
+      className={className}
+      style={{ width: size, height: size }}
+    >
+      {/* Square border */}
+      <rect
+        x="10"
+        y="10"
+        width="180"
+        height="180"
+        rx="12"
+        fill="white"
+        stroke="#002D72"
+        strokeWidth="3"
+      />
+
+      {/* Arrow marker */}
+      <defs>
+        <marker id="modernArrow" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+          <polygon points="0 0, 7 3.5, 0 7" fill="#002D72" opacity="0.35" />
+        </marker>
+        <marker id="modernArrowGold" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+          <polygon points="0 0, 7 3.5, 0 7" fill="#F2C413" opacity="0.5" />
+        </marker>
+      </defs>
+
+      {/* Stylized compartments - varying sizes for visual interest */}
+      {/* Large central compartment cluster */}
+      <rect x="60" y="45" width="35" height="14" rx="7" fill="#F2C413" opacity="0.08" stroke="#F2C413" strokeWidth="2" opacity="0.4" />
+      <rect x="105" y="45" width="35" height="14" rx="7" fill="none" stroke="#002D72" strokeWidth="1.5" opacity="0.3" />
+
+      {/* Middle layer - active states */}
+      <rect x="35" y="65" width="35" height="14" rx="7" fill="none" stroke="#002D72" strokeWidth="1.5" opacity="0.35" />
+      <rect x="78" y="65" width="44" height="14" rx="7" fill="#F2C413" opacity="0.12" stroke="#F2C413" strokeWidth="2.5" opacity="0.5" />
+      <rect x="130" y="65" width="35" height="14" rx="7" fill="none" stroke="#002D72" strokeWidth="1.5" opacity="0.35" />
+
+      {/* Lower layer */}
+      <rect x="60" y="85" width="35" height="14" rx="7" fill="none" stroke="#002D72" strokeWidth="1.5" opacity="0.3" />
+      <rect x="105" y="85" width="35" height="14" rx="7" fill="#F2C413" opacity="0.06" stroke="#F2C413" strokeWidth="1.5" opacity="0.35" />
+
+      {/* Flow arrows - clean directional */}
+      <path d="M 77 52 L 77 65" stroke="#F2C413" strokeWidth="1.5" opacity="0.3" markerEnd="url(#modernArrowGold)" fill="none" />
+      <path d="M 122 59 L 122 65" stroke="#002D72" strokeWidth="1.5" opacity="0.25" markerEnd="url(#modernArrow)" fill="none" />
+
+      <path d="M 70 72 L 78 72" stroke="#F2C413" strokeWidth="1.5" opacity="0.3" markerEnd="url(#modernArrowGold)" fill="none" />
+      <path d="M 122 72 L 130 72" stroke="#002D72" strokeWidth="1.5" opacity="0.25" markerEnd="url(#modernArrow)" fill="none" />
+
+      <path d="M 77 79 L 77 85" stroke="#002D72" strokeWidth="1.5" opacity="0.25" markerEnd="url(#modernArrow)" fill="none" />
+      <path d="M 122 79 L 122 85" stroke="#F2C413" strokeWidth="1.5" opacity="0.3" markerEnd="url(#modernArrowGold)" fill="none" />
+
+      {/* Reverse/feedback arrows */}
+      <path d="M 147 72 L 147 66" stroke="#002D72" strokeWidth="1" opacity="0.15" markerEnd="url(#modernArrow)" fill="none" />
+      <path d="M 52 72 L 52 66" stroke="#002D72" strokeWidth="1" opacity="0.15" markerEnd="url(#modernArrow)" fill="none" />
+
+      {/* JHEEM text */}
+      <text
+        x="100"
+        y="140"
+        textAnchor="middle"
+        fontFamily="Inter, system-ui, -apple-system, sans-serif"
+        fontSize="48"
+        fontWeight="900"
+        fill="#002D72"
+        letterSpacing="-1"
+      >
+        <tspan fontWeight="900">JH</tspan>
+        <tspan fontWeight="500">EEM</tspan>
+      </text>
+    </svg>
+  );
+}
+
+// Option U: Hex Abstract Compartmental - LARGER DIAGRAM
+// Hexagon version of Option T with scaled-up model diagram
+export function JheemLogoHexAbstractCompartmental({ className = "", size = 200 }: LogoProps) {
+  return (
+    <svg
+      viewBox="0 0 200 200"
+      className={className}
+      style={{ width: size, height: size }}
+    >
+      {/* Hexagon border */}
+      <polygon
+        points="100,10 170,50 170,150 100,190 30,150 30,50"
+        fill="white"
+        stroke="#002D72"
+        strokeWidth="3"
+      />
+
+      {/* Arrow markers */}
+      <defs>
+        <marker id="hexModernArrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+          <polygon points="0 0, 8 4, 0 8" fill="#002D72" opacity="0.35" />
+        </marker>
+        <marker id="hexModernArrowGold" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+          <polygon points="0 0, 8 4, 0 8" fill="#F2C413" opacity="0.5" />
+        </marker>
+      </defs>
+
+      {/* Scaled-up compartments - 1.5x larger than Option T */}
+      {/* Top layer */}
+      <rect x="47" y="35" width="52" height="18" rx="9" fill="#F2C413" fillOpacity="0.08" stroke="#F2C413" strokeWidth="2.5" strokeOpacity="0.4" />
+      <rect x="107" y="35" width="46" height="18" rx="9" fill="none" stroke="#002D72" strokeWidth="2" strokeOpacity="0.3" />
+
+      {/* Middle layer - active states */}
+      <rect x="28" y="60" width="45" height="18" rx="9" fill="none" stroke="#002D72" strokeWidth="2" strokeOpacity="0.35" />
+      <rect x="80" y="60" width="56" height="18" rx="9" fill="#F2C413" fillOpacity="0.12" stroke="#F2C413" strokeWidth="3" strokeOpacity="0.5" />
+      <rect x="143" y="60" width="45" height="18" rx="9" fill="none" stroke="#002D72" strokeWidth="2" strokeOpacity="0.35" />
+
+      {/* Lower layer */}
+      <rect x="55" y="85" width="45" height="18" rx="9" fill="none" stroke="#002D72" strokeWidth="2" strokeOpacity="0.3" />
+      <rect x="108" y="85" width="45" height="18" rx="9" fill="#F2C413" fillOpacity="0.06" stroke="#F2C413" strokeWidth="2" strokeOpacity="0.35" />
+
+      {/* Flow arrows - scaled up */}
+      <path d="M 73 53 L 73 60" stroke="#F2C413" strokeWidth="2" opacity="0.3" markerEnd="url(#hexModernArrowGold)" fill="none" />
+      <path d="M 130 53 L 130 60" stroke="#002D72" strokeWidth="2" opacity="0.25" markerEnd="url(#hexModernArrow)" fill="none" />
+
+      <path d="M 73 69 L 80 69" stroke="#F2C413" strokeWidth="2" opacity="0.3" markerEnd="url(#hexModernArrowGold)" fill="none" />
+      <path d="M 136 69 L 143 69" stroke="#002D72" strokeWidth="2" opacity="0.25" markerEnd="url(#hexModernArrow)" fill="none" />
+
+      <path d="M 78 78 L 78 85" stroke="#002D72" strokeWidth="2" opacity="0.25" markerEnd="url(#hexModernArrow)" fill="none" />
+      <path d="M 130 78 L 130 85" stroke="#F2C413" strokeWidth="2" opacity="0.3" markerEnd="url(#hexModernArrowGold)" fill="none" />
+
+      {/* Reverse/feedback arrows */}
+      <path d="M 165 69 L 165 62" stroke="#002D72" strokeWidth="1.5" opacity="0.15" markerEnd="url(#hexModernArrow)" fill="none" />
+      <path d="M 50 69 L 50 62" stroke="#002D72" strokeWidth="1.5" opacity="0.15" markerEnd="url(#hexModernArrow)" fill="none" />
+
+      {/* JHEEM text */}
+      <text
+        x="100"
+        y="145"
+        textAnchor="middle"
+        fontFamily="Inter, system-ui, -apple-system, sans-serif"
+        fontSize="42"
+        fontWeight="900"
+        fill="#002D72"
+        letterSpacing="-1"
+      >
+        <tspan fontWeight="900">JH</tspan>
+        <tspan fontWeight="500">EEM</tspan>
+      </text>
+    </svg>
+  );
+}
+
+// Demo page component to show all options side by side
+export default function JheemLogoOptions() {
+  return (
+    <div className="min-h-screen bg-gray-50 py-16">
+      <div className="max-w-7xl mx-auto px-6">
+        <div className="text-center mb-12">
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">JHEEM Logo Exploration</h1>
+          <p className="text-gray-600">Hunting for powerful visual concepts to refine</p>
+        </div>
+
+        {/* TRUE COMPARTMENTAL FLOW DIAGRAMS */}
+        <div className="mb-20 bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 p-12 rounded-3xl border-2 border-teal-200 shadow-xl">
+          <div className="text-center mb-4">
+            <span className="inline-block px-4 py-2 bg-teal-600 text-white text-xs font-bold rounded-full uppercase tracking-wide mb-4">
+              ✓ TRUE COMPARTMENTAL
+            </span>
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">Actual Model Structure</h2>
+            <p className="text-gray-700 max-w-3xl mx-auto text-lg mb-2">
+              Rounded boxes + directional arrows = compartmental ODE model
+            </p>
+            <p className="text-gray-600 max-w-2xl mx-auto text-sm">
+              Just JHEEM text • Clean, sleek, modern • Suggests scale through density
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-12 mt-12">
+            {/* Option R */}
+            <div className="text-center">
+              <div className="bg-white p-10 rounded-2xl shadow-2xl mb-5 flex items-center justify-center border border-gray-100">
+                <JheemLogoTrueCompartmental size={180} />
+              </div>
+              <h3 className="font-bold text-gray-900 mb-2 text-xl">R: True Compartmental</h3>
+              <p className="text-sm text-gray-600 leading-relaxed">
+                Classic structure with rounded rectangles and flow arrows. Some gold highlights showing active states.
+              </p>
+            </div>
+
+            {/* Option S */}
+            <div className="text-center">
+              <div className="bg-white p-10 rounded-2xl shadow-2xl mb-5 flex items-center justify-center border border-gray-100">
+                <JheemLogoDenseCompartmental size={180} />
+              </div>
+              <h3 className="font-bold text-gray-900 mb-2 text-xl">S: Dense Grid</h3>
+              <p className="text-sm text-gray-600 leading-relaxed">
+                More compartments (6×5 grid) to show scale. Clean, dense, suggests complexity.
+              </p>
+            </div>
+
+            {/* Option T */}
+            <div className="text-center">
+              <div className="bg-white p-10 rounded-2xl shadow-2xl mb-5 flex items-center justify-center border border-gray-100">
+                <JheemLogoAbstractCompartmental size={180} />
+              </div>
+              <h3 className="font-bold text-gray-900 mb-2 text-xl">T: Abstract/Stylized</h3>
+              <p className="text-sm text-gray-600 leading-relaxed">
+                Larger boxes with varying sizes. More abstract/modern take on the flow structure.
+              </p>
+            </div>
+
+            {/* Option U */}
+            <div className="text-center">
+              <div className="bg-white p-10 rounded-2xl shadow-2xl mb-5 flex items-center justify-center border border-gray-100">
+                <JheemLogoHexAbstractCompartmental size={180} />
+              </div>
+              <h3 className="font-bold text-gray-900 mb-2 text-xl">U: Hex Abstract</h3>
+              <p className="text-sm text-gray-600 leading-relaxed">
+                Hexagon version of T with larger, more visible model diagram. Hexsticker format.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* POLISHED PROFESSIONAL VERSIONS */}
+        <div className="mb-20 bg-gradient-to-br from-amber-50 via-yellow-50 to-white p-12 rounded-3xl border-2 border-yellow-200 shadow-xl">
+          <div className="text-center mb-4">
+            <span className="inline-block px-4 py-2 bg-yellow-400 text-gray-900 text-xs font-bold rounded-full uppercase tracking-wide mb-4">
+              ⭐ Professional Grade
+            </span>
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">Polished Refined Designs</h2>
+            <p className="text-gray-700 max-w-3xl mx-auto text-lg mb-2">
+              Professional typography, intentional color palette, true integration
+            </p>
+            <p className="text-gray-600 max-w-2xl mx-auto text-sm">
+              Square format • Hopkins Blue + Gold • Inter font family • Production ready
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-12 mt-12">
+            {/* Option L */}
+            <div className="text-center">
+              <div className="bg-white p-10 rounded-2xl shadow-2xl mb-5 flex items-center justify-center border border-gray-100">
+                <JheemLogoModernGeometric size={180} />
+              </div>
+              <h3 className="font-bold text-gray-900 mb-2 text-xl">L: Modern Geometric</h3>
+              <p className="text-sm text-gray-600 leading-relaxed">
+                Abstract compartmental zones with flow arrows. Blue/gold two-tone palette. Geometric precision.
+              </p>
+            </div>
+
+            {/* Option M */}
+            <div className="text-center">
+              <div className="bg-white p-10 rounded-2xl shadow-2xl mb-5 flex items-center justify-center border border-gray-100">
+                <JheemLogoGradientFlow size={180} />
+              </div>
+              <h3 className="font-bold text-gray-900 mb-2 text-xl">M: Gradient Flow</h3>
+              <p className="text-sm text-gray-600 leading-relaxed">
+                Epidemic curves with gradient fills and data points. Modern data visualization aesthetic.
+              </p>
+            </div>
+
+            {/* Option N */}
+            <div className="text-center">
+              <div className="bg-white p-10 rounded-2xl shadow-2xl mb-5 flex items-center justify-center border border-gray-100">
+                <JheemLogoMinimalistPro size={180} />
+              </div>
+              <h3 className="font-bold text-gray-900 mb-2 text-xl">N: Minimalist Pro</h3>
+              <p className="text-sm text-gray-600 leading-relaxed">
+                Ultra-clean typography with subtle compartment accent. Maximum versatility and polish.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Previous iterations */}
+        <div className="mb-16 bg-white p-8 rounded-2xl border border-gray-200">
+          <h2 className="text-2xl font-bold text-gray-900 mb-3 text-center">Previous Iterations (Hex Format)</h2>
+          <p className="text-center text-gray-600 mb-8 max-w-2xl mx-auto text-sm">
+            Earlier exploration versions with hex borders
+          </p>
+          <div className="grid md:grid-cols-3 gap-10">
+            {/* Option I */}
+            <div className="text-center">
+              <div className="bg-gray-50 p-6 rounded-xl mb-3 flex items-center justify-center">
+                <JheemLogoNetworkIntegrated size={140} />
+              </div>
+              <h3 className="font-semibold text-gray-900 mb-1 text-sm">I: Network Integrated</h3>
+              <p className="text-xs text-gray-500">Network nodes around text</p>
+            </div>
+
+            {/* Option J */}
+            <div className="text-center">
+              <div className="bg-gray-50 p-6 rounded-xl mb-3 flex items-center justify-center">
+                <JheemLogoCompartmentalIntegrated size={140} />
+              </div>
+              <h3 className="font-semibold text-gray-900 mb-1 text-sm">J: Compartmental Flow</h3>
+              <p className="text-xs text-gray-500">Compartments as backdrop</p>
+            </div>
+
+            {/* Option K */}
+            <div className="text-center">
+              <div className="bg-gray-50 p-6 rounded-xl mb-3 flex items-center justify-center">
+                <JheemLogoDataViz size={140} />
+              </div>
+              <h3 className="font-semibold text-gray-900 mb-1 text-sm">K: Data Curves</h3>
+              <p className="text-xs text-gray-500">Epidemic curves with gradient</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Original Simple Versions */}
+        <div className="mb-16">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">Original Simple Versions</h2>
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {/* Option A */}
+            <div className="text-center">
+              <div className="bg-white p-6 rounded-xl shadow-sm mb-3 flex items-center justify-center">
+                <JheemLogoNetwork size={140} />
+              </div>
+              <h3 className="font-semibold text-gray-900 mb-1">A: Network</h3>
+              <p className="text-xs text-gray-600">Transmission dynamics</p>
+            </div>
+
+            {/* Option B */}
+            <div className="text-center">
+              <div className="bg-white p-6 rounded-xl shadow-sm mb-3 flex items-center justify-center">
+                <JheemLogoCompartmental size={140} />
+              </div>
+              <h3 className="font-semibold text-gray-900 mb-1">B: Compartmental</h3>
+              <p className="text-xs text-gray-600">SIR-style flow</p>
+            </div>
+
+            {/* Option G */}
+            <div className="text-center">
+              <div className="bg-white p-6 rounded-xl shadow-sm mb-3 flex items-center justify-center">
+                <JheemLogoNetworkJH size={140} />
+              </div>
+              <h3 className="font-semibold text-gray-900 mb-1">G: Network + JH</h3>
+              <p className="text-xs text-gray-600">Network with JH emphasis</p>
+            </div>
+
+            {/* Option H */}
+            <div className="text-center">
+              <div className="bg-white p-6 rounded-xl shadow-sm mb-3 flex items-center justify-center">
+                <JheemLogoCompartmentalJH size={140} />
+              </div>
+              <h3 className="font-semibold text-gray-900 mb-1">H: Compartmental + JH</h3>
+              <p className="text-xs text-gray-600">Flow with JH emphasis</p>
+            </div>
+          </div>
+        </div>
+
+        {/* All Options */}
+        <div className="mb-16">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">All Options</h2>
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {/* Options E-F (Acronym variations) */}
+            <div className="text-center">
+              <div className="bg-white p-6 rounded-xl shadow-sm mb-3 flex items-center justify-center">
+                <JheemLogoAcronym size={140} />
+              </div>
+              <h3 className="font-semibold text-gray-900 mb-1">E: Acronym (Hex)</h3>
+              <p className="text-xs text-gray-600">Shows full name</p>
+            </div>
+
+            <div className="text-center">
+              <div className="bg-white p-6 rounded-xl shadow-sm mb-3 flex items-center justify-center">
+                <JheemLogoAcronymSquare size={140} />
+              </div>
+              <h3 className="font-semibold text-gray-900 mb-1">F: Acronym (Square)</h3>
+              <p className="text-xs text-gray-600">Square format</p>
+            </div>
+
+            <div className="text-center">
+              <div className="bg-white p-6 rounded-xl shadow-sm mb-3 flex items-center justify-center">
+                <JheemLogoGeographic size={140} />
+              </div>
+              <h3 className="font-semibold text-gray-900 mb-1">C: Geographic</h3>
+              <p className="text-xs text-gray-600">US coverage</p>
+            </div>
+
+            <div className="text-center">
+              <div className="bg-white p-6 rounded-xl shadow-sm mb-3 flex items-center justify-center">
+                <JheemLogoMinimal size={140} />
+              </div>
+              <h3 className="font-semibold text-gray-900 mb-1">D: Minimal</h3>
+              <p className="text-xs text-gray-600">Clean typography</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Usage examples */}
+        <div className="mt-16 bg-white rounded-xl p-8 shadow-sm">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">Size Examples (Option G)</h2>
+          <div className="flex items-center gap-8 flex-wrap justify-center">
+            <div className="text-center">
+              <JheemLogoNetworkJH size={80} />
+              <p className="text-xs text-gray-500 mt-2">Small (80px)</p>
+            </div>
+            <div className="text-center">
+              <JheemLogoNetworkJH size={120} />
+              <p className="text-xs text-gray-500 mt-2">Medium (120px)</p>
+            </div>
+            <div className="text-center">
+              <JheemLogoNetworkJH size={180} />
+              <p className="text-xs text-gray-500 mt-2">Large (180px)</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Usage instructions */}
+        <div className="mt-8 bg-blue-50 rounded-xl p-8">
+          <h2 className="text-xl font-bold text-gray-900 mb-4">How to Use</h2>
+          <div className="space-y-3 text-sm text-gray-700">
+            <p>
+              <strong>1. Pick your favorite design</strong> and import it:
+            </p>
+            <pre className="bg-white p-3 rounded border border-blue-200 overflow-x-auto">
+              <code>{`import { JheemLogoMinimal } from '@/components/JheemLogoOptions';`}</code>
+            </pre>
+            <p>
+              <strong>2. Use it anywhere:</strong>
+            </p>
+            <pre className="bg-white p-3 rounded border border-blue-200 overflow-x-auto">
+              <code>{`<JheemLogoMinimal size={120} className="..." />`}</code>
+            </pre>
+            <p>
+              <strong>3. Export as PNG</strong> for presentations: Take a screenshot at desired size, or use a tool to convert SVG to PNG.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
