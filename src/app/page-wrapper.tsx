@@ -6,6 +6,7 @@ import Footer from '@/components/Footer';
 import RecentPublications from '@/components/RecentPublications';
 import PolicyNetworkIcon from '@/components/PolicyNetworkIcon';
 import TimeProjectionIcon from '@/components/TimeProjectionIcon';
+import GeographicScaleIcon from '@/components/GeographicScaleIcon';
 
 interface Publication {
   id: string;
@@ -68,7 +69,7 @@ export default function HomePageWrapper({ publications }: HomePageWrapperProps) 
               transition={{ duration: 0.8, delay: 0.2 }}
               className="lg:col-span-3 relative"
             >
-              {/* Geographic Modeling */}
+              {/* Population Scale */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -76,30 +77,12 @@ export default function HomePageWrapper({ publications }: HomePageWrapperProps) 
                 className="flex items-center gap-8 mb-8 pb-8 border-b border-gray-300"
               >
                 <div className="w-32 h-32 lg:w-36 lg:h-36 flex-shrink-0">
-                  <svg viewBox="0 0 96 96" className="w-full h-full">
-                    {/* Globe circle */}
-                    <circle cx="48" cy="48" r="42" fill="none" stroke="#002D72" strokeWidth="2.5" opacity="0.15" />
-                    {/* Longitude lines */}
-                    <path d="M 48 6 Q 28 48 48 90 Q 68 48 48 6" fill="none" stroke="#002D72" strokeWidth="2" opacity="0.25" />
-                    <path d="M 48 6 Q 68 48 48 90 Q 28 48 48 6" fill="none" stroke="#002D72" strokeWidth="2" opacity="0.25" />
-                    {/* Latitude lines */}
-                    <ellipse cx="48" cy="48" rx="42" ry="14" fill="none" stroke="#002D72" strokeWidth="2" opacity="0.25" />
-                    <ellipse cx="48" cy="48" rx="42" ry="28" fill="none" stroke="#002D72" strokeWidth="2" opacity="0.25" />
-                    {/* Location pins */}
-                    <g transform="translate(33, 38)">
-                      <path d="M 8 0 C 3.6 0 0 3.6 0 8 C 0 14 8 24 8 24 C 8 24 16 14 16 8 C 16 3.6 12.4 0 8 0 Z" fill="#002D72" opacity="0.9" />
-                      <circle cx="8" cy="8" r="3" fill="white" />
-                    </g>
-                    <g transform="translate(55, 32)">
-                      <path d="M 8 0 C 3.6 0 0 3.6 0 8 C 0 14 8 24 8 24 C 8 24 16 14 16 8 C 16 3.6 12.4 0 8 0 Z" fill="#002D72" opacity="0.9" />
-                      <circle cx="8" cy="8" r="3" fill="white" />
-                    </g>
-                  </svg>
+                  <GeographicScaleIcon />
                 </div>
                 <div className="flex-1 max-w-sm">
-                  <h3 className="text-xl lg:text-2xl font-semibold text-gray-900 mb-3">Geographic Scale</h3>
+                  <h3 className="text-xl lg:text-2xl font-semibold text-gray-900 mb-3">Population-Level Impact</h3>
                   <p className="text-base lg:text-lg text-gray-600 leading-relaxed">
-                    32 US metropolitan areas, 31 states, international applications
+                    Individual-level simulation across 32 US metros and 31 states
                   </p>
                 </div>
               </motion.div>
