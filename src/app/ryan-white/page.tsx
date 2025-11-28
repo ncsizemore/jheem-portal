@@ -24,9 +24,10 @@ export default function RyanWhiteLandingPage() {
                   Ryan White<br />
                   <span className="font-medium">HIV/AIDS Program</span>
                 </h1>
-                <p className="text-xl text-gray-600 leading-relaxed mb-8 font-light max-w-lg">
-                  Analyze how funding changes affect HIV care, treatment outcomes, and transmission 
-                  dynamics across US metropolitan areas using mathematical modeling.
+                <p className="text-xl text-gray-600 leading-relaxed font-light max-w-lg">
+                  The nation&apos;s largest HIV care program serves as the payer of last resort for over
+                  500,000 people annually. Mathematical models reveal how funding changes could affect
+                  viral suppression, transmission, and epidemic control across US metropolitan areas.
                 </p>
               </motion.div>
             </div>
@@ -43,9 +44,9 @@ export default function RyanWhiteLandingPage() {
                   <p className="text-sm text-gray-600 uppercase tracking-wide">People Served Annually</p>
                 </div>
                 <div className="space-y-4 text-sm text-gray-700">
-                  <p>Provides HIV-related services and ADAP medications</p>
-                  <p>Critical safety net for low-income populations</p>
-                  <p>Models funding interruption scenarios and impacts</p>
+                  <p>Serves over half of all people with HIV in the United States</p>
+                  <p>Payer of last resort for antiretroviral medications and care</p>
+                  <p>Critical for maintaining viral suppression and preventing transmission</p>
                 </div>
               </motion.div>
             </div>
@@ -53,47 +54,122 @@ export default function RyanWhiteLandingPage() {
         </div>
       </section>
 
-      {/* Condensed Overview */}
-      <section className="py-16 border-b border-gray-100">
+      {/* Research Publication */}
+      <section className="py-12 bg-gradient-to-br from-hopkins-blue/5 to-slate-50 border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-6">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+          >
+            <h3 className="text-xl font-light text-gray-900 mb-2">
+              The Potential Impact of Ending the Ryan White HIV/AIDS Program on HIV Incidence: A Simulation Study in 31 U.S. Cities
+            </h3>
+            <p className="text-sm text-gray-600 mb-3">
+              Forster R, Schnure M, Jones J, Lesko C, Batey DS, Butler I, Ward D, Musgrove K, Althoff KN, Jain MK, Gebo KA, Dowdy DW, Shah M, Kasaie P, Fojo AT. <span className="italic">Annals of Internal Medicine</span>. 2025. doi:10.7326/ANNALS-25-01737
+            </p>
+            <a
+              href="https://doi.org/10.7326/ANNALS-25-01737"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 text-sm font-medium text-hopkins-blue hover:text-hopkins-spirit-blue transition-colors"
+            >
+              <span>Read Full Paper</span>
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+              </svg>
+            </a>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Why Ryan White Matters */}
+      <section className="py-20 border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
-            className="grid lg:grid-cols-3 gap-12 items-center"
+            className="grid lg:grid-cols-3 gap-12"
           >
-            <div>
+            {/* Program Explanation */}
+            <div className="lg:col-span-1">
               <h2 className="text-2xl font-light text-gray-900 mb-4">
-                Program Overview
+                Why Ryan White Matters
               </h2>
-              <p className="text-gray-600 leading-relaxed font-light">
-                The nation&apos;s HIV care safety net, serving over 500,000 people annually with essential services and ADAP medications.
+              <p className="text-gray-600 leading-relaxed font-light mb-4">
+                The Ryan White HIV/AIDS Program provides three critical types of services to people living with HIV who cannot afford care:
+              </p>
+              <div className="space-y-3 text-sm">
+                <div className="flex gap-3">
+                  <div className="w-1.5 h-1.5 bg-hopkins-blue rounded-full mt-2 flex-shrink-0"></div>
+                  <p className="text-gray-700"><span className="font-medium">ADAP</span> - Antiretroviral medications, insurance premiums, and copay assistance</p>
+                </div>
+                <div className="flex gap-3">
+                  <div className="w-1.5 h-1.5 bg-hopkins-blue rounded-full mt-2 flex-shrink-0"></div>
+                  <p className="text-gray-700"><span className="font-medium">Outpatient care</span> - Direct funding to HIV care facilities for medical services</p>
+                </div>
+                <div className="flex gap-3">
+                  <div className="w-1.5 h-1.5 bg-hopkins-blue rounded-full mt-2 flex-shrink-0"></div>
+                  <p className="text-gray-700"><span className="font-medium">Support services</span> - Case management, transportation, housing assistance</p>
+                </div>
+              </div>
+              <p className="text-gray-600 leading-relaxed font-light mt-4">
+                With viral suppression, people with HIV live normal lifespans and do not transmit the virus.
               </p>
             </div>
-            
-            <div className="space-y-4">
-              <h3 className="font-medium text-gray-900">Modeling Scenarios</h3>
-              <div className="space-y-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                  <span className="text-sm text-gray-700">Brief Interruption (6 months)</span>
+
+            {/* Scenarios with Research Context */}
+            <div className="lg:col-span-1">
+              <h3 className="text-2xl font-light text-gray-900 mb-4">Policy Scenarios</h3>
+              <p className="text-gray-600 leading-relaxed font-light mb-4">
+                These models address critical policy questions: What happens if Ryan White funding is cut or interrupted?
+              </p>
+              <div className="space-y-4">
+                <div className="border-l-4 border-green-500 pl-4">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-sm font-medium text-gray-900">Brief Interruption</span>
+                    <span className="text-xs text-gray-500">(18 months)</span>
+                  </div>
+                  <p className="text-sm text-gray-600">Services resume after temporary funding gap. Research projects 19% more infections through 2030.</p>
                 </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-                  <span className="text-sm text-gray-700">Prolonged Interruption (18 months)</span>
+                <div className="border-l-4 border-orange-500 pl-4">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-sm font-medium text-gray-900">Prolonged Interruption</span>
+                    <span className="text-xs text-gray-500">(42 months)</span>
+                  </div>
+                  <p className="text-sm text-gray-600">Extended funding gap before restoration. Leads to 38% more infections as people lose access to care.</p>
                 </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 bg-red-700 rounded-full"></div>
-                  <span className="text-sm text-gray-700">Complete Program Cessation</span>
+                <div className="border-l-4 border-red-700 pl-4">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-sm font-medium text-gray-900">Complete Cessation</span>
+                    <span className="text-xs text-gray-500">(permanent)</span>
+                  </div>
+                  <p className="text-sm text-gray-600">Program shutdown with no recovery. Could cause 75,000+ excess infections—a 49% increase.</p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-gradient-to-br from-hopkins-blue/5 to-hopkins-spirit-blue/10 rounded-2xl p-6">
-              <div className="text-center">
-                <div className="text-2xl font-light text-hopkins-blue mb-2">32</div>
-                <p className="text-sm text-gray-600 mb-3">US Metropolitan Areas</p>
-                <p className="text-xs text-gray-500">Mathematical modeling of funding impacts on HIV care continuum and transmission dynamics</p>
+            {/* Research Findings */}
+            <div className="lg:col-span-1 space-y-6">
+              <div className="bg-gradient-to-br from-hopkins-blue/5 to-hopkins-spirit-blue/10 rounded-2xl p-6">
+                <div className="text-center">
+                  <div className="text-3xl font-light text-hopkins-blue mb-2">31</div>
+                  <p className="text-sm text-gray-600 mb-3 font-medium">High-Burden US Cities</p>
+                  <p className="text-xs text-gray-500 leading-relaxed">
+                    City-level modeling captures local HIV epidemic dynamics and Ryan White service utilization
+                  </p>
+                </div>
+              </div>
+
+              <div className="bg-gradient-to-br from-red-50 to-orange-50 rounded-2xl p-6 border border-red-100">
+                <div className="text-center">
+                  <div className="text-2xl font-light text-red-700 mb-2">75,436</div>
+                  <p className="text-sm text-gray-700 mb-3 font-medium">Projected Excess Infections</p>
+                  <p className="text-xs text-gray-600 leading-relaxed">
+                    If Ryan White services end permanently (2025-2030). Impacts vary by city from 9% to 110% increases.
+                  </p>
+                </div>
               </div>
             </div>
           </motion.div>
@@ -114,10 +190,13 @@ export default function RyanWhiteLandingPage() {
                   <p className="text-hopkins-blue text-sm font-semibold tracking-widest uppercase mb-4">
                     Analysis Interfaces
                   </p>
-                  <h2 className="text-4xl font-extralight text-gray-900 leading-tight mb-8">
+                  <h2 className="text-4xl font-extralight text-gray-900 leading-tight mb-6">
                     Explore Ryan White<br />
                     <span className="font-medium">Funding Scenarios</span>
                   </h2>
+                  <p className="text-gray-600 leading-relaxed font-light mb-8 max-w-xl">
+                    Choose your preferred interface to explore pre-calculated scenario results or design custom simulations.
+                  </p>
                   <div className="w-20 h-px bg-gradient-to-r from-hopkins-blue to-hopkins-gold mb-6"></div>
                 </div>
               </div>
@@ -144,8 +223,7 @@ export default function RyanWhiteLandingPage() {
                               <span className="bg-hopkins-gold text-hopkins-blue text-xs font-bold px-2 py-1 rounded-full">NEW</span>
                             </div>
                             <p className="text-blue-100 leading-relaxed mb-4 font-light">
-                              Explore Ryan White funding scenarios across US cities with interactive maps. 
-                              Visualize impacts by city and demographic group with real-time adjustments.
+                              Modern map-based interface for exploring prerun scenario results. Click any city on the map to see how cessation, brief interruption, and prolonged interruption scenarios affect HIV incidence. Currently available for 4 cities, with full coverage coming soon.
                             </p>
                             <div className="flex items-center text-blue-200 text-sm font-medium group-hover:text-white transition-all duration-300">
                               <span>Explore by City</span>
@@ -175,11 +253,10 @@ export default function RyanWhiteLandingPage() {
                           </div>
                           <div className="flex-1">
                             <h3 className="text-2xl font-light text-gray-900 mb-3 group-hover:text-green-700 transition-colors duration-300">
-                              Prerun Funding Scenarios
+                              Prerun Scenarios (Traditional Interface)
                             </h3>
                             <p className="text-gray-600 leading-relaxed mb-4 font-light">
-                              Access pre-calculated results for standard Ryan White funding scenarios including 
-                              brief interruptions, prolonged interruptions, and complete program cessation.
+                              Full-featured Shiny application with complete data for all 31 cities. Explore the three policy scenarios (18-month, 42-month interruption, and permanent cessation) across all demographics, outcomes, and time periods using traditional menu-based controls.
                             </p>
                             <div className="flex items-center text-green-600 text-sm font-medium group-hover:text-green-700 transition-all duration-300">
                               <span>View Results</span>
@@ -212,8 +289,7 @@ export default function RyanWhiteLandingPage() {
                               Custom Ryan White Analysis
                             </h3>
                             <p className="text-gray-600 leading-relaxed mb-4 font-light">
-                              Design custom funding scenarios and intervention combinations to explore 
-                              specific research questions about Ryan White program impacts.
+                              Design custom funding scenarios beyond the standard interruption periods. Adjust ADAP coverage, outpatient health services, and support service parameters to model specific policy questions and intervention combinations tailored to your research needs.
                             </p>
                             <div className="flex items-center text-purple-600 text-sm font-medium group-hover:text-purple-700 transition-all duration-300">
                               <span>Design Scenario</span>
