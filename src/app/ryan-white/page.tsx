@@ -2,16 +2,45 @@
 
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import { useState } from 'react';
 import Footer from '@/components/Footer';
 
 export default function RyanWhiteLandingPage() {
+  const [citationCopied, setCitationCopied] = useState(false);
+
+  const handleCopyCitation = async () => {
+    const citation = 'Forster R, Schnure M, Jones J, Lesko C, Batey DS, Butler I, Ward D, Musgrove K, Althoff KN, Jain MK, Gebo KA, Dowdy DW, Shah M, Kasaie P, Fojo AT. The Potential Impact of Ending the Ryan White HIV/AIDS Program on HIV Incidence: A Simulation Study in 31 U.S. Cities. Annals of Internal Medicine. 2025. doi:10.7326/ANNALS-25-01737';
+
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(citation);
+        setCitationCopied(true);
+        setTimeout(() => setCitationCopied(false), 2000);
+      } else {
+        // Fallback for browsers/contexts without Clipboard API
+        const textArea = document.createElement('textarea');
+        textArea.value = citation;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        setCitationCopied(true);
+        setTimeout(() => setCitationCopied(false), 2000);
+      }
+    } catch (error) {
+      console.error('Failed to copy citation:', error);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
       <section className="border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-6 py-32">
-          <div className="grid lg:grid-cols-5 gap-16">
-            <div className="lg:col-span-3">
+        <div className="max-w-7xl mx-auto px-6 py-24">
+          <div className="grid lg:grid-cols-2 gap-16 mb-8">
+            <div>
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -31,8 +60,8 @@ export default function RyanWhiteLandingPage() {
                 </p>
               </motion.div>
             </div>
-            
-            <div className="lg:col-span-2">
+
+            <div>
               <motion.div
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -46,39 +75,77 @@ export default function RyanWhiteLandingPage() {
                 <div className="space-y-4 text-sm text-gray-700">
                   <p>Serves over half of all people with HIV in the United States</p>
                   <p>Payer of last resort for antiretroviral medications and care</p>
-                  <p>Critical for maintaining viral suppression and preventing transmission</p>
+                  <p>With viral suppression, people with HIV live normal lifespans and do not transmit the virus</p>
                 </div>
               </motion.div>
             </div>
           </div>
-        </div>
-      </section>
 
-      {/* Research Publication */}
-      <section className="py-12 bg-gradient-to-br from-hopkins-blue/5 to-slate-50 border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-6">
+          {/* Research Publication - Integrated into Hero */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
           >
-            <h3 className="text-xl font-light text-gray-900 mb-2">
-              The Potential Impact of Ending the Ryan White HIV/AIDS Program on HIV Incidence: A Simulation Study in 31 U.S. Cities
-            </h3>
-            <p className="text-sm text-gray-600 mb-3">
-              Forster R, Schnure M, Jones J, Lesko C, Batey DS, Butler I, Ward D, Musgrove K, Althoff KN, Jain MK, Gebo KA, Dowdy DW, Shah M, Kasaie P, Fojo AT. <span className="italic">Annals of Internal Medicine</span>. 2025. doi:10.7326/ANNALS-25-01737
-            </p>
-            <a
-              href="https://doi.org/10.7326/ANNALS-25-01737"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 text-sm font-medium text-hopkins-blue hover:text-hopkins-spirit-blue transition-colors"
-            >
-              <span>Read Full Paper</span>
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-              </svg>
-            </a>
+            <div className="bg-white border-2 border-hopkins-blue/20 rounded-2xl p-6 lg:p-8 shadow-sm">
+              <div className="flex items-start gap-4 lg:gap-6">
+                <div className="flex-shrink-0">
+                  <div className="w-10 h-10 lg:w-12 lg:h-12 bg-hopkins-blue/10 rounded-xl flex items-center justify-center">
+                    <svg className="w-5 h-5 lg:w-6 lg:h-6 text-hopkins-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </div>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs uppercase tracking-wider text-hopkins-blue font-semibold mb-2">
+                    Research Foundation
+                  </p>
+                  <h3 className="text-lg lg:text-xl font-light text-gray-900 mb-2 leading-snug">
+                    The Potential Impact of Ending the Ryan White HIV/AIDS Program on HIV Incidence: A Simulation Study in 31 U.S. Cities
+                  </h3>
+                  <p className="text-sm text-gray-600 mb-3">
+                    Forster R, Schnure M, Jones J, ... Fojo AT (15 authors). <span className="italic">Annals of Internal Medicine</span>. 2025.
+                  </p>
+                  <div className="flex flex-wrap gap-3">
+                    <a
+                      href="https://doi.org/10.7326/ANNALS-25-01737"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-hopkins-blue text-white text-sm font-medium rounded-lg hover:bg-hopkins-spirit-blue transition-colors"
+                    >
+                      <span>Read Full Paper</span>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                      </svg>
+                    </a>
+                    <button
+                      className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                        citationCopied
+                          ? 'bg-green-100 text-green-700 hover:bg-green-200'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                      onClick={handleCopyCitation}
+                    >
+                      {citationCopied ? (
+                        <>
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                          <span>Copied!</span>
+                        </>
+                      ) : (
+                        <>
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                          </svg>
+                          <span>Copy Citation</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
           </motion.div>
         </div>
       </section>
@@ -97,31 +164,37 @@ export default function RyanWhiteLandingPage() {
               <h2 className="text-2xl font-light text-gray-900 mb-4">
                 Why Ryan White Matters
               </h2>
-              <p className="text-gray-600 leading-relaxed font-light mb-4">
+              <p className="text-gray-600 leading-relaxed font-light mb-6">
                 The Ryan White HIV/AIDS Program provides three critical types of services to people living with HIV who cannot afford care:
               </p>
-              <div className="space-y-3 text-sm">
+              <div className="space-y-4">
                 <div className="flex gap-3">
-                  <div className="w-1.5 h-1.5 bg-hopkins-blue rounded-full mt-2 flex-shrink-0"></div>
-                  <p className="text-gray-700"><span className="font-medium">ADAP</span> - Antiretroviral medications, insurance premiums, and copay assistance</p>
+                  <div className="w-2 h-2 bg-hopkins-blue rounded-full mt-1.5 flex-shrink-0"></div>
+                  <div>
+                    <p className="font-medium text-gray-900 mb-1">ADAP</p>
+                    <p className="text-sm text-gray-600">Antiretroviral medications, insurance premiums, and copay assistance</p>
+                  </div>
                 </div>
                 <div className="flex gap-3">
-                  <div className="w-1.5 h-1.5 bg-hopkins-blue rounded-full mt-2 flex-shrink-0"></div>
-                  <p className="text-gray-700"><span className="font-medium">Outpatient care</span> - Direct funding to HIV care facilities for medical services</p>
+                  <div className="w-2 h-2 bg-hopkins-blue rounded-full mt-1.5 flex-shrink-0"></div>
+                  <div>
+                    <p className="font-medium text-gray-900 mb-1">Outpatient Care</p>
+                    <p className="text-sm text-gray-600">Direct funding to HIV care facilities for medical services</p>
+                  </div>
                 </div>
                 <div className="flex gap-3">
-                  <div className="w-1.5 h-1.5 bg-hopkins-blue rounded-full mt-2 flex-shrink-0"></div>
-                  <p className="text-gray-700"><span className="font-medium">Support services</span> - Case management, transportation, housing assistance</p>
+                  <div className="w-2 h-2 bg-hopkins-blue rounded-full mt-1.5 flex-shrink-0"></div>
+                  <div>
+                    <p className="font-medium text-gray-900 mb-1">Support Services</p>
+                    <p className="text-sm text-gray-600">Case management, transportation, housing assistance</p>
+                  </div>
                 </div>
               </div>
-              <p className="text-gray-600 leading-relaxed font-light mt-4">
-                With viral suppression, people with HIV live normal lifespans and do not transmit the virus.
-              </p>
             </div>
 
             {/* Scenarios with Research Context */}
             <div className="lg:col-span-1">
-              <h3 className="text-2xl font-light text-gray-900 mb-4">Policy Scenarios</h3>
+              <h2 className="text-2xl font-light text-gray-900 mb-4">Policy Scenarios</h2>
               <p className="text-gray-600 leading-relaxed font-light mb-4">
                 These models address critical policy questions: What happens if Ryan White funding is cut or interrupted?
               </p>
@@ -151,24 +224,33 @@ export default function RyanWhiteLandingPage() {
             </div>
 
             {/* Research Findings */}
-            <div className="lg:col-span-1 space-y-6">
-              <div className="bg-gradient-to-br from-hopkins-blue/5 to-hopkins-spirit-blue/10 rounded-2xl p-6">
-                <div className="text-center">
-                  <div className="text-3xl font-light text-hopkins-blue mb-2">31</div>
-                  <p className="text-sm text-gray-600 mb-3 font-medium">High-Burden US Cities</p>
-                  <p className="text-xs text-gray-500 leading-relaxed">
-                    City-level modeling captures local HIV epidemic dynamics and Ryan White service utilization
-                  </p>
-                </div>
-              </div>
+            <div className="lg:col-span-1">
+              <h2 className="text-2xl font-light text-gray-900 mb-4">Key Findings</h2>
+              <div className="bg-white rounded-2xl p-6 border border-gray-200">
+                <div className="space-y-6">
+                  <div className="pb-6 border-b border-gray-300">
+                    <div className="flex items-baseline gap-2 mb-2">
+                      <div className="text-4xl font-light text-hopkins-blue">31</div>
+                      <div className="text-sm text-gray-600 font-medium">Cities Modeled</div>
+                    </div>
+                    <p className="text-xs text-gray-600 leading-relaxed">
+                      High-burden US metropolitan areas capturing local epidemic dynamics and service utilization patterns
+                    </p>
+                  </div>
 
-              <div className="bg-gradient-to-br from-red-50 to-orange-50 rounded-2xl p-6 border border-red-100">
-                <div className="text-center">
-                  <div className="text-2xl font-light text-red-700 mb-2">75,436</div>
-                  <p className="text-sm text-gray-700 mb-3 font-medium">Projected Excess Infections</p>
-                  <p className="text-xs text-gray-600 leading-relaxed">
-                    If Ryan White services end permanently (2025-2030). Impacts vary by city from 9% to 110% increases.
-                  </p>
+                  <div>
+                    <div className="flex items-baseline gap-2 mb-2">
+                      <div className="text-4xl font-light text-red-700">75,436</div>
+                      <div className="text-sm text-gray-700 font-medium">Excess Infections</div>
+                    </div>
+                    <p className="text-xs text-gray-600 leading-relaxed mb-3">
+                      Projected by 2030 if Ryan White services end permanently
+                    </p>
+                    <div className="flex items-center gap-2 text-xs">
+                      <span className="px-2 py-1 bg-orange-100 text-orange-700 rounded font-medium">+49% increase</span>
+                      <span className="text-gray-500">Range: 9% to 110% by city</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -186,7 +268,7 @@ export default function RyanWhiteLandingPage() {
           >
             <div className="grid lg:grid-cols-12 gap-16 items-start">
               <div className="lg:col-span-4">
-                <div className="sticky top-32">
+                <div>
                   <p className="text-hopkins-blue text-sm font-semibold tracking-widest uppercase mb-4">
                     Analysis Interfaces
                   </p>
@@ -210,22 +292,22 @@ export default function RyanWhiteLandingPage() {
                     transition={{ duration: 0.6, delay: 0.8 }}
                   >
                     <Link href="/explore" className="group block">
-                      <div className="bg-gradient-to-br from-hopkins-blue to-hopkins-spirit-blue text-white rounded-2xl p-8 hover:shadow-xl transition-all duration-500 hover:-translate-y-1">
+                      <div className="bg-white border-2 border-hopkins-blue/30 rounded-2xl p-8 hover:border-hopkins-blue hover:shadow-xl transition-all duration-500 hover:-translate-y-1">
                         <div className="flex items-start gap-6">
-                          <div className="bg-white/20 rounded-xl p-4 group-hover:bg-white/30 transition-colors duration-300">
-                            <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <div className="bg-gradient-to-br from-hopkins-blue to-hopkins-spirit-blue rounded-xl p-4 group-hover:shadow-lg transition-shadow duration-300">
+                            <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-1.447-.894L15 10m0 7V10m0 0L9 7" />
                             </svg>
                           </div>
                           <div className="flex-1">
                             <div className="flex items-center gap-3 mb-3">
-                              <h3 className="text-2xl font-light">Interactive Map Explorer</h3>
-                              <span className="bg-hopkins-gold text-hopkins-blue text-xs font-bold px-2 py-1 rounded-full">NEW</span>
+                              <h3 className="text-2xl font-light text-gray-900 group-hover:text-hopkins-blue transition-colors duration-300">Interactive Map Explorer</h3>
+                              <span className="bg-hopkins-gold text-hopkins-blue text-xs font-bold px-2.5 py-1 rounded-full">NEW</span>
                             </div>
-                            <p className="text-blue-100 leading-relaxed mb-4 font-light">
+                            <p className="text-gray-600 leading-relaxed mb-4 font-light">
                               Modern map-based interface for exploring prerun scenario results. Click any city on the map to see how cessation, brief interruption, and prolonged interruption scenarios affect HIV incidence. Currently available for 4 cities, with full coverage coming soon.
                             </p>
-                            <div className="flex items-center text-blue-200 text-sm font-medium group-hover:text-white transition-all duration-300">
+                            <div className="flex items-center text-hopkins-blue text-sm font-medium group-hover:text-hopkins-spirit-blue transition-all duration-300">
                               <span>Explore by City</span>
                               <svg className="w-4 h-4 ml-2 transform group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
@@ -244,22 +326,25 @@ export default function RyanWhiteLandingPage() {
                     transition={{ duration: 0.6, delay: 0.9 }}
                   >
                     <Link href="/prerun" className="group block">
-                      <div className="bg-white/80 backdrop-blur-sm border border-gray-200/50 rounded-2xl p-8 hover:bg-white hover:border-green-200/50 hover:shadow-xl transition-all duration-500 hover:-translate-y-1">
+                      <div className="bg-white border-2 border-green-500/30 rounded-2xl p-8 hover:border-green-500 hover:shadow-xl transition-all duration-500 hover:-translate-y-1">
                         <div className="flex items-start gap-6">
                           <div className="bg-gradient-to-br from-green-100 to-emerald-100 rounded-xl p-4 group-hover:shadow-lg transition-shadow duration-300">
                             <svg className="w-7 h-7 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
                             </svg>
                           </div>
                           <div className="flex-1">
-                            <h3 className="text-2xl font-light text-gray-900 mb-3 group-hover:text-green-700 transition-colors duration-300">
-                              Prerun Scenarios (Traditional Interface)
-                            </h3>
+                            <div className="flex items-center gap-3 mb-3">
+                              <h3 className="text-2xl font-light text-gray-900 group-hover:text-green-700 transition-colors duration-300">
+                                Prerun Scenarios
+                              </h3>
+                              <span className="bg-green-100 text-green-700 text-xs font-bold px-2.5 py-1 rounded-full border border-green-200">COMPLETE DATASET</span>
+                            </div>
                             <p className="text-gray-600 leading-relaxed mb-4 font-light">
                               Full-featured Shiny application with complete data for all 31 cities. Explore the three policy scenarios (18-month, 42-month interruption, and permanent cessation) across all demographics, outcomes, and time periods using traditional menu-based controls.
                             </p>
                             <div className="flex items-center text-green-600 text-sm font-medium group-hover:text-green-700 transition-all duration-300">
-                              <span>View Results</span>
+                              <span>View All Results</span>
                               <svg className="w-4 h-4 ml-2 transform group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                               </svg>
@@ -277,7 +362,7 @@ export default function RyanWhiteLandingPage() {
                     transition={{ duration: 0.6, delay: 1.0 }}
                   >
                     <Link href="/custom" className="group block">
-                      <div className="bg-white/80 backdrop-blur-sm border border-gray-200/50 rounded-2xl p-8 hover:bg-white hover:border-purple-200/50 hover:shadow-xl transition-all duration-500 hover:-translate-y-1">
+                      <div className="bg-white border-2 border-purple-500/30 rounded-2xl p-8 hover:border-purple-500 hover:shadow-xl transition-all duration-500 hover:-translate-y-1">
                         <div className="flex items-start gap-6">
                           <div className="bg-gradient-to-br from-purple-100 to-violet-100 rounded-xl p-4 group-hover:shadow-lg transition-shadow duration-300">
                             <svg className="w-7 h-7 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -285,8 +370,8 @@ export default function RyanWhiteLandingPage() {
                             </svg>
                           </div>
                           <div className="flex-1">
-                            <h3 className="text-2xl font-light text-gray-900 mb-3 group-hover:text-purple-700 transition-colors duration-300">
-                              Custom Ryan White Analysis
+                            <h3 className="text-2xl font-light text-gray-900 group-hover:text-purple-700 transition-colors duration-300 mb-3">
+                              Custom Simulations
                             </h3>
                             <p className="text-gray-600 leading-relaxed mb-4 font-light">
                               Design custom funding scenarios beyond the standard interruption periods. Adjust ADAP coverage, outpatient health services, and support service parameters to model specific policy questions and intervention combinations tailored to your research needs.
