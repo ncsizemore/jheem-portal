@@ -251,7 +251,7 @@ export default function Navigation() {
               <div className="py-4">
                 <div className="flex items-center space-x-8">
                   <span className="text-xs font-semibold text-hopkins-gold uppercase tracking-wider">
-                    Ryan White Interfaces
+                    Ryan White Tools
                   </span>
                   <div className="flex items-center space-x-6">
                     <Link 

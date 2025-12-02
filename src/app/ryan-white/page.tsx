@@ -47,7 +47,7 @@ export default function RyanWhiteLandingPage() {
                 transition={{ duration: 0.8 }}
               >
                 <p className="text-hopkins-blue text-sm font-semibold tracking-widest uppercase mb-6">
-                  Federal Program Analysis
+                  Program Impact Analysis
                 </p>
                 <h1 className="text-5xl lg:text-6xl font-extralight text-gray-900 leading-none mb-8 tracking-tight">
                   Ryan White<br />
@@ -55,7 +55,7 @@ export default function RyanWhiteLandingPage() {
                 </h1>
                 <p className="text-xl text-gray-600 leading-relaxed font-light max-w-lg">
                   The nation&apos;s largest HIV care program serves as the payer of last resort for over
-                  500,000 people annually. Mathematical models reveal how funding changes could affect
+                  500,000 people annually. Our models reveal how funding changes could affect
                   viral suppression, transmission, and epidemic control across US metropolitan areas.
                 </p>
               </motion.div>
@@ -66,7 +66,7 @@ export default function RyanWhiteLandingPage() {
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.8, delay: 0.2 }}
-                className="bg-gradient-to-br from-slate-50 to-blue-50/50 p-8 h-full flex flex-col justify-center rounded-2xl"
+                className="bg-gradient-to-br from-slate-50 to-blue-50/50 p-8 h-full flex flex-col justify-center rounded-2xl border-l-4 border-hopkins-blue shadow-md"
               >
                 <div className="text-center mb-8">
                   <div className="text-4xl font-light text-hopkins-blue mb-2">500K+</div>
@@ -88,19 +88,8 @@ export default function RyanWhiteLandingPage() {
             transition={{ duration: 0.6, delay: 0.4 }}
           >
             <div className="bg-white border-2 border-hopkins-blue/20 rounded-2xl p-6 lg:p-8 shadow-sm">
-              <div className="flex items-start gap-4 lg:gap-6">
-                <div className="flex-shrink-0">
-                  <div className="w-10 h-10 lg:w-12 lg:h-12 bg-hopkins-blue/10 rounded-xl flex items-center justify-center">
-                    <svg className="w-5 h-5 lg:w-6 lg:h-6 text-hopkins-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                  </div>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs uppercase tracking-wider text-hopkins-blue font-semibold mb-2">
-                    Research Foundation
-                  </p>
-                  <h3 className="text-lg lg:text-xl font-light text-gray-900 mb-2 leading-snug">
+              <div>
+                <h3 className="text-lg lg:text-xl font-light text-gray-900 mb-3 leading-snug">
                     The Potential Impact of Ending the Ryan White HIV/AIDS Program on HIV Incidence: A Simulation Study in 31 U.S. Cities
                   </h3>
                   <p className="text-sm text-gray-600 mb-3">
@@ -143,7 +132,6 @@ export default function RyanWhiteLandingPage() {
                       )}
                     </button>
                   </div>
-                </div>
               </div>
             </div>
           </motion.div>
@@ -196,7 +184,7 @@ export default function RyanWhiteLandingPage() {
             <div className="lg:col-span-1">
               <h2 className="text-2xl font-light text-gray-900 mb-4">Policy Scenarios</h2>
               <p className="text-gray-600 leading-relaxed font-light mb-4">
-                These models address critical policy questions: What happens if Ryan White funding is cut or interrupted?
+                Our models address critical policy questions: What happens if Ryan White funding is cut or interrupted?
               </p>
               <div className="space-y-4">
                 <div className="border-l-4 border-green-500 pl-4">
@@ -225,7 +213,7 @@ export default function RyanWhiteLandingPage() {
 
             {/* Research Findings */}
             <div className="lg:col-span-1">
-              <h2 className="text-2xl font-light text-gray-900 mb-4">Key Findings</h2>
+              <h2 className="text-2xl font-light text-gray-900 mb-4">Study Overview</h2>
               <div className="bg-white rounded-2xl p-6 border border-gray-200">
                 <div className="space-y-6">
                   <div className="pb-6 border-b border-gray-300">
@@ -270,14 +258,14 @@ export default function RyanWhiteLandingPage() {
               <div className="lg:col-span-4">
                 <div>
                   <p className="text-hopkins-blue text-sm font-semibold tracking-widest uppercase mb-4">
-                    Analysis Interfaces
+                    Modeling Tools
                   </p>
                   <h2 className="text-4xl font-extralight text-gray-900 leading-tight mb-6">
                     Explore Ryan White<br />
                     <span className="font-medium">Funding Scenarios</span>
                   </h2>
                   <p className="text-gray-600 leading-relaxed font-light mb-8 max-w-xl">
-                    Choose your preferred interface to explore pre-calculated scenario results or design custom simulations.
+                    Explore prerun scenario data or design custom parameter combinations.
                   </p>
                   <div className="w-20 h-px bg-gradient-to-r from-hopkins-blue to-hopkins-gold mb-6"></div>
                 </div>
