@@ -10,6 +10,7 @@ import TimelineControls from '@/components/TimelineControls';
 import ByRaceView from '@/components/ByRaceView';
 import BySexView from '@/components/BySexView';
 import ErrorBoundary from '@/components/ErrorBoundary';
+import CalibrationSection from '@/components/CalibrationSection';
 import { getStatesByNames, getStateName, getStateCode, isValidStateCode } from '@/data/hiv-age-projections';
 import { RACE_CATEGORIES, RaceCategory } from '@/data/hiv-age-projections-race';
 import { SEX_CATEGORIES, SexCategory } from '@/data/hiv-age-projections-sex';
@@ -433,6 +434,51 @@ function MultiStateComparison() {
   );
 }
 
+// Collapsible section wrapper for projections
+function ProjectionsSection() {
+  const [isExpanded, setIsExpanded] = useState(true);
+
+  return (
+    <div>
+      {/* Section Header */}
+      <button
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="w-full flex items-center justify-between p-4 bg-white rounded-xl shadow-sm border border-gray-200 hover:border-hopkins-blue/30 hover:shadow-md transition-all duration-200 group"
+      >
+        <div className="flex items-center gap-3">
+          <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${
+            isExpanded ? 'bg-hopkins-blue text-white' : 'bg-gray-100 text-gray-600 group-hover:bg-hopkins-blue/10'
+          }`}>
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+          </div>
+          <div className="text-left">
+            <h3 className="text-lg font-semibold text-gray-900">Age Distribution Projections</h3>
+            <p className="text-sm text-gray-600">
+              Projected age cohort trends by state and demographic group (2025–2040)
+            </p>
+          </div>
+        </div>
+        <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
+          isExpanded ? 'bg-hopkins-blue/10 rotate-180' : 'bg-gray-100'
+        }`}>
+          <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </div>
+      </button>
+
+      {/* Expandable Content */}
+      {isExpanded && (
+        <div className="mt-4">
+          <MultiStateComparison />
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function HIVAgeProjectionsPage() {
   return (
     <div className="min-h-screen bg-white">
@@ -508,9 +554,16 @@ export default function HIVAgeProjectionsPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
           >
-            <div className="bg-gradient-to-br from-hopkins-blue/5 to-hopkins-spirit-blue/10 rounded-2xl p-8">
-              {/* Multi-State Comparison */}
-              <MultiStateComparison />
+            <div className="bg-gradient-to-br from-hopkins-blue/5 to-hopkins-spirit-blue/10 rounded-2xl p-8 space-y-8">
+              {/* Age Distribution Projections */}
+              <ErrorBoundary>
+                <ProjectionsSection />
+              </ErrorBoundary>
+
+              {/* Model Calibration Section */}
+              <ErrorBoundary>
+                <CalibrationSection />
+              </ErrorBoundary>
             </div>
           </motion.div>
         </div>
