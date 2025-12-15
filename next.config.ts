@@ -1,9 +1,6 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  eslint: {
-    dirs: ['src']
-  },
   // Add security headers
   async headers() {
     return [
