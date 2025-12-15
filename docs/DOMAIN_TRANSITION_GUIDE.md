@@ -76,8 +76,9 @@ This guide covers transitioning jheem.org from Cloudflare page rules (redirectin
    - [ ] `https://jheem.org/ryan-white-state-level` → State level iframe
    - [ ] `https://jheem.org/cdc-testing` → CDC testing iframe
    - [ ] `https://jheem.org/prerun` → Prerun interface
-   - [ ] `https://jheem.org/custom` → Custom interface  
+   - [ ] `https://jheem.org/custom` → Custom interface
    - [ ] `https://jheem.org/explore` → Interactive explorer
+   - [ ] `https://jheem.org/aging` → HIV aging projections
 
 3. **Verify SSL certificate:**
    - Should be automatically provisioned by Vercel
