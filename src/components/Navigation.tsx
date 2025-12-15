@@ -25,7 +25,7 @@ export default function Navigation() {
   const isRyanWhiteActive = pathname === '/ryan-white' || showRyanWhiteSubmenu;
   const isStateLevelActive = pathname === '/ryan-white-state-level';
   const isCdcTestingActive = pathname === '/cdc-testing';
-  const isHIVAgeProjectionsActive = pathname === '/hiv-age-projections';
+  const isHIVAgeProjectionsActive = pathname === '/aging';
   const isAnyModelActive = isRyanWhiteActive || isStateLevelActive || isCdcTestingActive || isHIVAgeProjectionsActive;
 
   return (
@@ -196,7 +196,7 @@ export default function Navigation() {
                         </Link>
 
                         <Link
-                          href="/hiv-age-projections"
+                          href="/aging"
                           className={`block px-5 py-3 transition-all duration-200 border-l-4 ${
                             isHIVAgeProjectionsActive
                               ? 'bg-hopkins-blue/5 border-l-hopkins-blue'
@@ -392,7 +392,7 @@ export default function Navigation() {
                       CDC Testing Model
                     </Link>
                     <Link
-                      href="/hiv-age-projections"
+                      href="/aging"
                       className={`block px-3 py-2 rounded-lg font-medium transition-colors ${
                         isHIVAgeProjectionsActive
                           ? 'bg-white/10 text-white'

@@ -270,7 +270,7 @@ export default function HomePageWrapper({ publications }: HomePageWrapperProps) 
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.6, delay: 0.9 }}
               >
-                <Link href="/hiv-age-projections" className="group block">
+                <Link href="/aging" className="group block">
                   <div className="bg-white/80 backdrop-blur-sm border border-gray-200/50 rounded-2xl p-8 hover:bg-white hover:border-emerald-500/30 hover:shadow-xl transition-all duration-500 hover:-translate-y-1">
                     <div className="flex items-start gap-6">
                       <div className="bg-gradient-to-br from-emerald-500 to-teal-500 rounded-xl p-4 group-hover:shadow-lg transition-shadow duration-300">
