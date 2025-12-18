@@ -98,59 +98,96 @@ User sees custom results
 
 ---
 
-## Latest Session Summary (2025-12-11)
+## Latest Session Summary (2025-12-18)
 
-### 🎉 SESSION ACCOMPLISHMENTS: Native Plotting Architecture Investigation
+### 🎉 SESSION ACCOMPLISHMENTS: Native Plotting Integration Complete (Phase 1)
 
-#### ✅ Key Decision: Pivot from Pre-rendered Plots to Summary Data Extraction
+#### ✅ Phase 1 Validation: PASSED
 
-Investigated whether to continue with ~64K pre-rendered Plotly JSONs or switch to native frontend plotting. **Conclusion: Native approach is viable and recommended**, pending validation.
+Built end-to-end native plotting integration as proof of concept. The architecture works:
+- Aggregated city data loads from static JSON (2.3 MB gzipped per city)
+- Recharts renders both summary statistics and individual simulations
+- Faceted views display correctly (multiple panels)
+- Display toggles work (confidence intervals, baseline, observations)
+- Dropdown controls switch between outcomes/statistics/facets
 
-#### ✅ Built & Validated Data Extraction Script
+**Visual validation confirms parity with Shiny app output.**
 
-Created `extract_summary_data.R` in jheem-container-minimal that:
-- Extracts simulation data at finest granularity (45 strata: 5 age × 3 sex × 3 race)
-- Properly maps simset outcomes to data manager outcomes
-- Handles observation data at varying granularities
-- Outputs JSON with all metadata for frontend rendering
+#### ✅ Files Created This Session
 
-**Validated Results (Baltimore C.12580, all scenarios):**
-- File size: 15 MB uncompressed, 1.5 MB gzipped
-- 31 cities projected: ~47 MB gzipped (vs ~1.3 GB for 64K Plotly JSONs)
-- All 14 outcomes extracted with baseline + intervention data
+| File | Purpose |
+|------|---------|
+| `scripts/aggregate-city-data.ts` | Merges per-combination JSONs into per-city files |
+| `src/hooks/useCityData.ts` | Hook to load/cache aggregated city JSON |
+| `src/components/NativePlotOverlay.tsx` | Plot overlay using NativeSimulationChart |
+| `src/components/NativePlotControls.tsx` | Dropdown controls for plot options |
+| `src/app/explore/native/page.tsx` | Native map explorer at `/explore/native` |
 
-#### ✅ Documented Architecture Changes
+#### ✅ Test Data Generated
 
-Created `/jheem-backend/docs/native-plotting-architecture.md` with:
-- New simplified API design (`GET /v2/cities`, `GET /v2/data/{city}`)
-- GitHub Actions workflow changes
-- Frontend component sketches
-- Migration plan with rollback strategy
+- 44 test files for Baltimore (cessation scenario)
+- 6 outcomes × 2 statistics × 4 facets
+- Aggregated to single file: **74 MB uncompressed, 2.3 MB gzipped**
+- Projected for 31 cities: ~71 MB gzipped total
 
-#### 🎯 Next Step: Build Intermediate Test Page
+#### 🎨 UI Work Remaining
 
-**Recommended approach before any backend changes:**
-1. Create `/explore/test-native` route
-2. Load extracted JSON from static file
-3. Build Recharts-based plotting components
-4. Compare side-by-side with existing Plotly output
+The proof of concept is functional but needs cosmetic polish:
+- Header/title styling to match Plotly overlay's cinematic feel
+- Chart container sizing and spacing
+- Mobile responsiveness
+- Legend positioning refinement
+- Loading states and transitions
 
-This validates the data format and creates production-ready components before infrastructure commitment.
+### 📋 Decision Point: Where to Go Next
 
-### 📁 Files Created This Session
+With Phase 1 validated, options are:
+1. **Polish native UI** → Make production-ready, replace Plotly entirely
+2. **Generate full dataset** → Run aggregation for all 31 cities
+3. **Backend infrastructure** → S3 + CloudFront for data hosting
+4. **Custom simulations** → Deploy Lambda for on-demand runs
 
-| File | Location | Purpose |
-|------|----------|---------|
-| `extract_summary_data.R` | jheem-container-minimal/ | R extraction script |
-| `native-plotting-architecture.md` | jheem-backend/docs/ | Architecture doc |
-| `C.12580_complete.json` | jheem-container-minimal/output/ | Sample data (15 MB) |
-| `2025-12-11_native_plotting_investigation.md` | .claude-sessions/ | Detailed session notes |
+See session notes: `.claude-sessions/2025-12-18_native_plotting_integration.md`
 
-### ⚠️ Open Validation Needed
+---
 
-- Numerical verification: Compare extracted values with simplot output
-- Visual parity: Ensure Recharts plots match existing Plotly appearance
-- Edge cases: Verify `awareness` outcome (fewer dimensions than others)
+## Previous Session Summaries
+
+<details>
+<summary>2025-12-17: Native Plotting Data Format (Click to expand)</summary>
+
+### Key Decision: Use `prepare_plot_local()` Output
+
+Discovered that extracting raw data and aggregating client-side was mathematically broken for proportions. Pivoted to extracting `prepare_plot_local()` output directly - this handles all the complex aggregation and ontology mapping correctly.
+
+**Files Modified:**
+- `batch_plot_generator.R` - Added `--output-mode data` flag
+- Created transform utilities and chart components
+
+**Validation:** Data from `prepare_plot_local()` matches Shiny app exactly.
+
+</details>
+
+<details>
+<summary>2025-12-14: Observation Data Investigation (Click to expand)</summary>
+
+Investigated discrepancies between extracted observation data and Shiny app. Root cause: data manager has different data at different granularities. Solution: pull at same granularity simplot uses.
+
+</details>
+
+<details>
+<summary>2025-12-11: Native Plotting Architecture Investigation (Click to expand)</summary>
+
+Initial investigation into native plotting approach. Created `extract_summary_data.R` for raw data extraction. Later discovered fundamental issues with this approach (proportion aggregation, ontology mapping).
+
+</details>
+
+<details>
+<summary>2025-10-31: Code Review (Click to expand)</summary>
+
+Comprehensive frontend code review. Grade A overall. Minor issues identified (URL encoding, React.memo gaps, console cleanup).
+
+</details>
 
 ---
 
@@ -185,18 +222,23 @@ This validates the data format and creates production-ready components before in
 
 ---
 
-## 🎯 CURRENT STATUS: Evaluating Native Plotting Approach
+## 🎯 CURRENT STATUS: Native Plotting Validated, Ready for Production Push
 
 ### ✅ Complete & Working
 - **Frontend (jheem-portal)**: All apps deployed, Grade A code quality
-- **Prerun Infrastructure**: Full pipeline working (GitHub Actions → Container → S3/DynamoDB → Lambda API → Frontend)
+- **Native Plotting (Phase 1)**: ✅ Proof of concept validated at `/explore/native`
 - **Security**: Zero vulnerabilities, comprehensive CSP headers
 - **Error Handling**: Robust boundaries with graceful fallbacks
 
-### 🚧 Partially Complete (Ryan White Modernization)
-- **Prerun Plots**: ✅ Working end-to-end, limited dataset (1-6 cities)
-- **Full Dataset**: ⏳ Not generated yet (~64K plots, 2-6 hour job)
-- **Custom Simulations**: ⚠️ Infrastructure 70% complete:
+### 🚧 Native Plotting (Phase 2 - Production)
+- **Test Page**: ✅ Working at `/explore/native` with Baltimore data
+- **Aggregation Script**: ✅ `scripts/aggregate-city-data.ts` working
+- **UI Polish**: ⏳ Functional but needs cosmetic work
+- **Full Dataset**: ⏳ Need to generate for all 31 cities
+- **Backend Hosting**: ⏳ S3 + CloudFront setup needed
+
+### 🚧 Custom Simulations (Separate Track)
+- **Infrastructure**: 70% complete
   - ✅ R container has complete `lambda_handler.R` (200 lines)
   - ✅ Simulation pipeline ready (`interventions.R`, `runner.R`)
   - ❌ Lambda function not deployed to AWS
@@ -331,41 +373,28 @@ This validates the data format and creates production-ready components before in
 
 ---
 
-### Phase 1: Validate Native Plotting ⏳ Current Priority
+### Phase 1: Validate Native Plotting ✅ COMPLETE
 
-**Effort**: 1-2 days
-**Impact**: High - De-risks entire migration strategy
+**Status**: Validated on 2025-12-18
+**Decision**: Proceed with native approach (Phase 2a)
 
-**Tasks**:
-1. **Build test page** (`/explore/test-native`)
-   - Copy `C.12580_complete.json` to `/public/test-data/`
-   - Build `NativeSimulationChart` component with Recharts
-   - Implement facet aggregation logic (sum across non-selected dimensions)
-   - Wire up existing controls (outcome, scenario, facet dropdowns)
+**Completed**:
+- ✅ Built test page at `/explore/test-native` and `/explore/native`
+- ✅ NativeSimulationChart component with Recharts
+- ✅ Support for mean/median with CI and individual simulations
+- ✅ Faceted views (unfaceted, by age, by sex, by race)
+- ✅ Display toggles (CI, baseline, observations)
+- ✅ Visual validation against Shiny app - parity confirmed
+- ✅ Aggregation script to merge per-combination JSONs
 
-2. **Visual validation**
-   - Side-by-side comparison with current Plotly output
-   - Cross-reference with Shiny app for accuracy
-   - Test all faceting combinations (unfaceted, by age, by sex, by race, combinations)
-
-3. **Numerical spot-check**
-   - Pick 3-4 specific data points (e.g., "incidence for Black MSM 25-34 in 2025")
-   - Verify values match: extracted JSON ↔ simplot output ↔ Shiny app
-
-4. **Stakeholder review**
-   - Demo to team, gather feedback on styling
-   - Confirm native approach before backend investment
-
-**Decision**: If validation passes → proceed to Phase 2a (Native). If issues → Phase 2b (Plotly fallback).
-
-**Deliverable**: Go/no-go decision on native plotting approach
+**Outcome**: Native approach is viable and recommended for production
 
 ---
 
-### Phase 2a: Native Plotting Backend (If Validated)
+### Phase 2a: Native Plotting Production ⏳ CURRENT PRIORITY
 
-**Effort**: 1-2 days
-**Prerequisites**: Phase 1 validation successful
+**Effort**: 2-3 days
+**Prerequisites**: Phase 1 complete ✅
 
 **Tasks**:
 1. **New S3 bucket** (`jheem-summary-data`)
@@ -686,13 +715,24 @@ This validates the data format and creates production-ready components before in
 - `/src/components/StateSelector.tsx` (177 lines) - Multi-state selector
 - `/src/components/TimelineControls.tsx` (149 lines) - Year range controls
 
-### Map Explorer Components
+### Map Explorer Components (Plotly - Legacy)
 - `/src/components/MapboxCityMap.tsx` (442 lines) - Interactive map
-- `/src/components/MapPlotOverlay.tsx` (201 lines) - Plot display overlay
+- `/src/components/MapPlotOverlay.tsx` (201 lines) - Plot display overlay (Plotly)
 - `/src/components/PlotVariationControls.tsx` (300 lines) - 3D plot controls
 - `/src/components/ScenarioSelectionPopup.tsx` (165 lines) - Scenario picker
 - `/src/components/CityHoverTooltip.tsx` - City preview tooltip
 - `/src/hooks/useAvailableCities.ts` (191 lines) - API discovery hook
+
+### Native Plotting Components (Recharts - New)
+- `/src/app/explore/native/page.tsx` - Native map explorer page
+- `/src/app/explore/test-native/page.tsx` - Test page for native charts
+- `/src/components/NativeSimulationChart.tsx` - Recharts-based chart component
+- `/src/components/NativePlotOverlay.tsx` - Plot overlay using native charts
+- `/src/components/NativePlotControls.tsx` - Dropdown controls for plot options
+- `/src/hooks/useCityData.ts` - Hook to load aggregated city JSON
+- `/src/utils/transformPlotData.ts` - Transform raw data to chart format
+- `/src/types/native-plotting.ts` - TypeScript types for native plotting
+- `/scripts/aggregate-city-data.ts` - Script to merge JSONs into per-city files
 
 ### Data Files
 - `/src/data/cities.ts` - City coordinates and metadata

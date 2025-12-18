@@ -43,4 +43,7 @@ next-env.d.ts
 dev_notes/
 # Test data for native plotting (large files, regenerate locally)
 public/test-data/
+
+# Aggregated city data (served from S3/CloudFront in production)
+public/data/
 .Rproj.user
