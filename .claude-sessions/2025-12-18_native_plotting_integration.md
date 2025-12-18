@@ -194,5 +194,144 @@ Current test data includes both, but production would split them.
 - No loading states during city data fetch
 - Error handling is minimal
 
-**Recommendation:**
-The proof of concept validates the architecture. Next step should be UI polish + full dataset generation, then ship. Custom simulations can come later - they're a separate track that doesn't block native plotting.
+---
+
+## Plan for Next Session: Full Data Generation & Backend Setup
+
+### Context
+
+Phase 1 scope (from Dec 17-18 decisions):
+- **Include:** mean.and.interval, median.and.interval (summary stats)
+- **Exclude:** individual.simulation (Phase 2, lazy-loaded later)
+- **Facets:** 7 options (none, age, sex, race, age+sex, age+race, sex+race)
+
+Current test data is incomplete:
+- 1 scenario (cessation only)
+- 6 outcomes
+- 2 statistics
+- 4 facets (single dimension only)
+
+Full data per city:
+- 3 scenarios × 14 outcomes × 2 statistics × 7 facets = **~588 combinations**
+
+### Step 1: Validate File Size with Full Baltimore
+
+**Goal:** Get real numbers before scaling to 31 cities
+
+**Actions:**
+1. Run `batch_plot_generator.R` locally with:
+   - `--city C.12580`
+   - `--scenarios cessation,brief_interruption,prolonged_interruption`
+   - `--outcomes` (all 14)
+   - `--statistics mean.and.interval,median.and.interval`
+   - `--facets none,age,sex,race,age_sex,age_race,sex_race`
+   - `--output-mode data`
+
+2. Run aggregation script on output
+
+3. Measure:
+   - Raw file count and size
+   - Aggregated JSON size (uncompressed)
+   - Gzipped size
+
+**Expected:** 5-15MB gzipped per city (rough estimate)
+**If larger:** May need to split by scenario or outcome
+
+### Step 2: Backend Infrastructure (S3 + CloudFront)
+
+**Goal:** Simple static hosting for aggregated city JSONs
+
+**Actions:**
+1. Create S3 bucket: `jheem-native-plot-data` (or similar)
+   - Enable public read access for objects
+   - Enable gzip content-encoding
+
+2. Create CloudFront distribution
+   - Origin: S3 bucket
+   - Cache policy: 24 hours (data changes rarely)
+   - CORS: Allow portal domain
+
+3. Update `useCityData.ts`:
+   - Change fetch URL from `/data/{city}.json` to CloudFront URL
+   - Handle gzipped responses
+
+**Estimated effort:** 2-4 hours if familiar with AWS, half day if not
+
+### Step 3: GitHub Actions Workflow
+
+**Goal:** Automate data generation for all cities
+
+**Actions:**
+1. Create `generate-native-data.yml` workflow in jheem-backend (or jheem-container-minimal)
+2. Matrix strategy: one job per city (parallel)
+3. Steps per job:
+   - Pull R container
+   - Run batch_plot_generator.R with --output-mode data
+   - Run aggregation script
+   - Upload to S3
+
+**Trigger:** Manual dispatch with option for single city or all cities
+
+### Step 4: Generate Full Dataset
+
+**Goal:** Populate S3 with all 31 cities
+
+**Actions:**
+1. Trigger workflow for all cities
+2. Monitor progress (expect 2-4 hours total)
+3. Verify all files accessible via CloudFront
+
+### Step 5: Frontend Polish & Ship
+
+**Goal:** Replace /explore with native version
+
+**Actions:**
+1. Style NativePlotOverlay to match existing cinematic look
+2. Add proper loading states
+3. Update city list to come from data (not hardcoded)
+4. Test all cities load correctly
+5. Replace /explore/page.tsx with native implementation
+6. Deploy
+
+---
+
+## File Size Estimates (To Validate)
+
+| Scenario | Estimate | Notes |
+|----------|----------|-------|
+| Test data (current) | 2.3 MB | 1 scenario, 6 outcomes, 4 facets |
+| Full Baltimore (summary only) | 5-15 MB | 3 scenarios, 14 outcomes, 7 facets |
+| All 31 cities | 150-450 MB | Summary stats only |
+| With individual sims (Phase 2) | 1-3 GB | Lazy-load separately |
+
+**Decision point:** If full Baltimore exceeds 20MB gzipped, consider:
+- Splitting by scenario (3 files per city)
+- Splitting by outcome category
+- More aggressive compression
+
+---
+
+## Checklist for Next Session
+
+- [ ] Generate full Baltimore data locally (all scenarios, outcomes, facets - summary stats only)
+- [ ] Run aggregation, measure gzipped size
+- [ ] If size acceptable (<20MB): proceed with S3 setup
+- [ ] If size too large: decide on splitting strategy
+- [ ] Set up S3 bucket + CloudFront
+- [ ] Update useCityData.ts with production URL
+- [ ] Create GitHub Actions workflow for data generation
+- [ ] Generate data for all 31 cities
+- [ ] Polish UI
+- [ ] Ship
+
+---
+
+## Key Decision: Individual Simulations
+
+**Deferred to Phase 2.** The Dec 17-18 sessions established:
+- Individual sim files are 10-50x larger than summary stats
+- Not worth bundling - lazy-load on demand
+- Separate S3 path: `/individual/{city}/{outcome}_{facet}.json.gz`
+- Fetch only when user selects "Individual Simulations" statistic
+
+This keeps Phase 1 scope manageable and ships value faster.
