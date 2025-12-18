@@ -98,9 +98,66 @@ User sees custom results
 
 ---
 
-## Latest Session Summary (2025-10-31)
+## Latest Session Summary (2025-12-11)
 
-### 🎉 SESSION ACCOMPLISHMENTS
+### 🎉 SESSION ACCOMPLISHMENTS: Native Plotting Architecture Investigation
+
+#### ✅ Key Decision: Pivot from Pre-rendered Plots to Summary Data Extraction
+
+Investigated whether to continue with ~64K pre-rendered Plotly JSONs or switch to native frontend plotting. **Conclusion: Native approach is viable and recommended**, pending validation.
+
+#### ✅ Built & Validated Data Extraction Script
+
+Created `extract_summary_data.R` in jheem-container-minimal that:
+- Extracts simulation data at finest granularity (45 strata: 5 age × 3 sex × 3 race)
+- Properly maps simset outcomes to data manager outcomes
+- Handles observation data at varying granularities
+- Outputs JSON with all metadata for frontend rendering
+
+**Validated Results (Baltimore C.12580, all scenarios):**
+- File size: 15 MB uncompressed, 1.5 MB gzipped
+- 31 cities projected: ~47 MB gzipped (vs ~1.3 GB for 64K Plotly JSONs)
+- All 14 outcomes extracted with baseline + intervention data
+
+#### ✅ Documented Architecture Changes
+
+Created `/jheem-backend/docs/native-plotting-architecture.md` with:
+- New simplified API design (`GET /v2/cities`, `GET /v2/data/{city}`)
+- GitHub Actions workflow changes
+- Frontend component sketches
+- Migration plan with rollback strategy
+
+#### 🎯 Next Step: Build Intermediate Test Page
+
+**Recommended approach before any backend changes:**
+1. Create `/explore/test-native` route
+2. Load extracted JSON from static file
+3. Build Recharts-based plotting components
+4. Compare side-by-side with existing Plotly output
+
+This validates the data format and creates production-ready components before infrastructure commitment.
+
+### 📁 Files Created This Session
+
+| File | Location | Purpose |
+|------|----------|---------|
+| `extract_summary_data.R` | jheem-container-minimal/ | R extraction script |
+| `native-plotting-architecture.md` | jheem-backend/docs/ | Architecture doc |
+| `C.12580_complete.json` | jheem-container-minimal/output/ | Sample data (15 MB) |
+| `2025-12-11_native_plotting_investigation.md` | .claude-sessions/ | Detailed session notes |
+
+### ⚠️ Open Validation Needed
+
+- Numerical verification: Compare extracted values with simplot output
+- Visual parity: Ensure Recharts plots match existing Plotly appearance
+- Edge cases: Verify `awareness` outcome (fewer dimensions than others)
+
+---
+
+## Previous Session Summary (2025-10-31)
+
+<details>
+<summary>Click to expand previous session details</summary>
 
 #### ✅ Comprehensive Code Review Completed (Frontend)
 - **Security Analysis**: Grade A - Zero vulnerabilities confirmed via npm audit
@@ -124,9 +181,11 @@ User sees custom results
 3. **Mapbox Token**: Should verify domain restrictions are configured in Mapbox dashboard
 4. **Console Cleanup**: 18 console statements still need dev-only wrapping
 
+</details>
+
 ---
 
-## 🎯 CURRENT STATUS: Production-Ready Frontend, Incomplete Backend Migration
+## 🎯 CURRENT STATUS: Evaluating Native Plotting Approach
 
 ### ✅ Complete & Working
 - **Frontend (jheem-portal)**: All apps deployed, Grade A code quality
@@ -248,30 +307,143 @@ User sees custom results
 
 ## 📋 RYAN WHITE MODERNIZATION ROADMAP
 
-### Phase 1: Complete Prerun Dataset ⏳ Next Priority
-**Timeline**: 1 day (mostly compute time)
-**Effort**: 1 hour setup + 2-6 hours automated runtime
-**Impact**: High - Team gets full production-ready map explorer
+### 🔄 Strategic Direction (Updated 2025-12-11)
+
+**Current Strategy**: Native frontend plotting with extracted summary data
+**Fallback Strategy**: Pre-rendered Plotly JSONs (on hold, preserved as backup)
+
+#### Why Native Plotting?
+- **28x smaller data** (~47 MB vs ~1.3 GB for 64K Plotly JSONs)
+- **Dynamic faceting** (any age/sex/race combination, computed client-side)
+- **Modern styling** (Recharts, professional appearance, consistent with rest of portal)
+- **Simpler infrastructure** (31 files vs 64K files, simpler DynamoDB schema)
+- **Frontend-first** (reduces R dependency, better developer experience)
+
+#### Why Keep Plotly Fallback?
+- Native approach is **unvalidated** - needs Phase 1 proof before commitment
+- Plotly infrastructure **already works** (workflow, container, API all functional)
+- **Low cost to preserve** - just documentation, no ongoing maintenance
+- **Risk mitigation** - if native hits blockers, can ship with proven approach
+
+**Decision Gate**: End of Phase 1 - proceed with native or revert to Plotly based on validation results.
+
+**Session Documentation**: See `.claude-sessions/2025-12-11_native_plotting_investigation.md` for full technical investigation.
+
+---
+
+### Phase 1: Validate Native Plotting ⏳ Current Priority
+
+**Effort**: 1-2 days
+**Impact**: High - De-risks entire migration strategy
 
 **Tasks**:
-1. Trigger GitHub Actions workflow in `jheem-backend`
+1. **Build test page** (`/explore/test-native`)
+   - Copy `C.12580_complete.json` to `/public/test-data/`
+   - Build `NativeSimulationChart` component with Recharts
+   - Implement facet aggregation logic (sum across non-selected dimensions)
+   - Wire up existing controls (outcome, scenario, facet dropdowns)
+
+2. **Visual validation**
+   - Side-by-side comparison with current Plotly output
+   - Cross-reference with Shiny app for accuracy
+   - Test all faceting combinations (unfaceted, by age, by sex, by race, combinations)
+
+3. **Numerical spot-check**
+   - Pick 3-4 specific data points (e.g., "incidence for Black MSM 25-34 in 2025")
+   - Verify values match: extracted JSON ↔ simplot output ↔ Shiny app
+
+4. **Stakeholder review**
+   - Demo to team, gather feedback on styling
+   - Confirm native approach before backend investment
+
+**Decision**: If validation passes → proceed to Phase 2a (Native). If issues → Phase 2b (Plotly fallback).
+
+**Deliverable**: Go/no-go decision on native plotting approach
+
+---
+
+### Phase 2a: Native Plotting Backend (If Validated)
+
+**Effort**: 1-2 days
+**Prerequisites**: Phase 1 validation successful
+
+**Tasks**:
+1. **New S3 bucket** (`jheem-summary-data`)
+   - Store one JSON per city (~1.5 MB gzipped each)
+   - Enable CloudFront caching (24-hour TTL)
+
+2. **New API endpoints** (v2, alongside existing v1):
+   - `GET /v2/cities` - List cities with metadata, file sizes, last updated
+   - `GET /v2/data/{city}` - Return gzipped summary data
+
+3. **New GitHub Actions workflow** (`generate-summary-data.yml`)
+   - Uses `extract_summary_data.R` from jheem-container-minimal
+   - Matrix strategy: one job per city
+   - Outputs to new S3 bucket
+
+4. **Generate full dataset**
+   - Run workflow for all 31 cities
+   - Verify API returns data correctly
+
+**Deliverable**: Production v2 API serving summary data
+
+---
+
+### Phase 2b: Plotly JSON Backend (Fallback - On Hold)
+
+**Status**: Infrastructure ready, on hold pending Phase 1 decision
+**Effort**: 1 day (mostly compute time)
+
+**Tasks** (if needed):
+1. Trigger existing `generate-plots.yml` workflow in jheem-backend
    - Select `config_type: full` (31 cities, ~64K plots)
    - Set `max_parallel: 8` for faster completion
-   - Monitor progress in Actions dashboard
+   - Monitor progress in Actions dashboard (2-6 hours runtime)
 2. Verify all cities visible in map explorer
 3. Validate plot variety (outcomes, statistics, facets)
-4. Update team documentation
 
-**Deliverable**: Production-ready map explorer with complete prerun dataset
+**Deliverable**: Production map explorer with complete pre-rendered dataset
 
-### Phase 2: Deploy Custom Simulations 🚧 Infrastructure Ready
-**Timeline**: 2-3 weeks
-**Effort**: 2-3 days actual development work
-**Impact**: Medium - Completes feature parity with legacy Shiny app
+---
 
-**Tasks**:
+### Phase 3: Frontend Integration
 
-#### Week 1: Backend Deployment
+**Effort**: 2-3 days
+**Prerequisites**: Phase 2a or 2b complete
+
+#### If Native (Phase 2a):
+1. **New data hook** (`useCityData.ts`)
+   - Fetch from v2 API, cache in memory/localStorage
+   - Return typed `CityData` object
+
+2. **Aggregation utilities** (`aggregateData.ts`)
+   - Sum across dimensions based on facet selection
+   - Handle observation data alignment (varying granularities)
+
+3. **Replace chart rendering**
+   - Update `MapPlotOverlay` to use Recharts
+   - Confidence interval shading, baseline comparison lines
+   - Match existing control behavior
+
+4. **Feature flag** for gradual rollout
+   - Toggle between v1 (Plotly) and v2 (native) in settings
+   - Monitor for issues before full cutover
+
+#### If Plotly (Phase 2b):
+- No frontend changes needed (current implementation works)
+- Just verify data loads correctly for all cities
+
+**Deliverable**: Production map explorer with chosen plotting approach
+
+---
+
+### Phase 4: Deploy Custom Simulations 🚧
+
+**Effort**: 2-3 days
+**Prerequisites**: Prerun plots working (Phase 3 complete)
+**Note**: Custom simulation infrastructure is independent of plotting approach
+
+#### Backend Deployment
 1. **Verify Base Simulations Exist** (1-2 hours)
    - Check S3: `s3://jheem-data-production/simulations/ryan-white/base/`
    - Validate format (`.Rdata` files for all cities)
@@ -291,7 +463,7 @@ User sees custom results
    - GET `/simulation-status/{jobId}` for polling
    - Store results in S3 when complete
 
-#### Week 2: Frontend Integration
+#### Frontend Integration
 4. **Build Parameter Input UI** (8-12 hours)
    - Create `CustomSimulationForm` component
    - Three sliders: ADAP, OAHS, Other suppression loss (0-100%)
@@ -305,23 +477,38 @@ User sees custom results
    - Display results when complete
 
 6. **Results Display** (2-4 hours)
-   - Reuse existing `MapPlotOverlay` component
+   - Reuse chart components (Recharts or Plotly depending on Phase 2 decision)
    - Add comparison with prerun baseline
    - Option to save/share results
 
 **Deliverable**: Complete custom simulation capability, feature parity with legacy Shiny app
 
-### Phase 3: Deprecate Legacy Shiny Apps 📅 Future
-**Timeline**: After validation period (1+ month)
-**Prerequisites**: Custom simulations deployed and validated
+---
+
+### Phase 5: Deprecate Legacy Systems 📅 Future
+
+**Prerequisites**: Phases 1-4 complete, validation period (30+ days)
 
 **Tasks**:
 1. Run both systems in parallel
 2. Collect user feedback
 3. Monitor usage patterns (validate prerun vs custom usage assumptions)
 4. Migrate any missing features
-5. Sunset Shiny apps
-6. Celebrate 95% cost savings!
+5. Deprecate v1 API endpoints (if using native approach)
+6. Clean up old S3 data (64K Plotly JSONs if not using them)
+7. Sunset Shiny apps
+8. Celebrate 95% cost savings!
+
+---
+
+### 📁 Native Plotting Investigation Files
+
+| File | Repository | Purpose |
+|------|------------|---------|
+| `extract_summary_data.R` | jheem-container-minimal | R script for data extraction |
+| `native-plotting-architecture.md` | jheem-backend/docs | Full architecture documentation |
+| `C.12580_complete.json` | jheem-container-minimal/output | Sample extracted data (15 MB, 1.5 MB gzipped) |
+| `2025-12-11_native_plotting_investigation.md` | jheem-portal/.claude-sessions | Detailed session findings & recommendations |
 
 ---
 

@@ -41,3 +41,5 @@ yarn-error.log*
 next-env.d.ts
 
 dev_notes/
+# Test data for native plotting (large files, regenerate locally)
+public/test-data/
