@@ -19,7 +19,7 @@ const NATIVE_AVAILABLE_CITIES: CityData[] = [
     code: 'C.12580',
     name: 'Baltimore-Columbia-Towson, MD',
     coordinates: [-76.6122, 39.2904],
-    availableScenarios: ['cessation'], // Scenarios available in our test data
+    availableScenarios: ['cessation', 'brief_interruption', 'prolonged_interruption'],
   },
 ];
 

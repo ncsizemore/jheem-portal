@@ -98,56 +98,68 @@ User sees custom results
 
 ---
 
-## Latest Session Summary (2025-12-18)
+## Latest Session Summary (2025-12-18 - Evening)
 
-### 🎉 SESSION ACCOMPLISHMENTS: Native Plotting Integration Complete (Phase 1)
+### 🎉 SESSION ACCOMPLISHMENTS: Full Baltimore Data Generation & Size Validation
 
-#### ✅ Phase 1 Validation: PASSED
+#### ✅ Full Dataset Generated
 
-Built end-to-end native plotting integration as proof of concept. The architecture works:
-- Aggregated city data loads from static JSON (2.3 MB gzipped per city)
-- Recharts renders both summary statistics and individual simulations
-- Faceted views display correctly (multiple panels)
-- Display toggles work (confidence intervals, baseline, observations)
-- Dropdown controls switch between outcomes/statistics/facets
+Generated complete Baltimore dataset with all combinations:
 
-**Visual validation confirms parity with Shiny app output.**
+| Metric | Value |
+|--------|-------|
+| Files generated | 318 (out of 336 attempted) |
+| Scenarios | 3 (cessation, brief_interruption, prolonged_interruption) |
+| Outcomes | 14 |
+| Statistics | 2 (mean.and.interval, median.and.interval) |
+| Facets | 4 (none, age, sex, race) |
+| **Aggregated (uncompressed)** | **18 MB** |
+| **Aggregated (gzipped)** | **1.0 MB** |
+| **Projected for 31 cities** | **~31 MB gzipped** |
 
-#### ✅ Files Created This Session
+File sizes are **much smaller than estimated** (~31 MB vs ~71 MB) because we exclude `individual.simulation` statistic.
 
-| File | Purpose |
-|------|---------|
-| `scripts/aggregate-city-data.ts` | Merges per-combination JSONs into per-city files |
-| `src/hooks/useCityData.ts` | Hook to load/cache aggregated city JSON |
-| `src/components/NativePlotOverlay.tsx` | Plot overlay using NativeSimulationChart |
-| `src/components/NativePlotControls.tsx` | Dropdown controls for plot options |
-| `src/app/explore/native/page.tsx` | Native map explorer at `/explore/native` |
+#### ✅ Correct Outcome Names Identified
 
-#### ✅ Test Data Generated
+From `jheem-backend/scripts/generate_orchestration_config.py`:
+```
+incidence, diagnosed.prevalence, suppression, testing, prep.uptake, awareness,
+rw.clients, adap.clients, non.adap.clients, oahs.clients, adap.proportion,
+oahs.suppression, adap.suppression, new
+```
 
-- 44 test files for Baltimore (cessation scenario)
-- 6 outcomes × 2 statistics × 4 facets
-- Aggregated to single file: **74 MB uncompressed, 2.3 MB gzipped**
-- Projected for 31 cities: ~71 MB gzipped total
+**Note**: Some Ryan White-specific outcomes (rw.clients, etc.) don't support sex/race facets.
 
-#### 🎨 UI Work Remaining
+#### ✅ Container Updated
 
-The proof of concept is functional but needs cosmetic polish:
-- Header/title styling to match Plotly overlay's cinematic feel
-- Chart container sizing and spacing
-- Mobile responsiveness
-- Legend positioning refinement
-- Loading states and transitions
+- Added `--output-mode data` flag to `batch_plot_generator.R`
+- Committed and pushed to trigger rebuild
+- ⚠️ Build failed due to `sf` dependency issue (not blocking - use volume mounts)
 
-### 📋 Decision Point: Where to Go Next
+#### 🐳 Running Container Locally (Workaround)
 
-With Phase 1 validated, options are:
-1. **Polish native UI** → Make production-ready, replace Plotly entirely
-2. **Generate full dataset** → Run aggregation for all 31 cities
-3. **Backend infrastructure** → S3 + CloudFront for data hosting
-4. **Custom simulations** → Deploy Lambda for on-demand runs
+Until container rebuild is fixed, use volume mounts:
+```bash
+docker run --rm \
+  -v /path/to/jheem-container-minimal/batch_plot_generator.R:/app/batch_plot_generator.R \
+  -v /path/to/jheem-container-minimal/simulations:/app/simulations \
+  -v /path/to/output:/output \
+  849611540600.dkr.ecr.us-east-1.amazonaws.com/jheem-ryan-white-model:latest \
+  batch --city C.12580 --scenarios cessation,brief_interruption,prolonged_interruption \
+  --outcomes incidence,diagnosed.prevalence,suppression,testing,prep.uptake,awareness,rw.clients,adap.clients,non.adap.clients,oahs.clients,adap.proportion,oahs.suppression,adap.suppression,new \
+  --statistics mean.and.interval,median.and.interval --facets none,age,sex,race \
+  --output-dir /output --output-mode data
+```
 
-See session notes: `.claude-sessions/2025-12-18_native_plotting_integration.md`
+### 📋 Next Steps (Prioritized)
+
+1. **Set up S3 + CloudFront** - Host aggregated city JSONs with gzip and caching
+2. **Create GitHub Actions workflow** - Generate all 31 cities in parallel
+3. **Generate full dataset** - Trigger workflow for production
+4. **UI polish** - Match Plotly overlay styling
+5. **Fix container build** - Resolve `sf` dependency (low priority, workaround exists)
+
+See session notes: `.claude-sessions/2025-12-18_full_baltimore_data_generation.md`
 
 ---
 

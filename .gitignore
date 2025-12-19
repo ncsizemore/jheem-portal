@@ -47,3 +47,5 @@ public/test-data/
 # Aggregated city data (served from S3/CloudFront in production)
 public/data/
 .Rproj.user
+# Generated data from batch plots
+generated-data/

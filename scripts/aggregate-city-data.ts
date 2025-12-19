@@ -90,8 +90,24 @@ function parseFilename(filename: string): {
   return { outcome, statistic, facet };
 }
 
+function findJsonFiles(dir: string): string[] {
+  const results: string[] = [];
+  const entries = fs.readdirSync(dir, { withFileTypes: true });
+
+  for (const entry of entries) {
+    const fullPath = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      results.push(...findJsonFiles(fullPath));
+    } else if (entry.name.endsWith('.json')) {
+      results.push(fullPath);
+    }
+  }
+
+  return results;
+}
+
 function aggregateCityData(inputDir: string): AggregatedData {
-  const files = fs.readdirSync(inputDir).filter(f => f.endsWith('.json'));
+  const files = findJsonFiles(inputDir);
 
   // Track unique values
   const scenarios = new Set<string>();
@@ -105,24 +121,23 @@ function aggregateCityData(inputDir: string): AggregatedData {
   const data: AggregatedData['data'] = {};
   let fileCount = 0;
 
-  for (const file of files) {
+  for (const filePath of files) {
     // Skip the old complete file if present
-    if (file.includes('_complete')) continue;
+    if (filePath.includes('_complete')) continue;
 
-    const filePath = path.join(inputDir, file);
     const content = fs.readFileSync(filePath, 'utf-8');
 
     let plotData: PlotDataFile;
     try {
       plotData = JSON.parse(content);
     } catch (e) {
-      console.warn(`Skipping invalid JSON: ${file}`);
+      console.warn(`Skipping invalid JSON: ${filePath}`);
       continue;
     }
 
     // Validate structure
     if (!plotData.metadata?.scenario || !plotData.metadata?.outcome) {
-      console.warn(`Skipping file with missing metadata: ${file}`);
+      console.warn(`Skipping file with missing metadata: ${filePath}`);
       continue;
     }
 
