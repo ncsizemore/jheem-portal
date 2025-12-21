@@ -15,7 +15,11 @@ export interface SimDataPoint {
   'outcome.display.name': string;
   'value.lower'?: number;  // Present for mean.and.interval / median.and.interval
   'value.upper'?: number;
-  'facet.by1'?: string;  // Present when faceted (e.g., "male", "female", "13-24 years")
+  // Multi-dimensional faceting - each dimension gets its own column
+  'facet.by1'?: string;  // First facet dimension (e.g., "13-24 years" for age)
+  'facet.by2'?: string;  // Second facet dimension (e.g., "black" for race)
+  'facet.by3'?: string;  // Third facet dimension (e.g., "msm" for sex)
+  'facet.by4'?: string;  // Fourth facet dimension (e.g., "idu" for risk)
   stratum?: string;
   sim?: string;  // Present for individual.simulation - identifies each simulation run (e.g., "1", "2", ...)
 }
@@ -27,7 +31,11 @@ export interface ObsDataPoint {
   outcome: string;
   'outcome.display.name': string;
   data_url?: string;
+  // Multi-dimensional faceting
   'facet.by1'?: string;
+  'facet.by2'?: string;
+  'facet.by3'?: string;
+  'facet.by4'?: string;
   stratum?: string;
 }
 

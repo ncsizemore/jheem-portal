@@ -19,6 +19,32 @@ import type {
 } from '@/types/native-plotting';
 
 /**
+ * Create a composite facet key from all facet.by* columns in a data point.
+ * For multi-dimensional faceting (e.g., age+race+sex), combines values with " | ".
+ * Example: "13-24 years | Black | MSM"
+ */
+function getCompositeFacetKey(point: SimDataPoint): string {
+  const parts: string[] = [];
+  if (point['facet.by1']) parts.push(point['facet.by1']);
+  if (point['facet.by2']) parts.push(point['facet.by2']);
+  if (point['facet.by3']) parts.push(point['facet.by3']);
+  if (point['facet.by4']) parts.push(point['facet.by4']);
+  return parts.length > 0 ? parts.join(' | ') : 'unknown';
+}
+
+/**
+ * Same as getCompositeFacetKey but for observation data points
+ */
+function getCompositeFacetKeyFromObs(point: ObsDataPoint): string {
+  const parts: string[] = [];
+  if (point['facet.by1']) parts.push(point['facet.by1']);
+  if (point['facet.by2']) parts.push(point['facet.by2']);
+  if (point['facet.by3']) parts.push(point['facet.by3']);
+  if (point['facet.by4']) parts.push(point['facet.by4']);
+  return parts.length > 0 ? parts.join(' | ') : '';
+}
+
+/**
  * Transform a single plot data file into chart-ready format
  */
 export function transformPlotData(plotData: PlotDataFile): FacetPanel[] {
@@ -51,11 +77,11 @@ export function transformPlotData(plotData: PlotDataFile): FacetPanel[] {
     return [panel];
   }
 
-  // Faceted: group by facet.by1
+  // Faceted: group by composite facet key (combining all facet.by* columns)
   const facetGroups = new Map<string, SimDataPoint[]>();
 
   for (const point of sim) {
-    const facetValue = point['facet.by1'] || 'unknown';
+    const facetValue = getCompositeFacetKey(point);
     if (!facetGroups.has(facetValue)) {
       facetGroups.set(facetValue, []);
     }
@@ -67,8 +93,8 @@ export function transformPlotData(plotData: PlotDataFile): FacetPanel[] {
   const obsByFacet = new Map<string, ChartObservation[]>();
 
   for (const obsPoint of obsArray) {
-    // Match observation facet to sim facet
-    const facetValue = (obsPoint as { facetBy1?: string }).facetBy1 || 'all';
+    // Match observation facet to sim facet using same composite key logic
+    const facetValue = getCompositeFacetKeyFromObs(obsPoint as ObsDataPoint) || 'all';
     if (!obsByFacet.has(facetValue)) {
       obsByFacet.set(facetValue, []);
     }

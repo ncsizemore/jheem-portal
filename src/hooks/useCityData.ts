@@ -6,7 +6,7 @@
  */
 
 import { useState, useCallback } from 'react';
-import type { PlotDataFile, PlotMetadata } from '@/types/native-plotting';
+import type { PlotDataFile } from '@/types/native-plotting';
 
 interface AggregatedCityData {
   metadata: {

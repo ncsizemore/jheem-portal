@@ -1,8 +1,8 @@
 # Session: Full Baltimore Data Generation & Size Validation
 
-**Date**: 2025-12-18
-**Duration**: ~2 hours
-**Status**: Phase 1 validation complete with production-ready file sizes
+**Date**: 2025-12-18 (updated 2025-12-19)
+**Duration**: ~3 hours
+**Status**: Full 16-facet generation complete, risk faceting behavior documented
 
 ---
 
@@ -14,7 +14,32 @@ Generate full Baltimore dataset with all scenarios, outcomes, statistics, and fa
 
 ## Key Results
 
-### File Size Validation ✅
+### Full Facet Generation ✅ (Dec 19 Update)
+
+| Metric | 4-Facet Test | 16-Facet Full |
+|--------|--------------|---------------|
+| Files attempted | 336 | 1,344 |
+| Files generated | 318 | 954 |
+| Errors | 18 | 390 |
+| Scenarios | 3 | 3 |
+| Outcomes | 14 | 14 |
+| Statistics | 2 | 2 |
+| Facets | 4 | 16 |
+| **Aggregated (uncompressed)** | 18 MB | **328 MB** |
+| **Aggregated (gzipped)** | 1.0 MB | **17 MB** |
+| **Projected for 31 cities** | ~31 MB | **~527 MB gzipped** |
+
+### Risk Faceting Support by Outcome
+
+**SUPPORTS risk faceting (6 outcomes):**
+- incidence, diagnosed.prevalence, new, suppression, adap.suppression, testing
+
+**Does NOT support risk faceting (8 outcomes):**
+- awareness, prep.uptake, rw.clients, adap.clients, non.adap.clients, oahs.clients, oahs.suppression, adap.proportion
+
+The 390 errors are all: `'risk' does not reference a valid dimension` - expected behavior.
+
+### Previous 4-Facet Validation (Dec 18)
 
 | Metric | Value |
 |--------|-------|
@@ -27,7 +52,7 @@ Generate full Baltimore dataset with all scenarios, outcomes, statistics, and fa
 | **Aggregated (gzipped)** | **1.0 MB** |
 | **Projected for 31 cities** | **~31 MB gzipped** |
 
-This is significantly smaller than initial estimates (~71 MB) because we excluded `individual.simulation` statistic.
+This was significantly smaller because it excluded risk faceting.
 
 ### Correct Outcome Names
 
@@ -52,7 +77,7 @@ OUTCOMES = [
 
 The ECR container image doesn't have the `--output-mode data` flag (added in this session). Until the container is rebuilt, you need to use volume mounts to override the batch script.
 
-### Working Command
+### Working Command (Full 16 Facets)
 
 ```bash
 docker run --rm \
@@ -65,10 +90,13 @@ docker run --rm \
   --scenarios cessation,brief_interruption,prolonged_interruption \
   --outcomes incidence,diagnosed.prevalence,suppression,testing,prep.uptake,awareness,rw.clients,adap.clients,non.adap.clients,oahs.clients,adap.proportion,oahs.suppression,adap.suppression,new \
   --statistics mean.and.interval,median.and.interval \
-  --facets none,age,sex,race \
+  --facets 'none,age,race,sex,risk,age+race,age+sex,age+risk,race+sex,race+risk,sex+risk,age+race+sex,age+race+risk,age+sex+risk,race+sex+risk,age+race+sex+risk' \
   --output-dir /output \
   --output-mode data
 ```
+
+**Runtime**: ~38 minutes per city
+**Output**: 954 files (390 expected errors for risk facets on unsupported outcomes)
 
 ### Key Points
 
@@ -103,37 +131,62 @@ The GitHub Actions build failed due to `sf` package dependency. This is a known 
 
 ---
 
+## Decision Point: File Size vs Feature Completeness
+
+### Option A: Full 16 Facets (~527 MB for 31 cities)
+- Complete feature parity with Shiny
+- Risk faceting for outcomes that support it
+- Multi-dimensional faceting (age+race+sex, etc.)
+- **17 MB gzipped per city** - still reasonable for modern connections
+
+### Option B: 4-Facet Subset (~31 MB for 31 cities)
+- Much smaller file sizes
+- Single-dimension faceting only (none, age, sex, race)
+- No risk dimension
+- Simpler but missing some Shiny features
+
+### Recommendation
+Given that the 17 MB gzipped per city is still fast to load (1-2 seconds on broadband), and full 16-facet generation only takes ~38 minutes, recommend **Option A** for feature completeness.
+
+---
+
 ## Next Steps (Prioritized)
 
-### 1. Fix Container Build (Low Priority)
-- Investigate `sf` dependency failure
-- Either pin version, add system deps, or remove if unused
-- Can work around with volume mounts for now
+### 1. ✅ Container Build Fixed
+- Root cause: renv was downgrading pre-installed packages to older binary versions
+- Fix: Added `renv::snapshot()` after pre-installing sf/units/gert/V8 to update lockfile
+- Also added libgdal symlink for RSPM binary compatibility
+- Container now builds and includes `--output-mode data` flag
 
-### 2. Set Up S3 + CloudFront (High Priority)
+### 2. ✅ Full Facet Generation Complete
+- Used all 16 facets from orchestration config
+- 954/1,344 files generated (390 expected errors from risk on unsupported outcomes)
+- Measured actual file size: 328 MB → 17 MB gzipped per city
+
+### 3. Set Up S3 + CloudFront (Next Priority)
 - Create bucket `jheem-native-plot-data` (or similar)
 - Enable gzip content-encoding
 - Configure CloudFront with 24-hour cache
 - Update `useCityData.ts` to fetch from CloudFront URL
 
-### 3. Create GitHub Actions Workflow (High Priority)
+### 4. Create GitHub Actions Workflow
 - New workflow `generate-native-data.yml`
 - Matrix strategy: one job per city
 - Steps: pull container, run with volume mount, aggregate, upload to S3
 - Manual dispatch with option for single city or all
 
-### 4. Generate Full Dataset (After #2 and #3)
+### 5. Generate Full Dataset (After #3 and #4)
 - Trigger workflow for all 31 cities
-- Estimated time: ~15-20 min per city × 31 = ~8-10 hours (but parallelized)
+- Estimated time: ~38 min per city × 31 = ~20 hours (but parallelized to ~1 hour)
 - Verify all files accessible via CloudFront
 
-### 5. UI Polish (Can Parallel with Above)
+### 6. UI Polish (Can Parallel with Above)
 - Match cinematic header styling from Plotly overlay
 - Add loading skeletons
 - Mobile responsiveness
 - Legend refinement
 
-### 6. Ship Native Plotting
+### 7. Ship Native Plotting
 - Feature flag or direct replacement of `/explore`
 - Monitor for issues
 - Document the new data format
@@ -176,14 +229,16 @@ Native charts render
 
 ## Validation Checklist
 
-- [x] Full Baltimore generation works (318/336 files)
+- [x] Full Baltimore generation works (318/336 files with 4 facets)
+- [x] Full 16-facet generation works (954/1344 files)
 - [x] Aggregation script handles nested directories
-- [x] File sizes acceptable (1 MB gzipped per city)
+- [x] File sizes acceptable (17 MB gzipped per city with full facets)
 - [x] Native charts render correctly with full data
 - [x] All 3 scenarios selectable and working
 - [x] 14 outcomes available
 - [x] Container changes committed and pushed
-- [ ] Container build succeeds (blocked by sf dependency)
+- [x] Container build succeeds (fixed renv snapshot issue)
+- [x] Risk faceting behavior documented (6 outcomes support, 8 don't)
 - [ ] S3 bucket created
 - [ ] CloudFront distribution configured
 - [ ] GitHub Actions workflow created
@@ -200,6 +255,10 @@ Native charts render
 
 3. **Volume mounts are powerful** - Can iterate on R code without rebuilding the container
 
-4. **Compression is very effective** - 18 MB → 1 MB with gzip on JSON data
+4. **Compression is very effective** - 328 MB → 17 MB with gzip on JSON data (94% reduction)
 
-5. **Some outcomes don't support all facets** - Ryan White-specific outcomes (rw.clients, etc.) are aggregate-only, no demographic breakdowns
+5. **Risk faceting is outcome-dependent** - Only 6 outcomes support risk dimension:
+   - incidence, diagnosed.prevalence, new, suppression, adap.suppression, testing
+   - The other 8 outcomes (awareness, prep.uptake, all client counts) don't have risk breakdown
+
+6. **renv + RSPM binary compatibility is tricky** - Pre-installed packages get downgraded by renv::restore unless you snapshot after installing them
