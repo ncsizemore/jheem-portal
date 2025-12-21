@@ -105,6 +105,11 @@ const CustomTooltip = ({ active, payload, label, displayAsPercent, units }: Cust
   );
 };
 
+// Sanitize a string for use as an SVG ID (remove special characters)
+function sanitizeId(str: string): string {
+  return str.replace(/[^a-zA-Z0-9-_]/g, '_');
+}
+
 const NativeSimulationChart = memo(({
   panel,
   outcomeLabel,
@@ -115,6 +120,9 @@ const NativeSimulationChart = memo(({
 }: NativeSimulationChartProps) => {
   const { showConfidenceInterval, showBaseline, showObservations } = options;
   const { data, observations, facetLabel, isIndividualSimulation, individualSimulations } = panel;
+
+  // Create safe ID for SVG gradient references
+  const safeId = sanitizeId(panel.facetValue);
 
   // State for observation hover tooltip
   const [hoveredObs, setHoveredObs] = useState<ObservationHoverInfo | null>(null);
@@ -140,6 +148,23 @@ const NativeSimulationChart = memo(({
   const yDomain = useMemo(() => {
     return getValueRange(data, observations, showBaseline, showConfidenceInterval, individualSimulations);
   }, [data, observations, showBaseline, showConfidenceInterval, individualSimulations]);
+
+  // Transform data for CI band rendering
+  // Recharts Area fills from 0 by default, so we use stacking:
+  // - ciBase: invisible area from 0 to lower bound
+  // - ciHeight: visible area from lower to upper (the actual CI band)
+  const chartDataWithCI = useMemo(() => {
+    return data.map(d => ({
+      ...d,
+      // Intervention CI band
+      ciBase: d.lower ?? 0,
+      ciHeight: (d.upper !== undefined && d.lower !== undefined) ? d.upper - d.lower : 0,
+      // Baseline CI band
+      baselineCiBase: d.baselineLower ?? 0,
+      baselineCiHeight: (d.baselineUpper !== undefined && d.baselineLower !== undefined)
+        ? d.baselineUpper - d.baselineLower : 0,
+    }));
+  }, [data]);
 
   // Prepare individual simulation data for Recharts
   // Each simulation becomes a row with columns for each year
@@ -188,17 +213,17 @@ const NativeSimulationChart = memo(({
       <div className="relative">
         <ResponsiveContainer width="100%" height={height}>
         <ComposedChart
-          data={isIndividualSimulation && individualSimData ? individualSimData : data}
+          data={isIndividualSimulation && individualSimData ? individualSimData : chartDataWithCI}
           margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
         >
           <defs>
             {/* Gradient for intervention confidence interval */}
-            <linearGradient id={`interventionCI-${panel.facetValue}`} x1="0" y1="0" x2="0" y2="1">
+            <linearGradient id={`interventionCI-${safeId}`} x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.3} />
               <stop offset="100%" stopColor="#3b82f6" stopOpacity={0.1} />
             </linearGradient>
             {/* Gradient for baseline confidence interval */}
-            <linearGradient id={`baselineCI-${panel.facetValue}`} x1="0" y1="0" x2="0" y2="1">
+            <linearGradient id={`baselineCI-${safeId}`} x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="#9ca3af" stopOpacity={0.2} />
               <stop offset="100%" stopColor="#9ca3af" stopOpacity={0.05} />
             </linearGradient>
@@ -303,30 +328,60 @@ const NativeSimulationChart = memo(({
           {/* === MEAN/MEDIAN RENDERING === */}
           {!isIndividualSimulation && (
             <>
-              {/* Baseline confidence interval area */}
+              {/* Baseline confidence interval - stacked areas for proper lower-to-upper band */}
               {showConfidenceInterval && showBaseline && (
-                <Area
-                  type="monotone"
-                  dataKey="baselineUpper"
-                  stroke="none"
-                  fill={`url(#baselineCI-${panel.facetValue})`}
-                  fillOpacity={1}
-                  name="baselineCI"
-                  legendType="none"
-                />
+                <>
+                  {/* Invisible base from 0 to lower bound */}
+                  <Area
+                    type="monotone"
+                    dataKey="baselineCiBase"
+                    stackId="baselineCI"
+                    stroke="none"
+                    fill="transparent"
+                    legendType="none"
+                    isAnimationActive={false}
+                  />
+                  {/* Visible CI band from lower to upper */}
+                  <Area
+                    type="monotone"
+                    dataKey="baselineCiHeight"
+                    stackId="baselineCI"
+                    stroke="none"
+                    fill={`url(#baselineCI-${safeId})`}
+                    fillOpacity={1}
+                    name="baselineCI"
+                    legendType="none"
+                    isAnimationActive={false}
+                  />
+                </>
               )}
 
-              {/* Intervention confidence interval area */}
+              {/* Intervention confidence interval - stacked areas for proper lower-to-upper band */}
               {showConfidenceInterval && (
-                <Area
-                  type="monotone"
-                  dataKey="upper"
-                  stroke="none"
-                  fill={`url(#interventionCI-${panel.facetValue})`}
-                  fillOpacity={1}
-                  name="interventionCI"
-                  legendType="none"
-                />
+                <>
+                  {/* Invisible base from 0 to lower bound */}
+                  <Area
+                    type="monotone"
+                    dataKey="ciBase"
+                    stackId="interventionCI"
+                    stroke="none"
+                    fill="transparent"
+                    legendType="none"
+                    isAnimationActive={false}
+                  />
+                  {/* Visible CI band from lower to upper */}
+                  <Area
+                    type="monotone"
+                    dataKey="ciHeight"
+                    stackId="interventionCI"
+                    stroke="none"
+                    fill={`url(#interventionCI-${safeId})`}
+                    fillOpacity={1}
+                    name="interventionCI"
+                    legendType="none"
+                    isAnimationActive={false}
+                  />
+                </>
               )}
 
               {/* Baseline line */}
