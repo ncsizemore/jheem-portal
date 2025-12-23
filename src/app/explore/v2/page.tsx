@@ -140,6 +140,9 @@ export default function ExploreV2() {
   // City switcher dropdown
   const [showCitySwitcher, setShowCitySwitcher] = useState(false);
 
+  // Track if user has started exploring (first hover triggers this)
+  const [hasStartedExploring, setHasStartedExploring] = useState(false);
+
   // Display options
   const [displayOptions, setDisplayOptions] = useState<ChartDisplayOptions>({
     showConfidenceInterval: true,
@@ -255,6 +258,7 @@ export default function ExploreV2() {
                     onMouseEnter={(e) => {
                       cancelHideTimeout();
                       setHoveredCity(city);
+                      setHasStartedExploring(true);
                       const rect = e.currentTarget.getBoundingClientRect();
                       setHoverPosition({ x: rect.left + rect.width / 2, y: rect.top });
                     }}
@@ -302,29 +306,89 @@ export default function ExploreV2() {
             })}
           </Map>
 
-          {/* Info card */}
-          <div className="absolute top-4 left-4 max-w-sm">
-            <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-4">
-              <h1 className="text-white font-semibold text-lg mb-1">JHEEM Explorer</h1>
-              <p className="text-white/70 text-sm mb-3">
-                Explore projected HIV outcomes under different Ryan White Program funding scenarios.
-              </p>
-              <div className="flex items-center gap-2 text-white/60 text-xs">
-                <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse" />
-                <span>{AVAILABLE_CITIES.length} {AVAILABLE_CITIES.length === 1 ? 'city' : 'cities'} available</span>
+          {/* Info panel */}
+          <div className="absolute top-4 left-4 w-80">
+            <div className="bg-slate-900/95 backdrop-blur-md border border-white/10 rounded-xl overflow-hidden shadow-2xl">
+              {/* Header row - always visible */}
+              <button
+                onClick={() => setHasStartedExploring(prev => !prev)}
+                className="w-full px-4 py-3 flex items-center justify-between hover:bg-white/5 transition-colors"
+              >
+                <h1 className="text-white font-semibold text-sm">
+                  Ryan White Funding Explorer
+                </h1>
+                <motion.div
+                  animate={{ rotate: hasStartedExploring ? 0 : 180 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <svg className="w-4 h-4 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                  </svg>
+                </motion.div>
+              </button>
+
+              {/* Collapsible content */}
+              <motion.div
+                initial={false}
+                animate={{
+                  height: hasStartedExploring ? 0 : 'auto',
+                  opacity: hasStartedExploring ? 0 : 1
+                }}
+                transition={{ duration: 0.25, ease: 'easeInOut' }}
+                className="overflow-hidden"
+              >
+                <div className="px-4 pb-4 border-t border-white/10">
+                  {/* How to use */}
+                  <div className="mt-3 space-y-2.5">
+                    <div className="flex items-start gap-2.5">
+                      <div className="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <span className="text-blue-400 text-xs font-medium">1</span>
+                      </div>
+                      <p className="text-white/70 text-sm">
+                        <span className="text-white/90 font-medium">Hover</span> a city to preview key metrics and projected impact
+                      </p>
+                    </div>
+                    <div className="flex items-start gap-2.5">
+                      <div className="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <span className="text-blue-400 text-xs font-medium">2</span>
+                      </div>
+                      <p className="text-white/70 text-sm">
+                        <span className="text-white/90 font-medium">Click</span> to open full analysis with interactive charts
+                      </p>
+                    </div>
+                    <div className="flex items-start gap-2.5">
+                      <div className="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <span className="text-blue-400 text-xs font-medium">3</span>
+                      </div>
+                      <p className="text-white/70 text-sm">
+                        <span className="text-white/90 font-medium">Compare</span> scenarios and explore breakdowns by age, sex, and race
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Legend - always visible */}
+              <div className="px-4 py-2.5 border-t border-white/10 flex items-center gap-4 text-xs text-white/50">
+                <div className="flex items-center gap-1.5">
+                  <div className="flex gap-0.5">
+                    <div className="w-2 h-2 rounded-full bg-red-500" />
+                    <div className="w-2 h-2 rounded-full bg-yellow-500" />
+                    <div className="w-2 h-2 rounded-full bg-green-500" />
+                  </div>
+                  <span>Suppression</span>
+                </div>
+                <div className="w-px h-3 bg-white/20" />
+                <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-0.5">
+                    <div className="w-1.5 h-1.5 rounded-full bg-white/40" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-white/40" />
+                  </div>
+                  <span>Population</span>
+                </div>
               </div>
             </div>
           </div>
-
-          {/* Prompt */}
-          {!loading && (
-            <div className="absolute bottom-6 left-1/2 -translate-x-1/2">
-              <div className="bg-white/95 shadow-lg rounded-full px-5 py-2.5 flex items-center gap-3">
-                <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
-                <p className="text-slate-700 text-sm font-medium">Click a city to explore outcomes</p>
-              </div>
-            </div>
-          )}
 
           {/* Hover preview card */}
           {hoveredCity && hoverPosition && (() => {
