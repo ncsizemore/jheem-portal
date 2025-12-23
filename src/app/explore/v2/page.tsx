@@ -334,31 +334,24 @@ export default function ExploreV2() {
             // Smart positioning to avoid edge cutoff
             const cardWidth = 280;
             const cardHeight = 220;
-            const padding = 20;
+            const padding = 16;
             const windowWidth = typeof window !== 'undefined' ? window.innerWidth : 1200;
 
-            // Calculate where card would be if centered
-            const cardLeft = hoverPosition.x - cardWidth / 2;
-            const cardRight = hoverPosition.x + cardWidth / 2;
+            // Horizontal: calculate ideal centered position, then clamp to viewport
+            const idealLeft = hoverPosition.x - cardWidth / 2;
+            const clampedLeft = Math.max(
+              padding,
+              Math.min(idealLeft, windowWidth - cardWidth - padding)
+            );
 
-            // Horizontal positioning
-            let leftPos = hoverPosition.x;
-            let horizontalShift = '-50%'; // default: centered
-
-            if (cardLeft < padding) {
-              // Would overflow left - align card's left edge to padding
-              leftPos = padding;
-              horizontalShift = '0%';
-            } else if (cardRight > windowWidth - padding) {
-              // Would overflow right - align card's right edge to window - padding
-              leftPos = windowWidth - padding;
-              horizontalShift = '-100%';
-            }
+            // Calculate arrow position (where the marker is relative to the card)
+            const arrowLeft = hoverPosition.x - clampedLeft;
+            // Clamp arrow to stay within card bounds (with some padding)
+            const arrowLeftClamped = Math.max(20, Math.min(arrowLeft, cardWidth - 20));
 
             // Vertical: flip below if too close to top
             const showBelow = hoverPosition.y < cardHeight + padding + 50;
             const topPos = showBelow ? hoverPosition.y + 35 : hoverPosition.y - 12;
-            const verticalShift = showBelow ? '0%' : '-100%';
 
             return (
               <motion.div
@@ -366,9 +359,9 @@ export default function ExploreV2() {
                 animate={{ opacity: 1, y: 0 }}
                 className="fixed z-50"
                 style={{
-                  left: leftPos,
+                  left: clampedLeft,
                   top: topPos,
-                  transform: `translate(${horizontalShift}, ${verticalShift})`,
+                  transform: showBelow ? 'translateY(0)' : 'translateY(-100%)',
                   cursor: 'pointer'
                 }}
                 onMouseEnter={cancelHideTimeout}
@@ -444,11 +437,17 @@ export default function ExploreV2() {
                     <span className="text-xs text-blue-600 font-medium">Click to explore projections →</span>
                   </div>
                 </div>
-                {/* Arrow - points up or down based on card position */}
+                {/* Arrow - points toward the marker */}
                 {!showBelow ? (
-                  <div className="absolute left-1/2 -translate-x-1/2 -bottom-1.5 w-3 h-3 bg-white border-r border-b border-slate-200 rotate-45" />
+                  <div
+                    className="absolute -bottom-1.5 w-3 h-3 bg-white border-r border-b border-slate-200 rotate-45"
+                    style={{ left: arrowLeftClamped, transform: 'translateX(-50%)' }}
+                  />
                 ) : (
-                  <div className="absolute left-1/2 -translate-x-1/2 -top-1.5 w-3 h-3 bg-white border-l border-t border-slate-200 rotate-45" />
+                  <div
+                    className="absolute -top-1.5 w-3 h-3 bg-white border-l border-t border-slate-200 rotate-45"
+                    style={{ left: arrowLeftClamped, transform: 'translateX(-50%)' }}
+                  />
                 )}
               </motion.div>
             );
