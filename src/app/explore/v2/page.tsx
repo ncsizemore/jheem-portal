@@ -26,6 +26,12 @@ const SCENARIO_LABELS: Record<string, string> = {
   prolonged_interruption: 'Prolonged Interruption',
 };
 
+const SCENARIO_DESCRIPTIONS: Record<string, string> = {
+  cessation: 'Ryan White funding completely stops',
+  brief_interruption: 'Funding pauses temporarily (1-2 years)',
+  prolonged_interruption: 'Funding pauses for an extended period (3+ years)',
+};
+
 function formatOptionLabel(value: string): string {
   return value
     .replace(/\./g, ' ')
@@ -158,17 +164,26 @@ export default function ExploreV2() {
             ))}
           </Map>
 
-          {/* Branding */}
-          <div className="absolute top-4 left-4">
-            <h1 className="text-white/90 font-semibold text-lg">JHEEM Explorer</h1>
-            <p className="text-white/50 text-sm">Ryan White HIV/AIDS Program Analysis</p>
+          {/* Info card */}
+          <div className="absolute top-4 left-4 max-w-sm">
+            <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-4">
+              <h1 className="text-white font-semibold text-lg mb-1">JHEEM Explorer</h1>
+              <p className="text-white/70 text-sm mb-3">
+                Explore projected HIV outcomes under different Ryan White Program funding scenarios.
+              </p>
+              <div className="flex items-center gap-2 text-white/60 text-xs">
+                <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse" />
+                <span>{AVAILABLE_CITIES.length} {AVAILABLE_CITIES.length === 1 ? 'city' : 'cities'} available</span>
+              </div>
+            </div>
           </div>
 
           {/* Prompt */}
           {!loading && (
             <div className="absolute bottom-6 left-1/2 -translate-x-1/2">
-              <div className="bg-white/10 backdrop-blur border border-white/20 rounded-lg px-4 py-2">
-                <p className="text-white/80 text-sm">Click a city to explore</p>
+              <div className="bg-white/95 shadow-lg rounded-full px-5 py-2.5 flex items-center gap-3">
+                <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
+                <p className="text-slate-700 text-sm font-medium">Click a city to explore outcomes</p>
               </div>
             </div>
           )}
@@ -196,17 +211,18 @@ export default function ExploreV2() {
             className="relative w-full h-full bg-slate-50">
           {/* Main content area */}
           <div className="h-full flex flex-col">
-            {/* Header bar */}
-            <div className="bg-white border-b border-slate-200 px-4 py-3 flex-shrink-0">
-              <div className="flex items-center justify-between">
+            {/* Header */}
+            <div className="bg-white border-b border-slate-200 flex-shrink-0">
+              {/* Top row: Location + Scenarios */}
+              <div className="px-4 py-3 flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                  {/* Map thumbnail - floating style in header */}
+                  {/* Map thumbnail */}
                   <button
                     onClick={handleBackToMap}
-                    className="group relative rounded-xl overflow-hidden border-2 border-blue-300 shadow-md shadow-blue-100 hover:shadow-xl hover:shadow-blue-200 hover:border-blue-400 hover:scale-105 transition-all duration-200"
+                    className="group relative rounded-lg overflow-hidden border-2 border-blue-300 shadow-sm shadow-blue-100 hover:shadow-md hover:shadow-blue-200 hover:border-blue-400 hover:scale-105 transition-all duration-200 flex-shrink-0"
                     title="Back to map"
                   >
-                    <div className="w-32 h-20 relative">
+                    <div className="w-20 h-12 relative">
                       <Map
                         longitude={selectedCity.coordinates[0]}
                         latitude={selectedCity.coordinates[1]}
@@ -223,55 +239,43 @@ export default function ExploreV2() {
                           anchor="center"
                         >
                           <div className="relative">
-                            {/* Pulsing ring */}
-                            <div className="absolute inset-0 w-3 h-3 bg-blue-400 rounded-full animate-ping opacity-75" />
-                            {/* Solid marker */}
-                            <div className="relative w-3 h-3 bg-blue-500 rounded-full border-2 border-white shadow-lg" />
+                            <div className="absolute inset-0 w-2 h-2 bg-blue-400 rounded-full animate-ping opacity-75" />
+                            <div className="relative w-2 h-2 bg-blue-500 rounded-full border border-white" />
                           </div>
                         </Marker>
                       </Map>
-
-                      {/* "Map" label - always visible */}
-                      <div className="absolute bottom-1 left-1 bg-black/50 backdrop-blur-sm rounded px-1.5 py-0.5">
-                        <span className="text-[10px] font-medium text-white/90">← Map</span>
+                      <div className="absolute bottom-0.5 left-0.5 bg-black/50 rounded px-1 py-0.5">
+                        <span className="text-[8px] font-medium text-white/90">← Map</span>
                       </div>
-
-                      {/* Hover overlay */}
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
-                        <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1.5 bg-white/95 rounded-md px-2.5 py-1.5 shadow-lg">
-                          <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                          </svg>
-                          <span className="text-sm font-medium text-slate-700">Back to map</span>
-                        </div>
-                      </div>
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
                     </div>
                   </button>
 
                   {/* City name */}
                   <div>
-                    <h1 className="font-semibold text-slate-900 text-xl leading-tight">
+                    <h1 className="font-semibold text-slate-900 text-lg leading-tight">
                       {selectedCity.name.split(',')[0]}
                     </h1>
-                    <p className="text-slate-400 text-sm">
+                    <p className="text-slate-400 text-xs">
                       {selectedCity.name.split(',').slice(1).join(',').trim()}
                     </p>
                   </div>
                 </div>
 
-                {/* Scenario tabs - right side */}
+                {/* Scenario tabs */}
                 {selectedCity.availableScenarios && (
-                  <div className="flex flex-col items-end gap-1.5">
-                    <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">Scenario</span>
-                    <div className="flex gap-1.5">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-medium text-slate-400">Scenario:</span>
+                    <div className="flex gap-1">
                       {selectedCity.availableScenarios.map(scenario => (
                         <button
                           key={scenario}
                           onClick={() => setSelectedScenario(scenario)}
-                          className={`px-4 py-2 text-sm font-medium rounded-lg transition-all
+                          title={SCENARIO_DESCRIPTIONS[scenario] || ''}
+                          className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all
                             ${selectedScenario === scenario
-                              ? 'bg-blue-600 text-white shadow-md'
-                              : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:shadow'
+                              ? 'bg-blue-600 text-white'
+                              : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                             }`}
                         >
                           {SCENARIO_LABELS[scenario] || scenario}
@@ -281,19 +285,16 @@ export default function ExploreV2() {
                   </div>
                 )}
               </div>
-            </div>
 
-            {/* Controls bar */}
-            <div className="bg-white border-b border-slate-200 px-6 py-3 flex-shrink-0">
-              <div className="flex items-end gap-6">
-                {/* Dropdowns */}
-                <div className="flex gap-4">
-                  <div className="w-48">
-                    <label className="block text-xs font-medium text-slate-500 mb-1">Outcome</label>
+              {/* Bottom row: Plot controls */}
+              <div className="px-4 py-2 bg-slate-50 flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2">
+                    <label className="text-xs font-medium text-slate-500">Outcome:</label>
                     <select
                       value={selectedOutcome}
                       onChange={e => setSelectedOutcome(e.target.value)}
-                      className="w-full border border-slate-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="border border-slate-300 rounded-md px-2 py-1 text-sm bg-white focus:outline-none focus:ring-1 focus:ring-blue-500"
                     >
                       {options.outcomes.map(o => (
                         <option key={o} value={o}>{formatOptionLabel(o)}</option>
@@ -301,12 +302,12 @@ export default function ExploreV2() {
                     </select>
                   </div>
 
-                  <div className="w-40">
-                    <label className="block text-xs font-medium text-slate-500 mb-1">Statistic</label>
+                  <div className="flex items-center gap-2">
+                    <label className="text-xs font-medium text-slate-500">Statistic:</label>
                     <select
                       value={selectedStatistic}
                       onChange={e => setSelectedStatistic(e.target.value)}
-                      className="w-full border border-slate-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="border border-slate-300 rounded-md px-2 py-1 text-sm bg-white focus:outline-none focus:ring-1 focus:ring-blue-500"
                     >
                       {options.statistics.map(s => (
                         <option key={s} value={s}>{formatOptionLabel(s)}</option>
@@ -314,12 +315,12 @@ export default function ExploreV2() {
                     </select>
                   </div>
 
-                  <div className="w-40">
-                    <label className="block text-xs font-medium text-slate-500 mb-1">Breakdown</label>
+                  <div className="flex items-center gap-2">
+                    <label className="text-xs font-medium text-slate-500">Breakdown:</label>
                     <select
                       value={selectedFacet}
                       onChange={e => setSelectedFacet(e.target.value)}
-                      className="w-full border border-slate-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="border border-slate-300 rounded-md px-2 py-1 text-sm bg-white focus:outline-none focus:ring-1 focus:ring-blue-500"
                     >
                       {options.facets.map(f => (
                         <option key={f} value={f}>{formatOptionLabel(f)}</option>
@@ -329,8 +330,8 @@ export default function ExploreV2() {
                 </div>
 
                 {/* Display toggles */}
-                <div className="flex gap-4 ml-auto">
-                  <label className="flex items-center gap-2 text-sm text-slate-600 cursor-pointer">
+                <div className="flex items-center gap-4">
+                  <label className="flex items-center gap-1.5 text-sm text-slate-600 cursor-pointer hover:text-slate-800">
                     <input
                       type="checkbox"
                       checked={displayOptions.showConfidenceInterval}
@@ -339,7 +340,7 @@ export default function ExploreV2() {
                     />
                     95% CI
                   </label>
-                  <label className="flex items-center gap-2 text-sm text-slate-600 cursor-pointer">
+                  <label className="flex items-center gap-1.5 text-sm text-slate-600 cursor-pointer hover:text-slate-800">
                     <input
                       type="checkbox"
                       checked={displayOptions.showBaseline}
@@ -348,7 +349,7 @@ export default function ExploreV2() {
                     />
                     Baseline
                   </label>
-                  <label className="flex items-center gap-2 text-sm text-slate-600 cursor-pointer">
+                  <label className="flex items-center gap-1.5 text-sm text-slate-600 cursor-pointer hover:text-slate-800">
                     <input
                       type="checkbox"
                       checked={displayOptions.showObservations}
