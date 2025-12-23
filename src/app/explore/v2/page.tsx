@@ -11,15 +11,24 @@ import type { PlotDataFile, FacetPanel, ChartDisplayOptions } from '@/types/nati
 import 'mapbox-gl/dist/mapbox-gl.css';
 
 // City summary data types
+interface MetricValue {
+  value: number;
+  lower?: number;
+  upper?: number;
+  year: number;
+  label: string;
+  source?: 'model' | 'observed';
+}
+
 interface CitySummary {
   name: string;
   shortName: string;
   coordinates: [number, number];
   metrics: {
-    diagnosedPrevalence: { value: number; year: number; label: string };
-    suppressionRate: { value: number; year: number; label: string };
-    incidenceBaseline: { value: number; year: number; label: string };
-    incidenceCessation: { value: number; year: number; label: string };
+    diagnosedPrevalence: MetricValue;
+    suppressionRate: MetricValue;
+    incidenceBaseline: MetricValue;
+    incidenceCessation: MetricValue;
   };
   impact: {
     cessationIncreasePercent: number;
@@ -31,6 +40,8 @@ interface CitySummary {
 
 interface CitySummaries {
   generated: string;
+  description?: string;
+  dataSource?: string;
   cities: Record<string, CitySummary>;
 }
 
@@ -432,84 +443,74 @@ export default function ExploreV2() {
                 onMouseLeave={startHideTimeout}
                 onClick={() => hoveredCity && handleCityClick(hoveredCity)}
               >
-                <div className="bg-white rounded-xl shadow-xl border border-slate-200 p-3 min-w-[260px] hover:shadow-2xl transition-shadow">
-                  {/* Header */}
-                  <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 bg-slate-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <svg className="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                      </svg>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-slate-900 text-sm">
-                        {summary?.shortName || hoveredCity.name.split(',')[0]}
-                      </h3>
-                      <p className="text-slate-500 text-xs">
-                        {hoveredCity.name.split(',').slice(1).join(',').trim()}
-                      </p>
-                    </div>
-                  </div>
+                <div className="bg-slate-900/95 backdrop-blur-md border border-white/10 rounded-xl p-3 min-w-[240px] hover:bg-slate-800/95 transition-colors">
+                  {/* Header - single line */}
+                  <h3 className="font-semibold text-white text-sm mb-2">
+                    {summary?.shortName || hoveredCity.name.split(',')[0]}, {hoveredCity.name.split(',').slice(-1)[0]?.trim()}
+                  </h3>
 
-                  {/* Metrics */}
+                  {/* Current Status (Model Estimates) */}
                   {summary && (
-                    <div className="mt-3 pt-3 border-t border-slate-100 space-y-2">
-                      {/* Suppression rate */}
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs text-slate-500">Viral suppression</span>
-                        <div className="flex items-center gap-1.5">
-                          <div
-                            className="w-2 h-2 rounded-full"
-                            style={{ backgroundColor: colors?.ring }}
-                          />
-                          <span className="text-sm font-semibold text-slate-800">
-                            {summary.metrics.suppressionRate.value.toFixed(0)}%
+                    <div className="py-2 border-y border-white/10">
+                      <div className="flex items-baseline justify-between mb-1.5">
+                        <span className="text-[10px] uppercase tracking-wide text-white/40">Model Estimate {summary.metrics.suppressionRate.year}</span>
+                      </div>
+                      <div className="space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-white/60">Viral suppression</span>
+                          <div className="flex items-center gap-1.5">
+                            <div
+                              className="w-2 h-2 rounded-full"
+                              style={{ backgroundColor: colors?.ring }}
+                            />
+                            <span className="text-sm font-semibold text-white">
+                              {summary.metrics.suppressionRate.value.toFixed(0)}%
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-white/60">People with HIV</span>
+                          <span className="text-sm font-semibold text-white">
+                            {summary.metrics.diagnosedPrevalence.value.toLocaleString()}
                           </span>
                         </div>
                       </div>
-                      {/* Prevalence */}
+                    </div>
+                  )}
+
+                  {/* Impact Projection */}
+                  {summary && (
+                    <div className="pt-2">
+                      <div className="flex items-baseline justify-between mb-1.5">
+                        <span className="text-[10px] uppercase tracking-wide text-white/40">If Funding Stops</span>
+                        <span className="text-[10px] text-white/30">by {summary.impact.targetYear}</span>
+                      </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-xs text-slate-500">Living with HIV</span>
-                        <span className="text-sm font-semibold text-slate-800">
-                          {summary.metrics.diagnosedPrevalence.value.toLocaleString()}
+                        <span className="text-xs text-white/60">New HIV cases</span>
+                        <span className="text-sm font-semibold text-amber-400">
+                          +{summary.impact.cessationIncreasePercent}%
                         </span>
                       </div>
                     </div>
                   )}
 
-                  {/* Impact headline */}
-                  {summary && (
-                    <div className="mt-3 p-2 bg-amber-50 border border-amber-200 rounded-lg">
-                      <div className="flex items-start gap-2">
-                        <svg className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                        </svg>
-                        <div>
-                          <p className="text-xs font-medium text-amber-800">
-                            If funding stops:
-                          </p>
-                          <p className="text-xs text-amber-700 mt-0.5">
-                            +{summary.impact.cessationIncreasePercent}% new cases by {summary.impact.targetYear}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* CTA */}
-                  <div className="mt-3 text-center">
-                    <span className="text-xs text-blue-600 font-medium">Click to explore projections →</span>
+                  {/* Click hint */}
+                  <div className="mt-2 pt-2 border-t border-white/5 flex items-center justify-center gap-1 text-white/40 text-xs">
+                    <span>Click to explore</span>
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
                   </div>
                 </div>
                 {/* Arrow - points toward the marker */}
                 {!showBelow ? (
                   <div
-                    className="absolute -bottom-1.5 w-3 h-3 bg-white border-r border-b border-slate-200 rotate-45"
+                    className="absolute -bottom-1.5 w-3 h-3 bg-slate-900/95 border-r border-b border-white/10 rotate-45"
                     style={{ left: arrowLeftClamped, transform: 'translateX(-50%)' }}
                   />
                 ) : (
                   <div
-                    className="absolute -top-1.5 w-3 h-3 bg-white border-l border-t border-slate-200 rotate-45"
+                    className="absolute -top-1.5 w-3 h-3 bg-slate-900/95 border-l border-t border-white/10 rotate-45"
                     style={{ left: arrowLeftClamped, transform: 'translateX(-50%)' }}
                   />
                 )}
