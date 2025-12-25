@@ -105,21 +105,47 @@ Estimate: 1-2 hours.
 
 ---
 
-## Recommended Next Steps
+## Recommended Next Steps (Updated)
 
-### Immediate (Next Session)
-1. **Fix CI rendering** - Quick win, improves visual polish
-2. **Implement scenario splitting** - Critical for production performance
-3. **Regenerate Baltimore** with scenario-split output
+### Immediate Priority: Validate Against Shiny App
+Before scaling to 31 cities, do a detailed visual comparison:
+- Compare CI bands, line positions, observation points
+- Verify facet panel layouts match
+- Check edge cases (missing data, zero values)
 
-### Short-term (This Week)
-4. **Create 31-city generation script** - Either GitHub Actions workflow or local batch script
-5. **Set up S3 + CloudFront** - Host production data with gzip and caching
-6. **Generate full dataset** - All 31 cities with scenario splitting
+### High Priority: Production Infrastructure
 
-### Medium-term
-7. **Replace legacy map explorer** - Swap `/explore` to use native plotting
-8. **Deprecate Plotly JSON pipeline** - Remove v1 API and old data
+| Task | Effort | Notes |
+|------|--------|-------|
+| Scenario splitting | 2-3 hrs | Split 398MB file into 3×~130MB per scenario |
+| S3 + CloudFront setup | 1-2 hrs | Host with gzip, 24hr cache |
+| 31-city generation pipeline | 2-3 hrs | GitHub Actions or batch script |
+| Generate full dataset | Compute time | All cities, all scenarios |
+
+### Medium Priority: V2 Polish
+
+| Task | Effort | Notes |
+|------|--------|-------|
+| Faceted grid pagination | 2-3 hrs | "Show first 9" for 45-panel views |
+| Scenario descriptions | 30 min | Add context below active tab |
+| Mobile responsive pass | 3-4 hrs | Collapsible filters, touch targets |
+| City switcher search | 1-2 hrs | Needed when 31 cities are live |
+
+### Lower Priority: Cleanup
+
+| Task | Effort | Notes |
+|------|--------|-------|
+| Deprecate `/explore/native` | 30 min | V2 supersedes it |
+| Remove legacy Plotly pipeline | 1 hr | Once native is validated |
+| Update CLAUDE.md | 30 min | Reflect current architecture |
+
+### Decision Point
+
+**Which route becomes `/explore`?**
+- Current: `/explore` = Plotly-based (legacy)
+- `/explore/v2` = Native Recharts (new)
+
+Recommend: Once 31 cities are generated and validated, swap V2 to be the main `/explore` route.
 
 ---
 
@@ -174,3 +200,44 @@ npx tsx scripts/aggregate-city-data.ts \
   /Users/cristina/wiley/Documents/jheem-portal/generated-data/baltimore-full/C.12580 \
   public/data/C.12580.json
 ```
+
+---
+
+## Design Assessment: Explore V2 (Added Later in Session)
+
+### Overview
+
+A parallel session produced `/explore/v2` - a significant UX redesign. Assessment from senior web designer perspective:
+
+**Grade: B+ (Shippable for demo/internal use)**
+
+### Key Improvements Over Original `/explore/native`
+
+| Before (Native) | After (V2) |
+|-----------------|------------|
+| 7 visual layers | 2-3 layers |
+| Dark overlay + white charts | Consistent light theme |
+| Floating disconnected controls | Integrated header |
+| No onboarding | Collapsible 3-step guide |
+| Generic map dots | Data-driven size (prevalence) + color (suppression) |
+| Basic hover | Impact-focused preview card with key metrics |
+
+### What's Working Well
+
+1. **Two-mode architecture** - Map mode for discovery, Analysis mode for exploration. Clear separation.
+2. **Information-rich markers** - Size encodes epidemic size, color encodes viral suppression. Scannable at a glance.
+3. **Smart hover cards** - Current metrics + impact projection ("If Funding Stops: +X%"). Edge-aware positioning.
+4. **Collapsible onboarding** - Steps 1-2-3 collapse once user starts exploring. Progressive disclosure.
+5. **Integrated controls** - Scenarios as tabs, filters inline in header. No floating elements.
+6. **Mini-map back button** - Clever use of space, provides geographic context.
+
+### Remaining Polish Needed
+
+1. **Faceted grid at scale** - 45 panels for `age+race+sex` is overwhelming. Consider pagination or compact view.
+2. **Scenario context** - Tabs say "Cessation" but meaning isn't obvious. Add subtle description.
+3. **Mobile responsiveness** - Header controls will stack poorly on small screens.
+4. **City switcher scaling** - Dropdown works for 1 city, will need search/filter for 31.
+
+### Verdict
+
+Ready for stakeholder demos and internal use. Not yet polished for high-traffic public launch, but UX foundation is solid.
