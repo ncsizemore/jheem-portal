@@ -19,8 +19,7 @@ The Ryan White map explorer modernization spans three repositories, replacing le
 
 **Key Routes**:
 - `/explore` - Ryan White Map Explorer (legacy Plotly-based)
-- `/explore/v2` - **NEW** Native Recharts explorer (recommended)
-- `/explore/native` - Native plotting test page (deprecated by v2)
+- `/explore/native` - **NEW** Native Recharts explorer (recommended, will replace /explore)
 - `/hiv-age-projections` - Multi-state HIV aging analysis
 - `/ryan-white-state-level` - Embedded Shiny app (iframe)
 - `/cdc-testing` - Embedded Shiny app (iframe)
@@ -136,7 +135,7 @@ Two issues resolved:
 
 #### ✅ V2 UX Redesign Assessed
 
-New `/explore/v2` page reviewed. **Grade: B+ (Shippable for demos)**
+New `/explore/native` page reviewed. **Grade: B+ (Shippable for demos)**
 
 Key improvements over original:
 - Two-mode architecture (map → analysis)
@@ -233,7 +232,7 @@ Comprehensive frontend code review. Grade A overall. Minor issues identified (UR
 ### ✅ Complete & Working
 - **Frontend (jheem-portal)**: All apps deployed, Grade A code quality
 - **Native Plotting**: ✅ Multi-level faceting fixed, CI rendering fixed
-- **V2 UX Redesign**: ✅ `/explore/v2` ready (Grade B+, shippable for demos)
+- **V2 UX Redesign**: ✅ `/explore/native` ready (Grade B+, shippable for demos)
 - **Baltimore Dataset**: ✅ Full 16-facet data generated (954 files, 398MB)
 - **Security**: Zero vulnerabilities, comprehensive CSP headers
 
@@ -733,8 +732,7 @@ Comprehensive frontend code review. Grade A overall. Minor issues identified (UR
 - `/src/hooks/useAvailableCities.ts` (191 lines) - API discovery hook
 
 ### Native Plotting Components (Recharts - Current)
-- `/src/app/explore/v2/page.tsx` - **V2 Map Explorer** (817 lines) - Two-mode UX, recommended
-- `/src/app/explore/native/page.tsx` - Native map explorer (deprecated by v2)
+- `/src/app/explore/native/page.tsx` - **Native Map Explorer** (817 lines) - Two-mode UX, recommended
 - `/src/app/explore/test-native/page.tsx` - Test page for native charts
 - `/src/components/NativeSimulationChart.tsx` - Recharts-based chart component
 - `/src/components/NativePlotOverlay.tsx` - Plot overlay using native charts
@@ -784,7 +782,7 @@ Comprehensive frontend code review. Grade A overall. Minor issues identified (UR
 
 **Deliverable**: Production map explorer with all 31 cities
 
-### Medium Priority: V2 Polish
+### Medium Priority: Native Explorer Polish
 | Task | Effort | Status |
 |------|--------|--------|
 | Facet pagination | 2-3 hrs | ❌ "Show first 9" for 45-panel views |
@@ -793,8 +791,7 @@ Comprehensive frontend code review. Grade A overall. Minor issues identified (UR
 | City switcher search | 1-2 hrs | ❌ Needed for 31 cities |
 
 ### Lower Priority: Cleanup & Custom Sims
-- ❌ Deprecate `/explore/native` (V2 supersedes it)
-- ❌ Remove legacy Plotly pipeline (once validated)
+- ❌ Remove legacy Plotly `/explore` (once native is promoted)
 - ❌ Custom simulations (separate track, 70% infra ready)
 
 ---
