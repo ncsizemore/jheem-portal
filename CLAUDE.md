@@ -18,7 +18,9 @@ The Ryan White map explorer modernization spans three repositories, replacing le
 **URL**: https://jheem-portal.vercel.app/
 
 **Key Routes**:
-- `/explore` - Ryan White Map Explorer (prerun plots)
+- `/explore` - Ryan White Map Explorer (legacy Plotly-based)
+- `/explore/v2` - **NEW** Native Recharts explorer (recommended)
+- `/explore/native` - Native plotting test page (deprecated by v2)
 - `/hiv-age-projections` - Multi-state HIV aging analysis
 - `/ryan-white-state-level` - Embedded Shiny app (iframe)
 - `/cdc-testing` - Embedded Shiny app (iframe)
@@ -98,68 +100,60 @@ User sees custom results
 
 ---
 
-## Latest Session Summary (2025-12-18 - Evening)
+## Latest Session Summary (2025-12-20)
 
-### 🎉 SESSION ACCOMPLISHMENTS: Full Baltimore Data Generation & Size Validation
+### 🎉 SESSION ACCOMPLISHMENTS: Multi-Facet Fix, CI Rendering, V2 UX Assessment
 
-#### ✅ Full Dataset Generated
+#### ✅ Multi-Level Faceting Fixed
 
-Generated complete Baltimore dataset with all combinations:
+Fixed critical bug where multi-dimensional facets (e.g., `age+race+sex`) only showed first dimension.
+
+**Root Cause**: `batch_plot_generator.R` only extracted `facet.by1`, ignoring `facet.by2`, `facet.by3`, etc.
+
+**Fix Applied**:
+- R side: Changed from hardcoded `facet.by1` to regex `grep("^facet\\.by[0-9]+$", ...)`
+- Frontend: Added composite facet key helper, updated type definitions
+
+**Validation**: `age+race+sex` now correctly shows 45 panels (5×3×3) instead of 5.
+
+#### ✅ CI Band Rendering Fixed
+
+Two issues resolved:
+1. **CI bands now render from lower→upper** (not from 0) using stacked Recharts areas
+2. **Gradient IDs sanitized** - multi-facet values with spaces/pipes no longer break SVG references
+
+#### ✅ Full 16-Facet Baltimore Dataset Generated
 
 | Metric | Value |
 |--------|-------|
-| Files generated | 318 (out of 336 attempted) |
-| Scenarios | 3 (cessation, brief_interruption, prolonged_interruption) |
+| Files generated | 954 |
+| Scenarios | 3 |
 | Outcomes | 14 |
-| Statistics | 2 (mean.and.interval, median.and.interval) |
-| Facets | 4 (none, age, sex, race) |
-| **Aggregated (uncompressed)** | **18 MB** |
-| **Aggregated (gzipped)** | **1.0 MB** |
-| **Projected for 31 cities** | **~31 MB gzipped** |
+| Statistics | 2 |
+| Facets | 16 (including multi-dimensional) |
+| **Aggregated (uncompressed)** | **398 MB** |
+| **Aggregated (gzipped)** | **17.7 MB** |
 
-File sizes are **much smaller than estimated** (~31 MB vs ~71 MB) because we exclude `individual.simulation` statistic.
+#### ✅ V2 UX Redesign Assessed
 
-#### ✅ Correct Outcome Names Identified
+New `/explore/v2` page reviewed. **Grade: B+ (Shippable for demos)**
 
-From `jheem-backend/scripts/generate_orchestration_config.py`:
-```
-incidence, diagnosed.prevalence, suppression, testing, prep.uptake, awareness,
-rw.clients, adap.clients, non.adap.clients, oahs.clients, adap.proportion,
-oahs.suppression, adap.suppression, new
-```
-
-**Note**: Some Ryan White-specific outcomes (rw.clients, etc.) don't support sex/race facets.
-
-#### ✅ Container Updated
-
-- Added `--output-mode data` flag to `batch_plot_generator.R`
-- Committed and pushed to trigger rebuild
-- ⚠️ Build failed due to `sf` dependency issue (not blocking - use volume mounts)
-
-#### 🐳 Running Container Locally (Workaround)
-
-Until container rebuild is fixed, use volume mounts:
-```bash
-docker run --rm \
-  -v /path/to/jheem-container-minimal/batch_plot_generator.R:/app/batch_plot_generator.R \
-  -v /path/to/jheem-container-minimal/simulations:/app/simulations \
-  -v /path/to/output:/output \
-  849611540600.dkr.ecr.us-east-1.amazonaws.com/jheem-ryan-white-model:latest \
-  batch --city C.12580 --scenarios cessation,brief_interruption,prolonged_interruption \
-  --outcomes incidence,diagnosed.prevalence,suppression,testing,prep.uptake,awareness,rw.clients,adap.clients,non.adap.clients,oahs.clients,adap.proportion,oahs.suppression,adap.suppression,new \
-  --statistics mean.and.interval,median.and.interval --facets none,age,sex,race \
-  --output-dir /output --output-mode data
-```
+Key improvements over original:
+- Two-mode architecture (map → analysis)
+- Data-driven markers (size=prevalence, color=suppression)
+- Smart hover cards with impact projections
+- Collapsible onboarding
+- Integrated controls (no floating elements)
 
 ### 📋 Next Steps (Prioritized)
 
-1. **Set up S3 + CloudFront** - Host aggregated city JSONs with gzip and caching
-2. **Create GitHub Actions workflow** - Generate all 31 cities in parallel
-3. **Generate full dataset** - Trigger workflow for production
-4. **UI polish** - Match Plotly overlay styling
-5. **Fix container build** - Resolve `sf` dependency (low priority, workaround exists)
+1. **Validate against Shiny app** - Side-by-side comparison before scaling
+2. **Scenario splitting** - Split 398MB into 3×~130MB files for performance
+3. **31-city generation pipeline** - GitHub Actions or batch script
+4. **S3 + CloudFront setup** - Production hosting with gzip/caching
+5. **Swap routes** - Make V2 the main `/explore` once validated
 
-See session notes: `.claude-sessions/2025-12-18_full_baltimore_data_generation.md`
+See session notes: `.claude-sessions/2025-12-20_multi_facet_fix_validated.md`
 
 ---
 
@@ -234,22 +228,25 @@ Comprehensive frontend code review. Grade A overall. Minor issues identified (UR
 
 ---
 
-## 🎯 CURRENT STATUS: Native Plotting Validated, Ready for Production Push
+## 🎯 CURRENT STATUS: V2 Ready for Demo, Pending Shiny Validation
 
 ### ✅ Complete & Working
 - **Frontend (jheem-portal)**: All apps deployed, Grade A code quality
-- **Native Plotting (Phase 1)**: ✅ Proof of concept validated at `/explore/native`
+- **Native Plotting**: ✅ Multi-level faceting fixed, CI rendering fixed
+- **V2 UX Redesign**: ✅ `/explore/v2` ready (Grade B+, shippable for demos)
+- **Baltimore Dataset**: ✅ Full 16-facet data generated (954 files, 398MB)
 - **Security**: Zero vulnerabilities, comprehensive CSP headers
-- **Error Handling**: Robust boundaries with graceful fallbacks
 
-### 🚧 Native Plotting (Phase 2 - Production)
-- **Test Page**: ✅ Working at `/explore/native` with Baltimore data
-- **Aggregation Script**: ✅ `scripts/aggregate-city-data.ts` working
-- **UI Polish**: ⏳ Functional but needs cosmetic work
-- **Full Dataset**: ⏳ Need to generate for all 31 cities
-- **Backend Hosting**: ⏳ S3 + CloudFront setup needed
+### 🚧 Production Push (Blocking Items)
+| Item | Status | Notes |
+|------|--------|-------|
+| Shiny validation | ⏳ Pending | Side-by-side comparison needed |
+| Scenario splitting | ⏳ Pending | 398MB → 3×130MB for performance |
+| 31-city pipeline | ⏳ Pending | GitHub Actions or batch script |
+| S3 + CloudFront | ⏳ Pending | Production hosting with caching |
+| Route swap | ⏳ Pending | Make V2 the main `/explore` |
 
-### 🚧 Custom Simulations (Separate Track)
+### 🚧 Custom Simulations (Separate Track - Lower Priority)
 - **Infrastructure**: 70% complete
   - ✅ R container has complete `lambda_handler.R` (200 lines)
   - ✅ Simulation pipeline ready (`interventions.R`, `runner.R`)
@@ -735,8 +732,9 @@ Comprehensive frontend code review. Grade A overall. Minor issues identified (UR
 - `/src/components/CityHoverTooltip.tsx` - City preview tooltip
 - `/src/hooks/useAvailableCities.ts` (191 lines) - API discovery hook
 
-### Native Plotting Components (Recharts - New)
-- `/src/app/explore/native/page.tsx` - Native map explorer page
+### Native Plotting Components (Recharts - Current)
+- `/src/app/explore/v2/page.tsx` - **V2 Map Explorer** (817 lines) - Two-mode UX, recommended
+- `/src/app/explore/native/page.tsx` - Native map explorer (deprecated by v2)
 - `/src/app/explore/test-native/page.tsx` - Test page for native charts
 - `/src/components/NativeSimulationChart.tsx` - Recharts-based chart component
 - `/src/components/NativePlotOverlay.tsx` - Plot overlay using native charts
@@ -745,6 +743,7 @@ Comprehensive frontend code review. Grade A overall. Minor issues identified (UR
 - `/src/utils/transformPlotData.ts` - Transform raw data to chart format
 - `/src/types/native-plotting.ts` - TypeScript types for native plotting
 - `/scripts/aggregate-city-data.ts` - Script to merge JSONs into per-city files
+- `/public/data/city-summaries.json` - City summary metrics for map hover cards
 
 ### Data Files
 - `/src/data/cities.ts` - City coordinates and metadata
@@ -765,41 +764,38 @@ Comprehensive frontend code review. Grade A overall. Minor issues identified (UR
 
 ## 🎯 IMMEDIATE NEXT STEPS (Prioritized)
 
-### This Week: Complete Prerun Dataset (Highest Priority)
-1. ⏳ **Generate full prerun dataset** - jheem-backend GitHub Actions
-   - Run "Generate JHEEM Plots" workflow
-   - Select `config_type: full`, `max_parallel: 8`
-   - Monitor progress (2-6 hours runtime)
-   - Verify 31 cities × multiple scenarios/outcomes/facets
+### Immediate: Validation (Before Scaling)
+1. ⏳ **Validate against Shiny app** - Side-by-side comparison
+   - CI bands match?
+   - Line positions correct?
+   - Observations aligned?
+   - Edge cases handled?
 
-2. ✅ **Validate map explorer** with full dataset
-   - Test all cities visible
-   - Verify plot loading performance
-   - Check error handling
+**Gate**: Must pass before investing in 31-city generation
 
-3. 📄 **Demo to team** → Get feedback
-   - Show complete prerun functionality
-   - Discuss custom simulation priority
-   - Validate usage assumptions (prerun vs custom)
+### High Priority: Production Infrastructure
+| Task | Effort | Status |
+|------|--------|--------|
+| Scenario splitting | 2-3 hrs | ❌ Split 398MB → 3×130MB |
+| S3 + CloudFront | 1-2 hrs | ❌ Host with gzip, caching |
+| 31-city pipeline | 2-3 hrs | ❌ GitHub Actions or batch |
+| Generate dataset | Compute | ❌ All cities, all scenarios |
+| Swap routes | 30 min | ❌ V2 → main `/explore` |
 
-**Deliverable**: Production-ready map explorer for team use
+**Deliverable**: Production map explorer with all 31 cities
 
-### Next Sprint: Custom Simulations (If Prioritized)
-1. ❌ **Verify base simulations** in S3 (`jheem-data-production/simulations/ryan-white/base/`)
-2. ❌ **Deploy custom simulation Lambda** (jheem-backend `serverless.yml`)
-3. ❌ **Build parameter input UI** (jheem-portal `/explore`)
-4. ❌ **Implement async job pattern** (polling, progress indicators)
-5. ❌ **End-to-end integration testing**
+### Medium Priority: V2 Polish
+| Task | Effort | Status |
+|------|--------|--------|
+| Facet pagination | 2-3 hrs | ❌ "Show first 9" for 45-panel views |
+| ✅ Scenario descriptions | 30 min | ✅ Done - visible below tabs |
+| Mobile responsive | 3-4 hrs | ❌ Collapsible filters |
+| City switcher search | 1-2 hrs | ❌ Needed for 31 cities |
 
-**Deliverable**: Feature parity with legacy Shiny app
-
-### Future: Frontend Polish (Lower Priority)
-1. ❌ **Add URL encoding** - `explore/page.tsx` lines 162, 167
-2. ❌ **Add React.memo** - `MapboxCityMap` and `PlotExplorationSidebar`
-3. ❌ **Wrap console statements** - Add dev-only checks to remaining 18
-4. ❌ **Verify Mapbox token** - Check domain restrictions in dashboard
-5. ❌ **Set up testing** - Jest + React Testing Library infrastructure
-6. ❌ **API service layer** - Centralize fetch calls
+### Lower Priority: Cleanup & Custom Sims
+- ❌ Deprecate `/explore/native` (V2 supersedes it)
+- ❌ Remove legacy Plotly pipeline (once validated)
+- ❌ Custom simulations (separate track, 70% infra ready)
 
 ---
 

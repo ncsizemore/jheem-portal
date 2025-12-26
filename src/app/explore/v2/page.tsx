@@ -647,23 +647,30 @@ export default function ExploreV2() {
 
                 {/* Scenario tabs */}
                 {selectedCity.availableScenarios && (
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-3">
                     <span className="text-xs font-medium text-slate-400">Scenario:</span>
-                    <div className="flex gap-1">
-                      {selectedCity.availableScenarios.map(scenario => (
-                        <button
-                          key={scenario}
-                          onClick={() => setSelectedScenario(scenario)}
-                          title={SCENARIO_DESCRIPTIONS[scenario] || ''}
-                          className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all
-                            ${selectedScenario === scenario
-                              ? 'bg-blue-600 text-white'
-                              : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                            }`}
-                        >
-                          {SCENARIO_LABELS[scenario] || scenario}
-                        </button>
-                      ))}
+                    <div className="flex items-center gap-3">
+                      <div className="flex gap-1">
+                        {selectedCity.availableScenarios.map(scenario => (
+                          <button
+                            key={scenario}
+                            onClick={() => setSelectedScenario(scenario)}
+                            className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all
+                              ${selectedScenario === scenario
+                                ? 'bg-blue-600 text-white'
+                                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                              }`}
+                          >
+                            {SCENARIO_LABELS[scenario] || scenario}
+                          </button>
+                        ))}
+                      </div>
+                      {/* Scenario description */}
+                      {selectedScenario && SCENARIO_DESCRIPTIONS[selectedScenario] && (
+                        <span className="text-xs text-slate-500 italic">
+                          {SCENARIO_DESCRIPTIONS[selectedScenario]}
+                        </span>
+                      )}
                     </div>
                   </div>
                 )}
