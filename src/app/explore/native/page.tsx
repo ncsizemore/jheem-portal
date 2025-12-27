@@ -48,9 +48,21 @@ interface CitySummaries {
 // Available cities with data
 const AVAILABLE_CITIES: CityData[] = [
   {
+    code: 'C.12060',
+    name: 'Atlanta-Sandy Springs-Alpharetta, GA',
+    coordinates: [-84.388, 33.749],
+    availableScenarios: ['cessation', 'brief_interruption', 'prolonged_interruption'],
+  },
+  {
     code: 'C.12580',
     name: 'Baltimore-Columbia-Towson, MD',
     coordinates: [-76.6122, 39.2904],
+    availableScenarios: ['cessation', 'brief_interruption', 'prolonged_interruption'],
+  },
+  {
+    code: 'C.16980',
+    name: 'Chicago-Naperville-Elgin, IL-IN-WI',
+    coordinates: [-87.6298, 41.8781],
     availableScenarios: ['cessation', 'brief_interruption', 'prolonged_interruption'],
   },
 ];
