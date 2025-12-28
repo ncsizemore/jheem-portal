@@ -99,60 +99,74 @@ User sees custom results
 
 ---
 
-## Latest Session Summary (2025-12-20)
+## Latest Session Summary (2025-12-26)
 
-### 🎉 SESSION ACCOMPLISHMENTS: Multi-Facet Fix, CI Rendering, V2 UX Assessment
+### 🎉 SESSION ACCOMPLISHMENTS: Workflow Created, S3/CloudFront Architecture Decided
 
-#### ✅ Multi-Level Faceting Fixed
+#### ✅ Route Consolidation
+- Moved V2 explorer from `/explore/v2` to `/explore/native`
+- Deleted old native test page
+- `/explore/native` is now the canonical native Recharts explorer
 
-Fixed critical bug where multi-dimensional facets (e.g., `age+race+sex`) only showed first dimension.
+#### ✅ GitHub Actions Workflow Created
 
-**Root Cause**: `batch_plot_generator.R` only extracted `facet.by1`, ignoring `facet.by2`, `facet.by3`, etc.
+**File**: `jheem-backend/.github/workflows/generate-native-data.yml`
 
-**Fix Applied**:
-- R side: Changed from hardcoded `facet.by1` to regex `grep("^facet\\.by[0-9]+$", ...)`
-- Frontend: Added composite facet key helper, updated type definitions
+Features:
+- Configurable: test (3 cities) or full (31 cities)
+- Optional `individual.simulation` statistic
+- Parallel processing with `max_parallel` setting
+- Tolerates expected errors (some outcome/facet combos invalid)
 
-**Validation**: `age+race+sex` now correctly shows 45 panels (5×3×3) instead of 5.
+**Test Run** (3 cities - Baltimore, Atlanta, Chicago):
+- ✅ All 3 cities generated successfully
+- 954 files per city, ~40 min each
+- Aggregated artifact: 52.9MB compressed
 
-#### ✅ CI Band Rendering Fixed
+#### ✅ Frontend Tested with 3 Cities
+- Atlanta (C.12060) and Chicago (C.16980) added to explorer
+- All 3 cities working with hover cards and analysis view
 
-Two issues resolved:
-1. **CI bands now render from lower→upper** (not from 0) using stacked Recharts areas
-2. **Gradient IDs sanitized** - multi-facet values with spaces/pipes no longer break SVG references
+#### ⚠️ GitHub Artifacts Limitation
+- Free tier: 500MB storage limit
+- 31 cities would require ~1GB+ → exceeds limit
+- **Decision**: Use S3 + CloudFront instead
 
-#### ✅ Full 16-Facet Baltimore Dataset Generated
+#### ✅ S3 + CloudFront Architecture Decided
 
-| Metric | Value |
-|--------|-------|
-| Files generated | 954 |
-| Scenarios | 3 |
-| Outcomes | 14 |
-| Statistics | 2 |
-| Facets | 16 (including multi-dimensional) |
-| **Aggregated (uncompressed)** | **398 MB** |
-| **Aggregated (gzipped)** | **17.7 MB** |
+**Why CloudFront + S3**:
+- No file size limits (Lambda has 6MB limit)
+- Automatic gzip compression (400MB → 18MB)
+- Global CDN for performance
+- Free tier: 100GB transfer, 1M requests, **no overage charges**
 
-#### ✅ V2 UX Redesign Assessed
+**One Distribution for All Apps**:
+```
+https://<cloudfront-id>.cloudfront.net/portal/ryan-white/C.12580.json
+https://<cloudfront-id>.cloudfront.net/portal/cdc-testing/...
+https://<cloudfront-id>.cloudfront.net/portal/state-level/...
+```
 
-New `/explore/native` page reviewed. **Grade: B+ (Shippable for demos)**
+**S3 Folder Structure** (multi-model ready):
+```
+jheem-data-production/
+├── simulations/           # Existing source data
+│   └── ryan-white/
+└── portal/                # NEW - frontend data
+    ├── ryan-white/
+    ├── cdc-testing/       # Future
+    └── state-level/       # Future
+```
 
-Key improvements over original:
-- Two-mode architecture (map → analysis)
-- Data-driven markers (size=prevalence, color=suppression)
-- Smart hover cards with impact projections
-- Collapsible onboarding
-- Integrated controls (no floating elements)
+### 📋 Next Steps
 
-### 📋 Next Steps (Prioritized)
+1. **Create CloudFront distribution** (~15 min)
+2. **Update workflow** to upload to S3 instead of artifacts
+3. **Update frontend** to fetch from CloudFront
+4. **Run full 31-city workflow** (~2 hours with 20 parallel)
+5. **Update AVAILABLE_CITIES** with all 31 cities
 
-1. **Validate against Shiny app** - Side-by-side comparison before scaling
-2. **Scenario splitting** - Split 398MB into 3×~130MB files for performance
-3. **31-city generation pipeline** - GitHub Actions or batch script
-4. **S3 + CloudFront setup** - Production hosting with gzip/caching
-5. **Swap routes** - Make V2 the main `/explore` once validated
-
-See session notes: `.claude-sessions/2025-12-20_multi_facet_fix_validated.md`
+See session notes: `.claude-sessions/2025-12-26_workflow_and_s3_architecture.md`
 
 ---
 
@@ -227,23 +241,24 @@ Comprehensive frontend code review. Grade A overall. Minor issues identified (UR
 
 ---
 
-## 🎯 CURRENT STATUS: V2 Ready for Demo, Pending Shiny Validation
+## 🎯 CURRENT STATUS: CloudFront Setup, Then 31-City Generation
 
 ### ✅ Complete & Working
 - **Frontend (jheem-portal)**: All apps deployed, Grade A code quality
 - **Native Plotting**: ✅ Multi-level faceting fixed, CI rendering fixed
-- **V2 UX Redesign**: ✅ `/explore/native` ready (Grade B+, shippable for demos)
-- **Baltimore Dataset**: ✅ Full 16-facet data generated (954 files, 398MB)
+- **Native Explorer**: ✅ `/explore/native` with 3 test cities working
+- **GitHub Actions Workflow**: ✅ Created and tested (`generate-native-data.yml`)
+- **Architecture Decision**: ✅ S3 + CloudFront chosen (multi-model ready)
 - **Security**: Zero vulnerabilities, comprehensive CSP headers
 
-### 🚧 Production Push (Blocking Items)
+### 🚧 Production Push (Next Steps)
 | Item | Status | Notes |
 |------|--------|-------|
-| Shiny validation | ⏳ Pending | Side-by-side comparison needed |
-| Scenario splitting | ⏳ Pending | 398MB → 3×130MB for performance |
-| 31-city pipeline | ⏳ Pending | GitHub Actions or batch script |
-| S3 + CloudFront | ⏳ Pending | Production hosting with caching |
-| Route swap | ⏳ Pending | Make V2 the main `/explore` |
+| CloudFront distribution | ⏳ Next | Create and configure |
+| Workflow S3 upload | ⏳ Pending | Replace artifacts with S3 |
+| Frontend CloudFront URL | ⏳ Pending | Update data fetching |
+| 31-city generation | ⏳ Pending | Run workflow with `full` |
+| Route swap | ⏳ Future | Native → main `/explore` |
 
 ### 🚧 Custom Simulations (Separate Track - Lower Priority)
 - **Infrastructure**: 70% complete
