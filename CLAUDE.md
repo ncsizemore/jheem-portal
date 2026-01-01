@@ -99,78 +99,83 @@ User sees custom results
 
 ---
 
-## Latest Session Summary (2025-12-26)
+## Latest Session Summary (2025-12-31)
 
-### 🎉 SESSION ACCOMPLISHMENTS: Workflow Created, S3/CloudFront Architecture Decided
+### 🎉 SESSION ACCOMPLISHMENTS: CloudFront Production Pipeline Complete
 
-#### ✅ Route Consolidation
-- Moved V2 explorer from `/explore/v2` to `/explore/native`
-- Deleted old native test page
-- `/explore/native` is now the canonical native Recharts explorer
+#### ✅ CloudFront Distribution Created (Free Tier)
 
-#### ✅ GitHub Actions Workflow Created
+**Distribution**: `d320iym4dtm9lj.cloudfront.net`
+**Origin**: `jheem-data-production.s3.us-east-1.amazonaws.com/portal`
+**Plan**: Free ($0/month, no overage charges, WAF included)
 
-**File**: `jheem-backend/.github/workflows/generate-native-data.yml`
+#### ✅ CORS Configuration Fixed
 
-Features:
-- Configurable: test (3 cities) or full (31 cities)
-- Optional `individual.simulation` statistic
-- Parallel processing with `max_parallel` setting
-- Tolerates expected errors (some outcome/facet combos invalid)
+**Problem**: CloudFront cached responses without CORS headers, blocking browser requests.
 
-**Test Run** (3 cities - Baltimore, Atlanta, Chicago):
-- ✅ All 3 cities generated successfully
-- 954 files per city, ~40 min each
-- Aggregated artifact: 52.9MB compressed
+**Solution**:
+1. S3 CORS policy with allowed origins (localhost, jheem.org, vercel)
+2. CloudFront `CORS-S3Origin` managed origin request policy
+3. Cache invalidation to clear non-CORS cached responses
 
-#### ✅ Frontend Tested with 3 Cities
-- Atlanta (C.12060) and Chicago (C.16980) added to explorer
-- All 3 cities working with hover cards and analysis view
+#### ✅ Workflow Updated for S3 Upload
 
-#### ⚠️ GitHub Artifacts Limitation
-- Free tier: 500MB storage limit
-- 31 cities would require ~1GB+ → exceeds limit
-- **Decision**: Use S3 + CloudFront instead
-
-#### ✅ S3 + CloudFront Architecture Decided
-
-**Why CloudFront + S3**:
-- No file size limits (Lambda has 6MB limit)
-- Automatic gzip compression (400MB → 18MB)
-- Global CDN for performance
-- Free tier: 100GB transfer, 1M requests, **no overage charges**
-
-**One Distribution for All Apps**:
+Workflow now uploads directly to S3 with gzip compression instead of GitHub artifacts:
 ```
-https://<cloudfront-id>.cloudfront.net/portal/ryan-white/C.12580.json
-https://<cloudfront-id>.cloudfront.net/portal/cdc-testing/...
-https://<cloudfront-id>.cloudfront.net/portal/state-level/...
+s3://jheem-data-production/portal/ryan-white/C.XXXXX.json
 ```
 
-**S3 Folder Structure** (multi-model ready):
-```
-jheem-data-production/
-├── simulations/           # Existing source data
-│   └── ryan-white/
-└── portal/                # NEW - frontend data
-    ├── ryan-white/
-    ├── cdc-testing/       # Future
-    └── state-level/       # Future
-```
+#### ✅ Frontend Updated
+
+- CSP: Added CloudFront domain to `connect-src`
+- `useCityData.ts`: Fetches from CloudFront URL
+- `page.tsx`: City summaries from CloudFront
+
+#### ✅ Test Run Successful
+
+3 cities (Atlanta, Baltimore, Chicago) generated, uploaded to S3, and successfully loaded in frontend via CloudFront.
 
 ### 📋 Next Steps
 
-1. **Create CloudFront distribution** (~15 min)
-2. **Update workflow** to upload to S3 instead of artifacts
-3. **Update frontend** to fetch from CloudFront
-4. **Run full 31-city workflow** (~2 hours with 20 parallel)
-5. **Update AVAILABLE_CITIES** with all 31 cities
+1. **Run full 31-city workflow** (~2 hours with 20 parallel)
+2. **Update AVAILABLE_CITIES** with all 31 cities
+3. **Deploy to production** (Vercel)
 
-See session notes: `.claude-sessions/2025-12-26_workflow_and_s3_architecture.md`
+### 🔧 Infrastructure Summary
+
+| Component | Value |
+|-----------|-------|
+| CloudFront Domain | `d320iym4dtm9lj.cloudfront.net` |
+| S3 Path | `jheem-data-production/portal/ryan-white/` |
+| Origin Request Policy | `CORS-S3Origin` (managed) |
+| Free Tier Limits | 1M requests, 100GB transfer/month |
+
+See session notes: `.claude-sessions/2025-12-31_cloudfront_cors_and_full_pipeline.md`
 
 ---
 
 ## Previous Session Summaries
+
+<details>
+<summary>2025-12-26: Workflow & S3/CloudFront Architecture (Click to expand)</summary>
+
+- Created GitHub Actions workflow for native data generation
+- Tested with 3 cities successfully (954 files per city)
+- Discovered GitHub artifacts 500MB limit
+- Decided on S3 + CloudFront architecture
+- Added Atlanta and Chicago to AVAILABLE_CITIES
+
+</details>
+
+<details>
+<summary>2025-12-20: Multi-Level Faceting Fix (Click to expand)</summary>
+
+- Fixed multi-level faceting (age+race+sex now shows 45 panels, not 5)
+- Container fix: capture all `facet.by*` columns, not just `facet.by1`
+- Frontend: added composite facet key helper
+- Assessed V2 explorer UX (grade B+)
+
+</details>
 
 <details>
 <summary>2025-12-17: Native Plotting Data Format (Click to expand)</summary>

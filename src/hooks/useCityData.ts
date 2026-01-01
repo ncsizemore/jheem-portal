@@ -53,6 +53,11 @@ interface UseCityDataReturn {
 // Cache for loaded city data
 const cityDataCache = new Map<string, AggregatedCityData>();
 
+// CloudFront URL for production data, falls back to local /data for dev
+const DATA_BASE_URL =
+  process.env.NEXT_PUBLIC_DATA_URL ||
+  'https://d320iym4dtm9lj.cloudfront.net/ryan-white';
+
 export function useCityData(): UseCityDataReturn {
   const [cityData, setCityData] = useState<AggregatedCityData | null>(null);
   const [loading, setLoading] = useState(false);
@@ -70,9 +75,8 @@ export function useCityData(): UseCityDataReturn {
     setError(null);
 
     try {
-      // In development, load from public directory
-      // In production, this would be a CloudFront URL
-      const dataUrl = `/data/${cityCode}.json`;
+      // Load from CloudFront (or local via env override)
+      const dataUrl = `${DATA_BASE_URL}/${cityCode}.json`;
 
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 30000);

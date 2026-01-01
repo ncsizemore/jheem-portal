@@ -116,7 +116,8 @@ export default function ExploreV2() {
 
   // Load city summaries on mount
   useEffect(() => {
-    fetch('/data/city-summaries.json')
+    const dataUrl = process.env.NEXT_PUBLIC_DATA_URL || 'https://d320iym4dtm9lj.cloudfront.net/ryan-white';
+    fetch(`${dataUrl}/city-summaries.json`)
       .then(res => res.json())
       .then(data => setCitySummaries(data))
       .catch(err => console.error('Failed to load city summaries:', err));
