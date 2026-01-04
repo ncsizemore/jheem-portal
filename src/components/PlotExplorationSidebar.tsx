@@ -97,7 +97,7 @@ const PlotExplorationSidebar = memo(function PlotExplorationSidebar({
 
     try {
       const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
-      const searchUrl = `${baseUrl}/plots/search?city=${city.code}&scenario=${scenario}`;
+      const searchUrl = `${baseUrl}/plots/search?city=${encodeURIComponent(city.code)}&scenario=${encodeURIComponent(scenario)}`;
       
       const response = await fetch(searchUrl);
       if (!response.ok) {

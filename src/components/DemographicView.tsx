@@ -95,18 +95,25 @@ export default function DemographicView<T extends string>({
 
   // Listen for export status events from MultiStateChartGrid
   useEffect(() => {
+    let resetTimeoutId: NodeJS.Timeout | null = null;
+
     const handleExportStatus = (event: Event) => {
       const customEvent = event as CustomEvent<{ status: ExportStatus }>;
       setExportStatus(customEvent.detail.status);
 
       // Auto-reset success/error states after 2 seconds
       if (customEvent.detail.status === 'success' || customEvent.detail.status === 'error') {
-        setTimeout(() => setExportStatus('idle'), 2000);
+        // Clear any existing timeout before setting a new one
+        if (resetTimeoutId) clearTimeout(resetTimeoutId);
+        resetTimeoutId = setTimeout(() => setExportStatus('idle'), 2000);
       }
     };
 
     window.addEventListener('exportStatus', handleExportStatus);
-    return () => window.removeEventListener('exportStatus', handleExportStatus);
+    return () => {
+      window.removeEventListener('exportStatus', handleExportStatus);
+      if (resetTimeoutId) clearTimeout(resetTimeoutId);
+    };
   }, []);
 
   // Calculate how many charts will be displayed

@@ -54,7 +54,7 @@ export default React.memo(function PlotVariationControls({
           throw new Error('API base URL not configured');
         }
         
-        const searchUrl = `${baseUrl}/plots/search?city=${city.code}&scenario=${scenario}`;
+        const searchUrl = `${baseUrl}/plots/search?city=${encodeURIComponent(city.code)}&scenario=${encodeURIComponent(scenario)}`;
         
         // Add timeout for plot options fetch
         const controller = new AbortController();
@@ -129,8 +129,10 @@ export default React.memo(function PlotVariationControls({
         }
 
       } catch (err) {
-        console.error('Error fetching plot options:', err);
-        
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Error fetching plot options:', err);
+        }
+
         // For plot options errors, we'll just show an empty state
         // rather than breaking the entire component
         setPlotOptions({

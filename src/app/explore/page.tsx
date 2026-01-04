@@ -133,8 +133,10 @@ export default function MapExplorer() {
       setPlotTitle(`${outcomeName} - ${cityShortName} (${scenarioName})`);
 
     } catch (err) {
-      console.error('❌ Error loading plot:', err);
-      
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error loading plot:', err);
+      }
+
       if (err instanceof Error) {
         if (err.name === 'AbortError') {
           setPlotError('Plot loading timed out. Please try a smaller plot or check your connection.');
@@ -159,7 +161,7 @@ export default function MapExplorer() {
         throw new Error('API base URL not configured');
       }
       
-      const searchUrl = `${baseUrl}/plots/search?city=${city.code}&scenario=${scenario}`;
+      const searchUrl = `${baseUrl}/plots/search?city=${encodeURIComponent(city.code)}&scenario=${encodeURIComponent(scenario)}`;
       
       
       // Add timeout for scenario search
@@ -208,8 +210,10 @@ export default function MapExplorer() {
       }
 
     } catch (err) {
-      console.error('❌ Error loading scenario data:', err);
-      
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error loading scenario data:', err);
+      }
+
       if (err instanceof Error) {
         if (err.name === 'AbortError') {
           setPlotError('Search timed out. Please check your connection and try again.');

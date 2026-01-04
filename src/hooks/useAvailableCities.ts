@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ALL_CITIES, AVAILABLE_SCENARIOS, CityData } from '../data/cities';
+import { ALL_CITIES, AVAILABLE_SCENARIOS, CityData, ScenarioType } from '../data/cities';
 
 interface UseAvailableCitiesReturn {
   availableCities: CityData[];
@@ -48,8 +48,10 @@ export const useAvailableCities = (): UseAvailableCitiesReturn => {
         
         if (!response.ok) {
           const errorText = await response.text();
-          console.error('❌ Response error:', errorText);
-          
+          if (process.env.NODE_ENV === 'development') {
+            console.error('Response error:', errorText);
+          }
+
           // Provide more specific error messages
           if (response.status === 404) {
             throw new Error('Cities data endpoint not found. Please check API configuration.');
@@ -80,7 +82,9 @@ export const useAvailableCities = (): UseAvailableCitiesReturn => {
         for (const [cityCode, scenarios] of Object.entries(data.cities)) {
           // Validate scenarios is an array
           if (!Array.isArray(scenarios)) {
-            console.warn(`⚠️ Invalid scenarios data for city ${cityCode}:`, scenarios);
+            if (process.env.NODE_ENV === 'development') {
+              console.warn(`Invalid scenarios data for city ${cityCode}:`, scenarios);
+            }
             continue;
           }
           
@@ -103,8 +107,10 @@ export const useAvailableCities = (): UseAvailableCitiesReturn => {
         setAvailableCities(citiesWithData);
 
       } catch (err) {
-        console.error('❌ Error during city discovery:', err);
-        
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Error during city discovery:', err);
+        }
+
         if (err instanceof Error) {
           if (err.name === 'AbortError') {
             setError('Request timed out. Please check your internet connection and try again.');
@@ -159,24 +165,34 @@ export const useCityData = (cityCode: string) => {
         return;
       }
 
-      const availableScenarios: string[] = [];
-
       try {
-        for (const scenario of AVAILABLE_SCENARIOS) {
-          const searchUrl = `${baseUrl}/plots/search?city=${cityCode}&scenario=${scenario}`;
-          const response = await fetch(searchUrl);
-          
-          if (response.ok) {
-            const data = await response.json();
-            if (data.total_plots && data.total_plots > 0) {
-              availableScenarios.push(scenario);
-            }
-          }
-        }
+        // Fetch all scenarios in parallel for ~3x speedup
+        const results = await Promise.all(
+          AVAILABLE_SCENARIOS.map(async (scenario) => {
+            try {
+              const searchUrl = `${baseUrl}/plots/search?city=${encodeURIComponent(cityCode)}&scenario=${encodeURIComponent(scenario)}`;
+              const response = await fetch(searchUrl);
 
+              if (response.ok) {
+                const data = await response.json();
+                if (data.total_plots && data.total_plots > 0) {
+                  return scenario;
+                }
+              }
+              return null;
+            } catch {
+              // Individual fetch failures don't break the whole operation
+              return null;
+            }
+          })
+        );
+
+        const availableScenarios = results.filter((s): s is ScenarioType => s !== null);
         setScenarios(availableScenarios);
       } catch (err) {
-        console.error('Error fetching city data:', err);
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Error fetching city data:', err);
+        }
         setError(err instanceof Error ? err.message : 'Failed to fetch city data');
       } finally {
         setLoading(false);

@@ -74,7 +74,7 @@ export default function TestPlotViewer() {
 
       // Step 1: Discover plots from each combination
       for (const combo of searchCombinations) {
-        const searchUrl = `${baseUrl}/plots/search?city=${combo.city}&scenario=${combo.scenario}`;
+        const searchUrl = `${baseUrl}/plots/search?city=${encodeURIComponent(combo.city)}&scenario=${encodeURIComponent(combo.scenario)}`;
 
         const searchResponse = await fetch(searchUrl);
         if (!searchResponse.ok) {

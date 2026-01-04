@@ -94,14 +94,45 @@ export default function ExploreV2() {
 
   // City summaries for map display
   const [citySummaries, setCitySummaries] = useState<CitySummaries | null>(null);
+  const [citySummariesLoading, setCitySummariesLoading] = useState(true);
+  const [citySummariesError, setCitySummariesError] = useState<string | null>(null);
 
   // Load city summaries on mount
   useEffect(() => {
     const dataUrl = process.env.NEXT_PUBLIC_DATA_URL || 'https://d320iym4dtm9lj.cloudfront.net/ryan-white';
-    fetch(`${dataUrl}/city-summaries.json`)
-      .then(res => res.json())
-      .then(data => setCitySummaries(data))
-      .catch(err => console.error('Failed to load city summaries:', err));
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
+
+    fetch(`${dataUrl}/city-summaries.json`, { signal: controller.signal })
+      .then(res => {
+        if (!res.ok) {
+          throw new Error(`Failed to load city data (${res.status})`);
+        }
+        return res.json();
+      })
+      .then(data => {
+        if (!data?.cities || typeof data.cities !== 'object') {
+          throw new Error('Invalid city data format');
+        }
+        setCitySummaries(data);
+        setCitySummariesError(null);
+      })
+      .catch(err => {
+        if (err.name === 'AbortError') {
+          setCitySummariesError('Request timed out. Please refresh to try again.');
+        } else {
+          setCitySummariesError(err instanceof Error ? err.message : 'Failed to load cities');
+        }
+      })
+      .finally(() => {
+        clearTimeout(timeoutId);
+        setCitySummariesLoading(false);
+      });
+
+    return () => {
+      controller.abort();
+      clearTimeout(timeoutId);
+    };
   }, []);
 
   // Derive available cities from city summaries (data-driven, no hardcoding)
@@ -246,6 +277,38 @@ export default function ExploreV2() {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
             className="relative w-full h-full">
+
+          {/* Loading state for city summaries */}
+          {citySummariesLoading && (
+            <div className="absolute inset-0 flex items-center justify-center bg-slate-900 z-50">
+              <div className="text-center">
+                <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                <p className="text-white text-lg">Loading cities...</p>
+              </div>
+            </div>
+          )}
+
+          {/* Error state for city summaries */}
+          {citySummariesError && !citySummariesLoading && (
+            <div className="absolute inset-0 flex items-center justify-center bg-slate-900 z-50">
+              <div className="text-center max-w-md px-6">
+                <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-8 h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <h2 className="text-white text-xl font-bold mb-2">Unable to Load Data</h2>
+                <p className="text-gray-400 mb-4">{citySummariesError}</p>
+                <button
+                  onClick={() => window.location.reload()}
+                  className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                >
+                  Retry
+                </button>
+              </div>
+            </div>
+          )}
+
           <Map
             {...viewState}
             onMove={evt => setViewState(evt.viewState)}

@@ -64,7 +64,7 @@ export default function FloatingPanel({ city, onClose, onPlotSelect }: FloatingP
 
       try {
         const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
-        const searchUrl = `${baseUrl}/plots/search?city=${city.code}&scenario=${selectedScenario}`;
+        const searchUrl = `${baseUrl}/plots/search?city=${encodeURIComponent(city.code)}&scenario=${encodeURIComponent(selectedScenario)}`;
         
         const response = await fetch(searchUrl);
         if (!response.ok) {
@@ -75,7 +75,9 @@ export default function FloatingPanel({ city, onClose, onPlotSelect }: FloatingP
         setAvailablePlots(data.plots || []);
 
       } catch (err) {
-        console.error('Error fetching plots:', err);
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Error fetching plots:', err);
+        }
         setError(err instanceof Error ? err.message : 'Failed to fetch plots');
       } finally {
         setLoading(false);
