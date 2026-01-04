@@ -14,33 +14,24 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
+import { ALL_CITIES } from '../src/data/cities.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// City coordinates and short names (from src/data/cities.ts)
-const CITY_METADATA: Record<string, { shortName: string; coordinates: [number, number] }> = {
-  'C.12580': { shortName: 'Baltimore', coordinates: [-76.6122, 39.2904] },
-  'C.12060': { shortName: 'Atlanta', coordinates: [-84.388, 33.749] },
-  'C.16980': { shortName: 'Chicago', coordinates: [-87.6298, 41.8781] },
-  'C.19100': { shortName: 'Dallas', coordinates: [-96.797, 32.7767] },
-  'C.19740': { shortName: 'Denver', coordinates: [-104.9903, 39.7392] },
-  'C.19820': { shortName: 'Detroit', coordinates: [-83.0458, 42.3314] },
-  'C.26420': { shortName: 'Houston', coordinates: [-95.3698, 29.7604] },
-  'C.31080': { shortName: 'Los Angeles', coordinates: [-118.2437, 34.0522] },
-  'C.33100': { shortName: 'Miami', coordinates: [-80.1918, 25.7617] },
-  'C.35620': { shortName: 'New York', coordinates: [-74.006, 40.7128] },
-  'C.37980': { shortName: 'Philadelphia', coordinates: [-75.1652, 39.9526] },
-  'C.38060': { shortName: 'Phoenix', coordinates: [-112.074, 33.4484] },
-  'C.40900': { shortName: 'Sacramento', coordinates: [-121.4944, 38.5816] },
-  'C.41700': { shortName: 'San Antonio', coordinates: [-98.4936, 29.4241] },
-  'C.41740': { shortName: 'San Diego', coordinates: [-117.1611, 32.7157] },
-  'C.41860': { shortName: 'San Francisco', coordinates: [-122.4194, 37.7749] },
-  'C.42660': { shortName: 'Seattle', coordinates: [-122.3321, 47.6062] },
-  'C.45300': { shortName: 'Tampa', coordinates: [-82.4572, 27.9506] },
-  'C.47900': { shortName: 'Washington DC', coordinates: [-77.0369, 38.9072] },
-  // Add more cities as data becomes available
-};
+// Build city metadata lookup from the canonical source (cities.ts)
+// This is data-driven: coordinates come from ALL_CITIES, shortName derived from full name
+const CITY_COORDINATES: Record<string, [number, number]> = {};
+for (const city of ALL_CITIES) {
+  CITY_COORDINATES[city.code] = city.coordinates;
+}
+
+// Derive short name from full city label (e.g., "Atlanta-Sandy Springs-Roswell, GA" -> "Atlanta")
+function deriveShortName(cityLabel: string): string {
+  // Take the first part before any dash or comma
+  const firstPart = cityLabel.split(/[-,]/)[0].trim();
+  return firstPart;
+}
 
 interface SimDataPoint {
   year: number;
@@ -178,11 +169,13 @@ function processCityFile(filePath: string): CitySummary | null {
   const cityCode = cityData.metadata.city;
   const cityLabel = cityData.metadata.city_label;
 
-  // Get metadata for this city
-  const meta = CITY_METADATA[cityCode];
-  if (!meta) {
-    console.warn(`No metadata for city ${cityCode}, using defaults`);
+  // Get coordinates from canonical source, derive short name from label
+  const coordinates = CITY_COORDINATES[cityCode];
+  if (!coordinates) {
+    console.warn(`No coordinates for city ${cityCode} in cities.ts, skipping`);
+    return null;
   }
+  const shortName = deriveShortName(cityLabel);
 
   // Extract current status metrics (model projections for current year)
   const prevalence = extractMetric(cityData, 'diagnosed.prevalence', CURRENT_YEAR);
@@ -210,8 +203,8 @@ function processCityFile(filePath: string): CitySummary | null {
 
   return {
     name: cityLabel,
-    shortName: meta?.shortName ?? cityLabel.split(',')[0],
-    coordinates: meta?.coordinates ?? [0, 0],
+    shortName,
+    coordinates,
     metrics: {
       diagnosedPrevalence: {
         value: Math.round(prevalence.value),
