@@ -68,15 +68,16 @@ function formatOptionLabel(value: string): string {
     .replace('And', '&');
 }
 
-// Get color based on suppression rate (higher = greener)
-// Thresholds adjusted for typical range of 65-85% to show more variation
+// Get color based on suppression rate using blue-to-orange diverging scale
+// Blue = high suppression (good), Orange/Red = low suppression (concerning)
+// Thresholds based on actual data range (64-86%)
 function getSuppressionColor(rate: number): { ring: string; glow: string; bg: string } {
-  if (rate >= 82) return { ring: '#16a34a', glow: 'rgba(22, 163, 74, 0.5)', bg: 'bg-green-600' };  // Excellent
-  if (rate >= 77) return { ring: '#22c55e', glow: 'rgba(34, 197, 94, 0.5)', bg: 'bg-green-500' };  // Very good
-  if (rate >= 72) return { ring: '#84cc16', glow: 'rgba(132, 204, 22, 0.5)', bg: 'bg-lime-500' };  // Good
-  if (rate >= 67) return { ring: '#eab308', glow: 'rgba(234, 179, 8, 0.5)', bg: 'bg-yellow-500' }; // Moderate
-  if (rate >= 60) return { ring: '#f97316', glow: 'rgba(249, 115, 22, 0.5)', bg: 'bg-orange-500' };// Below target
-  return { ring: '#ef4444', glow: 'rgba(239, 68, 68, 0.5)', bg: 'bg-red-500' };                    // Needs improvement
+  if (rate >= 82) return { ring: '#1d4ed8', glow: 'rgba(29, 78, 216, 0.5)', bg: 'bg-blue-700' };   // Excellent
+  if (rate >= 77) return { ring: '#3b82f6', glow: 'rgba(59, 130, 246, 0.5)', bg: 'bg-blue-500' };  // Very good
+  if (rate >= 72) return { ring: '#0ea5e9', glow: 'rgba(14, 165, 233, 0.5)', bg: 'bg-sky-500' };   // Good
+  if (rate >= 67) return { ring: '#fbbf24', glow: 'rgba(251, 191, 36, 0.5)', bg: 'bg-amber-400' }; // Moderate
+  if (rate >= 64) return { ring: '#f97316', glow: 'rgba(249, 115, 22, 0.5)', bg: 'bg-orange-500' };// Below target
+  return { ring: '#dc2626', glow: 'rgba(220, 38, 38, 0.5)', bg: 'bg-red-600' };                    // Needs improvement
 }
 
 // Get marker size based on prevalence (larger epidemic = bigger marker)
@@ -155,7 +156,7 @@ export default function ExploreV2() {
   const [viewState, setViewState] = useState({
     longitude: -96.5,
     latitude: 38.5,
-    zoom: 3.8,
+    zoom: 4.1,
   });
 
   // Hover state for map
@@ -331,7 +332,7 @@ export default function ExploreV2() {
             {...viewState}
             onMove={evt => setViewState(evt.viewState)}
             mapboxAccessToken={MAPBOX_TOKEN}
-            mapStyle="mapbox://styles/mapbox/light-v11"
+            mapStyle="mapbox://styles/mapbox/streets-v12"
             style={{ width: '100%', height: '100%' }}
             attributionControl={false}
           >
@@ -461,9 +462,9 @@ export default function ExploreV2() {
               <div className="px-4 py-2.5 border-t border-slate-100 flex items-center gap-4 text-xs text-slate-500">
                 <div className="flex items-center gap-1.5">
                   <div className="flex gap-0.5">
-                    <div className="w-2 h-2 rounded-full bg-red-500" />
-                    <div className="w-2 h-2 rounded-full bg-yellow-500" />
-                    <div className="w-2 h-2 rounded-full bg-green-500" />
+                    <div className="w-2 h-2 rounded-full bg-orange-500" />
+                    <div className="w-2 h-2 rounded-full bg-sky-500" />
+                    <div className="w-2 h-2 rounded-full bg-blue-600" />
                   </div>
                   <span>Suppression</span>
                 </div>
