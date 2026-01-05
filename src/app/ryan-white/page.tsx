@@ -269,7 +269,7 @@ export default function RyanWhiteLandingPage() {
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.6, delay: 0.8 }}
                   >
-                    <Link href="/explore" className="group block">
+                    <Link href="/ryan-white/explorer" className="group block">
                       <div className="bg-white border-2 border-hopkins-blue/30 rounded-2xl p-8 hover:border-hopkins-blue hover:shadow-xl transition-all duration-500 hover:-translate-y-1">
                         <div className="flex items-start gap-6">
                           <div className="bg-gradient-to-br from-hopkins-blue to-hopkins-spirit-blue rounded-xl p-4 group-hover:shadow-lg transition-shadow duration-300">

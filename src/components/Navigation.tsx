@@ -20,7 +20,8 @@ export default function Navigation() {
   const showRyanWhiteSubmenu = pathname === '/ryan-white' ||
                                pathname === '/prerun' ||
                                pathname === '/custom' ||
-                               pathname === '/explore';
+                               pathname === '/ryan-white/explorer' ||
+                               pathname === '/explore'; // legacy route
 
   const isRyanWhiteActive = pathname === '/ryan-white' || showRyanWhiteSubmenu;
   const isStateLevelActive = pathname === '/ryan-white-state-level';
@@ -144,9 +145,9 @@ export default function Navigation() {
                               Custom Simulations
                             </Link>
                             <Link
-                              href="/explore"
+                              href="/ryan-white/explorer"
                               className={`block px-10 py-2 text-xs font-medium transition-colors ${
-                                pathname === '/explore'
+                                pathname === '/ryan-white/explorer'
                                   ? 'text-hopkins-blue bg-white'
                                   : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
                               }`}
@@ -282,8 +283,8 @@ export default function Navigation() {
                         pathname === '/custom' ? 'w-full' : 'w-0 group-hover:w-full'
                       }`}></span>
                     </Link>
-                    <Link 
-                      href="/explore" 
+                    <Link
+                      href="/ryan-white/explorer"
                       className="text-white hover:text-hopkins-gold font-medium transition-all relative group py-1"
                     >
                       <span className="flex items-center">
@@ -356,9 +357,9 @@ export default function Navigation() {
                           Custom Simulations
                         </Link>
                         <Link
-                          href="/explore"
+                          href="/ryan-white/explorer"
                           className={`block px-3 py-1.5 rounded text-sm transition-colors ${
-                            pathname === '/explore'
+                            pathname === '/ryan-white/explorer'
                               ? 'text-hopkins-gold font-medium'
                               : 'text-white/70 hover:text-white'
                           }`}
