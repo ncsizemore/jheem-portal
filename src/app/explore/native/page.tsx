@@ -55,9 +55,9 @@ const SCENARIO_LABELS: Record<string, string> = {
 };
 
 const SCENARIO_DESCRIPTIONS: Record<string, string> = {
-  cessation: 'Ryan White funding completely stops',
-  brief_interruption: 'Funding pauses temporarily (1-2 years)',
-  prolonged_interruption: 'Funding pauses for an extended period (3+ years)',
+  cessation: 'Permanent end to Ryan White funding',
+  brief_interruption: '18-month funding gap, then services resume',
+  prolonged_interruption: '42-month funding gap, then services resume',
 };
 
 function formatOptionLabel(value: string): string {
@@ -69,12 +69,14 @@ function formatOptionLabel(value: string): string {
 }
 
 // Get color based on suppression rate (higher = greener)
+// Thresholds adjusted for typical range of 65-85% to show more variation
 function getSuppressionColor(rate: number): { ring: string; glow: string; bg: string } {
-  if (rate >= 80) return { ring: '#22c55e', glow: 'rgba(34, 197, 94, 0.5)', bg: 'bg-green-500' };
-  if (rate >= 70) return { ring: '#84cc16', glow: 'rgba(132, 204, 22, 0.5)', bg: 'bg-lime-500' };
-  if (rate >= 60) return { ring: '#eab308', glow: 'rgba(234, 179, 8, 0.5)', bg: 'bg-yellow-500' };
-  if (rate >= 50) return { ring: '#f97316', glow: 'rgba(249, 115, 22, 0.5)', bg: 'bg-orange-500' };
-  return { ring: '#ef4444', glow: 'rgba(239, 68, 68, 0.5)', bg: 'bg-red-500' };
+  if (rate >= 82) return { ring: '#16a34a', glow: 'rgba(22, 163, 74, 0.5)', bg: 'bg-green-600' };  // Excellent
+  if (rate >= 77) return { ring: '#22c55e', glow: 'rgba(34, 197, 94, 0.5)', bg: 'bg-green-500' };  // Very good
+  if (rate >= 72) return { ring: '#84cc16', glow: 'rgba(132, 204, 22, 0.5)', bg: 'bg-lime-500' };  // Good
+  if (rate >= 67) return { ring: '#eab308', glow: 'rgba(234, 179, 8, 0.5)', bg: 'bg-yellow-500' }; // Moderate
+  if (rate >= 60) return { ring: '#f97316', glow: 'rgba(249, 115, 22, 0.5)', bg: 'bg-orange-500' };// Below target
+  return { ring: '#ef4444', glow: 'rgba(239, 68, 68, 0.5)', bg: 'bg-red-500' };                    // Needs improvement
 }
 
 // Get marker size based on prevalence (larger epidemic = bigger marker)
@@ -149,11 +151,11 @@ export default function ExploreV2() {
   // View mode: 'map' or 'analysis'
   const [mode, setMode] = useState<'map' | 'analysis'>('map');
 
-  // Map state
+  // Map state - centered on continental US with zoom to show all states
   const [viewState, setViewState] = useState({
-    longitude: -95.7,
-    latitude: 37.1,
-    zoom: 4.3,
+    longitude: -96.5,
+    latitude: 38.5,
+    zoom: 3.8,
   });
 
   // Hover state for map
@@ -187,8 +189,8 @@ export default function ExploreV2() {
   // City switcher dropdown
   const [showCitySwitcher, setShowCitySwitcher] = useState(false);
 
-  // Track if user has started exploring (first hover triggers this)
-  const [hasStartedExploring, setHasStartedExploring] = useState(false);
+  // Track if instruction panel is collapsed (user must explicitly minimize)
+  const [instructionsCollapsed, setInstructionsCollapsed] = useState(false);
 
   // Display options
   const [displayOptions, setDisplayOptions] = useState<ChartDisplayOptions>({
@@ -223,7 +225,6 @@ export default function ExploreV2() {
   const handleMarkerMouseEnter = useCallback((city: CityData, e: React.MouseEvent<HTMLButtonElement>) => {
     cancelHideTimeout();
     setHoveredCity(city);
-    setHasStartedExploring(true);
     const rect = e.currentTarget.getBoundingClientRect();
     setHoverPosition({ x: rect.left + rect.width / 2, y: rect.top });
   }, [cancelHideTimeout]);
@@ -241,7 +242,11 @@ export default function ExploreV2() {
         setSelectedScenario(selectedCity.availableScenarios[0]);
       }
       if (opts.outcomes.length && !selectedOutcome) {
-        setSelectedOutcome(opts.outcomes[0]);
+        // Default to incidence if available, otherwise first outcome
+        const defaultOutcome = opts.outcomes.includes('incidence')
+          ? 'incidence'
+          : opts.outcomes[0];
+        setSelectedOutcome(defaultOutcome);
       }
       if (opts.statistics.length && !selectedStatistic) {
         const defaultStat = opts.statistics.includes('mean.and.interval')
@@ -279,7 +284,7 @@ export default function ExploreV2() {
   const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
 
   return (
-    <div className="h-screen w-screen overflow-hidden bg-slate-900">
+    <div className="h-screen w-screen overflow-hidden bg-slate-100">
       <AnimatePresence mode="wait">
         {/* ===== MAP MODE ===== */}
         {mode === 'map' && (
@@ -293,25 +298,25 @@ export default function ExploreV2() {
 
           {/* Loading state for city summaries */}
           {citySummariesLoading && (
-            <div className="absolute inset-0 flex items-center justify-center bg-slate-900 z-50">
+            <div className="absolute inset-0 flex items-center justify-center bg-slate-50 z-50">
               <div className="text-center">
                 <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                <p className="text-white text-lg">Loading cities...</p>
+                <p className="text-slate-700 text-lg">Loading cities...</p>
               </div>
             </div>
           )}
 
           {/* Error state for city summaries */}
           {citySummariesError && !citySummariesLoading && (
-            <div className="absolute inset-0 flex items-center justify-center bg-slate-900 z-50">
+            <div className="absolute inset-0 flex items-center justify-center bg-slate-50 z-50">
               <div className="text-center max-w-md px-6">
-                <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <svg className="w-8 h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
-                <h2 className="text-white text-xl font-bold mb-2">Unable to Load Data</h2>
-                <p className="text-gray-400 mb-4">{citySummariesError}</p>
+                <h2 className="text-slate-800 text-xl font-bold mb-2">Unable to Load Data</h2>
+                <p className="text-slate-500 mb-4">{citySummariesError}</p>
                 <button
                   onClick={() => window.location.reload()}
                   className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
@@ -326,7 +331,7 @@ export default function ExploreV2() {
             {...viewState}
             onMove={evt => setViewState(evt.viewState)}
             mapboxAccessToken={MAPBOX_TOKEN}
-            mapStyle="mapbox://styles/mapbox/dark-v11"
+            mapStyle="mapbox://styles/mapbox/light-v11"
             style={{ width: '100%', height: '100%' }}
             attributionControl={false}
           >
@@ -392,20 +397,20 @@ export default function ExploreV2() {
 
           {/* Info panel */}
           <div className="absolute top-4 left-4 w-80">
-            <div className="bg-slate-900/95 backdrop-blur-md border border-white/10 rounded-xl overflow-hidden shadow-2xl">
+            <div className="bg-white/95 backdrop-blur-md border border-slate-200 rounded-xl overflow-hidden shadow-lg">
               {/* Header row - always visible */}
               <button
-                onClick={() => setHasStartedExploring(prev => !prev)}
-                className="w-full px-4 py-3 flex items-center justify-between hover:bg-white/5 transition-colors"
+                onClick={() => setInstructionsCollapsed(prev => !prev)}
+                className="w-full px-4 py-3 flex items-center justify-between hover:bg-slate-50 transition-colors"
               >
-                <h1 className="text-white font-semibold text-sm">
+                <h1 className="text-slate-800 font-semibold text-sm">
                   Ryan White Funding Explorer
                 </h1>
                 <motion.div
-                  animate={{ rotate: hasStartedExploring ? 0 : 180 }}
+                  animate={{ rotate: instructionsCollapsed ? 0 : 180 }}
                   transition={{ duration: 0.2 }}
                 >
-                  <svg className="w-4 h-4 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
                   </svg>
                 </motion.div>
@@ -415,37 +420,37 @@ export default function ExploreV2() {
               <motion.div
                 initial={false}
                 animate={{
-                  height: hasStartedExploring ? 0 : 'auto',
-                  opacity: hasStartedExploring ? 0 : 1
+                  height: instructionsCollapsed ? 0 : 'auto',
+                  opacity: instructionsCollapsed ? 0 : 1
                 }}
                 transition={{ duration: 0.25, ease: 'easeInOut' }}
                 className="overflow-hidden"
               >
-                <div className="px-4 pb-4 border-t border-white/10">
+                <div className="px-4 pb-4 border-t border-slate-100">
                   {/* How to use */}
                   <div className="mt-3 space-y-2.5">
                     <div className="flex items-start gap-2.5">
-                      <div className="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <span className="text-blue-400 text-xs font-medium">1</span>
+                      <div className="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <span className="text-blue-600 text-xs font-medium">1</span>
                       </div>
-                      <p className="text-white/70 text-sm">
-                        <span className="text-white/90 font-medium">Hover</span> a city to preview key metrics and projected impact
+                      <p className="text-slate-600 text-sm">
+                        <span className="text-slate-800 font-medium">Hover</span> a city to preview key metrics and projected impact
                       </p>
                     </div>
                     <div className="flex items-start gap-2.5">
-                      <div className="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <span className="text-blue-400 text-xs font-medium">2</span>
+                      <div className="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <span className="text-blue-600 text-xs font-medium">2</span>
                       </div>
-                      <p className="text-white/70 text-sm">
-                        <span className="text-white/90 font-medium">Click</span> to open full analysis with interactive charts
+                      <p className="text-slate-600 text-sm">
+                        <span className="text-slate-800 font-medium">Click</span> to open full analysis with interactive charts
                       </p>
                     </div>
                     <div className="flex items-start gap-2.5">
-                      <div className="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <span className="text-blue-400 text-xs font-medium">3</span>
+                      <div className="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <span className="text-blue-600 text-xs font-medium">3</span>
                       </div>
-                      <p className="text-white/70 text-sm">
-                        <span className="text-white/90 font-medium">Compare</span> scenarios and explore breakdowns by age, sex, and race
+                      <p className="text-slate-600 text-sm">
+                        <span className="text-slate-800 font-medium">Compare</span> scenarios and explore breakdowns by age, sex, and race
                       </p>
                     </div>
                   </div>
@@ -453,7 +458,7 @@ export default function ExploreV2() {
               </motion.div>
 
               {/* Legend - always visible */}
-              <div className="px-4 py-2.5 border-t border-white/10 flex items-center gap-4 text-xs text-white/50">
+              <div className="px-4 py-2.5 border-t border-slate-100 flex items-center gap-4 text-xs text-slate-500">
                 <div className="flex items-center gap-1.5">
                   <div className="flex gap-0.5">
                     <div className="w-2 h-2 rounded-full bg-red-500" />
@@ -462,11 +467,11 @@ export default function ExploreV2() {
                   </div>
                   <span>Suppression</span>
                 </div>
-                <div className="w-px h-3 bg-white/20" />
+                <div className="w-px h-3 bg-slate-200" />
                 <div className="flex items-center gap-1.5">
                   <div className="flex items-center gap-0.5">
-                    <div className="w-1.5 h-1.5 rounded-full bg-white/40" />
-                    <div className="w-2.5 h-2.5 rounded-full bg-white/40" />
+                    <div className="w-1.5 h-1.5 rounded-full bg-slate-400" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-slate-400" />
                   </div>
                   <span>Population</span>
                 </div>
@@ -516,34 +521,34 @@ export default function ExploreV2() {
                 onMouseLeave={startHideTimeout}
                 onClick={() => hoveredCity && handleCityClick(hoveredCity)}
               >
-                <div className="bg-slate-900/95 backdrop-blur-md border border-white/10 rounded-xl p-3 min-w-[240px] hover:bg-slate-800/95 transition-colors">
+                <div className="bg-white/98 backdrop-blur-md border border-slate-200 rounded-xl p-3 min-w-[240px] hover:bg-slate-50 transition-colors shadow-lg">
                   {/* Header - single line */}
-                  <h3 className="font-semibold text-white text-sm mb-2">
+                  <h3 className="font-semibold text-slate-800 text-sm mb-2">
                     {summary?.shortName || hoveredCity.name.split(',')[0]}, {hoveredCity.name.split(',').slice(-1)[0]?.trim()}
                   </h3>
 
                   {/* Current Status (Model Estimates) */}
                   {summary && (
-                    <div className="py-2 border-y border-white/10">
+                    <div className="py-2 border-y border-slate-100">
                       <div className="flex items-baseline justify-between mb-1.5">
-                        <span className="text-[10px] uppercase tracking-wide text-white/40">Model Estimate {summary.metrics.suppressionRate.year}</span>
+                        <span className="text-[10px] uppercase tracking-wide text-slate-400">Model Estimate {summary.metrics.suppressionRate.year}</span>
                       </div>
                       <div className="space-y-1.5">
                         <div className="flex items-center justify-between">
-                          <span className="text-xs text-white/60">Viral suppression</span>
+                          <span className="text-xs text-slate-500">Viral suppression</span>
                           <div className="flex items-center gap-1.5">
                             <div
                               className="w-2 h-2 rounded-full"
                               style={{ backgroundColor: colors?.ring }}
                             />
-                            <span className="text-sm font-semibold text-white">
+                            <span className="text-sm font-semibold text-slate-800">
                               {summary.metrics.suppressionRate.value.toFixed(0)}%
                             </span>
                           </div>
                         </div>
                         <div className="flex items-center justify-between">
-                          <span className="text-xs text-white/60">People with HIV</span>
-                          <span className="text-sm font-semibold text-white">
+                          <span className="text-xs text-slate-500">People with HIV</span>
+                          <span className="text-sm font-semibold text-slate-800">
                             {summary.metrics.diagnosedPrevalence.value.toLocaleString()}
                           </span>
                         </div>
@@ -555,12 +560,12 @@ export default function ExploreV2() {
                   {summary && (
                     <div className="pt-2">
                       <div className="flex items-baseline justify-between mb-1.5">
-                        <span className="text-[10px] uppercase tracking-wide text-white/40">If Funding Stops</span>
-                        <span className="text-[10px] text-white/30">by {summary.impact.targetYear}</span>
+                        <span className="text-[10px] uppercase tracking-wide text-slate-400">Cessation Scenario</span>
+                        <span className="text-[10px] text-slate-400">by {summary.impact.targetYear}</span>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-xs text-white/60">New HIV cases</span>
-                        <span className="text-sm font-semibold text-amber-400">
+                        <span className="text-xs text-slate-500">New HIV cases</span>
+                        <span className="text-sm font-semibold text-amber-600">
                           +{summary.impact.cessationIncreasePercent}%
                         </span>
                       </div>
@@ -568,7 +573,7 @@ export default function ExploreV2() {
                   )}
 
                   {/* Click hint */}
-                  <div className="mt-2 pt-2 border-t border-white/5 flex items-center justify-center gap-1 text-white/40 text-xs">
+                  <div className="mt-2 pt-2 border-t border-slate-100 flex items-center justify-center gap-1 text-slate-400 text-xs">
                     <span>Click to explore</span>
                     <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -578,12 +583,12 @@ export default function ExploreV2() {
                 {/* Arrow - points toward the marker */}
                 {!showBelow ? (
                   <div
-                    className="absolute -bottom-1.5 w-3 h-3 bg-slate-900/95 border-r border-b border-white/10 rotate-45"
+                    className="absolute -bottom-1.5 w-3 h-3 bg-white border-r border-b border-slate-200 rotate-45"
                     style={{ left: arrowLeftClamped, transform: 'translateX(-50%)' }}
                   />
                 ) : (
                   <div
-                    className="absolute -top-1.5 w-3 h-3 bg-slate-900/95 border-l border-t border-white/10 rotate-45"
+                    className="absolute -top-1.5 w-3 h-3 bg-white border-l border-t border-slate-200 rotate-45"
                     style={{ left: arrowLeftClamped, transform: 'translateX(-50%)' }}
                   />
                 )}

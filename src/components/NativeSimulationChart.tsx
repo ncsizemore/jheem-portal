@@ -153,17 +153,25 @@ const NativeSimulationChart = memo(({
   // Recharts Area fills from 0 by default, so we use stacking:
   // - ciBase: invisible area from 0 to lower bound
   // - ciHeight: visible area from lower to upper (the actual CI band)
+  // IMPORTANT: Use null (not 0) for missing data to prevent Recharts from
+  // connecting through y=0, which causes visual artifacts at data boundaries
   const chartDataWithCI = useMemo(() => {
-    return data.map(d => ({
-      ...d,
-      // Intervention CI band
-      ciBase: d.lower ?? 0,
-      ciHeight: (d.upper !== undefined && d.lower !== undefined) ? d.upper - d.lower : 0,
-      // Baseline CI band
-      baselineCiBase: d.baselineLower ?? 0,
-      baselineCiHeight: (d.baselineUpper !== undefined && d.baselineLower !== undefined)
-        ? d.baselineUpper - d.baselineLower : 0,
-    }));
+    return data.map(d => {
+      // Check if intervention data exists for this year
+      const hasIntervention = d.lower !== undefined && d.upper !== undefined;
+      // Check if baseline data exists for this year
+      const hasBaseline = d.baselineLower !== undefined && d.baselineUpper !== undefined;
+
+      return {
+        ...d,
+        // Intervention CI band - use null if no intervention data
+        ciBase: hasIntervention ? d.lower : null,
+        ciHeight: hasIntervention ? d.upper! - d.lower! : null,
+        // Baseline CI band - use null if no baseline data
+        baselineCiBase: hasBaseline ? d.baselineLower : null,
+        baselineCiHeight: hasBaseline ? d.baselineUpper! - d.baselineLower! : null,
+      };
+    });
   }, [data]);
 
   // Prepare individual simulation data for Recharts
@@ -368,6 +376,7 @@ const NativeSimulationChart = memo(({
                     fill="transparent"
                     legendType="none"
                     isAnimationActive={false}
+                    connectNulls={false}
                   />
                   {/* Visible CI band from lower to upper */}
                   <Area
@@ -380,6 +389,7 @@ const NativeSimulationChart = memo(({
                     name="interventionCI"
                     legendType="none"
                     isAnimationActive={false}
+                    connectNulls={false}
                   />
                 </>
               )}
@@ -406,6 +416,7 @@ const NativeSimulationChart = memo(({
                 dot={false}
                 activeDot={{ r: 6, fill: '#3b82f6', stroke: '#fff', strokeWidth: 2 }}
                 name="value"
+                connectNulls={false}
               />
             </>
           )}
