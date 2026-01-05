@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { CityData } from '../data/cities';
+import { CityData } from '@/data/cities';
 
 interface CityHoverTooltipProps {
   city: CityData;

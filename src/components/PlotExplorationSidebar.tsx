@@ -2,7 +2,7 @@
 
 import { useState, useEffect, memo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CityData } from '../data/cities';
+import { CityData } from '@/data/cities';
 
 interface PlotMetadata {
   outcome: string;

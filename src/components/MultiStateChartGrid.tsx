@@ -2,7 +2,6 @@
 
 import React, { memo, useMemo, useState, useEffect, useRef, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import html2canvas from 'html2canvas';
 import AgeDistributionChart from './AgeDistributionChart';
 import { StateAgeData, transformDataForChart } from '@/data/hiv-age-projections';
 
@@ -96,6 +95,9 @@ const MultiStateChartGrid = memo(({
     try {
       // Wait a moment for any animations to complete
       await new Promise(resolve => setTimeout(resolve, 300));
+
+      // Dynamic import to reduce initial bundle size (only loaded when exporting)
+      const html2canvas = (await import('html2canvas')).default;
 
       const canvas = await html2canvas(gridRef.current, {
         backgroundColor: '#ffffff',

@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { CityData } from '../data/cities';
+import { CityData } from '@/data/cities';
 
 interface ScenarioSelectionPopupProps {
   city: CityData | null;

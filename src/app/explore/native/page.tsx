@@ -219,6 +219,19 @@ export default function ExploreV2() {
     setMode('analysis');
   }, [loadCity]);
 
+  // Memoized marker event handlers (avoids recreating functions on every render)
+  const handleMarkerMouseEnter = useCallback((city: CityData, e: React.MouseEvent<HTMLButtonElement>) => {
+    cancelHideTimeout();
+    setHoveredCity(city);
+    setHasStartedExploring(true);
+    const rect = e.currentTarget.getBoundingClientRect();
+    setHoverPosition({ x: rect.left + rect.width / 2, y: rect.top });
+  }, [cancelHideTimeout]);
+
+  const handleMarkerMouseLeave = useCallback(() => {
+    startHideTimeout();
+  }, [startHideTimeout]);
+
   // Set defaults when city data loads
   useEffect(() => {
     if (cityData && selectedCity) {
@@ -334,16 +347,8 @@ export default function ExploreV2() {
                 >
                   <button
                     onClick={() => handleCityClick(city)}
-                    onMouseEnter={(e) => {
-                      cancelHideTimeout();
-                      setHoveredCity(city);
-                      setHasStartedExploring(true);
-                      const rect = e.currentTarget.getBoundingClientRect();
-                      setHoverPosition({ x: rect.left + rect.width / 2, y: rect.top });
-                    }}
-                    onMouseLeave={() => {
-                      startHideTimeout();
-                    }}
+                    onMouseEnter={(e) => handleMarkerMouseEnter(city, e)}
+                    onMouseLeave={handleMarkerMouseLeave}
                     className="relative transition-transform duration-200 hover:scale-110"
                     style={{ transform: isActive ? 'scale(1.15)' : undefined }}
                   >

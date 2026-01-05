@@ -3,7 +3,7 @@
 import { useState, memo, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Map, { Marker } from 'react-map-gl/mapbox';
-import { CityData } from '../data/cities';
+import { CityData } from '@/data/cities';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
 interface MapboxCityMapProps {

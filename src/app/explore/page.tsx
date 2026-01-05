@@ -2,14 +2,14 @@
 
 import React, { useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { useAvailableCities } from '../../hooks/useAvailableCities';
-import MapboxCityMap from '../../components/MapboxCityMap';
-import ScenarioSelectionPopup from '../../components/ScenarioSelectionPopup';
-import CityHoverTooltip from '../../components/CityHoverTooltip';
-import MapPlotOverlay from '../../components/MapPlotOverlay';
-import PlotVariationControls from '../../components/PlotVariationControls';
-import ErrorBoundary from '../../components/ErrorBoundary';
-import { CityData } from '../../data/cities';
+import { useAvailableCities } from '@/hooks/useAvailableCities';
+import MapboxCityMap from '@/components/MapboxCityMap';
+import ScenarioSelectionPopup from '@/components/ScenarioSelectionPopup';
+import CityHoverTooltip from '@/components/CityHoverTooltip';
+import MapPlotOverlay from '@/components/MapPlotOverlay';
+import PlotVariationControls from '@/components/PlotVariationControls';
+import ErrorBoundary from '@/components/ErrorBoundary';
+import { CityData } from '@/data/cities';
 
 
 interface PlotData {

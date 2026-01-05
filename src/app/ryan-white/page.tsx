@@ -12,25 +12,15 @@ export default function RyanWhiteLandingPage() {
     const citation = 'Forster R, Schnure M, Jones J, Lesko C, Batey DS, Butler I, Ward D, Musgrove K, Althoff KN, Jain MK, Gebo KA, Dowdy DW, Shah M, Kasaie P, Fojo AT. The Potential Impact of Ending the Ryan White HIV/AIDS Program on HIV Incidence: A Simulation Study in 31 U.S. Cities. Annals of Internal Medicine. 2025. doi:10.7326/ANNALS-25-01737';
 
     try {
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        await navigator.clipboard.writeText(citation);
-        setCitationCopied(true);
-        setTimeout(() => setCitationCopied(false), 2000);
-      } else {
-        // Fallback for browsers/contexts without Clipboard API
-        const textArea = document.createElement('textarea');
-        textArea.value = citation;
-        textArea.style.position = 'fixed';
-        textArea.style.left = '-999999px';
-        document.body.appendChild(textArea);
-        textArea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textArea);
-        setCitationCopied(true);
-        setTimeout(() => setCitationCopied(false), 2000);
-      }
+      await navigator.clipboard.writeText(citation);
+      setCitationCopied(true);
+      setTimeout(() => setCitationCopied(false), 2000);
     } catch (error) {
-      console.error('Failed to copy citation:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Failed to copy citation:', error);
+      }
+      // Show user feedback on failure
+      alert('Unable to copy to clipboard. Please select and copy the citation manually.');
     }
   };
 

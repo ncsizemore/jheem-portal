@@ -223,6 +223,12 @@ export default function EmbeddedShinyApp({ appConfig }: EmbeddedShinyAppProps) {
       {/* Iframe Container */}
       {!loading && appLoaded && (
         <div className="flex-1 relative">
+          {/*
+            Security note: sandbox uses allow-same-origin + allow-scripts because:
+            - Shiny apps require cookies/session storage for authentication
+            - Cross-origin policy still protects parent (iframe is on shinyapps.io)
+            - Removing allow-same-origin breaks Shiny session management
+          */}
           <iframe
             src={appConfig.iframeUrl}
             className="absolute inset-0 w-full h-full border-0"

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ALL_CITIES, AVAILABLE_SCENARIOS, CityData, ScenarioType } from '../data/cities';
+import { ALL_CITIES, AVAILABLE_SCENARIOS, CityData, ScenarioType } from '@/data/cities';
 
 interface UseAvailableCitiesReturn {
   availableCities: CityData[];
