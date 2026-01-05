@@ -18,8 +18,8 @@ The Ryan White map explorer modernization spans three repositories, replacing le
 **URL**: https://jheem-portal.vercel.app/
 
 **Key Routes**:
-- `/explore` - Ryan White Map Explorer (legacy Plotly-based)
-- `/explore/native` - **NEW** Native Recharts explorer (recommended, will replace /explore)
+- `/ryan-white/explorer` - **Native Recharts explorer** (promoted from /explore/native)
+- `/explore` - Legacy Plotly-based explorer (will be deprecated)
 - `/hiv-age-projections` - Multi-state HIV aging analysis
 - `/ryan-white-state-level` - Embedded Shiny app (iframe)
 - `/cdc-testing` - Embedded Shiny app (iframe)
@@ -99,13 +99,60 @@ User sees custom results
 
 ---
 
-## Latest Session Summary (2025-01-04)
+## Latest Session Summary (2026-01-05)
 
-### Code Review and Quality Improvements
+### Native Explorer Demo Polish & Route Promotion
+
+**Commits**: `40ae01c`, `ce67bb1`, `2f60235`, `cce251b`
+
+#### ✅ Completed
+
+**Route Structure:**
+- Promoted native explorer to `/ryan-white/explorer` (model-first hierarchy)
+- Removed `/explore/native` (was temporary location)
+- Updated all navigation links (desktop + mobile)
+- Legacy `/explore` remains for backwards compatibility
+
+**UI/UX Polish:**
+- Updated scenario descriptions with precise paper definitions (18mo, 42mo, permanent)
+- Changed default outcome to `incidence` (was ADAP clients)
+- Instruction card now stays open until user explicitly minimizes
+- Adjusted map zoom to 4.1 and centered on continental US
+
+**Visual Design:**
+- Switched to Mapbox `streets-v12` theme (subtle land use colors)
+- Implemented blue-to-orange diverging color scale for suppression (colorblind-friendly)
+  - Blue = high suppression (good), Orange = low (concerning)
+  - Thresholds: 82/77/72/67/64 based on actual data range (64-86%)
+- Updated info panel, hover cards, and legend for light theme
+- Hover card now says "Cessation Scenario" instead of "If Funding Stops"
+
+**Bug Fixes:**
+- Fixed chart artifact at 2015 (intervention CI band was connecting through y=0)
+  - Root cause: Used `0` instead of `null` for missing CI data
+  - Fix: Use `null` values with `connectNulls={false}` on Area/Line components
+
+#### 📋 Remaining Items
+
+| Item | Priority | Effort | Notes |
+|------|----------|--------|-------|
+| City search/filter in switcher | High | 30-45min | Critical for 31 cities |
+| Facet selection UI | High | 30-45min | Segmented control vs dropdown |
+| Update city-summaries.json to 2025 | Medium | Backend | Currently shows 2024 data |
+| URL encoding security | Medium | 15min | `encodeURIComponent` in a few places |
+| Remove mini-map thumbnail | Low | 15min | Over-engineered, loads full Mapbox instance |
+| Split page.tsx (900 lines) | Low | 2-3hr | Into MapView + AnalysisView |
+| Mobile responsiveness | Low | 2-3hr | Controls header overflow |
+| PNG export button | Low | 1-2hr | Native charts lack export |
+
+---
+
+## Previous Session Summaries
+
+<details>
+<summary>2025-01-04: Code Review and Quality Improvements (Click to expand)</summary>
 
 **Commits**: `d1da612`, `aabbd9f`
-
-#### Completed Fixes
 
 **Security:**
 - Added `encodeURIComponent()` to all URL query parameters (6 files)
@@ -125,19 +172,10 @@ User sees custom results
 - Removed deprecated document.execCommand, using modern Clipboard API
 - Standardized all imports to use @/ path aliases (10 files)
 
-#### Remaining Items (Lower Priority)
+</details>
 
-| Issue | Effort | Notes |
-|-------|--------|-------|
-| Repeated error UI patterns | 1hr | Same error card in 3 places |
-| Module-level cache in useCityData | 1hr | Global Map could cause stale data |
-| JSDoc for complex functions | 30min | getSuppressionColor, getMarkerSize |
-| Centralized API client | 3-4hrs | Fetch logic duplicated across 7 files |
-| Split native/page.tsx (830 lines) | 2-3hrs | Into MapView + AnalysisView |
-
----
-
-## Previous Session Summary (2025-12-31)
+<details>
+<summary>2025-12-31: CloudFront Production Pipeline (Click to expand)</summary>
 
 ### CloudFront Production Pipeline Complete
 
@@ -190,9 +228,7 @@ s3://jheem-data-production/portal/ryan-white/C.XXXXX.json
 
 See session notes: `.claude-sessions/2025-12-31_cloudfront_cors_and_full_pipeline.md`
 
----
-
-## Previous Session Summaries
+</details>
 
 <details>
 <summary>2025-12-26: Workflow & S3/CloudFront Architecture (Click to expand)</summary>
