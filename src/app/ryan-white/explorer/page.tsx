@@ -206,6 +206,10 @@ export default function ExploreV2() {
   // Display options popover
   const [showDisplayOptions, setShowDisplayOptions] = useState(false);
 
+  // Facet pagination
+  const [showAllFacets, setShowAllFacets] = useState(false);
+  const FACET_PAGE_SIZE = 9;
+
   // Display options
   const [displayOptions, setDisplayOptions] = useState<ChartDisplayOptions>({
     showConfidenceInterval: true,
@@ -280,6 +284,7 @@ export default function ExploreV2() {
   // Toggle handler for facet dimensions
   const toggleFacetDimension = useCallback((dim: 'age' | 'sex' | 'race' | 'risk') => {
     setFacetDimensions(prev => ({ ...prev, [dim]: !prev[dim] }));
+    setShowAllFacets(false); // Reset pagination when changing facets
   }, []);
 
   // Handle city selection
@@ -989,15 +994,44 @@ export default function ExploreV2() {
                   />
                 </div>
               ) : (
-                /* Faceted grid - responsive columns */
+                /* Faceted grid - responsive columns with pagination */
                 <div>
-                  <p className="text-sm text-slate-500 mb-4">{chartPanels.length} panels</p>
+                  {/* Header with count and expand/collapse */}
+                  <div className="flex items-center justify-between mb-4">
+                    <p className="text-sm text-slate-500">
+                      {chartPanels.length > FACET_PAGE_SIZE && !showAllFacets
+                        ? `Showing ${FACET_PAGE_SIZE} of ${chartPanels.length} panels`
+                        : `${chartPanels.length} panels`}
+                    </p>
+                    {chartPanels.length > FACET_PAGE_SIZE && (
+                      <button
+                        onClick={() => setShowAllFacets(!showAllFacets)}
+                        className="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
+                      >
+                        {showAllFacets ? (
+                          <>
+                            <span>Show fewer</span>
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                            </svg>
+                          </>
+                        ) : (
+                          <>
+                            <span>Show all {chartPanels.length}</span>
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                          </>
+                        )}
+                      </button>
+                    )}
+                  </div>
                   <div className={`grid gap-4 ${
                     chartPanels.length <= 4 ? 'grid-cols-1 lg:grid-cols-2' :
                     chartPanels.length <= 9 ? 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3' :
                     'grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4'
                   }`}>
-                    {chartPanels.map(panel => (
+                    {(showAllFacets ? chartPanels : chartPanels.slice(0, FACET_PAGE_SIZE)).map(panel => (
                       <div key={panel.facetValue} className="bg-white rounded-lg border border-slate-200 p-4">
                         <NativeSimulationChart
                           panel={panel}
@@ -1010,6 +1044,17 @@ export default function ExploreV2() {
                       </div>
                     ))}
                   </div>
+                  {/* Bottom expand button when collapsed and there are more */}
+                  {chartPanels.length > FACET_PAGE_SIZE && !showAllFacets && (
+                    <div className="mt-4 text-center">
+                      <button
+                        onClick={() => setShowAllFacets(true)}
+                        className="px-4 py-2 text-sm text-blue-600 hover:text-blue-700 hover:bg-blue-50 font-medium rounded-lg transition-colors"
+                      >
+                        Show all {chartPanels.length} panels
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
