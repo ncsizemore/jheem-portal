@@ -8,7 +8,14 @@ import NativeSimulationChart from '@/components/NativeSimulationChart';
 import { transformPlotData } from '@/utils/transformPlotData';
 import { CityData } from '@/data/cities';
 import type { PlotDataFile, FacetPanel, ChartDisplayOptions } from '@/types/native-plotting';
+import { ryanWhiteConfig } from '@/config/model-configs';
 import 'mapbox-gl/dist/mapbox-gl.css';
+
+// Use model config for this explorer instance
+const MODEL_CONFIG = ryanWhiteConfig;
+
+// Dynamic import for html2canvas (only loaded when needed)
+const loadHtml2Canvas = () => import('html2canvas').then(mod => mod.default);
 
 // City summary data types
 interface MetricValue {
@@ -45,20 +52,14 @@ interface CitySummaries {
   cities: Record<string, CitySummary>;
 }
 
-// All scenarios that cities have
-const ALL_SCENARIOS = ['cessation', 'brief_interruption', 'prolonged_interruption'];
-
-const SCENARIO_LABELS: Record<string, string> = {
-  cessation: 'Cessation',
-  brief_interruption: 'Brief Interruption',
-  prolonged_interruption: 'Prolonged Interruption',
-};
-
-const SCENARIO_DESCRIPTIONS: Record<string, string> = {
-  cessation: 'Permanent end to Ryan White funding',
-  brief_interruption: '18-month funding gap, then services resume',
-  prolonged_interruption: '42-month funding gap, then services resume',
-};
+// Derive scenario data from config
+const ALL_SCENARIOS = MODEL_CONFIG.scenarios.map(s => s.id);
+const SCENARIO_LABELS: Record<string, string> = Object.fromEntries(
+  MODEL_CONFIG.scenarios.map(s => [s.id, s.label])
+);
+const SCENARIO_DESCRIPTIONS: Record<string, string> = Object.fromEntries(
+  MODEL_CONFIG.scenarios.map(s => [s.id, s.description])
+);
 
 function formatOptionLabel(value: string): string {
   return value
@@ -102,11 +103,11 @@ export default function ExploreV2() {
 
   // Load city summaries on mount
   useEffect(() => {
-    const dataUrl = process.env.NEXT_PUBLIC_DATA_URL || 'https://d320iym4dtm9lj.cloudfront.net/ryan-white';
+    const dataUrl = MODEL_CONFIG.dataUrl;
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 30000);
 
-    fetch(`${dataUrl}/city-summaries.json`, { signal: controller.signal })
+    fetch(`${dataUrl}/${MODEL_CONFIG.summaryFileName}`, { signal: controller.signal })
       .then(res => {
         if (!res.ok) {
           throw new Error(`Failed to load city data (${res.status})`);
@@ -152,11 +153,11 @@ export default function ExploreV2() {
   // View mode: 'map' or 'analysis'
   const [mode, setMode] = useState<'map' | 'analysis'>('map');
 
-  // Map state - centered on continental US with zoom to show all states
+  // Map state - centered based on model config
   const [viewState, setViewState] = useState({
-    longitude: -96.5,
-    latitude: 38.5,
-    zoom: 4.1,
+    longitude: MODEL_CONFIG.map.center[0],
+    latitude: MODEL_CONFIG.map.center[1],
+    zoom: MODEL_CONFIG.map.zoom,
   });
 
   // Hover state for map
@@ -212,6 +213,10 @@ export default function ExploreV2() {
 
   // View mode (chart vs table)
   const [viewMode, setViewMode] = useState<'chart' | 'table'>('chart');
+
+  // Chart container ref for PNG export
+  const chartContainerRef = useRef<HTMLDivElement>(null);
+  const [exportingPng, setExportingPng] = useState(false);
 
   // Display options
   const [displayOptions, setDisplayOptions] = useState<ChartDisplayOptions>({
@@ -344,6 +349,37 @@ export default function ExploreV2() {
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
   }, [chartPanels, selectedCity, plotData, selectedOutcome, selectedScenario]);
+
+  // PNG export handler
+  const handleExportPNG = useCallback(async () => {
+    if (!chartContainerRef.current || !selectedCity || !plotData) return;
+
+    setExportingPng(true);
+    try {
+      const html2canvas = await loadHtml2Canvas();
+      const canvas = await html2canvas(chartContainerRef.current, {
+        backgroundColor: '#ffffff',
+        scale: 2, // Higher resolution
+        logging: false,
+      });
+
+      const url = canvas.toDataURL('image/png');
+      const link = document.createElement('a');
+      link.href = url;
+      const cityName = selectedCity.name.split(',')[0].replace(/\s+/g, '_');
+      const outcome = plotData.metadata.outcome || selectedOutcome;
+      link.download = `${cityName}_${outcome}_${selectedScenario}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (err) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error('PNG export failed:', err);
+      }
+    } finally {
+      setExportingPng(false);
+    }
+  }, [selectedCity, plotData, selectedOutcome, selectedScenario]);
 
   // Handle city selection
   const handleCityClick = useCallback(async (city: CityData) => {
@@ -533,7 +569,7 @@ export default function ExploreV2() {
                 className="w-full px-4 py-3 flex items-center justify-between hover:bg-slate-50 transition-colors"
               >
                 <h1 className="text-slate-800 font-semibold text-sm">
-                  Ryan White Funding Explorer
+                  {MODEL_CONFIG.name}
                 </h1>
                 <motion.div
                   animate={{ rotate: instructionsCollapsed ? 0 : 180 }}
@@ -981,18 +1017,35 @@ export default function ExploreV2() {
                   </button>
                 </div>
 
-                {/* CSV Export */}
-                <button
-                  onClick={handleExportCSV}
-                  disabled={!chartPanels.length}
-                  className="flex items-center gap-1.5 px-2.5 py-1.5 text-sm text-slate-500 hover:bg-slate-100 hover:text-slate-700 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  title="Export as CSV"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                  <span>CSV</span>
-                </button>
+                {/* Export buttons */}
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={handleExportCSV}
+                    disabled={!chartPanels.length}
+                    className="flex items-center gap-1.5 px-2.5 py-1.5 text-sm text-slate-500 hover:bg-slate-100 hover:text-slate-700 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    title="Export as CSV"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span>CSV</span>
+                  </button>
+                  <button
+                    onClick={handleExportPNG}
+                    disabled={!chartPanels.length || viewMode === 'table' || exportingPng}
+                    className="flex items-center gap-1.5 px-2.5 py-1.5 text-sm text-slate-500 hover:bg-slate-100 hover:text-slate-700 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    title={viewMode === 'table' ? 'Switch to chart view to export PNG' : 'Export as PNG'}
+                  >
+                    {exportingPng ? (
+                      <div className="w-4 h-4 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin" />
+                    ) : (
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                    )}
+                    <span>PNG</span>
+                  </button>
+                </div>
 
                 {/* Display options popover */}
                 <div className="relative">
@@ -1140,7 +1193,7 @@ export default function ExploreV2() {
                 </div>
               ) : !isFaceted ? (
                 /* Single chart - centered, generous size */
-                <div className="max-w-4xl mx-auto bg-white rounded-lg border border-slate-200 p-6">
+                <div ref={chartContainerRef} className="max-w-4xl mx-auto bg-white rounded-lg border border-slate-200 p-6">
                   <NativeSimulationChart
                     panel={chartPanels[0]}
                     outcomeLabel={plotData?.metadata.outcome_metadata?.display_name || selectedOutcome}
@@ -1152,7 +1205,7 @@ export default function ExploreV2() {
                 </div>
               ) : (
                 /* Faceted grid - responsive columns with pagination */
-                <div>
+                <div ref={chartContainerRef}>
                   {/* Header with count and expand/collapse */}
                   <div className="flex items-center justify-between mb-4">
                     <p className="text-sm text-slate-500">
