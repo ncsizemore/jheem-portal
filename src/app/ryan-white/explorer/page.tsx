@@ -210,6 +210,9 @@ export default function ExploreV2() {
   const [showAllFacets, setShowAllFacets] = useState(false);
   const FACET_PAGE_SIZE = 9;
 
+  // View mode (chart vs table)
+  const [viewMode, setViewMode] = useState<'chart' | 'table'>('chart');
+
   // Display options
   const [displayOptions, setDisplayOptions] = useState<ChartDisplayOptions>({
     showConfidenceInterval: true,
@@ -286,6 +289,61 @@ export default function ExploreV2() {
     setFacetDimensions(prev => ({ ...prev, [dim]: !prev[dim] }));
     setShowAllFacets(false); // Reset pagination when changing facets
   }, []);
+
+  // CSV export handler
+  const handleExportCSV = useCallback(() => {
+    if (!chartPanels.length || !selectedCity || !plotData) return;
+
+    const rows: string[] = [];
+    const isFacetedData = chartPanels.length > 1;
+
+    // Header row
+    const headers = isFacetedData
+      ? ['Facet', 'Year', 'Intervention', 'Intervention Lower', 'Intervention Upper', 'Baseline', 'Baseline Lower', 'Baseline Upper']
+      : ['Year', 'Intervention', 'Intervention Lower', 'Intervention Upper', 'Baseline', 'Baseline Lower', 'Baseline Upper'];
+    rows.push(headers.join(','));
+
+    // Data rows
+    for (const panel of chartPanels) {
+      for (const point of panel.data) {
+        const values = isFacetedData
+          ? [
+              `"${panel.facetLabel}"`,
+              point.year,
+              point.value ?? '',
+              point.lower ?? '',
+              point.upper ?? '',
+              point.baselineValue ?? '',
+              point.baselineLower ?? '',
+              point.baselineUpper ?? '',
+            ]
+          : [
+              point.year,
+              point.value ?? '',
+              point.lower ?? '',
+              point.upper ?? '',
+              point.baselineValue ?? '',
+              point.baselineLower ?? '',
+              point.baselineUpper ?? '',
+            ];
+        rows.push(values.join(','));
+      }
+    }
+
+    // Create and download file
+    const csvContent = rows.join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    const cityName = selectedCity.name.split(',')[0].replace(/\s+/g, '_');
+    const outcome = plotData.metadata.outcome || selectedOutcome;
+    link.download = `${cityName}_${outcome}_${selectedScenario}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }, [chartPanels, selectedCity, plotData, selectedOutcome, selectedScenario]);
 
   // Handle city selection
   const handleCityClick = useCallback(async (city: CityData) => {
@@ -895,6 +953,47 @@ export default function ExploreV2() {
                   </div>
                 </div>
 
+                {/* View mode toggle */}
+                <div className="flex items-center border border-slate-200 rounded-md overflow-hidden">
+                  <button
+                    onClick={() => setViewMode('chart')}
+                    className={`flex items-center gap-1 px-2.5 py-1 text-sm transition-colors
+                      ${viewMode === 'chart'
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-white text-slate-600 hover:bg-slate-50'}`}
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
+                    </svg>
+                    <span>Chart</span>
+                  </button>
+                  <button
+                    onClick={() => setViewMode('table')}
+                    className={`flex items-center gap-1 px-2.5 py-1 text-sm transition-colors
+                      ${viewMode === 'table'
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-white text-slate-600 hover:bg-slate-50'}`}
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                    <span>Table</span>
+                  </button>
+                </div>
+
+                {/* CSV Export */}
+                <button
+                  onClick={handleExportCSV}
+                  disabled={!chartPanels.length}
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 text-sm text-slate-500 hover:bg-slate-100 hover:text-slate-700 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  title="Export as CSV"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  <span>CSV</span>
+                </button>
+
                 {/* Display options popover */}
                 <div className="relative">
                   <button
@@ -956,7 +1055,7 @@ export default function ExploreV2() {
               </div>
             </div>
 
-            {/* Chart area */}
+            {/* Chart/Table area */}
             <div className="flex-1 overflow-y-auto p-6">
               {loading ? (
                 <div className="flex items-center justify-center h-full">
@@ -979,7 +1078,65 @@ export default function ExploreV2() {
                 </div>
               ) : chartPanels.length === 0 ? (
                 <div className="flex items-center justify-center h-full">
-                  <p className="text-slate-500">Select options to view chart</p>
+                  <p className="text-slate-500">Select options to view data</p>
+                </div>
+              ) : viewMode === 'table' ? (
+                /* Table view */
+                <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead className="bg-slate-50 border-b border-slate-200">
+                        <tr>
+                          {isFaceted && <th className="px-4 py-3 text-left font-medium text-slate-700">Group</th>}
+                          <th className="px-4 py-3 text-left font-medium text-slate-700">Year</th>
+                          <th className="px-4 py-3 text-right font-medium text-slate-700">Intervention</th>
+                          <th className="px-4 py-3 text-right font-medium text-slate-700">95% CI</th>
+                          <th className="px-4 py-3 text-right font-medium text-slate-700">Baseline</th>
+                          <th className="px-4 py-3 text-right font-medium text-slate-700">95% CI</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100">
+                        {chartPanels.flatMap((panel, panelIdx) =>
+                          panel.data.map((point, pointIdx) => (
+                            <tr
+                              key={`${panel.facetValue}-${point.year}`}
+                              className={panelIdx % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'}
+                            >
+                              {isFaceted && pointIdx === 0 && (
+                                <td
+                                  className="px-4 py-2 text-slate-700 font-medium align-top"
+                                  rowSpan={panel.data.length}
+                                >
+                                  {panel.facetLabel}
+                                </td>
+                              )}
+                              <td className="px-4 py-2 text-slate-600">{point.year}</td>
+                              <td className="px-4 py-2 text-right text-slate-900 font-medium">
+                                {point.value != null ? point.value.toLocaleString(undefined, { maximumFractionDigits: 1 }) : '—'}
+                              </td>
+                              <td className="px-4 py-2 text-right text-slate-500 text-xs">
+                                {point.lower != null && point.upper != null
+                                  ? `${point.lower.toLocaleString(undefined, { maximumFractionDigits: 1 })} – ${point.upper.toLocaleString(undefined, { maximumFractionDigits: 1 })}`
+                                  : '—'}
+                              </td>
+                              <td className="px-4 py-2 text-right text-slate-600">
+                                {point.baselineValue != null ? point.baselineValue.toLocaleString(undefined, { maximumFractionDigits: 1 }) : '—'}
+                              </td>
+                              <td className="px-4 py-2 text-right text-slate-500 text-xs">
+                                {point.baselineLower != null && point.baselineUpper != null
+                                  ? `${point.baselineLower.toLocaleString(undefined, { maximumFractionDigits: 1 })} – ${point.baselineUpper.toLocaleString(undefined, { maximumFractionDigits: 1 })}`
+                                  : '—'}
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                  <div className="px-4 py-3 bg-slate-50 border-t border-slate-200 text-xs text-slate-500">
+                    {chartPanels.reduce((acc, p) => acc + p.data.length, 0)} rows
+                    {isFaceted && ` across ${chartPanels.length} groups`}
+                  </div>
                 </div>
               ) : !isFaceted ? (
                 /* Single chart - centered, generous size */
