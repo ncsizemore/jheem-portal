@@ -76,7 +76,7 @@ export function useCityData(): UseCityDataReturn {
 
     try {
       // Load from CloudFront (or local via env override)
-      const dataUrl = `${DATA_BASE_URL}/${cityCode}.json`;
+      const dataUrl = `${DATA_BASE_URL}/${encodeURIComponent(cityCode)}.json`;
 
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 30000);

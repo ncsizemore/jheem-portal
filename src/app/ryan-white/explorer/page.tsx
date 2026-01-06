@@ -187,8 +187,18 @@ export default function ExploreV2() {
   const [selectedStatistic, setSelectedStatistic] = useState<string>('');
   const [selectedFacet, setSelectedFacet] = useState<string>('');
 
+  // Facet dimension toggles (derive facet key from active dimensions)
+  const [facetDimensions, setFacetDimensions] = useState<{
+    age: boolean;
+    sex: boolean;
+    race: boolean;
+    risk: boolean;
+  }>({ age: false, sex: false, race: false, risk: false });
+
   // City switcher dropdown
   const [showCitySwitcher, setShowCitySwitcher] = useState(false);
+  const [citySearchTerm, setCitySearchTerm] = useState('');
+  const citySearchInputRef = useRef<HTMLInputElement>(null);
 
   // Track if instruction panel is collapsed (user must explicitly minimize)
   const [instructionsCollapsed, setInstructionsCollapsed] = useState(false);
@@ -214,6 +224,60 @@ export default function ExploreV2() {
   }, [plotData]);
 
   const isFaceted = chartPanels.length > 1;
+
+  // Filtered cities for search
+  const filteredCities = useMemo(() => {
+    if (!citySearchTerm.trim()) return availableCities;
+    const searchLower = citySearchTerm.toLowerCase().trim();
+    return availableCities.filter(city =>
+      city.name.toLowerCase().includes(searchLower)
+    );
+  }, [availableCities, citySearchTerm]);
+
+  // Auto-focus search input when dropdown opens
+  useEffect(() => {
+    if (showCitySwitcher) {
+      setCitySearchTerm('');
+      // Small delay to ensure DOM is ready
+      setTimeout(() => citySearchInputRef.current?.focus(), 50);
+    }
+  }, [showCitySwitcher]);
+
+  // Compute which facet dimensions are available in the data
+  const availableFacetDimensions = useMemo(() => {
+    const dims = { age: false, sex: false, race: false, risk: false };
+    for (const facet of options.facets) {
+      if (facet.includes('age')) dims.age = true;
+      if (facet.includes('sex')) dims.sex = true;
+      if (facet.includes('race')) dims.race = true;
+      if (facet.includes('risk')) dims.risk = true;
+    }
+    return dims;
+  }, [options.facets]);
+
+  // Compute facet key from toggled dimensions
+  const computedFacetKey = useMemo(() => {
+    const activeDims = Object.entries(facetDimensions)
+      .filter(([, active]) => active)
+      .map(([dim]) => dim)
+      .sort(); // Alphabetical to match data format: age+race+sex+risk
+    return activeDims.length === 0 ? 'none' : activeDims.join('+');
+  }, [facetDimensions]);
+
+  // Sync selectedFacet with computed key (only if it exists in available options)
+  useEffect(() => {
+    if (options.facets.includes(computedFacetKey)) {
+      setSelectedFacet(computedFacetKey);
+    } else if (computedFacetKey !== 'none' && options.facets.length > 0) {
+      // Fallback: find closest match or use 'none'
+      setSelectedFacet(options.facets.includes('none') ? 'none' : options.facets[0]);
+    }
+  }, [computedFacetKey, options.facets]);
+
+  // Toggle handler for facet dimensions
+  const toggleFacetDimension = useCallback((dim: 'age' | 'sex' | 'race' | 'risk') => {
+    setFacetDimensions(prev => ({ ...prev, [dim]: !prev[dim] }));
+  }, []);
 
   // Handle city selection
   const handleCityClick = useCallback(async (city: CityData) => {
@@ -255,12 +319,10 @@ export default function ExploreV2() {
           : opts.statistics[0];
         setSelectedStatistic(defaultStat);
       }
-      if (opts.facets.length && !selectedFacet) {
-        const defaultFacet = opts.facets.includes('none') ? 'none' : opts.facets[0];
-        setSelectedFacet(defaultFacet);
-      }
+      // Note: selectedFacet is now controlled by facetDimensions toggles
+      // Default is 'none' (all toggles off)
     }
-  }, [cityData, selectedCity, getAvailableOptions, selectedScenario, selectedOutcome, selectedStatistic, selectedFacet]);
+  }, [cityData, selectedCity, getAvailableOptions, selectedScenario, selectedOutcome, selectedStatistic]);
 
   // Return to map (preserves selection state for quick return)
   const handleBackToMap = useCallback(() => {
@@ -277,7 +339,7 @@ export default function ExploreV2() {
     setSelectedScenario('');
     setSelectedOutcome('');
     setSelectedStatistic('');
-    setSelectedFacet('');
+    setFacetDimensions({ age: false, sex: false, race: false, risk: false });
 
     await loadCity(city.code);
   }, [selectedCity, loadCity]);
@@ -692,32 +754,70 @@ export default function ExploreV2() {
                           className="fixed inset-0 z-40"
                           onClick={() => setShowCitySwitcher(false)}
                         />
-                        <div className="absolute top-full left-0 mt-1 bg-white rounded-lg shadow-lg border border-slate-200 py-1 z-50 min-w-[240px]">
-                          <div className="px-3 py-2 border-b border-slate-100">
-                            <p className="text-xs font-medium text-slate-400 uppercase tracking-wide">Switch City</p>
-                          </div>
-                          <div className="max-h-64 overflow-y-auto">
-                            {availableCities.map(city => (
-                              <button
-                                key={city.code}
-                                onClick={() => handleSwitchCity(city)}
-                                className={`w-full text-left px-3 py-2 text-sm hover:bg-slate-50 transition-colors flex items-center justify-between
-                                  ${city.code === selectedCity.code ? 'bg-blue-50 text-blue-700' : 'text-slate-700'}`}
+                        <div className="absolute top-full left-0 mt-1 bg-white rounded-lg shadow-lg border border-slate-200 z-50 min-w-[280px]">
+                          {/* Search input */}
+                          <div className="p-2 border-b border-slate-100">
+                            <div className="relative">
+                              <svg
+                                className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
                               >
-                                <span>{city.name}</span>
-                                {city.code === selectedCity.code && (
-                                  <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                              </svg>
+                              <input
+                                ref={citySearchInputRef}
+                                type="text"
+                                placeholder="Search cities..."
+                                value={citySearchTerm}
+                                onChange={e => setCitySearchTerm(e.target.value)}
+                                className="w-full pl-8 pr-8 py-1.5 text-sm border border-slate-200 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                              />
+                              {citySearchTerm && (
+                                <button
+                                  onClick={() => setCitySearchTerm('')}
+                                  className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                                >
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                                   </svg>
-                                )}
-                              </button>
-                            ))}
-                          </div>
-                          {availableCities.length === 1 && (
-                            <div className="px-3 py-2 border-t border-slate-100">
-                              <p className="text-xs text-slate-400">More cities coming soon</p>
+                                </button>
+                              )}
                             </div>
-                          )}
+                          </div>
+                          {/* City list */}
+                          <div className="max-h-64 overflow-y-auto">
+                            {filteredCities.length === 0 ? (
+                              <div className="px-3 py-4 text-center">
+                                <p className="text-sm text-slate-500">No cities match &quot;{citySearchTerm}&quot;</p>
+                              </div>
+                            ) : (
+                              filteredCities.map(city => (
+                                <button
+                                  key={city.code}
+                                  onClick={() => handleSwitchCity(city)}
+                                  className={`w-full text-left px-3 py-2 text-sm hover:bg-slate-50 transition-colors flex items-center justify-between
+                                    ${city.code === selectedCity.code ? 'bg-blue-50 text-blue-700' : 'text-slate-700'}`}
+                                >
+                                  <span>{city.name}</span>
+                                  {city.code === selectedCity.code && (
+                                    <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                    </svg>
+                                  )}
+                                </button>
+                              ))
+                            )}
+                          </div>
+                          {/* Footer showing count */}
+                          <div className="px-3 py-1.5 border-t border-slate-100 bg-slate-50">
+                            <p className="text-xs text-slate-400">
+                              {filteredCities.length === availableCities.length
+                                ? `${availableCities.length} cities`
+                                : `${filteredCities.length} of ${availableCities.length} cities`}
+                            </p>
+                          </div>
                         </div>
                       </>
                     )}
@@ -786,15 +886,25 @@ export default function ExploreV2() {
 
                   <div className="flex items-center gap-2">
                     <label className="text-xs font-medium text-slate-500">Breakdown:</label>
-                    <select
-                      value={selectedFacet}
-                      onChange={e => setSelectedFacet(e.target.value)}
-                      className="border border-slate-300 rounded-md px-2 py-1 text-sm bg-white focus:outline-none focus:ring-1 focus:ring-blue-500"
-                    >
-                      {options.facets.map(f => (
-                        <option key={f} value={f}>{formatOptionLabel(f)}</option>
+                    <div className="flex items-center gap-1">
+                      {(['age', 'sex', 'race', 'risk'] as const).map(dim => (
+                        <button
+                          key={dim}
+                          onClick={() => toggleFacetDimension(dim)}
+                          disabled={!availableFacetDimensions[dim]}
+                          className={`px-2.5 py-1 text-sm font-medium rounded-md transition-all capitalize
+                            ${facetDimensions[dim]
+                              ? 'bg-blue-600 text-white'
+                              : availableFacetDimensions[dim]
+                                ? 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                                : 'bg-slate-50 text-slate-300 cursor-not-allowed'
+                            }`}
+                          title={!availableFacetDimensions[dim] ? `${dim} breakdown not available` : undefined}
+                        >
+                          {dim}
+                        </button>
                       ))}
-                    </select>
+                    </div>
                   </div>
                 </div>
 
