@@ -99,13 +99,63 @@ User sees custom results
 
 ---
 
-## Latest Session Summary (2026-01-05)
+## Latest Session Summary (2026-01-06)
 
-### Native Explorer Demo Polish & Route Promotion
+### Feature Completion & Multi-Model Architecture
+
+**Commits**: `1e44676`, `1516afd`, `52d4f0c`, `6c282cf`, `24094b3`
+
+#### ✅ Completed - All High Priority Items Done
+
+**UX Improvements:**
+- ✅ City search/filter in switcher (auto-focus, clear button, result count)
+- ✅ Facet dimension toggles (replaced 16-item dropdown with Age/Sex/Race/Risk toggle buttons)
+- ✅ Facet pagination (show first 9 panels, "Show all X" to expand)
+- ✅ Decluttered controls header:
+  - Replaced mini-map thumbnail with simple "← Map" button (eliminates extra Mapbox instance)
+  - Moved display options (CI, Baseline, Observed) into settings popover
+
+**Data Export:**
+- ✅ Table view (toggle between Chart/Table, shows all data with facet grouping)
+- ✅ CSV export (downloads data with appropriate filename)
+- ✅ PNG export (html2canvas with 2x resolution, loading spinner)
+
+**Security:**
+- ✅ URL encoding fix in `useCityData.ts` (added `encodeURIComponent`)
+
+**Multi-Model Architecture:**
+- ✅ Created `/src/config/model-configs.ts` with `ModelConfig` interface
+- ✅ Defined configs for Ryan White, CDC Testing (placeholder), State Level (placeholder)
+- ✅ Explorer now uses `MODEL_CONFIG` constant - to create new model explorer, just copy page and change config
+- ✅ Extracted: scenarios, labels, descriptions, data URL, map settings, defaults
+
+#### 📋 Remaining Items
+
+| Item | Priority | Notes |
+|------|----------|-------|
+| Update city-summaries.json to 2025 | Medium | Backend - currently shows 2024 data |
+| Mobile responsiveness | Low | Controls may overflow on small screens |
+| Split page.tsx (~1100 lines) | Low | Refactoring - no user impact |
+
+#### 🏗️ Multi-Model Transition Path
+
+The frontend is now **structured for multi-model support**. To add CDC Testing or State Level:
+
+1. Set up data pipeline for the model (backend work - container + S3)
+2. Update the model's config in `model-configs.ts` with real scenarios/outcomes
+3. Copy `/ryan-white/explorer/page.tsx` to new route (e.g., `/cdc-testing/explorer/page.tsx`)
+4. Change `MODEL_CONFIG` import to point at the new config
+
+The real work is generating the data - the frontend generalization is done.
+
+---
+
+## Previous Session Summaries
+
+<details>
+<summary>2026-01-05: Native Explorer Demo Polish & Route Promotion (Click to expand)</summary>
 
 **Commits**: `40ae01c`, `ce67bb1`, `2f60235`, `cce251b`
-
-#### ✅ Completed
 
 **Route Structure:**
 - Promoted native explorer to `/ryan-white/explorer` (model-first hierarchy)
@@ -122,32 +172,12 @@ User sees custom results
 **Visual Design:**
 - Switched to Mapbox `streets-v12` theme (subtle land use colors)
 - Implemented blue-to-orange diverging color scale for suppression (colorblind-friendly)
-  - Blue = high suppression (good), Orange = low (concerning)
-  - Thresholds: 82/77/72/67/64 based on actual data range (64-86%)
 - Updated info panel, hover cards, and legend for light theme
-- Hover card now says "Cessation Scenario" instead of "If Funding Stops"
 
 **Bug Fixes:**
 - Fixed chart artifact at 2015 (intervention CI band was connecting through y=0)
-  - Root cause: Used `0` instead of `null` for missing CI data
-  - Fix: Use `null` values with `connectNulls={false}` on Area/Line components
 
-#### 📋 Remaining Items
-
-| Item | Priority | Effort | Notes |
-|------|----------|--------|-------|
-| City search/filter in switcher | High | 30-45min | Critical for 31 cities |
-| Facet selection UI | High | 30-45min | Segmented control vs dropdown |
-| Update city-summaries.json to 2025 | Medium | Backend | Currently shows 2024 data |
-| URL encoding security | Medium | 15min | `encodeURIComponent` in a few places |
-| Remove mini-map thumbnail | Low | 15min | Over-engineered, loads full Mapbox instance |
-| Split page.tsx (900 lines) | Low | 2-3hr | Into MapView + AnalysisView |
-| Mobile responsiveness | Low | 2-3hr | Controls header overflow |
-| PNG export button | Low | 1-2hr | Native charts lack export |
-
----
-
-## Previous Session Summaries
+</details>
 
 <details>
 <summary>2025-01-04: Code Review and Quality Improvements (Click to expand)</summary>
@@ -320,24 +350,23 @@ Comprehensive frontend code review. Grade A overall. Minor issues identified (UR
 
 ---
 
-## 🎯 CURRENT STATUS: CloudFront Setup, Then 31-City Generation
+## 🎯 CURRENT STATUS: Demo-Ready, Multi-Model Architecture Complete
 
 ### ✅ Complete & Working
 - **Frontend (jheem-portal)**: All apps deployed, Grade A code quality
-- **Native Plotting**: ✅ Multi-level faceting fixed, CI rendering fixed
-- **Native Explorer**: ✅ `/explore/native` with 3 test cities working
-- **GitHub Actions Workflow**: ✅ Created and tested (`generate-native-data.yml`)
-- **Architecture Decision**: ✅ S3 + CloudFront chosen (multi-model ready)
-- **Security**: Zero vulnerabilities, comprehensive CSP headers
+- **Native Explorer**: ✅ `/ryan-white/explorer` - fully featured, demo-ready
+- **Feature Set**: ✅ City search, facet toggles, pagination, table view, CSV/PNG export
+- **Multi-Model Config**: ✅ `ModelConfig` system ready for CDC Testing & State Level
+- **CloudFront**: ✅ Data served from `d320iym4dtm9lj.cloudfront.net`
+- **Security**: Zero vulnerabilities, URL encoding complete
 
-### 🚧 Production Push (Next Steps)
+### 🚧 Next Steps
 | Item | Status | Notes |
 |------|--------|-------|
-| CloudFront distribution | ⏳ Next | Create and configure |
-| Workflow S3 upload | ⏳ Pending | Replace artifacts with S3 |
-| Frontend CloudFront URL | ⏳ Pending | Update data fetching |
-| 31-city generation | ⏳ Pending | Run workflow with `full` |
-| Route swap | ⏳ Future | Native → main `/explore` |
+| Team demo feedback | ⏳ Pending | Show Ryan White explorer to team |
+| 31-city generation | ⏳ Pending | Run workflow with `full` for all cities |
+| CDC Testing data pipeline | ⏳ Future | Backend container + S3 setup |
+| State Level data pipeline | ⏳ Future | Backend container + S3 setup |
 
 ### 🚧 Custom Simulations (Separate Track - Lower Priority)
 - **Infrastructure**: 70% complete
@@ -826,15 +855,13 @@ Comprehensive frontend code review. Grade A overall. Minor issues identified (UR
 - `/src/hooks/useAvailableCities.ts` (191 lines) - API discovery hook
 
 ### Native Plotting Components (Recharts - Current)
-- `/src/app/explore/native/page.tsx` - **Native Map Explorer** (817 lines) - Two-mode UX, recommended
+- `/src/app/ryan-white/explorer/page.tsx` - **Native Map Explorer** (~1100 lines) - Full-featured, demo-ready
 - `/src/app/explore/test-native/page.tsx` - Test page for native charts
 - `/src/components/NativeSimulationChart.tsx` - Recharts-based chart component
-- `/src/components/NativePlotOverlay.tsx` - Plot overlay using native charts
-- `/src/components/NativePlotControls.tsx` - Dropdown controls for plot options
 - `/src/hooks/useCityData.ts` - Hook to load aggregated city JSON
 - `/src/utils/transformPlotData.ts` - Transform raw data to chart format
 - `/src/types/native-plotting.ts` - TypeScript types for native plotting
-- `/scripts/aggregate-city-data.ts` - Script to merge JSONs into per-city files
+- `/src/config/model-configs.ts` - **Model configuration system** (multi-model support)
 - `/public/data/city-summaries.json` - City summary metrics for map hover cards
 
 ### Data Files
@@ -856,33 +883,27 @@ Comprehensive frontend code review. Grade A overall. Minor issues identified (UR
 
 ## 🎯 IMMEDIATE NEXT STEPS (Prioritized)
 
-### Immediate: Validation (Before Scaling)
-1. ⏳ **Validate against Shiny app** - Side-by-side comparison
-   - CI bands match?
-   - Line positions correct?
-   - Observations aligned?
-   - Edge cases handled?
+### Immediate: Team Demo
+1. ✅ **Ryan White Explorer feature-complete** - Ready to demo
+2. ⏳ **Gather team feedback** - Show explorer, collect suggestions
+3. ⏳ **Generate full 31-city dataset** - Run workflow after demo approval
 
-**Gate**: Must pass before investing in 31-city generation
-
-### High Priority: Production Infrastructure
+### High Priority: Multi-Model Transition
 | Task | Effort | Status |
 |------|--------|--------|
-| Scenario splitting | 2-3 hrs | ❌ Split 398MB → 3×130MB |
-| S3 + CloudFront | 1-2 hrs | ❌ Host with gzip, caching |
-| 31-city pipeline | 2-3 hrs | ❌ GitHub Actions or batch |
-| Generate dataset | Compute | ❌ All cities, all scenarios |
-| Swap routes | 30 min | ❌ V2 → main `/explore` |
+| Team demo & feedback | 1-2 hrs | ⏳ Pending |
+| 31-city data generation | Compute | ⏳ After demo |
+| CDC Testing container | Backend | ❌ Not started |
+| State Level container | Backend | ❌ Not started |
 
-**Deliverable**: Production map explorer with all 31 cities
+**Note**: Frontend is ready - just need data pipelines for other models
 
-### Medium Priority: Native Explorer Polish
+### Medium Priority: Polish
 | Task | Effort | Status |
 |------|--------|--------|
-| Facet pagination | 2-3 hrs | ❌ "Show first 9" for 45-panel views |
-| ✅ Scenario descriptions | 30 min | ✅ Done - visible below tabs |
-| Mobile responsive | 3-4 hrs | ❌ Collapsible filters |
-| City switcher search | 1-2 hrs | ❌ Needed for 31 cities |
+| Mobile responsive | 3-4 hrs | ❌ Controls may overflow |
+| Update city-summaries to 2025 | Backend | ❌ Shows 2024 data |
+| Split page.tsx | 2-3 hrs | ❌ Optional refactoring |
 
 ### Lower Priority: Cleanup & Custom Sims
 - ❌ Remove legacy Plotly `/explore` (once native is promoted)
