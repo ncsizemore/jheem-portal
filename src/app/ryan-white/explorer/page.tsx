@@ -360,20 +360,39 @@ export default function ExploreV2() {
     setExportingPng(true);
     try {
       const html2canvas = await loadHtml2Canvas();
+
       const canvas = await html2canvas(chartContainerRef.current, {
         backgroundColor: '#ffffff',
-        scale: 2, // Higher resolution
+        scale: 2,
         logging: false,
         useCORS: true,
         allowTaint: true,
-        // Better SVG handling
-        onclone: (clonedDoc) => {
-          // Ensure SVGs are properly sized in the clone
-          const svgs = clonedDoc.querySelectorAll('svg');
+        // Ignore CSS parsing errors from modern color functions
+        ignoreElements: (element) => {
+          return element.tagName === 'STYLE' || element.tagName === 'LINK';
+        },
+        onclone: (_clonedDoc, element) => {
+          // Apply computed styles inline to avoid CSS parsing issues with lab()/oklch()
+          const applyComputedStyles = (el: Element) => {
+            const computed = getComputedStyle(el);
+            const htmlEl = el as HTMLElement;
+            // Only set essential visual properties
+            htmlEl.style.color = computed.color;
+            htmlEl.style.backgroundColor = computed.backgroundColor;
+            htmlEl.style.borderColor = computed.borderColor;
+          };
+
+          // Apply to all elements in the cloned container
+          const allElements = element.querySelectorAll('*');
+          applyComputedStyles(element);
+          allElements.forEach(applyComputedStyles);
+
+          // Ensure SVGs are properly sized
+          const svgs = element.querySelectorAll('svg');
           svgs.forEach(svg => {
-            const bbox = svg.getBoundingClientRect();
-            svg.setAttribute('width', String(bbox.width));
-            svg.setAttribute('height', String(bbox.height));
+            const rect = svg.getBoundingClientRect();
+            svg.setAttribute('width', String(rect.width));
+            svg.setAttribute('height', String(rect.height));
           });
         },
       });
