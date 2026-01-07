@@ -352,7 +352,10 @@ export default function ExploreV2() {
 
   // PNG export handler
   const handleExportPNG = useCallback(async () => {
-    if (!chartContainerRef.current || !selectedCity || !plotData) return;
+    if (!chartContainerRef.current || !selectedCity || !plotData) {
+      console.warn('PNG export: missing ref or data');
+      return;
+    }
 
     setExportingPng(true);
     try {
@@ -361,21 +364,40 @@ export default function ExploreV2() {
         backgroundColor: '#ffffff',
         scale: 2, // Higher resolution
         logging: false,
+        useCORS: true,
+        allowTaint: true,
+        // Better SVG handling
+        onclone: (clonedDoc) => {
+          // Ensure SVGs are properly sized in the clone
+          const svgs = clonedDoc.querySelectorAll('svg');
+          svgs.forEach(svg => {
+            const bbox = svg.getBoundingClientRect();
+            svg.setAttribute('width', String(bbox.width));
+            svg.setAttribute('height', String(bbox.height));
+          });
+        },
       });
 
-      const url = canvas.toDataURL('image/png');
+      // Convert to blob for more reliable download
+      const blob = await new Promise<Blob | null>((resolve) => {
+        canvas.toBlob(resolve, 'image/png');
+      });
+
+      if (!blob) {
+        throw new Error('Failed to create PNG blob');
+      }
+
+      const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
       const cityName = selectedCity.name.split(',')[0].replace(/\s+/g, '_');
       const outcome = plotData.metadata.outcome || selectedOutcome;
       link.download = `${cityName}_${outcome}_${selectedScenario}.png`;
-      document.body.appendChild(link);
       link.click();
-      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
     } catch (err) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error('PNG export failed:', err);
-      }
+      console.error('PNG export failed:', err);
+      alert('PNG export failed. Please try again.');
     } finally {
       setExportingPng(false);
     }
