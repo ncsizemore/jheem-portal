@@ -24,10 +24,17 @@
  * Usage:
  *   npx ts-node scripts/aggregate-city-data.ts <input-dir> <output-file>
  *   npx ts-node scripts/aggregate-city-data.ts public/test-data public/data/C.12580.json
+ *
+ * Note: Uses streaming JSON output to handle large datasets that exceed
+ * JavaScript's string length limit (~512MB).
  */
 
 import * as fs from 'fs';
 import * as path from 'path';
+import { createWriteStream } from 'fs';
+
+// big-json for streaming large JSON objects
+const bigJson = require('big-json');
 
 interface PlotDataFile {
   sim: unknown[] | null;
@@ -181,7 +188,28 @@ function aggregateCityData(inputDir: string): AggregatedData {
   };
 }
 
-function main() {
+async function writeJsonStreaming(data: unknown, outputFile: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const writeStream = createWriteStream(outputFile);
+    const stringifyStream = bigJson.createStringifyStream({ body: data });
+
+    stringifyStream.on('error', (err: Error) => {
+      reject(err);
+    });
+
+    writeStream.on('error', (err: Error) => {
+      reject(err);
+    });
+
+    writeStream.on('finish', () => {
+      resolve();
+    });
+
+    stringifyStream.pipe(writeStream);
+  });
+}
+
+async function main() {
   const args = process.argv.slice(2);
 
   if (args.length < 2) {
@@ -210,8 +238,10 @@ function main() {
     fs.mkdirSync(outputDir, { recursive: true });
   }
 
-  // Write output
-  fs.writeFileSync(outputFile, JSON.stringify(aggregated, null, 2));
+  // Write output using streaming to handle large files
+  console.log('');
+  console.log('Writing output (streaming)...');
+  await writeJsonStreaming(aggregated, outputFile);
 
   const stats = fs.statSync(outputFile);
   const sizeMB = (stats.size / 1024 / 1024).toFixed(2);
@@ -227,4 +257,7 @@ function main() {
   console.log(`Output: ${outputFile} (${sizeMB} MB)`);
 }
 
-main();
+main().catch((err) => {
+  console.error('Fatal error:', err);
+  process.exit(1);
+});
