@@ -30,7 +30,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen`}
       >
         <Navigation />
-        <main className="flex flex-col flex-grow min-h-0"> {/* Removed container, mx-auto, p-4 */}
+        <main className="flex flex-col flex-1 min-h-0 overflow-hidden">
           <AppViewManager>{children}</AppViewManager>
         </main>
       </body>

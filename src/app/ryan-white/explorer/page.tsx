@@ -531,7 +531,7 @@ export default function ExploreV2() {
   const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
 
   return (
-    <div className="h-screen w-screen overflow-hidden bg-slate-100">
+    <div className="flex-1 w-full overflow-hidden bg-slate-100 relative">
       <AnimatePresence mode="wait">
         {/* ===== MAP MODE ===== */}
         {mode === 'map' && (
@@ -541,7 +541,7 @@ export default function ExploreV2() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="relative w-full h-full">
+            className="absolute inset-0">
 
           {/* Loading state for city summaries */}
           {citySummariesLoading && (
@@ -863,9 +863,7 @@ export default function ExploreV2() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="relative w-full h-full bg-slate-50">
-          {/* Main content area */}
-          <div className="h-full flex flex-col">
+            className="absolute inset-0 bg-slate-50 flex flex-col overflow-hidden">
             {/* Header */}
             <div className="bg-white border-b border-slate-200 flex-shrink-0">
               {/* Top row: Location + Scenarios */}
@@ -1191,7 +1189,7 @@ export default function ExploreV2() {
             </div>
 
             {/* Chart/Table area */}
-            <div className="flex-1 overflow-y-auto p-6">
+            <div className="flex-1 min-h-0 overflow-y-auto p-6">
               {loading ? (
                 <div className="flex items-center justify-center h-full">
                   <div className="text-center">
@@ -1350,7 +1348,6 @@ export default function ExploreV2() {
                 </div>
               )}
             </div>
-          </div>
 
         </motion.div>
         )}
