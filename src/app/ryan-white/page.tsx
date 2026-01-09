@@ -303,7 +303,7 @@ export default function RyanWhiteLandingPage() {
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.6, delay: 0.9 }}
                   >
-                    <Link href="/prerun" className="group block">
+                    <Link href="/shiny/ryan-white-prerun" className="group block">
                       <div className="bg-white border-2 border-green-500/30 rounded-2xl p-8 hover:border-green-500 hover:shadow-xl transition-all duration-500 hover:-translate-y-1">
                         <div className="flex items-start gap-6">
                           <div className="bg-gradient-to-br from-green-100 to-emerald-100 rounded-xl p-4 group-hover:shadow-lg transition-shadow duration-300">
@@ -339,7 +339,7 @@ export default function RyanWhiteLandingPage() {
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.6, delay: 1.0 }}
                   >
-                    <Link href="/custom" className="group block">
+                    <Link href="/shiny/ryan-white-custom" className="group block">
                       <div className="bg-white border-2 border-purple-500/30 rounded-2xl p-8 hover:border-purple-500 hover:shadow-xl transition-all duration-500 hover:-translate-y-1">
                         <div className="flex items-start gap-6">
                           <div className="bg-gradient-to-br from-purple-100 to-violet-100 rounded-xl p-4 group-hover:shadow-lg transition-shadow duration-300">
