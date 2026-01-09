@@ -48,6 +48,7 @@ interface UseCityDataReturn {
     statistics: string[];
     facets: string[];
   };
+  getOutcomeDisplayName: (outcome: string) => string;
 }
 
 // Cache for loaded city data
@@ -159,6 +160,35 @@ export function useCityData(): UseCityDataReturn {
     };
   }, [cityData]);
 
+  // Extract display name for an outcome from the loaded data
+  const getOutcomeDisplayName = useCallback(
+    (outcome: string): string => {
+      if (!cityData) return formatOptionName(outcome);
+
+      // Try to find a plot with this outcome to get the display name
+      const scenarios = Object.keys(cityData.data);
+      for (const scenario of scenarios) {
+        const outcomeData = cityData.data[scenario]?.[outcome];
+        if (outcomeData) {
+          const statistics = Object.keys(outcomeData);
+          for (const stat of statistics) {
+            const facets = Object.keys(outcomeData[stat]);
+            for (const facet of facets) {
+              const plotData = outcomeData[stat][facet];
+              if (plotData?.metadata?.outcome_metadata?.display_name) {
+                return plotData.metadata.outcome_metadata.display_name;
+              }
+            }
+          }
+        }
+      }
+
+      // Fallback to formatted name
+      return formatOptionName(outcome);
+    },
+    [cityData]
+  );
+
   return {
     cityData,
     loading,
@@ -166,6 +196,7 @@ export function useCityData(): UseCityDataReturn {
     loadCity,
     getPlotData,
     getAvailableOptions,
+    getOutcomeDisplayName,
   };
 }
 

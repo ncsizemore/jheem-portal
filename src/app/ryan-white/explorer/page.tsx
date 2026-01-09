@@ -69,6 +69,37 @@ function formatOptionLabel(value: string): string {
     .replace('And', '&');
 }
 
+// Generate comprehensive filename for exports
+function generateExportFilename(
+  cityName: string,
+  scenario: string,
+  outcome: string,
+  statistic: string,
+  facet: string,
+  extension: 'csv' | 'png'
+): string {
+  const sanitize = (str: string) => str.replace(/[^a-zA-Z0-9]+/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '');
+
+  const parts = [
+    sanitize(cityName.split(',')[0]),
+    sanitize(scenario),
+    sanitize(outcome),
+    sanitize(statistic.replace('mean.and.interval', 'mean_CI').replace('median.and.interval', 'median_CI').replace('individual.simulation', 'sims')),
+  ];
+
+  // Add facet breakdown if not "none"
+  if (facet && facet !== 'none') {
+    parts.push(`by_${sanitize(facet)}`);
+  }
+
+  // Add timestamp
+  const now = new Date();
+  const timestamp = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}`;
+  parts.push(timestamp);
+
+  return `${parts.join('_')}.${extension}`;
+}
+
 // Get color based on suppression rate using blue-to-orange diverging scale
 // Blue = high suppression (good), Orange/Red = low suppression (concerning)
 // Thresholds based on actual data range (64-86%)
@@ -94,7 +125,7 @@ function getMarkerSize(prevalence: number): number {
 }
 
 export default function ExploreV2() {
-  const { cityData, loading, error, loadCity, getPlotData, getAvailableOptions } = useCityData();
+  const { cityData, loading, error, loadCity, getPlotData, getAvailableOptions, getOutcomeDisplayName } = useCityData();
 
   // City summaries for map display
   const [citySummaries, setCitySummaries] = useState<CitySummaries | null>(null);
@@ -341,14 +372,19 @@ export default function ExploreV2() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    const cityName = selectedCity.name.split(',')[0].replace(/\s+/g, '_');
-    const outcome = plotData.metadata.outcome || selectedOutcome;
-    link.download = `${cityName}_${outcome}_${selectedScenario}.csv`;
+    link.download = generateExportFilename(
+      selectedCity.name,
+      selectedScenario,
+      plotData.metadata.outcome || selectedOutcome,
+      selectedStatistic,
+      selectedFacet,
+      'csv'
+    );
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
-  }, [chartPanels, selectedCity, plotData, selectedOutcome, selectedScenario]);
+  }, [chartPanels, selectedCity, plotData, selectedOutcome, selectedScenario, selectedStatistic, selectedFacet]);
 
   // PNG export handler
   const handleExportPNG = useCallback(async () => {
@@ -409,9 +445,14 @@ export default function ExploreV2() {
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      const cityName = selectedCity.name.split(',')[0].replace(/\s+/g, '_');
-      const outcome = plotData.metadata.outcome || selectedOutcome;
-      link.download = `${cityName}_${outcome}_${selectedScenario}.png`;
+      link.download = generateExportFilename(
+        selectedCity.name,
+        selectedScenario,
+        plotData.metadata.outcome || selectedOutcome,
+        selectedStatistic,
+        selectedFacet,
+        'png'
+      );
       link.click();
       URL.revokeObjectURL(url);
     } catch (err) {
@@ -420,7 +461,7 @@ export default function ExploreV2() {
     } finally {
       setExportingPng(false);
     }
-  }, [selectedCity, plotData, selectedOutcome, selectedScenario]);
+  }, [selectedCity, plotData, selectedOutcome, selectedScenario, selectedStatistic, selectedFacet]);
 
   // Handle city selection
   const handleCityClick = useCallback(async (city: CityData) => {
@@ -988,7 +1029,7 @@ export default function ExploreV2() {
                       className="border border-slate-300 rounded-md px-2 py-1 text-sm bg-white focus:outline-none focus:ring-1 focus:ring-blue-500"
                     >
                       {options.outcomes.map(o => (
-                        <option key={o} value={o}>{formatOptionLabel(o)}</option>
+                        <option key={o} value={o}>{getOutcomeDisplayName(o)}</option>
                       ))}
                     </select>
                   </div>

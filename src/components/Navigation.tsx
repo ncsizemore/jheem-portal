@@ -18,9 +18,8 @@ export default function Navigation() {
 
   // Check if we should show Ryan White submenu
   const showRyanWhiteSubmenu = pathname === '/ryan-white' ||
-                               pathname === '/prerun' ||
-                               pathname === '/custom' ||
                                pathname === '/ryan-white/explorer' ||
+                               pathname === '/custom' ||
                                pathname === '/explore'; // legacy route
 
   const isRyanWhiteActive = pathname === '/ryan-white' || showRyanWhiteSubmenu;
@@ -125,14 +124,14 @@ export default function Navigation() {
                         {isRyanWhiteActive && (
                           <div className="bg-gray-50 border-y border-gray-200 py-1">
                             <Link
-                              href="/prerun"
+                              href="/ryan-white/explorer"
                               className={`block px-10 py-2 text-xs font-medium transition-colors ${
-                                pathname === '/prerun'
+                                pathname === '/ryan-white/explorer'
                                   ? 'text-hopkins-blue bg-white'
                                   : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
                               }`}
                             >
-                              Prerun Scenarios
+                              Prerun Explorer
                             </Link>
                             <Link
                               href="/custom"
@@ -143,19 +142,6 @@ export default function Navigation() {
                               }`}
                             >
                               Custom Simulations
-                            </Link>
-                            <Link
-                              href="/ryan-white/explorer"
-                              className={`block px-10 py-2 text-xs font-medium transition-colors ${
-                                pathname === '/ryan-white/explorer'
-                                  ? 'text-hopkins-blue bg-white'
-                                  : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
-                              }`}
-                            >
-                              <span className="inline-flex items-center gap-1.5">
-                                Interactive Explorer
-                                <span className="bg-hopkins-gold text-hopkins-blue text-[10px] font-bold px-1.5 py-0.5 rounded-full">NEW</span>
-                              </span>
                             </Link>
                           </div>
                         )}
@@ -255,48 +241,23 @@ export default function Navigation() {
                     Ryan White Tools
                   </span>
                   <div className="flex items-center space-x-6">
-                    <Link 
-                      href="/prerun" 
-                      className="text-white hover:text-hopkins-gold font-medium transition-all relative group py-1"
-                    >
-                      <span className="flex items-center">
-                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                        </svg>
-                        Prerun Scenarios
-                      </span>
-                      <span className={`absolute bottom-0 left-0 h-0.5 bg-hopkins-gold transition-all duration-300 ${
-                        pathname === '/prerun' ? 'w-full' : 'w-0 group-hover:w-full'
-                      }`}></span>
-                    </Link>
-                    <Link 
-                      href="/custom" 
-                      className="text-white hover:text-hopkins-gold font-medium transition-all relative group py-1"
-                    >
-                      <span className="flex items-center">
-                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4" />
-                        </svg>
-                        Custom Simulations
-                      </span>
-                      <span className={`absolute bottom-0 left-0 h-0.5 bg-hopkins-gold transition-all duration-300 ${
-                        pathname === '/custom' ? 'w-full' : 'w-0 group-hover:w-full'
-                      }`}></span>
-                    </Link>
                     <Link
                       href="/ryan-white/explorer"
                       className="text-white hover:text-hopkins-gold font-medium transition-all relative group py-1"
                     >
-                      <span className="flex items-center">
-                        <span className="bg-hopkins-gold text-hopkins-blue text-xs font-bold px-2 py-0.5 rounded-full mr-2 shadow-md">
-                          NEW
-                        </span>
-                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-1.447-.894L15 10m0 7V10m0 0L9 7" />
-                        </svg>
-                        Interactive Explorer
-                      </span>
-                      <span className={`absolute bottom-0 left-0 h-0.5 bg-hopkins-gold transition-all duration-300 w-0 group-hover:w-full`}></span>
+                      <span>Prerun Explorer</span>
+                      <span className={`absolute bottom-0 left-0 h-0.5 bg-hopkins-gold transition-all duration-300 ${
+                        pathname === '/ryan-white/explorer' ? 'w-full' : 'w-0 group-hover:w-full'
+                      }`}></span>
+                    </Link>
+                    <Link
+                      href="/custom"
+                      className="text-white hover:text-hopkins-gold font-medium transition-all relative group py-1"
+                    >
+                      <span>Custom Simulations</span>
+                      <span className={`absolute bottom-0 left-0 h-0.5 bg-hopkins-gold transition-all duration-300 ${
+                        pathname === '/custom' ? 'w-full' : 'w-0 group-hover:w-full'
+                      }`}></span>
                     </Link>
                   </div>
                 </div>
@@ -337,14 +298,14 @@ export default function Navigation() {
                     {isRyanWhiteActive && (
                       <div className="ml-3 space-y-1 border-l-2 border-hopkins-gold/30 pl-3">
                         <Link
-                          href="/prerun"
+                          href="/ryan-white/explorer"
                           className={`block px-3 py-1.5 rounded text-sm transition-colors ${
-                            pathname === '/prerun'
+                            pathname === '/ryan-white/explorer'
                               ? 'text-hopkins-gold font-medium'
                               : 'text-white/70 hover:text-white'
                           }`}
                         >
-                          Prerun Scenarios
+                          Prerun Explorer
                         </Link>
                         <Link
                           href="/custom"
@@ -355,19 +316,6 @@ export default function Navigation() {
                           }`}
                         >
                           Custom Simulations
-                        </Link>
-                        <Link
-                          href="/ryan-white/explorer"
-                          className={`block px-3 py-1.5 rounded text-sm transition-colors ${
-                            pathname === '/ryan-white/explorer'
-                              ? 'text-hopkins-gold font-medium'
-                              : 'text-white/70 hover:text-white'
-                          }`}
-                        >
-                          <span className="inline-flex items-center gap-1.5">
-                            Interactive Explorer
-                            <span className="bg-hopkins-gold text-hopkins-blue text-[10px] font-bold px-1.5 py-0.5 rounded-full">NEW</span>
-                          </span>
                         </Link>
                       </div>
                     )}
