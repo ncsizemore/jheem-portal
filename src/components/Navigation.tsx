@@ -19,7 +19,7 @@ export default function Navigation() {
   // Check if we should show Ryan White submenu
   const showRyanWhiteSubmenu = pathname === '/ryan-white' ||
                                pathname === '/ryan-white/explorer' ||
-                               pathname === '/custom' ||
+                               pathname === '/shiny/ryan-white-custom' ||
                                pathname === '/explore'; // legacy route
 
   const isRyanWhiteActive = pathname === '/ryan-white' || showRyanWhiteSubmenu;
@@ -134,9 +134,9 @@ export default function Navigation() {
                               Prerun Explorer
                             </Link>
                             <Link
-                              href="/custom"
+                              href="/shiny/ryan-white-custom"
                               className={`block px-10 py-2 text-xs font-medium transition-colors ${
-                                pathname === '/custom'
+                                pathname === '/shiny/ryan-white-custom'
                                   ? 'text-hopkins-blue bg-white'
                                   : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
                               }`}
@@ -251,12 +251,12 @@ export default function Navigation() {
                       }`}></span>
                     </Link>
                     <Link
-                      href="/custom"
+                      href="/shiny/ryan-white-custom"
                       className="text-white hover:text-hopkins-gold font-medium transition-all relative group py-1"
                     >
                       <span>Custom Simulations</span>
                       <span className={`absolute bottom-0 left-0 h-0.5 bg-hopkins-gold transition-all duration-300 ${
-                        pathname === '/custom' ? 'w-full' : 'w-0 group-hover:w-full'
+                        pathname === '/shiny/ryan-white-custom' ? 'w-full' : 'w-0 group-hover:w-full'
                       }`}></span>
                     </Link>
                   </div>
@@ -308,9 +308,9 @@ export default function Navigation() {
                           Prerun Explorer
                         </Link>
                         <Link
-                          href="/custom"
+                          href="/shiny/ryan-white-custom"
                           className={`block px-3 py-1.5 rounded text-sm transition-colors ${
-                            pathname === '/custom'
+                            pathname === '/shiny/ryan-white-custom'
                               ? 'text-hopkins-gold font-medium'
                               : 'text-white/70 hover:text-white'
                           }`}

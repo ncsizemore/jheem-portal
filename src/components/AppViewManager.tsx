@@ -14,8 +14,9 @@ interface AppViewManagerProps {
 export default function AppViewManager({ children }: AppViewManagerProps) {
     const pathname = usePathname();
 
-    const isPrerunRoute = pathname === '/prerun';
-    const isCustomRoute = pathname === '/custom';
+    // Support both old routes (for backwards compatibility) and new /shiny/ routes
+    const isPrerunRoute = pathname === '/prerun' || pathname === '/shiny/ryan-white-prerun';
+    const isCustomRoute = pathname === '/custom' || pathname === '/shiny/ryan-white-custom';
     // Determines if the current route is one that should display an embedded Shiny app view.
     const isAppRoute = isPrerunRoute || isCustomRoute;
 
