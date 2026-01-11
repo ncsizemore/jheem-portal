@@ -97,11 +97,18 @@ export default function RyanWhiteLandingPage() {
             <span className="font-semibold">75,436 additional HIV infections</span>{' '}
             by 2030—a 49% increase across 31 U.S. metropolitan areas.
           </p>
-          <p className="text-gray-600 leading-relaxed max-w-2xl">
+          <p className="text-gray-600 leading-relaxed max-w-2xl mb-6">
             The Ryan White Program is the nation&apos;s largest HIV-specific care program,
             serving as the payer of last resort for over 500,000 people annually.
             With effective treatment, people with HIV live normal lifespans and
             cannot transmit the virus.
+          </p>
+          <p className="text-sm text-gray-500">
+            See also:{' '}
+            <Link href="/ryan-white-state-level" className="text-hopkins-blue hover:underline">
+              State-level analysis of 11 states
+            </Link>
+            {' '}(companion study)
           </p>
         </div>
       </section>
