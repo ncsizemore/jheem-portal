@@ -106,10 +106,10 @@ export default function Navigation() {
                               <div className={`text-sm font-semibold ${
                                 isRyanWhiteActive ? 'text-hopkins-blue' : 'text-gray-900'
                               }`}>
-                                Ryan White Model
+                                Ryan White: City-Level
                               </div>
                               <div className="text-xs text-gray-500 mt-0.5">
-                                MSA-level Ryan White funding impacts
+                                31 metropolitan areas
                               </div>
                             </div>
                             {isRyanWhiteActive && (
@@ -157,10 +157,10 @@ export default function Navigation() {
                           <div className={`text-sm font-semibold ${
                             isStateLevelActive ? 'text-hopkins-blue' : 'text-gray-900'
                           }`}>
-                            State Level Model
+                            Ryan White: State-Level
                           </div>
                           <div className="text-xs text-gray-500 mt-0.5">
-                            State-level Ryan White funding impacts
+                            11 states
                           </div>
                         </Link>
 
@@ -291,7 +291,7 @@ export default function Navigation() {
                           : 'text-white/80 hover:text-white hover:bg-white/5'
                       }`}
                     >
-                      Ryan White Model
+                      Ryan White: City-Level
                     </Link>
 
                     {/* Ryan White Submenu */}
@@ -328,7 +328,7 @@ export default function Navigation() {
                           : 'text-white/80 hover:text-white hover:bg-white/5'
                       }`}
                     >
-                      State Level Model
+                      Ryan White: State-Level
                     </Link>
                     <Link
                       href="/cdc-testing"
