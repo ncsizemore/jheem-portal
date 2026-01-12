@@ -5,7 +5,17 @@
  * This script extracts key metrics from each state's aggregated data file
  * to create a lightweight summary file for map hover cards.
  *
- * Usage: npx ts-node scripts/generate-state-summaries.ts
+ * Usage:
+ *   # Process all state files in public/data/ (original behavior)
+ *   npx tsx scripts/generate-state-summaries.ts
+ *
+ *   # Single-state mode: extract summary from one state file
+ *   npx tsx scripts/generate-state-summaries.ts --single AL public/data/AL.json
+ *   # Output: AL-summary.json in current directory
+ *
+ *   # Combine mode: merge individual summary files into state-summaries.json
+ *   npx tsx scripts/generate-state-summaries.ts --combine summaries/AL-summary.json summaries/CA-summary.json ...
+ *   # Output: public/data/state-summaries.json
  *
  * Source: public/data/{STATE}.json files (e.g., AL.json, CA.json)
  * Output: public/data/state-summaries.json
@@ -242,7 +252,61 @@ function processStateFile(filePath: string): StateSummary | null {
   };
 }
 
-function main() {
+function runSingleMode(stateCode: string, inputFile: string) {
+  console.log(`Extracting summary for ${stateCode} from ${inputFile}...`);
+
+  if (!fs.existsSync(inputFile)) {
+    console.error(`Error: Input file not found: ${inputFile}`);
+    process.exit(1);
+  }
+
+  const summary = processStateFile(inputFile);
+  if (!summary) {
+    console.error(`Error: Failed to extract summary for ${stateCode}`);
+    process.exit(1);
+  }
+
+  const outputFile = `${stateCode}-summary.json`;
+  fs.writeFileSync(outputFile, JSON.stringify(summary, null, 2));
+  console.log(`✓ Wrote ${outputFile} (${fs.statSync(outputFile).size} bytes)`);
+}
+
+function runCombineMode(summaryFiles: string[]) {
+  console.log(`Combining ${summaryFiles.length} summary file(s)...\n`);
+
+  const summaries: StateSummaries = {
+    generated: new Date().toISOString(),
+    description: 'Summary metrics extracted from JHEEM model projections for map hover cards',
+    dataSource: 'JHEEM model output via prepare_plot_local()',
+    states: {},
+  };
+
+  for (const file of summaryFiles) {
+    if (!fs.existsSync(file)) {
+      console.warn(`Warning: Summary file not found, skipping: ${file}`);
+      continue;
+    }
+
+    try {
+      const summary: StateSummary = JSON.parse(fs.readFileSync(file, 'utf-8'));
+      const stateCode = summary.shortName;
+      summaries.states[stateCode] = summary;
+      console.log(`  ✓ ${summary.name} (${stateCode})`);
+    } catch (err) {
+      console.error(`  ✗ Error reading ${file}:`, err);
+    }
+  }
+
+  // Ensure output directory exists
+  if (!fs.existsSync(DATA_DIR)) {
+    fs.mkdirSync(DATA_DIR, { recursive: true });
+  }
+
+  fs.writeFileSync(OUTPUT_FILE, JSON.stringify(summaries, null, 2));
+  console.log(`\nWrote ${Object.keys(summaries.states).length} state summaries to ${OUTPUT_FILE}`);
+}
+
+function runFullMode() {
   console.log('Generating state summaries...\n');
 
   // Find all state data files (2-letter codes)
@@ -275,6 +339,45 @@ function main() {
   // Write output
   fs.writeFileSync(OUTPUT_FILE, JSON.stringify(summaries, null, 2));
   console.log(`\nWrote ${Object.keys(summaries.states).length} state summaries to ${OUTPUT_FILE}`);
+}
+
+function main() {
+  const args = process.argv.slice(2);
+
+  if (args[0] === '--single') {
+    // Single-state mode: extract summary from one state file
+    const stateCode = args[1];
+    const inputFile = args[2];
+
+    if (!stateCode || !inputFile) {
+      console.error('Usage: npx tsx scripts/generate-state-summaries.ts --single STATE INPUT_FILE');
+      console.error('Example: npx tsx scripts/generate-state-summaries.ts --single AL public/data/AL.json');
+      process.exit(1);
+    }
+
+    runSingleMode(stateCode, inputFile);
+  } else if (args[0] === '--combine') {
+    // Combine mode: merge individual summary files
+    const summaryFiles = args.slice(1);
+
+    if (summaryFiles.length === 0) {
+      console.error('Usage: npx tsx scripts/generate-state-summaries.ts --combine FILE1 FILE2 ...');
+      console.error('Example: npx tsx scripts/generate-state-summaries.ts --combine AL-summary.json CA-summary.json');
+      process.exit(1);
+    }
+
+    runCombineMode(summaryFiles);
+  } else if (args.length === 0) {
+    // Original behavior: process all state files in DATA_DIR
+    runFullMode();
+  } else {
+    console.error('Unknown arguments:', args);
+    console.error('\nUsage:');
+    console.error('  npx tsx scripts/generate-state-summaries.ts                    # Process all states');
+    console.error('  npx tsx scripts/generate-state-summaries.ts --single AL FILE   # Single state');
+    console.error('  npx tsx scripts/generate-state-summaries.ts --combine FILES... # Combine summaries');
+    process.exit(1);
+  }
 }
 
 main();
