@@ -1,120 +1,58 @@
 'use client';
 
 /**
- * SAMPLE: State-level choropleth map component
+ * State-level choropleth map component
  *
- * Demonstrates choropleth map for state-level Ryan White data.
- * Uses synthetic data since we only did a dry run for state generation.
+ * Displays Ryan White state-level analysis data on an interactive map.
+ * Data fetched from CloudFront state-summaries.json.
  *
  * Route: /ryan-white/explorer/state
  */
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import Map, { Source, Layer, Popup } from 'react-map-gl/mapbox';
 import type { MapMouseEvent } from 'react-map-gl/mapbox';
 import 'mapbox-gl/dist/mapbox-gl.css';
+import { useStateSummaries, type StateSummary } from '@/hooks/useStateSummaries';
 
-// Synthetic state summary data (matches structure from generate-state-summaries.ts)
-const SYNTHETIC_STATE_DATA: Record<string, {
-  name: string;
-  code: string;
-  metrics: {
-    diagnosedPrevalence: number;
-    suppressionRate: number;
-    incidenceBaseline: number;
-    incidenceCessation: number;
-  };
-  impact: {
-    cessationIncreasePercent: number;
-    cessationIncreaseAbsolute: number;
-  };
-}> = {
-  'Alabama': {
-    name: 'Alabama', code: 'AL',
-    metrics: { diagnosedPrevalence: 15200, suppressionRate: 68.2, incidenceBaseline: 680, incidenceCessation: 920 },
-    impact: { cessationIncreasePercent: 35, cessationIncreaseAbsolute: 240 }
-  },
-  'California': {
-    name: 'California', code: 'CA',
-    metrics: { diagnosedPrevalence: 142000, suppressionRate: 78.5, incidenceBaseline: 4200, incidenceCessation: 5100 },
-    impact: { cessationIncreasePercent: 21, cessationIncreaseAbsolute: 900 }
-  },
-  'Florida': {
-    name: 'Florida', code: 'FL',
-    metrics: { diagnosedPrevalence: 125000, suppressionRate: 71.3, incidenceBaseline: 4800, incidenceCessation: 6200 },
-    impact: { cessationIncreasePercent: 29, cessationIncreaseAbsolute: 1400 }
-  },
-  'Georgia': {
-    name: 'Georgia', code: 'GA',
-    metrics: { diagnosedPrevalence: 58000, suppressionRate: 66.8, incidenceBaseline: 2400, incidenceCessation: 3300 },
-    impact: { cessationIncreasePercent: 38, cessationIncreaseAbsolute: 900 }
-  },
-  'Illinois': {
-    name: 'Illinois', code: 'IL',
-    metrics: { diagnosedPrevalence: 42000, suppressionRate: 75.2, incidenceBaseline: 1400, incidenceCessation: 1750 },
-    impact: { cessationIncreasePercent: 25, cessationIncreaseAbsolute: 350 }
-  },
-  'Louisiana': {
-    name: 'Louisiana', code: 'LA',
-    metrics: { diagnosedPrevalence: 22500, suppressionRate: 64.5, incidenceBaseline: 1100, incidenceCessation: 1550 },
-    impact: { cessationIncreasePercent: 41, cessationIncreaseAbsolute: 450 }
-  },
-  'Missouri': {
-    name: 'Missouri', code: 'MO',
-    metrics: { diagnosedPrevalence: 14800, suppressionRate: 70.1, incidenceBaseline: 580, incidenceCessation: 760 },
-    impact: { cessationIncreasePercent: 31, cessationIncreaseAbsolute: 180 }
-  },
-  'Mississippi': {
-    name: 'Mississippi', code: 'MS',
-    metrics: { diagnosedPrevalence: 12400, suppressionRate: 62.3, incidenceBaseline: 620, incidenceCessation: 890 },
-    impact: { cessationIncreasePercent: 44, cessationIncreaseAbsolute: 270 }
-  },
-  'New York': {
-    name: 'New York', code: 'NY',
-    metrics: { diagnosedPrevalence: 118000, suppressionRate: 79.8, incidenceBaseline: 2800, incidenceCessation: 3300 },
-    impact: { cessationIncreasePercent: 18, cessationIncreaseAbsolute: 500 }
-  },
-  'Texas': {
-    name: 'Texas', code: 'TX',
-    metrics: { diagnosedPrevalence: 98000, suppressionRate: 69.4, incidenceBaseline: 4600, incidenceCessation: 6100 },
-    impact: { cessationIncreasePercent: 33, cessationIncreaseAbsolute: 1500 }
-  },
-  'Wisconsin': {
-    name: 'Wisconsin', code: 'WI',
-    metrics: { diagnosedPrevalence: 8200, suppressionRate: 76.9, incidenceBaseline: 280, incidenceCessation: 340 },
-    impact: { cessationIncreasePercent: 21, cessationIncreaseAbsolute: 60 }
-  },
+// Mapping from GeoJSON state names to state codes
+const STATE_NAME_TO_CODE: Record<string, string> = {
+  'Alabama': 'AL',
+  'California': 'CA',
+  'Florida': 'FL',
+  'Georgia': 'GA',
+  'Illinois': 'IL',
+  'Louisiana': 'LA',
+  'Missouri': 'MO',
+  'Mississippi': 'MS',
+  'New York': 'NY',
+  'Texas': 'TX',
+  'Wisconsin': 'WI',
 };
 
 // Color scale for cessation impact (% increase in new HIV cases)
 function getImpactColor(percentIncrease: number): string {
-  if (percentIncrease >= 40) return '#dc2626'; // red-600 - severe
-  if (percentIncrease >= 35) return '#ea580c'; // orange-600
-  if (percentIncrease >= 30) return '#f97316'; // orange-500
-  if (percentIncrease >= 25) return '#fbbf24'; // amber-400
+  if (percentIncrease >= 100) return '#7f1d1d'; // red-900 - extreme
+  if (percentIncrease >= 75) return '#dc2626'; // red-600 - severe
+  if (percentIncrease >= 50) return '#ea580c'; // orange-600
+  if (percentIncrease >= 40) return '#f97316'; // orange-500
+  if (percentIncrease >= 30) return '#fbbf24'; // amber-400
   if (percentIncrease >= 20) return '#84cc16'; // lime-500 - moderate
   return '#22c55e'; // green-500 - lower impact
 }
 
 // GeoJSON for US state boundaries
-// Source: Eric Celeste (public domain, derived from US Census Bureau TIGER/Line)
-// https://eric.clst.org/tech/usgeojson/
-//
-// Resolution options (scale : file size):
-//   - 20m  (1:20,000,000)  : ~1.4MB  ← current, good for country-level view
-//   - 5m   (1:5,000,000)   : ~2.5MB
-//   - 500k (1:500,000)     : ~2.4MB, most detailed
-//
-// To swap: download from https://eric.clst.org/assets/wiki/uploads/Stuff/gz_2010_us_040_00_{resolution}.json
 const US_STATES_GEOJSON = '/us-states.json';
 
 export default function StateMapSample() {
+  const { summaries, loading, error, getStateByName } = useStateSummaries();
+
   const [statesGeoJson, setStatesGeoJson] = useState<GeoJSON.FeatureCollection | null>(null);
   const [hoveredStateName, setHoveredStateName] = useState<string | null>(null);
   const [popupInfo, setPopupInfo] = useState<{
     longitude: number;
     latitude: number;
-    state: typeof SYNTHETIC_STATE_DATA[string];
+    state: StateSummary;
   } | null>(null);
 
   const [viewState, setViewState] = useState({
@@ -136,7 +74,7 @@ export default function StateMapSample() {
     const feature = event.features?.[0];
     if (feature?.properties) {
       const stateName = feature.properties.NAME;
-      const stateData = SYNTHETIC_STATE_DATA[stateName];
+      const stateData = getStateByName(stateName);
 
       if (stateData) {
         setHoveredStateName(stateName);
@@ -151,7 +89,7 @@ export default function StateMapSample() {
         setPopupInfo(null);
       }
     }
-  }, []);
+  }, [getStateByName]);
 
   const onMouseLeave = useCallback(() => {
     setHoveredStateName(null);
@@ -161,25 +99,74 @@ export default function StateMapSample() {
   const onStateClick = useCallback((event: MapMouseEvent) => {
     const feature = event.features?.[0];
     const stateName = feature?.properties?.NAME;
-    if (stateName && SYNTHETIC_STATE_DATA[stateName]) {
-      console.log(`Clicked state: ${stateName}`);
-      alert(`Would navigate to analysis for ${stateName}`);
+    if (stateName) {
+      const stateData = getStateByName(stateName);
+      if (stateData) {
+        console.log(`Clicked state: ${stateName} (${stateData.shortName})`);
+        // TODO: Navigate to state analysis page
+        alert(`Would navigate to analysis for ${stateName}`);
+      }
     }
-  }, []);
+  }, [getStateByName]);
 
   const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
 
   // Build the fill color expression for the choropleth
-  const fillColorExpression: mapboxgl.Expression = [
-    'match',
-    ['get', 'NAME'],
+  const fillColorExpression = useMemo(() => {
+    if (!summaries) {
+      return 'rgba(200, 200, 200, 0.3)' as const;
+    }
+
+    const colorEntries: string[] = [];
+
     // Map each state name to its color based on impact
-    ...Object.entries(SYNTHETIC_STATE_DATA).flatMap(([name, data]) => [
-      name,
-      getImpactColor(data.impact.cessationIncreasePercent)
-    ]),
-    'rgba(200, 200, 200, 0.3)' // Default for states without data
-  ];
+    for (const [stateName, stateCode] of Object.entries(STATE_NAME_TO_CODE)) {
+      const stateData = summaries.states[stateCode];
+      if (stateData) {
+        colorEntries.push(stateName);
+        colorEntries.push(getImpactColor(stateData.impact.cessationIncreasePercent));
+      }
+    }
+
+    if (colorEntries.length === 0) {
+      return 'rgba(200, 200, 200, 0.3)' as const;
+    }
+
+    return [
+      'match',
+      ['get', 'NAME'],
+      ...colorEntries,
+      'rgba(200, 200, 200, 0.3)' // Default for states without data
+    ] as unknown as mapboxgl.Expression;
+  }, [summaries]);
+
+  // Count states with data
+  const stateCount = summaries ? Object.keys(summaries.states).length : 0;
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-slate-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-slate-600">Loading state data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-slate-50">
+        <div className="text-center max-w-md">
+          <div className="text-red-500 text-5xl mb-4">⚠</div>
+          <h2 className="text-xl font-semibold text-slate-800 mb-2">Failed to Load Data</h2>
+          <p className="text-slate-600">{error}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative w-full h-screen">
@@ -187,7 +174,7 @@ export default function StateMapSample() {
         {...viewState}
         onMove={evt => setViewState(evt.viewState)}
         mapboxAccessToken={MAPBOX_TOKEN}
-        mapStyle="mapbox://styles/mapbox/streets-v12"
+        mapStyle="mapbox://styles/mapbox/light-v11"
         style={{ width: '100%', height: '100%' }}
         interactiveLayerIds={['state-fills']}
         onMouseMove={onMouseMove}
@@ -243,7 +230,7 @@ export default function StateMapSample() {
             closeOnClick={false}
             offset={15}
           >
-            <div className="p-3 min-w-[220px]">
+            <div className="p-3 min-w-[240px]">
               <h3 className="font-semibold text-slate-800 text-base mb-2">
                 {popupInfo.state.name}
               </h3>
@@ -251,19 +238,22 @@ export default function StateMapSample() {
               {/* Current Status */}
               <div className="py-2 border-y border-slate-100">
                 <div className="text-[10px] uppercase tracking-wide text-slate-400 mb-1.5">
-                  Model Estimate 2024
+                  Model Estimate {popupInfo.state.metrics.suppressionRate.year}
                 </div>
                 <div className="space-y-1">
                   <div className="flex items-center justify-between">
                     <span className="text-xs text-slate-500">Viral suppression</span>
                     <span className="text-sm font-semibold text-slate-800">
-                      {popupInfo.state.metrics.suppressionRate.toFixed(0)}%
+                      {popupInfo.state.metrics.suppressionRate.value.toFixed(1)}%
+                      <span className="text-[10px] text-slate-400 font-normal ml-1">
+                        ({popupInfo.state.metrics.suppressionRate.lower.toFixed(1)}–{popupInfo.state.metrics.suppressionRate.upper.toFixed(1)})
+                      </span>
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-xs text-slate-500">People with HIV</span>
                     <span className="text-sm font-semibold text-slate-800">
-                      {popupInfo.state.metrics.diagnosedPrevalence.toLocaleString()}
+                      {popupInfo.state.metrics.diagnosedPrevalence.value.toLocaleString()}
                     </span>
                   </div>
                 </div>
@@ -275,7 +265,7 @@ export default function StateMapSample() {
                   <span className="text-[10px] uppercase tracking-wide text-slate-400">
                     If Funding Stops
                   </span>
-                  <span className="text-[10px] text-slate-400">by 2030</span>
+                  <span className="text-[10px] text-slate-400">by {popupInfo.state.impact.targetYear}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-slate-500">New HIV cases</span>
@@ -290,6 +280,12 @@ export default function StateMapSample() {
                   <span className="text-xs text-slate-400">Additional cases</span>
                   <span className="text-xs text-slate-600">
                     +{popupInfo.state.impact.cessationIncreaseAbsolute.toLocaleString()}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between mt-0.5">
+                  <span className="text-xs text-slate-400">Baseline → Cessation</span>
+                  <span className="text-xs text-slate-600">
+                    {popupInfo.state.metrics.incidenceBaseline.value.toLocaleString()} → {popupInfo.state.metrics.incidenceCessation.value.toLocaleString()}
                   </span>
                 </div>
               </div>
@@ -326,23 +322,27 @@ export default function StateMapSample() {
             </div>
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 rounded" style={{ backgroundColor: '#84cc16' }} />
-              <span className="text-xs text-slate-600">20-25% increase</span>
+              <span className="text-xs text-slate-600">20-30% increase</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 rounded" style={{ backgroundColor: '#fbbf24' }} />
-              <span className="text-xs text-slate-600">25-30% increase</span>
+              <span className="text-xs text-slate-600">30-40% increase</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 rounded" style={{ backgroundColor: '#f97316' }} />
-              <span className="text-xs text-slate-600">30-35% increase</span>
+              <span className="text-xs text-slate-600">40-50% increase</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 rounded" style={{ backgroundColor: '#ea580c' }} />
-              <span className="text-xs text-slate-600">35-40% increase</span>
+              <span className="text-xs text-slate-600">50-75% increase</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 rounded" style={{ backgroundColor: '#dc2626' }} />
-              <span className="text-xs text-slate-600">&gt;40% increase</span>
+              <span className="text-xs text-slate-600">75-100% increase</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 rounded" style={{ backgroundColor: '#7f1d1d' }} />
+              <span className="text-xs text-slate-600">&gt;100% increase</span>
             </div>
           </div>
 
@@ -352,9 +352,14 @@ export default function StateMapSample() {
               <div className="w-3 h-3 rounded bg-slate-200" />
               <span>States without data</span>
             </div>
-            <p className="text-[10px] text-slate-400 italic mt-2">
-              * Sample with synthetic data. 11 states analyzed.
+            <p className="text-[10px] text-slate-400 mt-2">
+              {stateCount} states with model projections
             </p>
+            {summaries && (
+              <p className="text-[10px] text-slate-400">
+                Generated: {new Date(summaries.generated).toLocaleDateString()}
+              </p>
+            )}
           </div>
         </div>
       </div>
