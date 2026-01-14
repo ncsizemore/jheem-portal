@@ -1,17 +1,19 @@
 /**
- * Hook to load aggregated city data for native plotting
+ * Hook to load aggregated location data for native plotting
  *
- * Loads the per-city JSON file containing all scenarios/outcomes/statistics/facets
+ * Loads the per-location JSON file containing all scenarios/outcomes/statistics/facets
  * and provides methods to extract specific plot data.
+ *
+ * Works for both city-level (MSA) and state-level data - just pass the appropriate dataUrl.
  */
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import type { PlotDataFile } from '@/types/native-plotting';
 
-interface AggregatedCityData {
+export interface AggregatedLocationData {
   metadata: {
-    city: string;
-    city_label: string;
+    city: string;        // location code (e.g., "C.12580" or "AL")
+    city_label: string;  // display name (e.g., "Atlanta, GA" or "Alabama")
     scenarios: string[];
     outcomes: string[];
     statistics: string[];
@@ -31,11 +33,23 @@ interface AggregatedCityData {
   >;
 }
 
-interface UseCityDataReturn {
-  cityData: AggregatedCityData | null;
+// Backward compatibility alias
+export type AggregatedCityData = AggregatedLocationData;
+
+export interface UseLocationDataOptions {
+  /** Base URL for data files. Defaults to ryan-white CloudFront URL. */
+  dataUrl?: string;
+}
+
+interface UseLocationDataReturn {
+  locationData: AggregatedLocationData | null;
+  /** @deprecated Use locationData instead */
+  cityData: AggregatedLocationData | null;
   loading: boolean;
   error: string | null;
-  loadCity: (cityCode: string) => Promise<void>;
+  loadLocation: (code: string) => Promise<void>;
+  /** @deprecated Use loadLocation instead */
+  loadCity: (code: string) => Promise<void>;
   getPlotData: (
     scenario: string,
     outcome: string,
@@ -51,23 +65,39 @@ interface UseCityDataReturn {
   getOutcomeDisplayName: (outcome: string) => string;
 }
 
-// Cache for loaded city data
-const cityDataCache = new Map<string, AggregatedCityData>();
+// Backward compatibility alias
+export type UseCityDataReturn = UseLocationDataReturn;
 
-// CloudFront URL for production data, falls back to local /data for dev
-const DATA_BASE_URL =
+// Cache for loaded location data (keyed by URL + code to support multiple models)
+const locationDataCache = new Map<string, AggregatedLocationData>();
+
+// Default CloudFront URL for production data
+const DEFAULT_DATA_URL =
   process.env.NEXT_PUBLIC_DATA_URL ||
   'https://d320iym4dtm9lj.cloudfront.net/ryan-white';
 
-export function useCityData(): UseCityDataReturn {
-  const [cityData, setCityData] = useState<AggregatedCityData | null>(null);
+/**
+ * Hook to load aggregated location data (cities or states)
+ *
+ * @param options.dataUrl - Base URL for data files (default: ryan-white MSA)
+ */
+export function useLocationData(options: UseLocationDataOptions = {}): UseLocationDataReturn {
+  const dataBaseUrl = options.dataUrl || DEFAULT_DATA_URL;
+  const [locationData, setLocationData] = useState<AggregatedLocationData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const loadCity = useCallback(async (cityCode: string) => {
+  // Store dataBaseUrl in ref to use in callbacks without causing re-renders
+  const dataBaseUrlRef = useRef(dataBaseUrl);
+  dataBaseUrlRef.current = dataBaseUrl;
+
+  const loadLocation = useCallback(async (code: string) => {
+    const baseUrl = dataBaseUrlRef.current;
+    const cacheKey = `${baseUrl}:${code}`;
+
     // Check cache first
-    if (cityDataCache.has(cityCode)) {
-      setCityData(cityDataCache.get(cityCode)!);
+    if (locationDataCache.has(cacheKey)) {
+      setLocationData(locationDataCache.get(cacheKey)!);
       setError(null);
       return;
     }
@@ -77,12 +107,12 @@ export function useCityData(): UseCityDataReturn {
 
     try {
       // Load from CloudFront (or local via env override)
-      const dataUrl = `${DATA_BASE_URL}/${encodeURIComponent(cityCode)}.json`;
+      const url = `${baseUrl}/${encodeURIComponent(code)}.json`;
 
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 30000);
 
-      const response = await fetch(dataUrl, {
+      const response = await fetch(url, {
         signal: controller.signal,
         headers: {
           Accept: 'application/json',
@@ -93,21 +123,21 @@ export function useCityData(): UseCityDataReturn {
 
       if (!response.ok) {
         if (response.status === 404) {
-          throw new Error(`Data not available for city ${cityCode}`);
+          throw new Error(`Data not available for location ${code}`);
         }
-        throw new Error(`Failed to load city data: ${response.status}`);
+        throw new Error(`Failed to load data: ${response.status}`);
       }
 
-      const data: AggregatedCityData = await response.json();
+      const data: AggregatedLocationData = await response.json();
 
       // Validate structure
       if (!data.metadata || !data.data) {
-        throw new Error('Invalid city data structure');
+        throw new Error('Invalid data structure');
       }
 
       // Cache the data
-      cityDataCache.set(cityCode, data);
-      setCityData(data);
+      locationDataCache.set(cacheKey, data);
+      setLocationData(data);
     } catch (err) {
       if (err instanceof Error) {
         if (err.name === 'AbortError') {
@@ -116,9 +146,9 @@ export function useCityData(): UseCityDataReturn {
           setError(err.message);
         }
       } else {
-        setError('Failed to load city data');
+        setError('Failed to load data');
       }
-      setCityData(null);
+      setLocationData(null);
     } finally {
       setLoading(false);
     }
@@ -131,19 +161,19 @@ export function useCityData(): UseCityDataReturn {
       statistic: string,
       facet: string
     ): PlotDataFile | null => {
-      if (!cityData) return null;
+      if (!locationData) return null;
 
       try {
-        return cityData.data[scenario]?.[outcome]?.[statistic]?.[facet] || null;
+        return locationData.data[scenario]?.[outcome]?.[statistic]?.[facet] || null;
       } catch {
         return null;
       }
     },
-    [cityData]
+    [locationData]
   );
 
   const getAvailableOptions = useCallback(() => {
-    if (!cityData) {
+    if (!locationData) {
       return {
         scenarios: [],
         outcomes: [],
@@ -153,22 +183,22 @@ export function useCityData(): UseCityDataReturn {
     }
 
     return {
-      scenarios: cityData.metadata.scenarios,
-      outcomes: cityData.metadata.outcomes,
-      statistics: cityData.metadata.statistics,
-      facets: cityData.metadata.facets,
+      scenarios: locationData.metadata.scenarios,
+      outcomes: locationData.metadata.outcomes,
+      statistics: locationData.metadata.statistics,
+      facets: locationData.metadata.facets,
     };
-  }, [cityData]);
+  }, [locationData]);
 
   // Extract display name for an outcome from the loaded data
   const getOutcomeDisplayName = useCallback(
     (outcome: string): string => {
-      if (!cityData) return formatOptionName(outcome);
+      if (!locationData) return formatOptionName(outcome);
 
       // Try to find a plot with this outcome to get the display name
-      const scenarios = Object.keys(cityData.data);
+      const scenarios = Object.keys(locationData.data);
       for (const scenario of scenarios) {
-        const outcomeData = cityData.data[scenario]?.[outcome];
+        const outcomeData = locationData.data[scenario]?.[outcome];
         if (outcomeData) {
           const statistics = Object.keys(outcomeData);
           for (const stat of statistics) {
@@ -186,18 +216,28 @@ export function useCityData(): UseCityDataReturn {
       // Fallback to formatted name
       return formatOptionName(outcome);
     },
-    [cityData]
+    [locationData]
   );
 
   return {
-    cityData,
+    locationData,
+    cityData: locationData, // backward compat
     loading,
     error,
-    loadCity,
+    loadLocation,
+    loadCity: loadLocation, // backward compat
     getPlotData,
     getAvailableOptions,
     getOutcomeDisplayName,
   };
+}
+
+/**
+ * Backward-compatible alias for useLocationData
+ * @deprecated Use useLocationData instead
+ */
+export function useCityData(options: UseLocationDataOptions = {}): UseLocationDataReturn {
+  return useLocationData(options);
 }
 
 /**
