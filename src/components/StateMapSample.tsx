@@ -10,10 +10,16 @@
  */
 
 import { useState, useCallback, useEffect, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import Map, { Source, Layer, Popup } from 'react-map-gl/mapbox';
 import type { MapMouseEvent } from 'react-map-gl/mapbox';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { useStateSummaries, type StateSummary } from '@/hooks/useStateSummaries';
+import { ryanWhiteStateLevelConfig } from '@/config/model-configs';
+import AnalysisView from '@/components/AnalysisView';
+
+// Use model config for this explorer instance
+const MODEL_CONFIG = ryanWhiteStateLevelConfig;
 
 // Mapping from GeoJSON state names to state codes
 const STATE_NAME_TO_CODE: Record<string, string> = {
@@ -61,6 +67,21 @@ export default function StateMapSample() {
     zoom: 3.8,
   });
 
+  // View mode: 'map' or 'analysis'
+  const [mode, setMode] = useState<'map' | 'analysis'>('map');
+
+  // Selected state for analysis mode
+  const [selectedStateCode, setSelectedStateCode] = useState<string | null>(null);
+
+  // Derive available states from summaries
+  const availableStates = useMemo(() => {
+    if (!summaries?.states) return [];
+    return Object.entries(summaries.states).map(([code, state]) => ({
+      code,
+      name: state.name,
+    }));
+  }, [summaries]);
+
   // Load GeoJSON on mount
   useEffect(() => {
     fetch(US_STATES_GEOJSON)
@@ -100,14 +121,24 @@ export default function StateMapSample() {
     const feature = event.features?.[0];
     const stateName = feature?.properties?.NAME;
     if (stateName) {
+      const stateCode = STATE_NAME_TO_CODE[stateName];
       const stateData = getStateByName(stateName);
-      if (stateData) {
-        console.log(`Clicked state: ${stateName} (${stateData.shortName})`);
-        // TODO: Navigate to state analysis page
-        alert(`Would navigate to analysis for ${stateName}`);
+      if (stateData && stateCode) {
+        setSelectedStateCode(stateCode);
+        setMode('analysis');
       }
     }
   }, [getStateByName]);
+
+  // Return to map
+  const handleBackToMap = useCallback(() => {
+    setMode('map');
+  }, []);
+
+  // Handle location change from AnalysisView
+  const handleLocationChange = useCallback((code: string) => {
+    setSelectedStateCode(code);
+  }, []);
 
   const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
 
@@ -170,6 +201,17 @@ export default function StateMapSample() {
 
   return (
     <div className="relative w-full h-screen">
+      <AnimatePresence mode="wait">
+        {/* ===== MAP MODE ===== */}
+        {mode === 'map' && (
+          <motion.div
+            key="map-mode"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="absolute inset-0"
+          >
       <Map
         {...viewState}
         onMove={evt => setViewState(evt.viewState)}
@@ -363,6 +405,29 @@ export default function StateMapSample() {
           </div>
         </div>
       </div>
+          </motion.div>
+        )}
+
+        {/* ===== ANALYSIS MODE ===== */}
+        {mode === 'analysis' && selectedStateCode && (
+          <motion.div
+            key="analysis-mode"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="absolute inset-0"
+          >
+            <AnalysisView
+              config={MODEL_CONFIG}
+              locationCode={selectedStateCode}
+              availableLocations={availableStates}
+              onLocationChange={handleLocationChange}
+              onBackToMap={handleBackToMap}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
