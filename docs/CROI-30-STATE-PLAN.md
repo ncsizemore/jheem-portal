@@ -1,12 +1,240 @@
 # CROI 30-State Ryan White Analysis - Implementation Plan
 
 **Created:** 2026-01-16
-**Status:** Phase 1 Complete - Trimming Validated
-**Last Updated:** 2026-01-21
+**Status:** Direct Approach Validated - Ready for Production Run
+**Last Updated:** 2026-01-25
 
 ## Executive Summary
 
-This document outlines the plan to deploy the expanded 30-state CROI 2026 Ryan White analysis to the JHEEM portal. This involves creating a new container, running a data trimming pipeline, updating workflows, and frontend changes.
+This document outlines the plan to deploy the expanded 30-state CROI 2026 Ryan White analysis to the JHEEM portal.
+
+**Major Discovery (2026-01-25):** We can skip the 12-hour local trimming step entirely! The "direct approach" - running batch mode directly on raw simsets - works without OOM on GitHub Actions runners and produces valid data.
+
+**What's been validated:**
+- ✅ Direct approach: raw simsets → JSON extraction on GitHub Actions (no local step!)
+- ✅ Full pipeline tested: 3 states with all outcomes/facets/scenarios
+- ✅ Summaries extract correctly with Baseline data at year 2030
+- ✅ No OOM issues (only 1.3GB memory used, 15GB available)
+- ✅ Trimmed simsets available as backup (v2.0.0-web release)
+
+---
+
+## Final Pipeline Architecture (Simplified!)
+
+### Overview
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  GitHub Actions Workflow (entirely automated)                   │
+├─────────────────────────────────────────────────────────────────┤
+│  Input:  Raw simsets from v2.0.0 release (~75GB total)          │
+│  Process: Container batch mode → JSON → Aggregate → S3          │
+│  Output: State JSON files on CloudFront                         │
+│  Time:   ~6-7 hours for 30 states (parallelized)                │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│  Frontend Updates                                               │
+├─────────────────────────────────────────────────────────────────┤
+│  - Add 19 new states to choropleth                              │
+│  - Update scenario labels for CROI                              │
+│  - Point to CloudFront: ryan-white-state-croi/{STATE}.json      │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**No local trimming step required!** The entire pipeline runs on GitHub Actions.
+
+### Why Direct Approach Won
+
+| Original Assumption | Reality |
+|---------------------|---------|
+| Raw simsets would OOM on 7GB runners | Only uses ~1.3GB - tons of headroom |
+| Trimming required for baseline data | Raw simsets have Baseline to 2035 |
+| 12-hour local step unavoidable | Eliminated entirely |
+
+### Benefits of Direct Approach
+
+| Benefit | Impact |
+|---------|--------|
+| **No local step** | Fully automated, reproducible |
+| **More precise stats** | 1000 simulations vs 80 |
+| **Fuller baseline range** | 2010-2035 vs 2016-2026 |
+| **Simpler architecture** | One workflow, no trimming infrastructure |
+
+### Scenario Naming Convention
+
+Raw simset codes are mapped to friendly names in the workflow:
+
+| Raw Code | Friendly Name | Web Display |
+|----------|---------------|-------------|
+| `noint` | `base` | (Baseline - not shown to users) |
+| `rw.end.26` | `cessation` | "Permanent Cessation" |
+| `rw.p.intr.26` | `interruption` | "2.5-Year Interruption" |
+| `rw.end.cons.26` | `cessation_conservative` | "Cessation (Conservative)" |
+| `rw.p.intr.cons.26` | `interruption_conservative` | "Interruption (Conservative)" |
+
+### Repository Responsibilities
+
+| Repository | Role in CROI Pipeline |
+|------------|----------------------|
+| `jheem-simulations` | Hosts raw simsets (`v2.0.0`) |
+| `jheem-ryan-white-croi-container` | Container image (ghcr.io) |
+| `jheem-backend` | GitHub Actions workflow (direct approach) |
+| `jheem-portal` | Frontend + aggregation scripts |
+
+### Scenario Naming Convention
+
+Raw simset codes are mapped to friendly names for the web pipeline:
+
+| Raw Code | Friendly Name | Web Display |
+|----------|---------------|-------------|
+| `noint` | `base` | (Baseline - not shown to users) |
+| `rw.end.26` | `cessation` | "Permanent Cessation" |
+| `rw.p.intr.26` | `interruption` | "2.5-Year Interruption" |
+| `rw.end.cons.26` | `cessation_conservative` | "Cessation (Conservative)" |
+| `rw.p.intr.cons.26` | `interruption_conservative` | "Interruption (Conservative)" |
+
+File naming after trimming (for GitHub Release upload):
+```
+AL_base.Rdata
+AL_cessation.Rdata
+AL_interruption.Rdata
+AL_cessation_conservative.Rdata
+AL_interruption_conservative.Rdata
+```
+
+### Repository Responsibilities
+
+| Repository | Role in CROI Pipeline |
+|------------|----------------------|
+| `jheem-simulations` | Hosts raw (`v2.0.0`) and trimmed (`v2.0.0-web`) releases |
+| `jheem-ryan-white-croi-container` | Container image + local trim script |
+| `jheem-backend` | GitHub Actions workflow for data extraction |
+| `jheem-portal` | Frontend + aggregation scripts |
+
+---
+
+## Remaining Work
+
+### Final Validation (Next)
+
+- [ ] Run 3 states with `dry_run=false` (upload to S3)
+- [ ] Point frontend at CloudFront CROI path
+- [ ] Visually verify plots render correctly
+- [ ] Spot-check data values are reasonable
+
+### Production Run
+
+- [ ] Run full 30 states with `dry_run=false`
+- [ ] Verify all state data on CloudFront
+- [ ] Update state-summaries.json
+
+### Frontend Updates
+
+- [ ] Add 19 new states to `STATE_NAME_TO_CODE` mapping
+- [ ] Update scenario labels for CROI
+- [ ] Point data fetching at `ryan-white-state-croi/` path
+- [ ] Test choropleth with all 30 states
+
+### Cleanup (Optional)
+
+- [ ] Archive/rename experimental workflow to be primary
+- [ ] Document that trimmed simsets (v2.0.0-web) are backup only
+- [ ] Consider deleting trimmed-simset workflow
+
+---
+
+## Key Discovery: Direct vs Trimmed Approach
+
+### The Original Plan (Trimmed Approach)
+
+We initially built a trimming pipeline because we assumed:
+1. Raw simsets (1000 sims, ~850MB each) would OOM on GitHub runners
+2. Trimming to 80 sims was necessary for memory and file size
+3. The `rerun.simulations()` step required 16GB RAM
+
+This led to a 12-hour local trimming step before any GitHub Actions could run.
+
+### What We Discovered
+
+Testing the "direct approach" (batch mode on raw simsets) revealed:
+
+| Metric | Expected | Actual |
+|--------|----------|--------|
+| Memory usage | OOM (>7GB) | **1.3GB** |
+| Baseline year range | Stops at 2026 | **Extends to 2035** |
+| Works on GH runners | No | **Yes** |
+
+### Why Trimmed Baseline Stops at 2026
+
+The trimming script intentionally truncates baseline:
+
+```r
+is_seed <- intervention == "noint"
+to_year <- if (is_seed) WEB_SEED_TO_YEAR else WEB_TO_YEAR  # 2026 vs 2036
+```
+
+This was designed for seeding intervention scenarios, not for direct comparison at 2030. The raw simsets don't have this limitation.
+
+### Recommendation
+
+**Use the direct approach for CROI.** It's simpler, faster, and produces better data.
+
+Keep the trimmed simsets (`v2.0.0-web`) as backup - they cost nothing to store and provide a fallback if issues emerge.
+
+### Workflow Files
+
+| Workflow | Purpose | Status |
+|----------|---------|--------|
+| `generate-native-data-ryan-white-state-croi-direct.yml` | Direct approach (recommended) | ✅ Validated |
+| `generate-native-data-ryan-white-state-croi.yml` | Trimmed approach (backup) | Created but not tested |
+| `generate-native-data-ryan-white-state.yml` | AJPH 11-state (production) | ✅ Working |
+
+---
+
+## Trimming Infrastructure (Archived)
+
+The following was built for the trimmed approach. Keeping for reference/backup.
+
+### Local Trim Script
+
+**Script:** `jheem-ryan-white-croi-container/trim_all_states.sh`
+
+```bash
+# Full pipeline (download + trim + rename)
+./trim_all_states.sh
+
+# Or step by step:
+./trim_all_states.sh --download-only   # Download all 30 states (~75GB)
+./trim_all_states.sh --trim-only       # Trim all (requires 16GB Docker RAM)
+
+# Process single state (for testing)
+./trim_all_states.sh --state AL
+
+# Resume after interruption (skips completed states)
+./trim_all_states.sh --resume
+```
+
+**Prerequisites:**
+- Docker Desktop with 16GB RAM allocated
+- `gh` CLI authenticated
+- ~100GB free disk space
+
+### Phase 2: GitHub Workflow
+
+- [ ] Create `generate-native-data-ryan-white-state-croi.yml` in backend repo
+- [ ] Update state list (30 states)
+- [ ] Update container image to CROI container
+- [ ] Update release tag to `v2.0.0-web`
+- [ ] Update scenario list
+- [ ] Test with dry_run on 3 states
+
+### Phase 3: Frontend
+
+- [ ] Add 19 new states to `STATE_NAME_TO_CODE` mapping
+- [ ] Update scenario labels/descriptions for CROI
+- [ ] Test with generated data
+- [ ] (Optional) Create separate CROI section on website
 
 ---
 
@@ -21,18 +249,25 @@ This document outlines the plan to deploy the expanded 30-state CROI 2026 Ryan W
 
 ### File Naming Conventions
 
-**AJPH files:**
-- `*_noint.Rdata` - No interruption (baseline)
-- `*_rw.end.Rdata` - Cessation
-- `*_rw.b.intr.Rdata` - Brief interruption (1.5yr)
-- `*_rw.p.intr.Rdata` - Prolonged interruption (3.5yr)
-- Conservative variants: add `.cons` before `.Rdata`
+**AJPH (11-state) - Web-ready files:**
+- `{STATE}_base.Rdata` - Baseline
+- `{STATE}_cessation.Rdata` - Permanent cessation
+- `{STATE}_brief_interruption.Rdata` - 1.5-year interruption
+- `{STATE}_prolonged_interruption.Rdata` - 3.5-year interruption
 
-**CROI files:**
+**CROI (30-state) - Raw files (from Todd's simulations):**
 - `*_noint.Rdata` - No interruption (baseline)
 - `*_rw.end.26.Rdata` - Cessation
 - `*_rw.p.intr.26.Rdata` - 2.5-year interruption
-- Conservative variants: `.cons` before `.26` (e.g., `*_rw.end.cons.26.Rdata`)
+- `*_rw.end.cons.26.Rdata` - Cessation (conservative)
+- `*_rw.p.intr.cons.26.Rdata` - Interruption (conservative)
+
+**CROI (30-state) - Web-ready files (after trimming + rename):**
+- `{STATE}_base.Rdata` - Baseline
+- `{STATE}_cessation.Rdata` - Permanent cessation
+- `{STATE}_interruption.Rdata` - 2.5-year interruption
+- `{STATE}_cessation_conservative.Rdata` - Cessation (conservative)
+- `{STATE}_interruption_conservative.Rdata` - Interruption (conservative)
 
 ### Current Data Location
 
@@ -251,6 +486,53 @@ Before declaring Phase 1 fully complete, we need to verify:
 
 ## Progress Log
 
+### 2026-01-25 - Direct Approach Validated! 🎉
+
+**Status:** Major breakthrough - Direct approach eliminates 12-hour local trimming step
+
+**Discovery:** We can run batch mode directly on raw (untrimmed) simsets without OOM!
+
+**Validation Results (3-state test: AL, CA, FL):**
+
+| Metric | Result |
+|--------|--------|
+| Memory used | 1.3GB (of 15GB available) |
+| OOM issues | None |
+| Pipeline stages | All passed (generate → aggregate → summary) |
+| Baseline year range | 2010-2035 (extends to 2030!) |
+| Total runtime | ~2 hours for 3 states |
+
+**Key Finding - Baseline Year Range:**
+
+| Approach | Baseline Years | Projection Year 2030? |
+|----------|----------------|----------------------|
+| Trimmed simsets | 2016-2026 | ❌ Not available |
+| Raw simsets (direct) | 2010-2035 | ✅ Available |
+
+The trimmed approach intentionally truncates baseline at the anchor year (2026), which caused summary extraction to fail. Raw simsets don't have this limitation.
+
+**Benefits of Direct Approach:**
+- ✅ No 12-hour local trimming step
+- ✅ Entire pipeline runs on GitHub Actions
+- ✅ More precise statistics (1000 sims vs 80)
+- ✅ Fuller baseline data range
+- ✅ Simpler architecture
+
+**Workflow Created:**
+- `generate-native-data-ryan-white-state-croi-direct.yml` - Full pipeline, validated
+
+**Next Steps:**
+1. Final validation: upload to S3, verify in frontend
+2. Run full 30 states
+3. Update frontend for CROI data
+
+**Previous Work Not Wasted:**
+- Trimmed simsets (v2.0.0-web) serve as backup
+- Container trimming infrastructure documented in `DEVELOPMENT.md`
+- Lessons learned inform future model deployments
+
+---
+
 ### 2026-01-21 - Trimming Pipeline Complete!
 
 **Status:** Phase 1 Complete - All 5 intervention files successfully trimmed for Alabama
@@ -442,6 +724,37 @@ R -e "renv::install('tfojo1/jheem2@dev')"
 
 ## Commands Reference
 
+### Local Trimming (Phase 1)
+
+```bash
+# Full 30-state pipeline
+cd /Volumes/WD_Black/wiley/Documents/jheem-ryan-white-croi-container
+./trim_all_states.sh
+
+# Or step-by-step:
+./trim_all_states.sh --download-only   # Download all (~75GB)
+./trim_all_states.sh --trim-only       # Trim all (~6 hours)
+
+# Single state (for testing)
+./trim_all_states.sh --state AL
+
+# Resume after interruption
+./trim_all_states.sh --resume
+```
+
+### Upload to GitHub Release (after trimming)
+
+```bash
+cd /Volumes/WD_Black/wiley/Documents/croi-trimming-test/web
+gh release create ryan-white-state-v2.0.0-web \
+  --repo ncsizemore/jheem-simulations \
+  --title "Ryan White State v2.0.0 (Web-Ready, CROI 2026)" \
+  --notes "Trimmed simsets (80 sims, 2016-2036) for web deployment" \
+  */*.Rdata
+```
+
+### Manual Testing Commands
+
 ```bash
 # Download one state's raw simsets for testing
 cd /Volumes/WD_Black/wiley/Documents/
@@ -449,16 +762,16 @@ mkdir -p croi-trimming-test/raw
 cd croi-trimming-test/raw
 gh release download ryan-white-state-v2.0.0 \
   --repo ncsizemore/jheem-simulations \
-  --pattern "AL_*.Rdata"
+  --pattern "*_AL_*.Rdata"
 
-# Run existing container in debug mode
+# Run CROI container in debug mode
 docker run -it --rm \
   -v $(pwd):/data \
-  ghcr.io/ncsizemore/jheem-ryan-white-model:latest \
+  ghcr.io/ncsizemore/jheem-ryan-white-croi-container:latest \
   debug
 
-# Check container has trimming dependencies
+# Check container workspace
 docker run --rm \
-  ghcr.io/ncsizemore/jheem-ryan-white-model:latest \
+  ghcr.io/ncsizemore/jheem-ryan-white-croi-container:latest \
   test-workspace
 ```

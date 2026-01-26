@@ -4,9 +4,8 @@
  * State-level choropleth map component
  *
  * Displays Ryan White state-level analysis data on an interactive map.
- * Data fetched from CloudFront state-summaries.json.
- *
- * Route: /ryan-white/explorer/state
+ * Accepts a ModelConfig to support different analyses (AJPH, CROI, etc.)
+ * Data fetched from CloudFront based on config.dataUrl.
  */
 
 import { useState, useCallback, useEffect, useMemo } from 'react';
@@ -15,25 +14,28 @@ import Map, { Source, Layer, Popup } from 'react-map-gl/mapbox';
 import type { MapMouseEvent } from 'react-map-gl/mapbox';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { useStateSummaries, type StateSummary } from '@/hooks/useStateSummaries';
-import { ryanWhiteStateLevelConfig } from '@/config/model-configs';
+import type { ModelConfig } from '@/config/model-configs';
 import AnalysisView from '@/components/AnalysisView';
 
-// Use model config for this explorer instance
-const MODEL_CONFIG = ryanWhiteStateLevelConfig;
+interface StateChoroplethExplorerProps {
+  config: ModelConfig;
+}
 
-// Mapping from GeoJSON state names to state codes
+// Complete US state name to code mapping
 const STATE_NAME_TO_CODE: Record<string, string> = {
-  'Alabama': 'AL',
-  'California': 'CA',
-  'Florida': 'FL',
-  'Georgia': 'GA',
-  'Illinois': 'IL',
-  'Louisiana': 'LA',
-  'Missouri': 'MO',
-  'Mississippi': 'MS',
-  'New York': 'NY',
-  'Texas': 'TX',
-  'Wisconsin': 'WI',
+  'Alabama': 'AL', 'Alaska': 'AK', 'Arizona': 'AZ', 'Arkansas': 'AR',
+  'California': 'CA', 'Colorado': 'CO', 'Connecticut': 'CT', 'Delaware': 'DE',
+  'Florida': 'FL', 'Georgia': 'GA', 'Hawaii': 'HI', 'Idaho': 'ID',
+  'Illinois': 'IL', 'Indiana': 'IN', 'Iowa': 'IA', 'Kansas': 'KS',
+  'Kentucky': 'KY', 'Louisiana': 'LA', 'Maine': 'ME', 'Maryland': 'MD',
+  'Massachusetts': 'MA', 'Michigan': 'MI', 'Minnesota': 'MN', 'Mississippi': 'MS',
+  'Missouri': 'MO', 'Montana': 'MT', 'Nebraska': 'NE', 'Nevada': 'NV',
+  'New Hampshire': 'NH', 'New Jersey': 'NJ', 'New Mexico': 'NM', 'New York': 'NY',
+  'North Carolina': 'NC', 'North Dakota': 'ND', 'Ohio': 'OH', 'Oklahoma': 'OK',
+  'Oregon': 'OR', 'Pennsylvania': 'PA', 'Rhode Island': 'RI', 'South Carolina': 'SC',
+  'South Dakota': 'SD', 'Tennessee': 'TN', 'Texas': 'TX', 'Utah': 'UT',
+  'Vermont': 'VT', 'Virginia': 'VA', 'Washington': 'WA', 'West Virginia': 'WV',
+  'Wisconsin': 'WI', 'Wyoming': 'WY', 'District of Columbia': 'DC',
 };
 
 // Color scale for cessation impact (% increase in new HIV cases)
@@ -50,8 +52,8 @@ function getImpactColor(percentIncrease: number): string {
 // GeoJSON for US state boundaries
 const US_STATES_GEOJSON = '/us-states.json';
 
-export default function StateMapSample() {
-  const { summaries, loading, error, getStateByName } = useStateSummaries();
+export default function StateChoroplethExplorer({ config }: StateChoroplethExplorerProps) {
+  const { summaries, loading, error, getStateByName } = useStateSummaries(config.dataUrl);
 
   const [statesGeoJson, setStatesGeoJson] = useState<GeoJSON.FeatureCollection | null>(null);
   const [hoveredStateName, setHoveredStateName] = useState<string | null>(null);
@@ -419,7 +421,7 @@ export default function StateMapSample() {
             className="absolute inset-0"
           >
             <AnalysisView
-              config={MODEL_CONFIG}
+              config={config}
               locationCode={selectedStateCode}
               availableLocations={availableStates}
               onLocationChange={handleLocationChange}

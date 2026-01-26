@@ -33,9 +33,9 @@ export default function RyanWhiteStateLevelPage() {
       <header className="border-b border-gray-200">
         <div className="max-w-4xl mx-auto px-6 pt-16 pb-12">
           <div className="flex items-center gap-3 text-sm text-gray-500 mb-6">
-            <span className="font-medium text-gray-900">AIDS</span>
+            <span className="font-medium text-gray-900">AJPH</span>
             <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
-            <span>Forthcoming 2025</span>
+            <span>Forthcoming 2026</span>
           </div>
           <h1 className="text-3xl md:text-[2.5rem] md:leading-tight font-normal text-gray-900 leading-tight mb-6">
             HIV Incidence Could Rise by 68% in 11 States if Ryan White Ends: A Simulation Study
@@ -104,25 +104,39 @@ export default function RyanWhiteStateLevelPage() {
       {/* Tools */}
       <section className="border-b border-gray-200">
         <div className="max-w-4xl mx-auto px-6 py-10">
-          <div className="grid md:grid-cols-2 gap-4">
-            <a
-              href="https://jheem.shinyapps.io/ryan-white-state-level/"
-              target="_blank"
-              rel="noopener noreferrer"
+          <div className="grid md:grid-cols-3 gap-4">
+            <Link
+              href="/ryan-white-state-level/explorer/ajph"
               className="group flex items-center justify-between p-5 bg-white border border-gray-200 rounded-lg hover:border-hopkins-blue hover:shadow-md transition-all"
             >
               <div>
                 <p className="font-medium text-gray-900 group-hover:text-hopkins-blue transition-colors">
-                  State Explorer
+                  AJPH Explorer
                 </p>
                 <p className="text-sm text-gray-500">
-                  Explore prerun scenarios by state
+                  11 states · 2026 paper
                 </p>
               </div>
               <svg className="w-5 h-5 text-gray-400 group-hover:text-hopkins-blue transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
-            </a>
+            </Link>
+            <Link
+              href="/ryan-white-state-level/explorer/croi"
+              className="group flex items-center justify-between p-5 bg-white border border-gray-200 rounded-lg hover:border-hopkins-blue hover:shadow-md transition-all"
+            >
+              <div>
+                <p className="font-medium text-gray-900 group-hover:text-hopkins-blue transition-colors">
+                  CROI Explorer
+                </p>
+                <p className="text-sm text-gray-500">
+                  30 states · 2026 conference
+                </p>
+              </div>
+              <svg className="w-5 h-5 text-gray-400 group-hover:text-hopkins-blue transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </Link>
             <Link
               href="/ryan-white"
               className="group flex items-center justify-between p-5 bg-white border border-gray-200 rounded-lg hover:border-gray-400 hover:shadow-md transition-all"
@@ -132,7 +146,7 @@ export default function RyanWhiteStateLevelPage() {
                   City-Level Analysis
                 </p>
                 <p className="text-sm text-gray-500">
-                  See the companion 31-city study
+                  31-city MSA study
                 </p>
               </div>
               <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -228,7 +242,7 @@ export default function RyanWhiteStateLevelPage() {
               </p>
               <p className="text-sm text-gray-600 leading-relaxed">
                 Schnure M, et al. HIV Incidence Could Rise by 68% in 11 States if Ryan White Ends:
-                A Simulation Study. <em>AIDS.</em> Forthcoming 2025.{' '}
+                A Simulation Study. <em>AJPH.</em> Forthcoming 2026.{' '}
                 <a
                   href="https://doi.org/10.1101/2025.07.31.25332525"
                   target="_blank"

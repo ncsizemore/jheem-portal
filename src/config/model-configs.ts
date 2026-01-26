@@ -136,19 +136,19 @@ export const cdcTestingConfig: ModelConfig = {
 };
 
 // =============================================================================
-// RYAN WHITE STATE LEVEL CONFIG (placeholder - to be configured when transitioning)
+// RYAN WHITE STATE LEVEL - AJPH (11 states, 2025 paper)
 // =============================================================================
 
-export const ryanWhiteStateLevelConfig: ModelConfig = {
-  id: 'ryan-white-state-level',
-  name: 'Ryan White State Level Explorer',
-  shortName: 'State Level',
+export const ajphStateLevelConfig: ModelConfig = {
+  id: 'ryan-white-state-ajph',
+  name: 'Ryan White State Analysis (AJPH)',
+  shortName: 'AJPH (11 States)',
 
   geographyType: 'state',
   geographyLabel: 'State',
   geographyLabelPlural: 'States',
 
-  dataUrl: 'https://d320iym4dtm9lj.cloudfront.net/ryan-white-state', // TODO: Update when data is ready
+  dataUrl: 'https://d320iym4dtm9lj.cloudfront.net/ryan-white-state',
   summaryFileName: 'state-summaries.json',
 
   scenarios: [
@@ -183,12 +183,70 @@ export const ryanWhiteStateLevelConfig: ModelConfig = {
 };
 
 // =============================================================================
+// RYAN WHITE STATE LEVEL - CROI (30 states, 2026 conference)
+// =============================================================================
+
+export const croiStateLevelConfig: ModelConfig = {
+  id: 'ryan-white-state-croi',
+  name: 'Ryan White State Analysis (CROI)',
+  shortName: 'CROI (30 States)',
+
+  geographyType: 'state',
+  geographyLabel: 'State',
+  geographyLabelPlural: 'States',
+
+  dataUrl: 'https://d320iym4dtm9lj.cloudfront.net/ryan-white-state-croi',
+  summaryFileName: 'state-summaries.json',
+
+  scenarios: [
+    {
+      id: 'cessation',
+      label: 'Cessation',
+      description: 'Permanent end to Ryan White funding starting 2026',
+    },
+    {
+      id: 'interruption',
+      label: 'Interruption',
+      description: '2.5-year funding gap (2026-2028), then services resume',
+    },
+    {
+      id: 'cessation_conservative',
+      label: 'Cessation (Conservative)',
+      description: 'Permanent cessation with conservative impact assumptions',
+    },
+    {
+      id: 'interruption_conservative',
+      label: 'Interruption (Conservative)',
+      description: '2.5-year gap with conservative impact assumptions',
+    },
+  ],
+
+  defaults: {
+    outcome: 'incidence',
+    statistic: 'mean.and.interval',
+  },
+
+  facetDimensions: ['age', 'sex', 'race', 'risk'],
+
+  map: {
+    center: [-96.5, 38.5],
+    zoom: 4.1,
+  },
+};
+
+// Legacy alias for backwards compatibility
+export const ryanWhiteStateLevelConfig = ajphStateLevelConfig;
+
+// =============================================================================
 // CONFIG REGISTRY
 // =============================================================================
 
 export const modelConfigs: Record<string, ModelConfig> = {
   'ryan-white': ryanWhiteConfig,
   'cdc-testing': cdcTestingConfig,
+  'ryan-white-state-ajph': ajphStateLevelConfig,
+  'ryan-white-state-croi': croiStateLevelConfig,
+  // Legacy alias
   'ryan-white-state-level': ryanWhiteStateLevelConfig,
 };
 

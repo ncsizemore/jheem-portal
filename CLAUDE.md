@@ -61,58 +61,103 @@
 **Purpose**: Host simulation files via GitHub Releases (free egress vs S3 costs)
 
 **Current Releases**:
-- `ryan-white-state-v1.0.0` - 11 states, 44 files, ~2.8GB
+- `ryan-white-state-v1.0.0` - 11 states, old AJPH analysis (2025-2030 timeframe)
+- `ryan-white-state-v2.0.0` - **30 states**, CROI 2026 analysis (2026-2031 timeframe), ~75GB raw simsets
 
 ---
 
-## Latest Session Summary (2025-01-08)
+## Latest Session Summary (2026-01-16)
 
-### Infrastructure & Cost Optimization
-
-**Reference**: See `jheem-backend/SESSION_SUMMARY_2025-01-08.md` for full details.
+### AnalysisView Refactor & 30-State Data Pipeline
 
 #### ✅ Completed
 
-**Cost Optimizations**:
-- ✅ Container pulls: ECR (~$7/run) → ghcr.io ($0)
-- ✅ Simulation downloads: S3 (~$1/run) → GitHub Releases ($0) for state-level
-- ✅ **Total cost per workflow run**: ~$8 → ~$0-1
+**Frontend Refactoring:**
+- ✅ Created `AnalysisView` component (~800 lines) - extracted from MSA explorer for reuse
+- ✅ Refactored MSA explorer to use AnalysisView (1350 → 540 lines, -60% code)
+- ✅ Integrated AnalysisView into state choropleth (click state → full analysis)
+- ✅ Generalized `useCityData` → `useLocationData` with customizable `dataUrl` option
 
-**Infrastructure Changes**:
-- ✅ Added ghcr.io as third registry (alongside Docker Hub, ECR)
-- ✅ Created `jheem-simulations` repo for hosting simulation artifacts
-- ✅ Created state-level workflow (`generate-native-data-ryan-white-state.yml`)
-- ✅ Fixed streaming JSON aggregation with `big-json` library (handles ~394MB state data)
-- ✅ Added `src/data/states.ts` with 11 state coordinates
-- ✅ Created `scripts/generate-state-summaries.ts` for state hover cards
+**Commits:**
+- `587cbf2` - refactor: create AnalysisView component and generalize data hook
+- `493c465` - refactor: integrate AnalysisView into MSA explorer
+- `134ab13` - feat: integrate AnalysisView into state choropleth
 
-**Architecture Decisions**:
-- ✅ Single container for MSA + state (no separate containers needed)
-- ✅ Separate workflows per geography type (simpler, independent evolution)
-- ✅ Separate repos per model for "freeze" benefit on published work
+**30-State Expansion (Key Discovery):**
+- State-level analysis expanded from 11 → **30 states**
+- Two separate analyses now exist:
 
-**Route Structure (Option C - Decided)**:
-- `/ryan-white/msa/explorer` → MSA marker map
-- `/ryan-white/state/explorer` → State choropleth map
-- `/ryan-white/` → Landing page for both
+| Analysis | States | Timeframe | Scenarios |
+|----------|--------|-----------|-----------|
+| **AJPH (original)** | 11 | 2025-2030 | cessation, brief (1.5yr), prolonged (3.5yr) |
+| **CROI (updated)** | 30 | 2026-2031 | cessation, 2.5-year interruption |
 
-**Choropleth Prototype**:
-- Created `StateMapSample.tsx` with GeoJSON fill layers
-- Temporary route: `/ryan-white/explorer/state` for development
-- Uses same interaction patterns as MSA explorer (hover cards, click to explore)
+**Data Transfer Infrastructure:**
+- ✅ Set up GitHub Releases upload from campus server (SSH + `gh` CLI)
+- ✅ Uploaded 30-state raw simsets to `ryan-white-state-v2.0.0` release (~75GB)
+- Server path: `ssh nsizemo1@10.253.170.91`, NAS at `/mnt/jheem_nas_share/`
+
+**Files per state (CROI 2026):**
+- `*_noint.Rdata` - baseline (~850MB)
+- `*_rw.end.26.Rdata` - cessation (~450MB)
+- `*_rw.p.intr.26.Rdata` - 2.5-year interruption (~450MB)
+- `*_rw.end.cons.26.Rdata` - cessation conservative (~390MB)
+- `*_rw.p.intr.cons.26.Rdata` - interruption conservative (~390MB)
+
+#### 🔑 Key Technical Insights
+
+**Trimming Script (`prep_rw_web_simsets.R`):**
+- Located at: `jheem_analyses/applications/ryan_white/prep_rw_web_simsets.R`
+- Reduces simulations: 1000 → 80 (configured via `RW.N.SIM.FOR.WEB`)
+- Truncates time range: 2016-2036 (configured via `RW.WEB.FROM.YEAR`, `RW.WEB.TO.YEAR`)
+- Creates web-optimized versions with sub.version `'ws'` (seed) and `'w'` (interventions)
+- **Must be run locally** - requires R + jheem2 + re-runs simulations
+
+**jheem_analyses Repo:**
+- Pulled latest (38 commits), local path adjustments stashed
+- Key config in `ryan_white_main.R`:
+  - `RW.STATES` = 30 states
+  - `RW.ANCHOR.YEAR = 2026`
+  - `N.SIM = 1000`, `RW.N.SIM.FOR.WEB = 80`
 
 #### 🚧 Immediate Next Steps
 
-| Task | Status | Notes |
-|------|--------|-------|
-| Run state workflow with `dry_run=false` | ⏳ Pending | Test full pipeline including S3 upload |
-| Verify state summary generation | ⏳ Pending | End-to-end validation |
-| Migrate MSA simulations to GitHub Releases | ⏳ Short-term | Eliminate $1 S3 cost |
-| Design state choropleth UI | ⏳ Short-term | Finalize from prototype |
+| Task | Priority | Notes |
+|------|----------|-------|
+| Download raw simsets from GitHub Releases | High | ~75GB to local machine |
+| Run trimming script locally | High | Produces ~5-8GB web-optimized files |
+| Update `STATE_NAME_TO_CODE` mapping | Medium | Add 19 new states to frontend |
+| Deploy trimmed state data to CloudFront | Medium | Via existing workflow pattern |
+| Consider website organization | Medium | Two sections: AJPH (11 MSAs) vs CROI (30 states)? |
+
+#### 📋 Path Forward
+
+1. **Download & Trim**: Pull raw simsets from `ryan-white-state-v2.0.0`, run `prep_rw_web_simsets.R` locally
+2. **Deploy**: Upload trimmed web simsets to S3/CloudFront (or new GitHub Release)
+3. **Frontend**: Update state choropleth with 30 states, new scenario labels
+4. **Organization**: Decide on website structure (separate AJPH/CROI sections vs unified)
 
 ---
 
 ## Previous Session Summaries
+
+<details>
+<summary>2025-01-08: Infrastructure & Cost Optimization (Click to expand)</summary>
+
+**Reference**: See `jheem-backend/SESSION_SUMMARY_2025-01-08.md` for full details.
+
+**Cost Optimizations**:
+- Container pulls: ECR (~$7/run) → ghcr.io ($0)
+- Simulation downloads: S3 (~$1/run) → GitHub Releases ($0)
+- Total cost per workflow run: ~$8 → ~$0-1
+
+**Infrastructure Changes**:
+- Added ghcr.io as third registry
+- Created `jheem-simulations` repo
+- Created state-level workflow
+- Fixed streaming JSON aggregation with `big-json` library
+
+</details>
 
 <details>
 <summary>2026-01-06: Feature Completion & Multi-Model Architecture (Click to expand)</summary>
