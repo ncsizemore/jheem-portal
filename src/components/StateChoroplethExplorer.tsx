@@ -39,14 +39,16 @@ const STATE_NAME_TO_CODE: Record<string, string> = {
 };
 
 // Color scale for cessation impact (% increase in new HIV cases)
+// Uses a warm sequential palette - lighter for lower impact, darker for higher
 function getImpactColor(percentIncrease: number): string {
-  if (percentIncrease >= 100) return '#7f1d1d'; // red-900 - extreme
-  if (percentIncrease >= 75) return '#dc2626'; // red-600 - severe
-  if (percentIncrease >= 50) return '#ea580c'; // orange-600
-  if (percentIncrease >= 40) return '#f97316'; // orange-500
-  if (percentIncrease >= 30) return '#fbbf24'; // amber-400
-  if (percentIncrease >= 20) return '#84cc16'; // lime-500 - moderate
-  return '#22c55e'; // green-500 - lower impact
+  if (percentIncrease >= 100) return '#7c2d12'; // orange-900 - extreme
+  if (percentIncrease >= 75) return '#9a3412';  // orange-800
+  if (percentIncrease >= 60) return '#c2410c';  // orange-700
+  if (percentIncrease >= 50) return '#ea580c';  // orange-600
+  if (percentIncrease >= 40) return '#f97316';  // orange-500
+  if (percentIncrease >= 30) return '#fb923c';  // orange-400
+  if (percentIncrease >= 20) return '#fdba74';  // orange-300
+  return '#fed7aa'; // orange-200 - lower impact
 }
 
 // GeoJSON for US state boundaries
@@ -218,7 +220,7 @@ export default function StateChoroplethExplorer({ config }: StateChoroplethExplo
         {...viewState}
         onMove={evt => setViewState(evt.viewState)}
         mapboxAccessToken={MAPBOX_TOKEN}
-        mapStyle="mapbox://styles/mapbox/light-v11"
+        mapStyle="mapbox://styles/mapbox/streets-v12"
         style={{ width: '100%', height: '100%' }}
         interactiveLayerIds={['state-fills']}
         onMouseMove={onMouseMove}
@@ -237,8 +239,8 @@ export default function StateChoroplethExplorer({ config }: StateChoroplethExplo
                 'fill-opacity': [
                   'case',
                   ['==', ['get', 'NAME'], hoveredStateName || ''],
-                  0.9,
-                  0.7
+                  0.85,
+                  0.65
                 ]
               }}
             />
@@ -250,14 +252,14 @@ export default function StateChoroplethExplorer({ config }: StateChoroplethExplo
                 'line-color': [
                   'case',
                   ['==', ['get', 'NAME'], hoveredStateName || ''],
-                  '#1e40af',
-                  '#94a3b8'
+                  '#1e3a5f',
+                  '#64748b'
                 ],
                 'line-width': [
                   'case',
                   ['==', ['get', 'NAME'], hoveredStateName || ''],
-                  2.5,
-                  0.5
+                  2,
+                  0.75
                 ]
               }}
             />
@@ -355,38 +357,42 @@ export default function StateChoroplethExplorer({ config }: StateChoroplethExplo
             Hover over a state for details, click to explore.
           </p>
 
-          {/* Legend */}
+          {/* Legend - sequential orange scale */}
           <div className="space-y-1.5">
             <div className="text-[10px] uppercase tracking-wide text-slate-400 mb-2">
               Incidence Increase
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded" style={{ backgroundColor: '#22c55e' }} />
-              <span className="text-xs text-slate-600">&lt;20% increase</span>
+              <div className="w-4 h-4 rounded" style={{ backgroundColor: '#fed7aa' }} />
+              <span className="text-xs text-slate-600">&lt;20%</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded" style={{ backgroundColor: '#84cc16' }} />
-              <span className="text-xs text-slate-600">20-30% increase</span>
+              <div className="w-4 h-4 rounded" style={{ backgroundColor: '#fdba74' }} />
+              <span className="text-xs text-slate-600">20–30%</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded" style={{ backgroundColor: '#fbbf24' }} />
-              <span className="text-xs text-slate-600">30-40% increase</span>
+              <div className="w-4 h-4 rounded" style={{ backgroundColor: '#fb923c' }} />
+              <span className="text-xs text-slate-600">30–40%</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 rounded" style={{ backgroundColor: '#f97316' }} />
-              <span className="text-xs text-slate-600">40-50% increase</span>
+              <span className="text-xs text-slate-600">40–50%</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 rounded" style={{ backgroundColor: '#ea580c' }} />
-              <span className="text-xs text-slate-600">50-75% increase</span>
+              <span className="text-xs text-slate-600">50–60%</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded" style={{ backgroundColor: '#dc2626' }} />
-              <span className="text-xs text-slate-600">75-100% increase</span>
+              <div className="w-4 h-4 rounded" style={{ backgroundColor: '#c2410c' }} />
+              <span className="text-xs text-slate-600">60–75%</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded" style={{ backgroundColor: '#7f1d1d' }} />
-              <span className="text-xs text-slate-600">&gt;100% increase</span>
+              <div className="w-4 h-4 rounded" style={{ backgroundColor: '#9a3412' }} />
+              <span className="text-xs text-slate-600">75–100%</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 rounded" style={{ backgroundColor: '#7c2d12' }} />
+              <span className="text-xs text-slate-600">&gt;100%</span>
             </div>
           </div>
 
