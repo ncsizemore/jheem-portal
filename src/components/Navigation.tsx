@@ -109,7 +109,7 @@ export default function Navigation() {
                                 Ryan White: City-Level
                               </div>
                               <div className="text-xs text-gray-500 mt-0.5">
-                                31 metropolitan areas
+                                Metropolitan areas nationwide
                               </div>
                             </div>
                             {isRyanWhiteActive && (
@@ -160,7 +160,7 @@ export default function Navigation() {
                             Ryan White: State-Level
                           </div>
                           <div className="text-xs text-gray-500 mt-0.5">
-                            11 states
+                            Statewide analysis
                           </div>
                         </Link>
 
