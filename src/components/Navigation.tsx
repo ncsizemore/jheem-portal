@@ -264,7 +264,7 @@ export default function Navigation() {
           </div>
         </div>
         
-        {/* Ryan White Specific Sub-Navigation */}
+        {/* Ryan White City-Level Sub-Navigation */}
         <AnimatePresence>
           {showRyanWhiteSubmenu && (
             <motion.div
@@ -296,6 +296,47 @@ export default function Navigation() {
                       <span>Custom Simulations</span>
                       <span className={`absolute bottom-0 left-0 h-0.5 bg-hopkins-gold transition-all duration-300 ${
                         pathname === '/shiny/ryan-white-custom' ? 'w-full' : 'w-0 group-hover:w-full'
+                      }`}></span>
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Ryan White State-Level Sub-Navigation */}
+        <AnimatePresence>
+          {showStateLevelSubmenu && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+              className="border-t border-white/20 overflow-hidden"
+            >
+              <div className="py-4">
+                <div className="flex items-center space-x-8">
+                  <span className="text-xs font-semibold text-hopkins-gold uppercase tracking-wider">
+                    State-Level Tools
+                  </span>
+                  <div className="flex items-center space-x-6">
+                    <Link
+                      href="/ryan-white-state-level/explorer/ajph"
+                      className="text-white hover:text-hopkins-gold font-medium transition-all relative group py-1"
+                    >
+                      <span>AJPH Explorer</span>
+                      <span className={`absolute bottom-0 left-0 h-0.5 bg-hopkins-gold transition-all duration-300 ${
+                        pathname === '/ryan-white-state-level/explorer/ajph' ? 'w-full' : 'w-0 group-hover:w-full'
+                      }`}></span>
+                    </Link>
+                    <Link
+                      href="/ryan-white-state-level/explorer/croi"
+                      className="text-white hover:text-hopkins-gold font-medium transition-all relative group py-1"
+                    >
+                      <span>CROI Explorer</span>
+                      <span className={`absolute bottom-0 left-0 h-0.5 bg-hopkins-gold transition-all duration-300 ${
+                        pathname === '/ryan-white-state-level/explorer/croi' ? 'w-full' : 'w-0 group-hover:w-full'
                       }`}></span>
                     </Link>
                   </div>
