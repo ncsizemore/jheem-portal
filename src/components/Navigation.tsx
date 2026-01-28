@@ -22,8 +22,12 @@ export default function Navigation() {
                                pathname === '/shiny/ryan-white-custom' ||
                                pathname === '/explore'; // legacy route
 
+  // Check if we should show State Level submenu
+  const showStateLevelSubmenu = pathname === '/ryan-white-state-level' ||
+                                pathname?.startsWith('/ryan-white-state-level/explorer');
+
   const isRyanWhiteActive = pathname === '/ryan-white' || showRyanWhiteSubmenu;
-  const isStateLevelActive = pathname === '/ryan-white-state-level';
+  const isStateLevelActive = pathname === '/ryan-white-state-level' || showStateLevelSubmenu;
   const isCdcTestingActive = pathname === '/cdc-testing';
   const isHIVAgeProjectionsActive = pathname === '/aging';
   const isAnyModelActive = isRyanWhiteActive || isStateLevelActive || isCdcTestingActive || isHIVAgeProjectionsActive;
@@ -154,15 +158,50 @@ export default function Navigation() {
                               : 'border-l-transparent hover:bg-hopkins-blue/5 hover:border-l-hopkins-blue/30'
                           }`}
                         >
-                          <div className={`text-sm font-semibold ${
-                            isStateLevelActive ? 'text-hopkins-blue' : 'text-gray-900'
-                          }`}>
-                            Ryan White: State-Level
-                          </div>
-                          <div className="text-xs text-gray-500 mt-0.5">
-                            Statewide analysis
+                          <div className="flex items-center justify-between">
+                            <div className="flex-1">
+                              <div className={`text-sm font-semibold ${
+                                isStateLevelActive ? 'text-hopkins-blue' : 'text-gray-900'
+                              }`}>
+                                Ryan White: State-Level
+                              </div>
+                              <div className="text-xs text-gray-500 mt-0.5">
+                                Statewide analysis
+                              </div>
+                            </div>
+                            {isStateLevelActive && (
+                              <svg className="w-5 h-5 text-hopkins-blue ml-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                              </svg>
+                            )}
                           </div>
                         </Link>
+
+                        {/* Show State Level submenu if active */}
+                        {isStateLevelActive && (
+                          <div className="bg-gray-50 border-y border-gray-200 py-1">
+                            <Link
+                              href="/ryan-white-state-level/explorer/ajph"
+                              className={`block px-10 py-2 text-xs font-medium transition-colors ${
+                                pathname === '/ryan-white-state-level/explorer/ajph'
+                                  ? 'text-hopkins-blue bg-white'
+                                  : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
+                              }`}
+                            >
+                              AJPH Explorer (11 States)
+                            </Link>
+                            <Link
+                              href="/ryan-white-state-level/explorer/croi"
+                              className={`block px-10 py-2 text-xs font-medium transition-colors ${
+                                pathname === '/ryan-white-state-level/explorer/croi'
+                                  ? 'text-hopkins-blue bg-white'
+                                  : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
+                              }`}
+                            >
+                              CROI Explorer (30 States)
+                            </Link>
+                          </div>
+                        )}
 
                         <Link
                           href="/cdc-testing"
