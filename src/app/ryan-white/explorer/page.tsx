@@ -159,6 +159,15 @@ export default function ExploreV2() {
     }
   }, []);
 
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (hoverTimeoutRef.current) {
+        clearTimeout(hoverTimeoutRef.current);
+      }
+    };
+  }, []);
+
   // Selected city for analysis mode
   const [selectedCity, setSelectedCity] = useState<CityData | null>(null);
 

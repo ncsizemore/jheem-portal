@@ -16,27 +16,11 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 import { useStateSummaries, type StateSummary } from '@/hooks/useStateSummaries';
 import type { ModelConfig } from '@/config/model-configs';
 import AnalysisView from '@/components/AnalysisView';
+import { STATE_NAME_TO_CODE } from '@/data/states';
 
 interface StateChoroplethExplorerProps {
   config: ModelConfig;
 }
-
-// Complete US state name to code mapping
-const STATE_NAME_TO_CODE: Record<string, string> = {
-  'Alabama': 'AL', 'Alaska': 'AK', 'Arizona': 'AZ', 'Arkansas': 'AR',
-  'California': 'CA', 'Colorado': 'CO', 'Connecticut': 'CT', 'Delaware': 'DE',
-  'Florida': 'FL', 'Georgia': 'GA', 'Hawaii': 'HI', 'Idaho': 'ID',
-  'Illinois': 'IL', 'Indiana': 'IN', 'Iowa': 'IA', 'Kansas': 'KS',
-  'Kentucky': 'KY', 'Louisiana': 'LA', 'Maine': 'ME', 'Maryland': 'MD',
-  'Massachusetts': 'MA', 'Michigan': 'MI', 'Minnesota': 'MN', 'Mississippi': 'MS',
-  'Missouri': 'MO', 'Montana': 'MT', 'Nebraska': 'NE', 'Nevada': 'NV',
-  'New Hampshire': 'NH', 'New Jersey': 'NJ', 'New Mexico': 'NM', 'New York': 'NY',
-  'North Carolina': 'NC', 'North Dakota': 'ND', 'Ohio': 'OH', 'Oklahoma': 'OK',
-  'Oregon': 'OR', 'Pennsylvania': 'PA', 'Rhode Island': 'RI', 'South Carolina': 'SC',
-  'South Dakota': 'SD', 'Tennessee': 'TN', 'Texas': 'TX', 'Utah': 'UT',
-  'Vermont': 'VT', 'Virginia': 'VA', 'Washington': 'WA', 'West Virginia': 'WV',
-  'Wisconsin': 'WI', 'Wyoming': 'WY', 'District of Columbia': 'DC',
-};
 
 // Color scale for cessation impact (% increase in new HIV cases)
 // Uses a warm sequential palette - lighter for lower impact, darker for higher
@@ -58,6 +42,7 @@ export default function StateChoroplethExplorer({ config }: StateChoroplethExplo
   const { summaries, loading, error, getStateByName } = useStateSummaries(config.dataUrl);
 
   const [statesGeoJson, setStatesGeoJson] = useState<GeoJSON.FeatureCollection | null>(null);
+  const [geoJsonError, setGeoJsonError] = useState<string | null>(null);
   const [hoveredStateName, setHoveredStateName] = useState<string | null>(null);
   const [popupInfo, setPopupInfo] = useState<{
     longitude: number;
@@ -89,9 +74,18 @@ export default function StateChoroplethExplorer({ config }: StateChoroplethExplo
   // Load GeoJSON on mount
   useEffect(() => {
     fetch(US_STATES_GEOJSON)
-      .then(res => res.json())
-      .then(data => setStatesGeoJson(data))
-      .catch(err => console.error('Failed to load states GeoJSON:', err));
+      .then(res => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
+      .then(data => {
+        setStatesGeoJson(data);
+        setGeoJsonError(null);
+      })
+      .catch(err => {
+        console.error('Failed to load states GeoJSON:', err);
+        setGeoJsonError('Failed to load map boundaries. Please refresh the page.');
+      });
   }, []);
 
   // Handle mouse move on states layer
@@ -190,7 +184,7 @@ export default function StateChoroplethExplorer({ config }: StateChoroplethExplo
     );
   }
 
-  // Error state
+  // Error state - data fetch failed
   if (error) {
     return (
       <div className="flex items-center justify-center h-screen bg-slate-50">
@@ -198,6 +192,25 @@ export default function StateChoroplethExplorer({ config }: StateChoroplethExplo
           <div className="text-red-500 text-5xl mb-4">⚠</div>
           <h2 className="text-xl font-semibold text-slate-800 mb-2">Failed to Load Data</h2>
           <p className="text-slate-600">{error}</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state - GeoJSON failed
+  if (geoJsonError) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-slate-50">
+        <div className="text-center max-w-md">
+          <div className="text-amber-500 text-5xl mb-4">⚠</div>
+          <h2 className="text-xl font-semibold text-slate-800 mb-2">Map Failed to Load</h2>
+          <p className="text-slate-600 mb-4">{geoJsonError}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Refresh Page
+          </button>
         </div>
       </div>
     );

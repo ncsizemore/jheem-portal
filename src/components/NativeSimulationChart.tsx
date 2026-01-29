@@ -32,6 +32,7 @@ interface NativeSimulationChartProps {
   displayAsPercent: boolean;
   options: ChartDisplayOptions;
   height?: number;
+  interventionStartYear?: number;
 }
 
 interface TooltipPayload {
@@ -117,6 +118,7 @@ const NativeSimulationChart = memo(({
   displayAsPercent,
   options,
   height = 400,
+  interventionStartYear = 2025,
 }: NativeSimulationChartProps) => {
   const { showConfidenceInterval, showBaseline, showObservations } = options;
   const { data, observations, facetLabel, isIndividualSimulation, individualSimulations } = panel;
@@ -279,9 +281,9 @@ const NativeSimulationChart = memo(({
             />
           )}
 
-          {/* Reference line at 2025 (typical intervention start) */}
+          {/* Reference line at intervention start year */}
           <ReferenceLine
-            x={2025}
+            x={interventionStartYear}
             stroke="#f59e0b"
             strokeDasharray="5 5"
             strokeWidth={1}

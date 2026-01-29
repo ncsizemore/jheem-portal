@@ -43,6 +43,9 @@ export interface ModelConfig {
     center: [number, number];  // [longitude, latitude]
     zoom: number;
   };
+
+  // Timeline settings
+  interventionStartYear: number;  // Year when intervention/cessation begins
 }
 
 // =============================================================================
@@ -90,6 +93,8 @@ export const ryanWhiteConfig: ModelConfig = {
     center: [-96.5, 38.5],
     zoom: 4.1,
   },
+
+  interventionStartYear: 2025,
 };
 
 // =============================================================================
@@ -133,6 +138,8 @@ export const cdcTestingConfig: ModelConfig = {
     center: [-96.5, 38.5],
     zoom: 4.1,
   },
+
+  interventionStartYear: 2025,  // Placeholder - update when CDC Testing is configured
 };
 
 // =============================================================================
@@ -180,6 +187,8 @@ export const ajphStateLevelConfig: ModelConfig = {
     center: [-96.5, 38.5],
     zoom: 4.1,
   },
+
+  interventionStartYear: 2025,
 };
 
 // =============================================================================
@@ -232,6 +241,8 @@ export const croiStateLevelConfig: ModelConfig = {
     center: [-96.5, 38.5],
     zoom: 4.1,
   },
+
+  interventionStartYear: 2026,  // CROI analysis starts intervention in 2026
 };
 
 // Legacy alias for backwards compatibility

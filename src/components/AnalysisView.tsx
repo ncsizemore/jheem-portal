@@ -802,6 +802,7 @@ export default function AnalysisView({
               displayAsPercent={plotData?.metadata.outcome_metadata?.display_as_percent || false}
               options={displayOptions}
               height={500}
+              interventionStartYear={config.interventionStartYear}
             />
           </div>
         ) : (
@@ -850,6 +851,7 @@ export default function AnalysisView({
                     displayAsPercent={plotData?.metadata.outcome_metadata?.display_as_percent || false}
                     options={displayOptions}
                     height={300}
+                    interventionStartYear={config.interventionStartYear}
                   />
                 </div>
               ))}
