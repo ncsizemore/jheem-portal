@@ -8,9 +8,9 @@
  * Data fetched from CloudFront based on config.dataUrl.
  */
 
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import Map, { Source, Layer, Popup } from 'react-map-gl/mapbox';
+import Map, { Source, Layer } from 'react-map-gl/mapbox';
 import type { MapMouseEvent } from 'react-map-gl/mapbox';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { useStateSummaries, type StateSummary } from '@/hooks/useStateSummaries';
@@ -44,11 +44,12 @@ export default function StateChoroplethExplorer({ config }: StateChoroplethExplo
   const [statesGeoJson, setStatesGeoJson] = useState<GeoJSON.FeatureCollection | null>(null);
   const [geoJsonError, setGeoJsonError] = useState<string | null>(null);
   const [hoveredStateName, setHoveredStateName] = useState<string | null>(null);
-  const [popupInfo, setPopupInfo] = useState<{
-    longitude: number;
-    latitude: number;
-    state: StateSummary;
-  } | null>(null);
+  const [hoveredStateData, setHoveredStateData] = useState<StateSummary | null>(null);
+  const [hoverPosition, setHoverPosition] = useState<{ x: number; y: number } | null>(null);
+
+  // UI state
+  const [instructionsCollapsed, setInstructionsCollapsed] = useState(false);
+  const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const [viewState, setViewState] = useState({
     longitude: -98.5,
@@ -88,32 +89,49 @@ export default function StateChoroplethExplorer({ config }: StateChoroplethExplo
       });
   }, []);
 
+  // Hover timeout management (allows moving from map to hover card)
+  const startHideTimeout = useCallback(() => {
+    hoverTimeoutRef.current = setTimeout(() => {
+      setHoveredStateName(null);
+      setHoveredStateData(null);
+      setHoverPosition(null);
+    }, 200);
+  }, []);
+
+  const cancelHideTimeout = useCallback(() => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+      hoverTimeoutRef.current = null;
+    }
+  }, []);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (hoverTimeoutRef.current) {
+        clearTimeout(hoverTimeoutRef.current);
+      }
+    };
+  }, []);
+
   // Handle mouse move on states layer
   const onMouseMove = useCallback((event: MapMouseEvent) => {
+    cancelHideTimeout();
     const feature = event.features?.[0];
     if (feature?.properties) {
       const stateName = feature.properties.NAME;
       const stateData = getStateByName(stateName);
 
-      if (stateData) {
-        setHoveredStateName(stateName);
-        setPopupInfo({
-          longitude: event.lngLat.lng,
-          latitude: event.lngLat.lat,
-          state: stateData
-        });
-      } else {
-        // State not in our dataset - still show hover but no popup
-        setHoveredStateName(stateName);
-        setPopupInfo(null);
-      }
+      setHoveredStateName(stateName);
+      setHoveredStateData(stateData);
+      // Track screen position for custom hover card
+      setHoverPosition({ x: event.point.x, y: event.point.y });
     }
-  }, [getStateByName]);
+  }, [getStateByName, cancelHideTimeout]);
 
   const onMouseLeave = useCallback(() => {
-    setHoveredStateName(null);
-    setPopupInfo(null);
-  }, []);
+    startHideTimeout();
+  }, [startHideTimeout]);
 
   const onStateClick = useCallback((event: MapMouseEvent) => {
     const feature = event.features?.[0];
@@ -279,40 +297,81 @@ export default function StateChoroplethExplorer({ config }: StateChoroplethExplo
           </Source>
         )}
 
-        {/* Hover popup */}
-        {popupInfo && (
-          <Popup
-            longitude={popupInfo.longitude}
-            latitude={popupInfo.latitude}
-            anchor="bottom"
-            closeButton={false}
-            closeOnClick={false}
-            offset={15}
+      </Map>
+
+      {/* Custom hover card */}
+      {hoveredStateData && hoverPosition && (() => {
+        const state = hoveredStateData;
+        const impactColor = getImpactColor(state.impact.cessationIncreasePercent);
+
+        // Smart positioning to avoid edge cutoff
+        const cardWidth = 260;
+        const cardHeight = 200;
+        const padding = 16;
+        const mapContainer = document.querySelector('.mapboxgl-map');
+        const containerWidth = mapContainer?.clientWidth || 1200;
+
+        // Horizontal positioning
+        const idealLeft = hoverPosition.x - cardWidth / 2;
+        const clampedLeft = Math.max(
+          padding,
+          Math.min(idealLeft, containerWidth - cardWidth - padding)
+        );
+
+        // Arrow position
+        const arrowLeft = hoverPosition.x - clampedLeft;
+        const arrowLeftClamped = Math.max(20, Math.min(arrowLeft, cardWidth - 20));
+
+        // Vertical: flip below if too close to top
+        const showBelow = hoverPosition.y < cardHeight + padding + 50;
+        const topPos = showBelow ? hoverPosition.y + 20 : hoverPosition.y - 12;
+
+        const handleCardClick = () => {
+          const stateCode = STATE_NAME_TO_CODE[state.name];
+          if (stateCode) {
+            setSelectedStateCode(stateCode);
+            setMode('analysis');
+          }
+        };
+
+        return (
+          <motion.div
+            initial={{ opacity: 0, y: showBelow ? -10 : 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="absolute z-50 pointer-events-auto"
+            style={{
+              left: clampedLeft,
+              top: topPos,
+              transform: showBelow ? 'translateY(0)' : 'translateY(-100%)',
+            }}
+            onMouseEnter={cancelHideTimeout}
+            onMouseLeave={startHideTimeout}
+            onClick={handleCardClick}
           >
-            <div className="p-3 min-w-[240px]">
-              <h3 className="font-semibold text-slate-800 text-base mb-2">
-                {popupInfo.state.name}
+            <div className="bg-white/98 backdrop-blur-md border border-slate-200 rounded-xl p-3 min-w-[240px] hover:bg-slate-50 transition-colors shadow-lg cursor-pointer">
+              {/* Header */}
+              <h3 className="font-semibold text-slate-800 text-sm mb-2">
+                {state.name}
               </h3>
 
               {/* Current Status */}
               <div className="py-2 border-y border-slate-100">
-                <div className="text-[10px] uppercase tracking-wide text-slate-400 mb-1.5">
-                  Model Estimate {popupInfo.state.metrics.suppressionRate.year}
+                <div className="flex items-baseline justify-between mb-1.5">
+                  <span className="text-[10px] uppercase tracking-wide text-slate-400">
+                    Model Estimate {state.metrics.suppressionRate.year}
+                  </span>
                 </div>
-                <div className="space-y-1">
+                <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
                     <span className="text-xs text-slate-500">Viral suppression</span>
                     <span className="text-sm font-semibold text-slate-800">
-                      {popupInfo.state.metrics.suppressionRate.value.toFixed(1)}%
-                      <span className="text-[10px] text-slate-400 font-normal ml-1">
-                        ({popupInfo.state.metrics.suppressionRate.lower.toFixed(1)}–{popupInfo.state.metrics.suppressionRate.upper.toFixed(1)})
-                      </span>
+                      {state.metrics.suppressionRate.value.toFixed(0)}%
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-xs text-slate-500">People with HIV</span>
                     <span className="text-sm font-semibold text-slate-800">
-                      {popupInfo.state.metrics.diagnosedPrevalence.value.toLocaleString()}
+                      {state.metrics.diagnosedPrevalence.value.toLocaleString()}
                     </span>
                   </div>
                 </div>
@@ -320,109 +379,133 @@ export default function StateChoroplethExplorer({ config }: StateChoroplethExplo
 
               {/* Impact */}
               <div className="pt-2">
-                <div className="flex items-baseline justify-between mb-1">
+                <div className="flex items-baseline justify-between mb-1.5">
                   <span className="text-[10px] uppercase tracking-wide text-slate-400">
                     If Funding Stops
                   </span>
-                  <span className="text-[10px] text-slate-400">by {popupInfo.state.impact.targetYear}</span>
+                  <span className="text-[10px] text-slate-400">by {state.impact.targetYear}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-slate-500">New HIV cases</span>
-                  <span
-                    className="text-sm font-bold"
-                    style={{ color: getImpactColor(popupInfo.state.impact.cessationIncreasePercent) }}
-                  >
-                    +{popupInfo.state.impact.cessationIncreasePercent}%
-                  </span>
-                </div>
-                <div className="flex items-center justify-between mt-0.5">
-                  <span className="text-xs text-slate-400">Additional cases</span>
-                  <span className="text-xs text-slate-600">
-                    +{popupInfo.state.impact.cessationIncreaseAbsolute.toLocaleString()}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between mt-0.5">
-                  <span className="text-xs text-slate-400">Baseline → Cessation</span>
-                  <span className="text-xs text-slate-600">
-                    {popupInfo.state.metrics.incidenceBaseline.value.toLocaleString()} → {popupInfo.state.metrics.incidenceCessation.value.toLocaleString()}
-                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <div
+                      className="w-2 h-2 rounded-full"
+                      style={{ backgroundColor: impactColor }}
+                    />
+                    <span className="text-sm font-semibold" style={{ color: impactColor }}>
+                      +{state.impact.cessationIncreasePercent}%
+                    </span>
+                  </div>
                 </div>
               </div>
 
               {/* Click hint */}
-              <div className="mt-2 pt-2 border-t border-slate-100 text-center">
-                <span className="text-xs text-slate-400">Click to explore →</span>
+              <div className="mt-2 pt-2 border-t border-slate-100 flex items-center justify-center gap-1 text-slate-400 text-xs">
+                <span>Click to explore</span>
+                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
               </div>
             </div>
-          </Popup>
-        )}
-      </Map>
+
+            {/* Arrow pointing to cursor location */}
+            {!showBelow ? (
+              <div
+                className="absolute -bottom-1.5 w-3 h-3 bg-white border-r border-b border-slate-200 rotate-45"
+                style={{ left: arrowLeftClamped, transform: 'translateX(-50%)' }}
+              />
+            ) : (
+              <div
+                className="absolute -top-1.5 w-3 h-3 bg-white border-l border-t border-slate-200 rotate-45"
+                style={{ left: arrowLeftClamped, transform: 'translateX(-50%)' }}
+              />
+            )}
+          </motion.div>
+        );
+      })()}
 
       {/* Info panel */}
-      <div className="absolute top-4 left-4 w-72">
-        <div className="bg-white/95 backdrop-blur-md border border-slate-200 rounded-xl shadow-lg p-4">
-          <h1 className="text-slate-800 font-semibold text-sm mb-3">
-            Ryan White State-Level Analysis
-          </h1>
+      <div className="absolute top-4 left-4 w-80">
+        <div className="bg-white/95 backdrop-blur-md border border-slate-200 rounded-xl overflow-hidden shadow-lg">
+          {/* Header - always visible, clickable to collapse */}
+          <button
+            onClick={() => setInstructionsCollapsed(prev => !prev)}
+            className="w-full px-4 py-3 flex items-center justify-between hover:bg-slate-50 transition-colors"
+          >
+            <h1 className="text-slate-800 font-semibold text-sm">
+              {config.name}
+            </h1>
+            <motion.div
+              animate={{ rotate: instructionsCollapsed ? 0 : 180 }}
+              transition={{ duration: 0.2 }}
+            >
+              <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+              </svg>
+            </motion.div>
+          </button>
 
-          <p className="text-slate-600 text-xs mb-4">
-            Projected impact of funding cessation on new HIV cases by 2030.
-            Hover over a state for details, click to explore.
-          </p>
+          {/* Collapsible instructions */}
+          <motion.div
+            initial={false}
+            animate={{
+              height: instructionsCollapsed ? 0 : 'auto',
+              opacity: instructionsCollapsed ? 0 : 1
+            }}
+            transition={{ duration: 0.25, ease: 'easeInOut' }}
+            className="overflow-hidden"
+          >
+            <div className="px-4 pb-4 border-t border-slate-100">
+              <div className="mt-3 space-y-2.5">
+                <div className="flex items-start gap-2.5">
+                  <div className="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="text-blue-600 text-xs font-medium">1</span>
+                  </div>
+                  <p className="text-slate-600 text-sm">
+                    <span className="text-slate-800 font-medium">Hover</span> a state to preview key metrics and projected impact
+                  </p>
+                </div>
+                <div className="flex items-start gap-2.5">
+                  <div className="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="text-blue-600 text-xs font-medium">2</span>
+                  </div>
+                  <p className="text-slate-600 text-sm">
+                    <span className="text-slate-800 font-medium">Click</span> to open full analysis with interactive charts
+                  </p>
+                </div>
+                <div className="flex items-start gap-2.5">
+                  <div className="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="text-blue-600 text-xs font-medium">3</span>
+                  </div>
+                  <p className="text-slate-600 text-sm">
+                    <span className="text-slate-800 font-medium">Compare</span> scenarios and explore breakdowns by demographics
+                  </p>
+                </div>
+              </div>
+            </div>
+          </motion.div>
 
-          {/* Legend - sequential orange scale */}
-          <div className="space-y-1.5">
-            <div className="text-[10px] uppercase tracking-wide text-slate-400 mb-2">
-              Incidence Increase
+          {/* Legend - always visible, condensed */}
+          <div className="px-4 py-2.5 border-t border-slate-100">
+            <div className="flex items-center justify-between text-xs text-slate-500">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] uppercase tracking-wide text-slate-400">Impact:</span>
+                <div className="flex items-center gap-1">
+                  <div className="w-3 h-3 rounded" style={{ backgroundColor: '#fed7aa' }} />
+                  <div className="w-3 h-3 rounded" style={{ backgroundColor: '#fb923c' }} />
+                  <div className="w-3 h-3 rounded" style={{ backgroundColor: '#ea580c' }} />
+                  <div className="w-3 h-3 rounded" style={{ backgroundColor: '#7c2d12' }} />
+                </div>
+                <span className="text-slate-400">Low → High</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className="w-3 h-3 rounded bg-slate-200" />
+                <span>No data</span>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded" style={{ backgroundColor: '#fed7aa' }} />
-              <span className="text-xs text-slate-600">&lt;20%</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded" style={{ backgroundColor: '#fdba74' }} />
-              <span className="text-xs text-slate-600">20–30%</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded" style={{ backgroundColor: '#fb923c' }} />
-              <span className="text-xs text-slate-600">30–40%</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded" style={{ backgroundColor: '#f97316' }} />
-              <span className="text-xs text-slate-600">40–50%</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded" style={{ backgroundColor: '#ea580c' }} />
-              <span className="text-xs text-slate-600">50–60%</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded" style={{ backgroundColor: '#c2410c' }} />
-              <span className="text-xs text-slate-600">60–75%</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded" style={{ backgroundColor: '#9a3412' }} />
-              <span className="text-xs text-slate-600">75–100%</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded" style={{ backgroundColor: '#7c2d12' }} />
-              <span className="text-xs text-slate-600">&gt;100%</span>
-            </div>
-          </div>
-
-          {/* States with data indicator */}
-          <div className="mt-4 pt-3 border-t border-slate-100">
-            <div className="flex items-center gap-2 text-xs text-slate-500">
-              <div className="w-3 h-3 rounded bg-slate-200" />
-              <span>States without data</span>
-            </div>
-            <p className="text-[10px] text-slate-400 mt-2">
+            <p className="text-[10px] text-slate-400 mt-1.5">
               {stateCount} states with model projections
             </p>
-            {summaries && (
-              <p className="text-[10px] text-slate-400">
-                Generated: {new Date(summaries.generated).toLocaleDateString()}
-              </p>
-            )}
           </div>
         </div>
       </div>
