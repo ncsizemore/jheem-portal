@@ -437,10 +437,17 @@ Use this section to track progress across sessions.
 ### Session 1 (2026-01-30)
 - [x] Architecture review completed
 - [x] Plan document created
-- [ ] Begin Phase 1.1 (config registry)
+- [x] Phase 1.1: Created models.json config registry (jheem-backend)
+- [x] Phase 1.4: Removed dead portal routes (/test, /explore, /fast-test)
+- [x] Phase 1.5: Refactored AnalysisView (874 → 537 lines)
+  - Extracted useAnalysisState hook
+  - Extracted LocationSwitcher component
+  - Extracted DisplayOptionsPopover component
+  - Extracted export utilities (CSV, PNG, filename)
 
 ### Session 2
-- [ ] ...
+- [ ] Phase 1.2: Tag container versions with semver
+- [ ] Phase 1.3: Create reusable workflow template
 
 ### Session 3
 - [ ] ...
