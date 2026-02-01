@@ -2,7 +2,7 @@
 
 **Author:** Independent Architecture Review
 **Date:** January 30, 2026
-**Status:** In Progress
+**Status:** Phase 1 Complete
 **Scope:** jheem-portal, jheem-backend, container repositories
 
 ---
@@ -445,12 +445,24 @@ Use this section to track progress across sessions.
   - Extracted DisplayOptionsPopover component
   - Extracted export utilities (CSV, PNG, filename)
 
-### Session 2
-- [ ] Phase 1.2: Tag container versions with semver
-- [ ] Phase 1.3: Create reusable workflow template
+### Session 2 (2026-01-31)
+- [x] Phase 1.2: Tagged container versions with semver (v1.0.0)
+  - Fixed Docker metadata action issue with empty branch names on tag pushes
+  - Both containers now have v1.0.0 tags on ghcr.io
+- [x] Phase 1.3: Created reusable workflow template
+  - `_generate-data-template.yml`: Reusable template (~470 lines)
+  - `generate-msa.yml`: MSA wrapper (~40 lines)
+  - `generate-ajph.yml`: AJPH wrapper (~40 lines)
+  - `generate-croi.yml`: CROI wrapper (~40 lines)
+  - Reduced workflow code from ~1,270 lines to ~590 lines (54% reduction)
+
+### Phase 1 Complete ✅
+All foundation work is done. Ready for Phase 2: CDC Testing Integration.
 
 ### Session 3
-- [ ] ...
+- [ ] Phase 2.1: Add CDC testing config to models.json
+- [ ] Phase 2.2: Create CDC testing workflow wrapper
+- [ ] Phase 2.3: Add CDC testing route to portal
 
 ---
 
@@ -475,8 +487,8 @@ Use this section to track progress across sessions.
 ### Containers
 | Repository | Image | Current Tag |
 |------------|-------|-------------|
-| jheem-container-minimal | `ghcr.io/ncsizemore/jheem-ryan-white-model` | `:latest` |
-| jheem-ryan-white-croi-container | `ghcr.io/ncsizemore/jheem-ryan-white-croi` | `:latest` |
+| jheem-container-minimal | `ghcr.io/ncsizemore/jheem-ryan-white-model` | `v1.0.0` |
+| jheem-ryan-white-croi-container | `ghcr.io/ncsizemore/jheem-ryan-white-croi` | `v1.0.0` |
 
 ---
 
