@@ -106,6 +106,7 @@ interface StateSummary {
     cessationIncreasePercent: number;
     cessationIncreaseAbsolute: number;
     targetYear: number;
+    startYear?: number;
     headline: string;
   };
 }
@@ -119,9 +120,14 @@ interface StateSummaries {
 
 // Configuration
 const CURRENT_YEAR = 2024;  // Year for "current" status metrics
-const PROJECTION_YEAR = 2030;  // Year for impact projections
+const DEFAULT_START_YEAR = 2026;  // Default intervention start year
+const DEFAULT_END_YEAR = 2031;    // Default projection end year (5-year window)
 const DATA_DIR = path.join(__dirname, '../public/data');
 const OUTPUT_FILE = path.join(DATA_DIR, 'state-summaries.json');
+
+// Will be set from CLI args
+let INTERVENTION_START_YEAR = DEFAULT_START_YEAR;
+let INTERVENTION_END_YEAR = DEFAULT_END_YEAR;
 
 function extractMetric(
   stateData: StateDataFile,
@@ -173,6 +179,66 @@ function extractCessationMetric(
   return null;
 }
 
+/**
+ * Extract cumulative (summed) metric over a year range
+ * Used for calculating relative increase in infections over the intervention period
+ */
+function extractCumulativeMetric(
+  stateData: StateDataFile,
+  outcome: string,
+  startYear: number,
+  endYear: number,
+  simset: 'Baseline' | string
+): { value: number; lower: number; upper: number } | null {
+  // Try to find the data - check all scenarios since baseline is shared
+  for (const scenario of stateData.metadata.scenarios) {
+    const outcomeData = stateData.data[scenario]?.[outcome]?.['mean.and.interval']?.none?.sim;
+    if (!outcomeData) continue;
+
+    // Filter to the year range and simset
+    const points = outcomeData.filter(
+      (d) => d.year >= startYear && d.year <= endYear && d.simset === simset
+    );
+
+    if (points.length > 0) {
+      // Sum values across years
+      const value = points.reduce((sum, p) => sum + p.value, 0);
+      const lower = points.reduce((sum, p) => sum + (p['value.lower'] ?? p.value), 0);
+      const upper = points.reduce((sum, p) => sum + (p['value.upper'] ?? p.value), 0);
+
+      return { value, lower, upper };
+    }
+  }
+  return null;
+}
+
+/**
+ * Extract cumulative cessation metric over a year range
+ */
+function extractCumulativeCessationMetric(
+  stateData: StateDataFile,
+  outcome: string,
+  startYear: number,
+  endYear: number
+): { value: number; lower: number; upper: number } | null {
+  const outcomeData = stateData.data['cessation']?.[outcome]?.['mean.and.interval']?.none?.sim;
+  if (!outcomeData) return null;
+
+  // Filter to year range and non-baseline (intervention) values
+  const points = outcomeData.filter(
+    (d) => d.year >= startYear && d.year <= endYear && d.simset !== 'Baseline'
+  );
+
+  if (points.length > 0) {
+    const value = points.reduce((sum, p) => sum + p.value, 0);
+    const lower = points.reduce((sum, p) => sum + (p['value.lower'] ?? p.value), 0);
+    const upper = points.reduce((sum, p) => sum + (p['value.upper'] ?? p.value), 0);
+
+    return { value, lower, upper };
+  }
+  return null;
+}
+
 function processStateFile(filePath: string): StateSummary | null {
   const stateData: StateDataFile = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
   const stateCode = stateData.metadata.city; // Field is named 'city' but contains state code
@@ -192,24 +258,29 @@ function processStateFile(filePath: string): StateSummary | null {
   const prevalence = extractMetric(stateData, 'diagnosed.prevalence', CURRENT_YEAR);
   const suppression = extractMetric(stateData, 'suppression', CURRENT_YEAR);
 
-  // Extract projection metrics
-  const incidenceBaseline = extractMetric(stateData, 'incidence', PROJECTION_YEAR, 'Baseline');
-  const incidenceCessation = extractCessationMetric(stateData, 'incidence', PROJECTION_YEAR);
+  // Extract CUMULATIVE projection metrics over the intervention period
+  // This matches the methodology used in AJPH/CROI papers
+  const cumulativeBaseline = extractCumulativeMetric(
+    stateData, 'incidence', INTERVENTION_START_YEAR, INTERVENTION_END_YEAR, 'Baseline'
+  );
+  const cumulativeCessation = extractCumulativeCessationMetric(
+    stateData, 'incidence', INTERVENTION_START_YEAR, INTERVENTION_END_YEAR
+  );
 
-  if (!prevalence || !suppression || !incidenceBaseline || !incidenceCessation) {
+  if (!prevalence || !suppression || !cumulativeBaseline || !cumulativeCessation) {
     console.warn(`Missing data for ${stateCode}:`, {
       prevalence: !!prevalence,
       suppression: !!suppression,
-      incidenceBaseline: !!incidenceBaseline,
-      incidenceCessation: !!incidenceCessation,
+      cumulativeBaseline: !!cumulativeBaseline,
+      cumulativeCessation: !!cumulativeCessation,
     });
     return null;
   }
 
-  // Calculate impact
-  const cessationIncrease = incidenceCessation.value - incidenceBaseline.value;
+  // Calculate impact from CUMULATIVE values (matches paper methodology)
+  const cessationIncrease = cumulativeCessation.value - cumulativeBaseline.value;
   const cessationIncreasePercent = Math.round(
-    (cessationIncrease / incidenceBaseline.value) * 100
+    (cessationIncrease / cumulativeBaseline.value) * 100
   );
 
   return {
@@ -234,25 +305,26 @@ function processStateFile(filePath: string): StateSummary | null {
         source: 'model',
       },
       incidenceBaseline: {
-        value: Math.round(incidenceBaseline.value),
-        lower: Math.round(incidenceBaseline.lower),
-        upper: Math.round(incidenceBaseline.upper),
-        year: PROJECTION_YEAR,
-        label: 'Projected new HIV cases (baseline)',
+        value: Math.round(cumulativeBaseline.value),
+        lower: Math.round(cumulativeBaseline.lower),
+        upper: Math.round(cumulativeBaseline.upper),
+        year: INTERVENTION_END_YEAR,
+        label: `Cumulative new HIV infections (baseline, ${INTERVENTION_START_YEAR}-${INTERVENTION_END_YEAR})`,
       },
       incidenceCessation: {
-        value: Math.round(incidenceCessation.value),
-        lower: Math.round(incidenceCessation.lower),
-        upper: Math.round(incidenceCessation.upper),
-        year: PROJECTION_YEAR,
-        label: 'Projected new HIV cases (if funding stops)',
+        value: Math.round(cumulativeCessation.value),
+        lower: Math.round(cumulativeCessation.lower),
+        upper: Math.round(cumulativeCessation.upper),
+        year: INTERVENTION_END_YEAR,
+        label: `Cumulative new HIV infections (if funding stops, ${INTERVENTION_START_YEAR}-${INTERVENTION_END_YEAR})`,
       },
     },
     impact: {
       cessationIncreasePercent,
       cessationIncreaseAbsolute: Math.round(cessationIncrease),
-      targetYear: PROJECTION_YEAR,
-      headline: `Funding loss could increase new HIV cases ${cessationIncreasePercent}% by ${PROJECTION_YEAR}`,
+      targetYear: INTERVENTION_END_YEAR,
+      startYear: INTERVENTION_START_YEAR,
+      headline: `Relative increase in new HIV infections if funding stops, ${INTERVENTION_START_YEAR}-${INTERVENTION_END_YEAR}`,
     },
   };
 }
@@ -313,14 +385,37 @@ function runCombineMode(summaryFiles: string[]) {
 
 function printUsage() {
   console.error('Usage:');
-  console.error('  npx tsx scripts/generate-state-summaries.ts --single STATE FILE');
+  console.error('  npx tsx scripts/generate-state-summaries.ts --single STATE FILE [--start-year YEAR] [--end-year YEAR]');
   console.error('  npx tsx scripts/generate-state-summaries.ts --combine FILE1 FILE2 ...');
   console.error('');
+  console.error('Options:');
+  console.error('  --start-year YEAR  Intervention start year (default: 2026)');
+  console.error('  --end-year YEAR    Projection end year (default: 2031)');
+  console.error('');
   console.error('Examples:');
-  console.error('  npx tsx scripts/generate-state-summaries.ts --single AL public/data/AL.json');
+  console.error('  # CROI (2026-2031)');
+  console.error('  npx tsx scripts/generate-state-summaries.ts --single AL public/data/AL.json --start-year 2026 --end-year 2031');
+  console.error('');
+  console.error('  # AJPH (2025-2030)');
+  console.error('  npx tsx scripts/generate-state-summaries.ts --single AL public/data/AL.json --start-year 2025 --end-year 2030');
+  console.error('');
   console.error('  npx tsx scripts/generate-state-summaries.ts --combine AL-summary.json CA-summary.json');
   console.error('');
   console.error('See script header for workflow usage pattern.');
+}
+
+function parseYearArgs(args: string[]): void {
+  const startYearIdx = args.indexOf('--start-year');
+  if (startYearIdx !== -1 && args[startYearIdx + 1]) {
+    INTERVENTION_START_YEAR = parseInt(args[startYearIdx + 1], 10);
+  }
+
+  const endYearIdx = args.indexOf('--end-year');
+  if (endYearIdx !== -1 && args[endYearIdx + 1]) {
+    INTERVENTION_END_YEAR = parseInt(args[endYearIdx + 1], 10);
+  }
+
+  console.log(`Using intervention period: ${INTERVENTION_START_YEAR}-${INTERVENTION_END_YEAR}`);
 }
 
 function main() {
@@ -332,10 +427,13 @@ function main() {
     const inputFile = args[2];
 
     if (!stateCode || !inputFile) {
-      console.error('Usage: npx tsx scripts/generate-state-summaries.ts --single STATE INPUT_FILE');
-      console.error('Example: npx tsx scripts/generate-state-summaries.ts --single AL public/data/AL.json');
+      console.error('Usage: npx tsx scripts/generate-state-summaries.ts --single STATE INPUT_FILE [--start-year YEAR] [--end-year YEAR]');
+      console.error('Example: npx tsx scripts/generate-state-summaries.ts --single AL public/data/AL.json --start-year 2026 --end-year 2031');
       process.exit(1);
     }
+
+    // Parse optional year arguments
+    parseYearArgs(args);
 
     runSingleMode(stateCode, inputFile);
   } else if (args[0] === '--combine') {

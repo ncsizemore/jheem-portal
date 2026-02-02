@@ -49,6 +49,7 @@ export interface StateSummary {
     cessationIncreasePercent: number;
     cessationIncreaseAbsolute: number;
     targetYear: number;
+    startYear?: number;
     headline: string;
   };
 }

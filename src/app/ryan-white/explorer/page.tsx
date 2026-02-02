@@ -35,6 +35,7 @@ interface CitySummary {
     cessationIncreasePercent: number;
     cessationIncreaseAbsolute: number;
     targetYear: number;
+    startYear?: number;
     headline: string;
   };
 }
