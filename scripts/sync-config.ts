@@ -279,6 +279,12 @@ async function main() {
     const config = await fetchConfig();
     const output = generateFile(config);
 
+    // Ensure directory exists
+    const dir = path.dirname(OUTPUT_PATH);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+
     fs.writeFileSync(OUTPUT_PATH, output);
     console.log(`\n✅ Generated ${OUTPUT_PATH}`);
 
