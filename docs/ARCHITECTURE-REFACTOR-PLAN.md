@@ -459,7 +459,38 @@ Use this section to track progress across sessions.
 ### Phase 1 Complete ✅
 All foundation work is done. Ready for Phase 2: CDC Testing Integration.
 
-### Session 3
+### Session 3 (2026-02-03)
+Focus: Production hardening and workflow validation
+
+- [x] Validated CROI workflow with new template (30 states, full run)
+- [x] Fixed cumulative metrics calculation in state summaries
+  - Script now accepts `--start-year` and `--end-year` arguments
+  - Workflow passes intervention years from models.json
+- [x] Fixed CloudFront cache invalidation path
+  - Was using S3 path (`/portal/...`), now uses CloudFront path (`/...`)
+  - Origin path stripping added to template
+- [x] Fixed CORS caching issue
+  - Root cause: Cache policy didn't include `Origin` header in cache key
+  - Fix: Switched to `Managed-Elemental-MediaPackage` cache policy
+  - CloudFront free tier doesn't allow custom cache policies
+- [x] Archived old workflows to `_archive/` folder
+  - `generate-native-data.yml`
+  - `generate-native-data-ryan-white-state.yml`
+  - `generate-native-data-ryan-white-state-croi.yml`
+- [ ] AJPH workflow validation (in progress)
+
+**Infrastructure lessons learned:**
+- CloudFront invalidation paths don't include origin path prefix
+- CORS + caching requires `Origin` header in cache key
+- Free tier limits policy customization
+
+### Remaining before Phase 2
+- [ ] Validate AJPH workflow completes successfully
+- [ ] Config sync: Portal still has separate `model-configs.ts` (Phase 3.4)
+  - Currently manual sync with models.json
+  - Future: Generate from models.json at build time
+
+### Session 4 (planned)
 - [ ] Phase 2.1: Add CDC testing config to models.json
 - [ ] Phase 2.2: Create CDC testing workflow wrapper
 - [ ] Phase 2.3: Add CDC testing route to portal
