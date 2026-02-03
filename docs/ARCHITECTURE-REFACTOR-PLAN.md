@@ -477,18 +477,25 @@ Focus: Production hardening and workflow validation
   - `generate-native-data.yml`
   - `generate-native-data-ryan-white-state.yml`
   - `generate-native-data-ryan-white-state-croi.yml`
-- [ ] AJPH workflow validation (in progress)
+  - `generate-plots.yml`
+- [x] AJPH workflow validation completed successfully
+- [x] Added CloudFront invalidation permission to IAM policy
+- [x] **Config sync implemented** (Phase 3.4 - moved up)
+  - Created `scripts/sync-config.ts` to generate `model-configs.ts` from models.json
+  - Fetches from GitHub raw URL (CI) or local path via `JHEEM_CONFIG_PATH` (dev)
+  - Added to build script: `npm run sync-config && next build`
+  - Added postinstall hook for local dev convenience
+  - Removed `model-configs.ts` from git tracking (now generated)
+  - **models.json is now the single source of truth**
 
 **Infrastructure lessons learned:**
 - CloudFront invalidation paths don't include origin path prefix
 - CORS + caching requires `Origin` header in cache key
 - Free tier limits policy customization
+- IAM policy needed `cloudfront:CreateInvalidation` permission
 
-### Remaining before Phase 2
-- [ ] Validate AJPH workflow completes successfully
-- [ ] Config sync: Portal still has separate `model-configs.ts` (Phase 3.4)
-  - Currently manual sync with models.json
-  - Future: Generate from models.json at build time
+### Phase 1 + Config Sync Complete ✅
+All foundation work is done, including config sync. Ready for Phase 2: CDC Testing Integration.
 
 ### Session 4 (planned)
 - [ ] Phase 2.1: Add CDC testing config to models.json
