@@ -49,3 +49,6 @@ public/data/
 .Rproj.user
 # Generated data from batch plots
 generated-data/
+
+# Generated config (synced from jheem-backend/models.json)
+src/config/model-configs.ts

@@ -4,9 +4,11 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "next build",
+    "build": "npm run sync-config && next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "sync-config": "npx tsx scripts/sync-config.ts",
+    "postinstall": "npm run sync-config"
   },
   "dependencies": {
     "@xyflow/react": "^12.9.3",
