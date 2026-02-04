@@ -235,7 +235,7 @@ export default function StateChoroplethExplorer({ config }: StateChoroplethExplo
   }
 
   return (
-    <div className="relative w-full h-screen">
+    <div className="flex-1 w-full overflow-hidden bg-slate-100 relative">
       <AnimatePresence mode="wait">
         {/* ===== MAP MODE ===== */}
         {mode === 'map' && (
@@ -379,16 +379,8 @@ export default function StateChoroplethExplorer({ config }: StateChoroplethExplo
 
               {/* Impact */}
               <div className="pt-2">
-                <div className="flex items-baseline justify-between mb-1.5">
-                  <span className="text-[10px] uppercase tracking-wide text-slate-400">
-                    If Funding Stops
-                  </span>
-                  <span className="text-[10px] text-slate-400">
-                    {state.impact.startYear ? `${state.impact.startYear}-${state.impact.targetYear}` : `by ${state.impact.targetYear}`}
-                  </span>
-                </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-slate-500">New HIV infections</span>
+                  <span className="text-xs text-slate-500">{state.impact.headline}</span>
                   <div className="flex items-center gap-1.5">
                     <div
                       className="w-2 h-2 rounded-full"
