@@ -380,7 +380,7 @@ export default function StateChoroplethExplorer({ config }: StateChoroplethExplo
               {/* Impact */}
               <div className="pt-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-slate-500">{state.impact.headline}</span>
+                  <span className="text-xs text-slate-500 max-w-[180px] leading-snug">{state.impact.headline}</span>
                   <div className="flex items-center gap-1.5">
                     <div
                       className="w-2 h-2 rounded-full"
