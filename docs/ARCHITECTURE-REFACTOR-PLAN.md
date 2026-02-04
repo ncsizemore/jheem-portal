@@ -1,8 +1,8 @@
 # JHEEM Architecture Refactor Plan
 
 **Author:** Independent Architecture Review
-**Date:** January 30, 2026
-**Status:** Phase 1 Complete
+**Date:** January 30, 2026 (Last updated: February 4, 2026)
+**Status:** Phase 1 Complete, Architecture Unified
 **Scope:** jheem-portal, jheem-backend, container repositories
 
 ---
@@ -386,26 +386,59 @@ Improvements that enhance maintainability but aren't blocking.
 - Create base component library (Button, Card, Modal)
 - Standardize color usage
 
-#### 3.4 Sync Portal Config with Backend
-- Generate `model-configs.ts` from `models.json`
-- Or fetch dynamically at build time
-- Ensure single source of truth flows through
+#### 3.4 Sync Portal Config with Backend ✅ COMPLETED (Session 3)
+- ~~Generate `model-configs.ts` from `models.json`~~
+- ~~Or fetch dynamically at build time~~
+- ~~Ensure single source of truth flows through~~
+
+---
+
+### Phase 4: Documentation (Est. 1-2 days)
+
+Critical for maintainability and onboarding.
+
+#### 4.1 Update CLAUDE.md Files
+**Location:** All repositories
+
+- [ ] **jheem-portal/CLAUDE.md**: Update architecture overview, remove S3 references for simulations
+- [ ] **jheem-backend/CLAUDE.md**: Document models.json schema, workflow template pattern
+- [ ] **jheem-simulations**: Add README documenting release naming conventions
+
+#### 4.2 Update Repository READMEs
+- [ ] **jheem-backend**: Document workflow dispatch inputs, config sync process
+- [ ] **jheem-portal**: Update development setup instructions
+
+#### 4.3 Architecture Documentation
+- [ ] Create data flow diagram showing GitHub Releases → Workflows → CloudFront
+- [ ] Document how to add a new model (step-by-step guide)
+- [ ] Archive or remove outdated documentation
+
+**Acceptance Criteria:**
+- [ ] New developer can understand architecture from docs alone
+- [ ] Adding a new model has clear written instructions
+- [ ] No references to deprecated S3 simulation paths
 
 ---
 
 ## Success Criteria
 
-### Phase 1 Complete When:
-- [ ] `models.json` is the source of truth for all model config
-- [ ] Workflows use reusable template pattern
-- [ ] Containers are versioned and pinned
-- [ ] AnalysisView is decomposed and maintainable
-- [ ] Dead routes removed
+### Phase 1 Complete When: ✅ DONE
+- [x] `models.json` is the source of truth for all model config
+- [x] Workflows use reusable template pattern
+- [x] Containers are versioned and pinned
+- [x] AnalysisView is decomposed and maintainable
+- [x] Dead routes removed
+- [x] All models use GitHub Releases (MSA migrated Session 4)
 
 ### Phase 2 Complete When:
 - [ ] CDC testing explorer is live
 - [ ] No code was duplicated to add it
 - [ ] Workflow was <50 lines of new code
+
+### Phase 4 Complete When:
+- [ ] All CLAUDE.md files updated with current architecture
+- [ ] "How to add a new model" guide exists
+- [ ] No outdated S3 simulation references in docs
 
 ### Overall Success:
 - Adding a new model requires:
@@ -497,10 +530,35 @@ Focus: Production hardening and workflow validation
 ### Phase 1 + Config Sync Complete ✅
 All foundation work is done, including config sync. Ready for Phase 2: CDC Testing Integration.
 
-### Session 4 (planned)
-- [ ] Phase 2.1: Add CDC testing config to models.json
-- [ ] Phase 2.2: Create CDC testing workflow wrapper
-- [ ] Phase 2.3: Add CDC testing route to portal
+### Session 4 (2026-02-04)
+Focus: MSA migration and architecture completion
+
+- [x] **MSA simulations migrated to GitHub Releases**
+  - Created `ryan-white-msa-v1.0.0` release (124 files, 3.3GB)
+  - Flattened file structure to match AJPH naming convention
+  - Updated models.json `dataSource` from S3 to GitHub-Release
+  - Added `release` input to generate-msa.yml for consistency
+- [x] Test workflow run validated (3 cities)
+- [x] State explorer UI fixes
+  - Fixed sticky controls (changed container from `h-screen` to `flex-1`)
+  - Fixed hover card headline text wrapping
+
+**All three models now use GitHub Releases as data source:**
+```
+MSA (31 cities)  ──┐
+AJPH (11 states) ──┼── GitHub Releases ──→ Workflow Template ──→ CloudFront
+CROI (30 states) ──┘
+```
+
+### Phase 1 Complete + Architecture Unified ✅
+The refactoring goals have been achieved. Adding a new model now requires only:
+- 1 JSON config entry in models.json
+- 1 thin workflow wrapper (~40 lines)
+- 1 route page (~30 lines)
+
+### Session 5 (planned)
+- [ ] Phase 2: CDC Testing Integration (when ready)
+- [ ] Phase 4: Documentation (see below)
 
 ---
 
