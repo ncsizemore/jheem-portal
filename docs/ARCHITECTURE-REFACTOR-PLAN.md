@@ -1,8 +1,8 @@
 # JHEEM Architecture Refactor Plan
 
 **Author:** Independent Architecture Review
-**Date:** January 30, 2026 (Last updated: February 4, 2026)
-**Status:** Phase 1 Complete, Architecture Unified
+**Date:** January 30, 2026 (Last updated: February 5, 2026)
+**Status:** Phase 1 Complete, Phase 2 (CDC Testing) In Progress
 **Scope:** jheem-portal, jheem-backend, container repositories
 
 ---
@@ -556,9 +556,225 @@ The refactoring goals have been achieved. Adding a new model now requires only:
 - 1 thin workflow wrapper (~40 lines)
 - 1 route page (~30 lines)
 
-### Session 5 (planned)
-- [ ] Phase 2: CDC Testing Integration (when ready)
-- [ ] Phase 4: Documentation (see below)
+### Session 5 (2026-02-04/05)
+Focus: AJPH data fix and CDC Testing preparation
+
+- [x] **AJPH data discrepancy fixed**
+  - Created `ryan-white-ajph-v1.0.0` release (44 files, 23GB) from correct 1000-sim files
+  - Updated models.json with new release tag and file patterns
+  - Added `baseFilePattern` and `filePatterns` for workflow rename logic
+  - Re-ran AJPH workflow - data now matches publication
+
+- [x] **CDC Testing release created**
+  - Created `cdc-testing-v1.0.0` release (72 files, 86GB)
+  - 18 states × 4 scenarios (noint, cdct.end, cdct.bintr, cdct.pintr)
+  - Debugged release script (bash arithmetic with `set -e`)
+
+- [x] **CDC Testing research completed**
+  - Analyzed anchor year configuration (2025 = no suffix, 2026 = .26 suffix)
+  - Confirmed outcomes from Shiny app config
+  - Identified container requirements (fork + change specification)
+  - Data manager: uses same as Ryan White (EHE-based)
+
+- [ ] **CDC Testing container** (next)
+  - Create `jheem-cdc-testing-container` repo
+  - Build and test with one state
+  - Tag v1.0.0
+
+- [ ] **CDC Testing integration** (after container)
+  - Add to models.json
+  - Create workflow wrapper
+  - Create frontend route
+
+### Session 6 (planned)
+- [ ] Phase 2: Complete CDC Testing Integration
+- [ ] Phase 4: Documentation updates
+
+---
+
+## Known Issues & Technical Debt
+
+### Release Naming Inconsistency (Needs Attention)
+
+Current releases in `jheem-simulations`:
+
+| Release Tag | Content | Status |
+|-------------|---------|--------|
+| `ryan-white-msa-v1.0.0` | MSA 31 cities | ✓ Active |
+| `ryan-white-ajph-v1.0.0` | AJPH 11 states (correct 1000-sim) | ✓ Active (new) |
+| `cdc-testing-v1.0.0` | CDC Testing 18 states | ✓ Active (new) |
+| `ryan-white-state-v1.0.0` | AJPH 11 states (old/wrong) | ⚠️ DEPRECATED |
+| `ryan-white-state-v2.0.0` | CROI 30 states | ✓ Active (naming inconsistent) |
+
+**Recommended convention going forward:**
+```
+{project}-{model}-v{semver}
+
+ryan-white-msa-v1.0.0     ✓
+ryan-white-ajph-v1.0.0    new standard
+ryan-white-croi-v1.0.0    if CROI refresh needed
+cdc-testing-v1.0.0        future
+```
+
+**Action items:**
+- [x] Create new AJPH release with correct naming (`ryan-white-ajph-v1.0.0`) ✅ Session 5
+- [ ] Update `ryan-white-state-v1.0.0` description to mark as DEPRECATED
+- [ ] Document naming convention in jheem-simulations README
+- [ ] Consider renaming CROI release in future (low priority, working fine)
+
+### AJPH Data Discrepancy ✅ RESOLVED (Session 5)
+
+**Issue:** AJPH explorer showed different values than publication.
+
+**Root cause:** Release `ryan-white-state-v1.0.0` contained trimmed/old simsets, not finalized 1000-simulation versions.
+
+**Fix applied:**
+1. Created `ryan-white-ajph-v1.0.0` release from correct server files (44 files, ~23GB)
+2. Updated models.json with new release tag and file patterns (`rw_final.ehe.state-1000_{STATE}_*.Rdata`)
+3. Added `baseFilePattern: "noint"` and `filePatterns` to scenarios for workflow rename logic
+4. Re-ran AJPH workflow - data now matches publication
+
+---
+
+## CDC Testing Integration Plan (Phase 2)
+
+### Status: Ready to Build Container
+
+**Release created:** `cdc-testing-v1.0.0` ✅ (72 files, 86GB)
+
+### Data Configuration
+
+**States (18):** AL, AZ, CA, FL, GA, IL, KY, LA, MD, MO, MS, NY, OH, SC, TN, TX, WA, WI
+
+**Scenarios:**
+| Scenario ID | File Pattern | Description |
+|-------------|--------------|-------------|
+| `baseline` | `noint` | No intervention (baseline) |
+| `cessation` | `cdct.end` | Complete cessation of CDC-funded testing |
+| `brief_interruption` | `cdct.bintr` | Brief interruption of CDC testing |
+| `prolonged_interruption` | `cdct.pintr` | Prolonged interruption of CDC testing |
+
+**Outcomes (from Shiny app config):**
+- Standard: `incidence`, `new`, `diagnosed.prevalence`, `testing`, `prep.uptake`, `suppression`, `awareness`
+- CDC-specific: `cdc.funded.tests`, `cdc.funded.diagnoses`
+
+**File pattern:** `cdct_final.ehe.state-1000_{STATE}_{scenario}.Rdata`
+
+**Intervention year:** 2025 (no file suffix)
+
+### Key Technical Findings
+
+#### Anchor Year Configuration
+
+The CDC model uses `CDC.TESTING.ANCHOR.YEAR` to control scenario naming:
+
+```r
+# From cdc_testing_main.R:
+CDC.TESTING.ANCHOR.YEAR = 2025      # Current default
+if (CDC.TESTING.ANCHOR.YEAR==2025)
+    CDC.TESTING.INTERVENTION.SUFFIX = ''    # No suffix → cdct.end
+if (CDC.TESTING.ANCHOR.YEAR==2026)
+    CDC.TESTING.INTERVENTION.SUFFIX = ".26" # .26 suffix → cdct.end.26
+```
+
+**Our release uses non-suffixed files (2025 anchor year).** The container must set `CDC.TESTING.ANCHOR.YEAR = 2025`.
+
+#### File Variants on Server (for reference)
+
+```
+/mnt/jheem_nas_share/simulations/cdct/final.ehe.state-1000/AL/
+├── cdct_final.ehe.state-1000_AL_noint.Rdata       # ← Using (baseline)
+├── cdct_final.ehe.state-1000_AL_cdct.end.Rdata    # ← Using (cessation)
+├── cdct_final.ehe.state-1000_AL_cdct.bintr.Rdata  # ← Using (brief)
+├── cdct_final.ehe.state-1000_AL_cdct.pintr.Rdata  # ← Using (prolonged)
+├── cdct_final.ehe.state-1000_AL_cdct.end.26.Rdata # 2026 anchor year
+├── cdct_final.ehe.state-1000_AL_cdct.end.25.Rdata # 25% reduction
+├── cdct_final.ehe.state-1000_AL_cdct.end.50.Rdata # 50% reduction
+├── cdct_final.ehe.state-1000_AL_cdct.end.75.Rdata # 75% reduction
+└── ... (other variants)
+```
+
+#### Model Specification
+
+- **Specification:** `CDCT.SPECIFICATION` (version: `cdct`)
+- **Parent:** Inherits from `ehe` (EHE model)
+- **Data manager:** Uses `ryan.white.web.data.manager.rdata` (same as Ryan White)
+- **Source files:**
+  - `applications/cdc_testing/cdc_testing_specification.R`
+  - `applications/cdc_testing/cdc_testing_interventions.R`
+  - `applications/cdc_testing/cdc_testing_parameters.R`
+
+### Container Creation Plan
+
+**New repo:** `jheem-cdc-testing-container` (fork from `jheem-container-minimal`)
+
+**Key changes from Ryan White container:**
+
+1. **`create_cdc_testing_workspace.R`:**
+   ```r
+   # Set anchor year BEFORE sourcing interventions
+   CDC.TESTING.ANCHOR.YEAR <- 2025
+
+   # Source CDC specification instead of Ryan White
+   source("../jheem_analyses/applications/cdc_testing/cdc_testing_specification.R")
+   source("../jheem_analyses/applications/cdc_testing/cdc_testing_interventions.R")
+
+   # Verify CDCT.SPECIFICATION instead of RW.SPECIFICATION
+   required_objects <- c("CDCT.SPECIFICATION")
+   ```
+
+2. **Dockerfile:** Update labels for CDC testing
+
+3. **Plotting scripts:** Should work as-is (outcomes are standard jheem2 format)
+
+### Integration Checklist
+
+- [x] Verify server has complete CDC simsets
+- [x] Create `cdc-testing-v1.0.0` release (72 files, 86GB)
+- [x] Understand anchor year / file naming relationship
+- [x] Create `jheem-cdc-testing-container` repo
+- [x] Build workspace with CDC specification
+- [x] Test container with one state
+- [x] Tag container as `v1.0.1` (v1.0.0 had wrong workspace filename)
+- [x] Add CDC Testing config to models.json
+- [x] Create workflow wrapper (`generate-cdc-testing.yml`)
+- [x] Run workflow test (3 states: AL, CA, FL) - SUCCESS
+- [ ] Run workflow full (18 states)
+- [ ] Create frontend route (`/cdc-testing/explorer`)
+- [ ] Update navigation
+
+### Data Limitations Discovered (Session 5)
+
+During test workflow run, we discovered some differences between the model specification and the actual simulation data:
+
+#### 1. `cdc.funded.diagnoses` - Not in simulation files
+
+**Error:** `Metadata not found for outcome 'cdc.funded.diagnoses' in any provided simset.`
+
+The outcome is registered in `cdc_testing_specification.R` but was not tracked when the simulations were run. This outcome has been **removed from models.json** to avoid errors.
+
+**If needed later:** Simulations would need to be re-run with this outcome tracked, or the team could investigate if it's derivable from other outcomes.
+
+#### 2. Some outcomes lack demographic facets
+
+**Error:** `Error subsetting ontology: 'risk' does not reference a valid dimension`
+
+Outcomes like `cdc.funded.tests` are aggregate counts (total tests) without demographic breakdowns. Facet combinations involving `age`, `race`, `sex`, or `risk` fail for these outcomes.
+
+**Impact:** The workflow handles this gracefully - it logs errors but continues. The resulting data files simply don't include those facet combinations for aggregate outcomes. The frontend should handle missing facet data gracefully (it does).
+
+**Available outcomes with full faceting:** `incidence`, `new`, `diagnosed.prevalence`, `testing`, `prep.uptake`, `suppression`, `awareness`
+
+**Aggregate-only outcomes:** `cdc.funded.tests` (no demographic facets)
+
+### Reference: Shiny App
+
+The existing Shiny app at `https://jheem.shinyapps.io/cdc-testing/` serves as a reference for:
+- Expected outcomes and their display names
+- Scenario labels and descriptions
+- Faceting dimensions
+
+Config files: `~/Downloads/cdc-testing/src/ui/config/`
 
 ---
 
