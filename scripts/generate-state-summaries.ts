@@ -12,7 +12,8 @@
  *
  * Usage:
  *   # Step 1: Extract summary from one state (run per-state in generate job)
- *   npx tsx scripts/generate-state-summaries.ts --single AL public/data/AL.json
+ *   npx tsx scripts/generate-state-summaries.ts --single AL public/data/AL.json \
+ *     --summary-metrics '{"statusMetrics":[...],"impactOutcome":"incidence"}'
  *   # Output: AL-summary.json in current directory (~1KB)
  *
  *   # Step 2: Combine summaries (run once in finalize job)
@@ -66,41 +67,26 @@ interface StateDataFile {
   data: Record<string, Record<string, Record<string, Record<string, { sim: SimDataPoint[] | null }>>>>;
 }
 
+interface MetricValue {
+  value: number;
+  lower: number;
+  upper: number;
+  year: number;
+  label: string;
+  source?: 'model';
+  format?: 'count' | 'percent';
+}
+
 interface StateSummary {
   name: string;
   shortName: string;
   coordinates: [number, number];
-  metrics: {
-    diagnosedPrevalence: {
-      value: number;
-      lower: number;
-      upper: number;
-      year: number;
-      label: string;
-      source: 'model';
-    };
-    suppressionRate: {
-      value: number;
-      lower: number;
-      upper: number;
-      year: number;
-      label: string;
-      source: 'model';
-    };
-    incidenceBaseline: {
-      value: number;
-      lower: number;
-      upper: number;
-      year: number;
-      label: string;
-    };
-    incidenceCessation: {
-      value: number;
-      lower: number;
-      upper: number;
-      year: number;
-      label: string;
-    };
+  // Status metrics are now dynamic based on config
+  statusMetrics: Record<string, MetricValue>;
+  // Impact metrics remain standard
+  impactMetrics: {
+    baseline: MetricValue;
+    cessation: MetricValue;
   };
   impact: {
     cessationIncreasePercent: number;
@@ -108,6 +94,13 @@ interface StateSummary {
     targetYear: number;
     startYear?: number;
     headline: string;
+  };
+  // Legacy fields for backward compatibility (deprecated, use statusMetrics instead)
+  metrics?: {
+    diagnosedPrevalence?: MetricValue;
+    suppressionRate?: MetricValue;
+    incidenceBaseline?: MetricValue;
+    incidenceCessation?: MetricValue;
   };
 }
 
@@ -128,6 +121,33 @@ const OUTPUT_FILE = path.join(DATA_DIR, 'state-summaries.json');
 // Will be set from CLI args
 let INTERVENTION_START_YEAR = DEFAULT_START_YEAR;
 let INTERVENTION_END_YEAR = DEFAULT_END_YEAR;
+
+// Summary metrics configuration (from models.json)
+interface StatusMetricConfig {
+  outcome: string;
+  year: number;
+  label: string;
+  format: 'count' | 'percent';
+}
+
+interface SummaryMetricsConfig {
+  statusMetrics: StatusMetricConfig[];
+  impactOutcome: string;
+  impactLabel: string;
+}
+
+// Default config for backward compatibility (Ryan White models)
+const DEFAULT_SUMMARY_METRICS: SummaryMetricsConfig = {
+  statusMetrics: [
+    { outcome: 'diagnosed.prevalence', year: 2024, label: 'People living with diagnosed HIV', format: 'count' },
+    { outcome: 'suppression', year: 2024, label: 'Viral suppression rate', format: 'percent' }
+  ],
+  impactOutcome: 'incidence',
+  impactLabel: 'new HIV infections'
+};
+
+// Will be set from CLI args
+let summaryMetricsConfig: SummaryMetricsConfig = DEFAULT_SUMMARY_METRICS;
 
 function extractMetric(
   stateData: StateDataFile,
@@ -254,23 +274,46 @@ function processStateFile(filePath: string): StateSummary | null {
   // Use canonical name or fall back to label from data
   const stateName = STATE_NAMES[stateCode] || stateLabel;
 
-  // Extract current status metrics (model projections for current year)
-  const prevalence = extractMetric(stateData, 'diagnosed.prevalence', CURRENT_YEAR);
-  const suppression = extractMetric(stateData, 'suppression', CURRENT_YEAR);
+  // Extract status metrics dynamically from config
+  const statusMetrics: Record<string, MetricValue> = {};
+  let allStatusMetricsValid = true;
+
+  for (const metricConfig of summaryMetricsConfig.statusMetrics) {
+    const metricData = extractMetric(stateData, metricConfig.outcome, metricConfig.year);
+    if (!metricData) {
+      console.warn(`  Missing status metric '${metricConfig.outcome}' for ${stateCode}`);
+      allStatusMetricsValid = false;
+      continue;
+    }
+
+    // Format value based on type
+    const formatValue = (v: number) =>
+      metricConfig.format === 'percent' ? parseFloat(v.toFixed(1)) : Math.round(v);
+
+    statusMetrics[metricConfig.outcome] = {
+      value: formatValue(metricData.value),
+      lower: formatValue(metricData.lower),
+      upper: formatValue(metricData.upper),
+      year: metricConfig.year,
+      label: metricConfig.label,
+      source: 'model',
+      format: metricConfig.format,
+    };
+  }
 
   // Extract CUMULATIVE projection metrics over the intervention period
   // This matches the methodology used in AJPH/CROI papers
+  const impactOutcome = summaryMetricsConfig.impactOutcome;
   const cumulativeBaseline = extractCumulativeMetric(
-    stateData, 'incidence', INTERVENTION_START_YEAR, INTERVENTION_END_YEAR, 'Baseline'
+    stateData, impactOutcome, INTERVENTION_START_YEAR, INTERVENTION_END_YEAR, 'Baseline'
   );
   const cumulativeCessation = extractCumulativeCessationMetric(
-    stateData, 'incidence', INTERVENTION_START_YEAR, INTERVENTION_END_YEAR
+    stateData, impactOutcome, INTERVENTION_START_YEAR, INTERVENTION_END_YEAR
   );
 
-  if (!prevalence || !suppression || !cumulativeBaseline || !cumulativeCessation) {
-    console.warn(`Missing data for ${stateCode}:`, {
-      prevalence: !!prevalence,
-      suppression: !!suppression,
+  if (!cumulativeBaseline || !cumulativeCessation) {
+    console.warn(`Missing impact data for ${stateCode}:`, {
+      statusMetrics: allStatusMetricsValid ? 'OK' : 'partial',
       cumulativeBaseline: !!cumulativeBaseline,
       cumulativeCessation: !!cumulativeCessation,
     });
@@ -283,40 +326,28 @@ function processStateFile(filePath: string): StateSummary | null {
     (cessationIncrease / cumulativeBaseline.value) * 100
   );
 
-  return {
+  const impactLabel = summaryMetricsConfig.impactLabel;
+
+  // Build result with new dynamic structure
+  const result: StateSummary = {
     name: stateName,
     shortName: stateCode, // For states, short name is just the code
     coordinates,
-    metrics: {
-      diagnosedPrevalence: {
-        value: Math.round(prevalence.value),
-        lower: Math.round(prevalence.lower),
-        upper: Math.round(prevalence.upper),
-        year: CURRENT_YEAR,
-        label: 'People living with diagnosed HIV',
-        source: 'model',
-      },
-      suppressionRate: {
-        value: parseFloat(suppression.value.toFixed(1)),
-        lower: parseFloat(suppression.lower.toFixed(1)),
-        upper: parseFloat(suppression.upper.toFixed(1)),
-        year: CURRENT_YEAR,
-        label: 'Viral suppression rate',
-        source: 'model',
-      },
-      incidenceBaseline: {
+    statusMetrics,
+    impactMetrics: {
+      baseline: {
         value: Math.round(cumulativeBaseline.value),
         lower: Math.round(cumulativeBaseline.lower),
         upper: Math.round(cumulativeBaseline.upper),
         year: INTERVENTION_END_YEAR,
-        label: `Cumulative new HIV infections (baseline, ${INTERVENTION_START_YEAR}-${INTERVENTION_END_YEAR})`,
+        label: `Cumulative ${impactLabel} (baseline, ${INTERVENTION_START_YEAR}-${INTERVENTION_END_YEAR})`,
       },
-      incidenceCessation: {
+      cessation: {
         value: Math.round(cumulativeCessation.value),
         lower: Math.round(cumulativeCessation.lower),
         upper: Math.round(cumulativeCessation.upper),
         year: INTERVENTION_END_YEAR,
-        label: `Cumulative new HIV infections (if funding stops, ${INTERVENTION_START_YEAR}-${INTERVENTION_END_YEAR})`,
+        label: `Cumulative ${impactLabel} (if funding stops, ${INTERVENTION_START_YEAR}-${INTERVENTION_END_YEAR})`,
       },
     },
     impact: {
@@ -324,9 +355,25 @@ function processStateFile(filePath: string): StateSummary | null {
       cessationIncreaseAbsolute: Math.round(cessationIncrease),
       targetYear: INTERVENTION_END_YEAR,
       startYear: INTERVENTION_START_YEAR,
-      headline: `Relative increase in new HIV infections if funding stops, ${INTERVENTION_START_YEAR}-${INTERVENTION_END_YEAR}`,
+      headline: `Relative increase in ${impactLabel} if funding stops, ${INTERVENTION_START_YEAR}-${INTERVENTION_END_YEAR}`,
     },
   };
+
+  // Add legacy fields for backward compatibility with existing frontend
+  result.metrics = {
+    incidenceBaseline: result.impactMetrics.baseline,
+    incidenceCessation: result.impactMetrics.cessation,
+  };
+
+  // Map standard status metrics to legacy field names if present
+  if (statusMetrics['diagnosed.prevalence']) {
+    result.metrics.diagnosedPrevalence = statusMetrics['diagnosed.prevalence'];
+  }
+  if (statusMetrics['suppression']) {
+    result.metrics.suppressionRate = statusMetrics['suppression'];
+  }
+
+  return result;
 }
 
 function runSingleMode(stateCode: string, inputFile: string) {
@@ -385,26 +432,28 @@ function runCombineMode(summaryFiles: string[]) {
 
 function printUsage() {
   console.error('Usage:');
-  console.error('  npx tsx scripts/generate-state-summaries.ts --single STATE FILE [--start-year YEAR] [--end-year YEAR]');
+  console.error('  npx tsx scripts/generate-state-summaries.ts --single STATE FILE [options]');
   console.error('  npx tsx scripts/generate-state-summaries.ts --combine FILE1 FILE2 ...');
   console.error('');
   console.error('Options:');
-  console.error('  --start-year YEAR  Intervention start year (default: 2026)');
-  console.error('  --end-year YEAR    Projection end year (default: 2031)');
+  console.error('  --start-year YEAR       Intervention start year (default: 2026)');
+  console.error('  --end-year YEAR         Projection end year (default: 2031)');
+  console.error('  --summary-metrics JSON  Summary metrics config from models.json (JSON string)');
   console.error('');
   console.error('Examples:');
-  console.error('  # CROI (2026-2031)');
+  console.error('  # CROI (2026-2031) with default metrics (diagnosed.prevalence, suppression)');
   console.error('  npx tsx scripts/generate-state-summaries.ts --single AL public/data/AL.json --start-year 2026 --end-year 2031');
   console.error('');
-  console.error('  # AJPH (2025-2030)');
-  console.error('  npx tsx scripts/generate-state-summaries.ts --single AL public/data/AL.json --start-year 2025 --end-year 2030');
+  console.error('  # CDC Testing with custom metrics (diagnosed.prevalence, awareness)');
+  console.error('  npx tsx scripts/generate-state-summaries.ts --single AL public/data/AL.json --start-year 2025 --end-year 2030 \\');
+  console.error('    --summary-metrics \'{"statusMetrics":[{"outcome":"diagnosed.prevalence","year":2024,"label":"People living with diagnosed HIV","format":"count"},{"outcome":"awareness","year":2024,"label":"Awareness of HIV status","format":"percent"}],"impactOutcome":"incidence","impactLabel":"new HIV infections"}\'');
   console.error('');
   console.error('  npx tsx scripts/generate-state-summaries.ts --combine AL-summary.json CA-summary.json');
   console.error('');
   console.error('See script header for workflow usage pattern.');
 }
 
-function parseYearArgs(args: string[]): void {
+function parseArgs(args: string[]): void {
   const startYearIdx = args.indexOf('--start-year');
   if (startYearIdx !== -1 && args[startYearIdx + 1]) {
     INTERVENTION_START_YEAR = parseInt(args[startYearIdx + 1], 10);
@@ -413,6 +462,19 @@ function parseYearArgs(args: string[]): void {
   const endYearIdx = args.indexOf('--end-year');
   if (endYearIdx !== -1 && args[endYearIdx + 1]) {
     INTERVENTION_END_YEAR = parseInt(args[endYearIdx + 1], 10);
+  }
+
+  const metricsIdx = args.indexOf('--summary-metrics');
+  if (metricsIdx !== -1 && args[metricsIdx + 1]) {
+    try {
+      summaryMetricsConfig = JSON.parse(args[metricsIdx + 1]) as SummaryMetricsConfig;
+      console.log(`Using custom summary metrics:`, summaryMetricsConfig.statusMetrics.map(m => m.outcome).join(', '));
+    } catch (err) {
+      console.error('Error parsing --summary-metrics JSON:', err);
+      process.exit(1);
+    }
+  } else {
+    console.log(`Using default summary metrics: diagnosed.prevalence, suppression`);
   }
 
   console.log(`Using intervention period: ${INTERVENTION_START_YEAR}-${INTERVENTION_END_YEAR}`);
@@ -432,8 +494,8 @@ function main() {
       process.exit(1);
     }
 
-    // Parse optional year arguments
-    parseYearArgs(args);
+    // Parse optional arguments (year, metrics config)
+    parseArgs(args);
 
     runSingleMode(stateCode, inputFile);
   } else if (args[0] === '--combine') {

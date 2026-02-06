@@ -576,18 +576,47 @@ Focus: AJPH data fix and CDC Testing preparation
   - Identified container requirements (fork + change specification)
   - Data manager: uses same as Ryan White (EHE-based)
 
-- [ ] **CDC Testing container** (next)
-  - Create `jheem-cdc-testing-container` repo
-  - Build and test with one state
-  - Tag v1.0.0
+### Session 5 continued (2026-02-05/06)
+Focus: CDC Testing container, workflow, and frontend
 
-- [ ] **CDC Testing integration** (after container)
-  - Add to models.json
-  - Create workflow wrapper
-  - Create frontend route
+- [x] **CDC Testing container created**
+  - Created `jheem-cdc-testing-container` repo from scratch
+  - Debugged library symlinks (dynamic detection for RSPM compatibility)
+  - Fixed case-sensitivity issue (`ehe` vs `EHE` - Windows dev wrote lowercase paths)
+  - Fixed workspace filename (`cdc_testing_workspace.RData` not `ryan_white_workspace.RData`)
+  - Tagged v1.0.1 (v1.0.0 had wrong workspace filename)
+
+- [x] **CDC Testing workflow created**
+  - Added full config to models.json (18 states, scenarios, outcomes)
+  - Created `generate-cdc-testing.yml` thin wrapper
+  - Test run succeeded (3 states: AL, CA, FL)
+  - Fixed state list mismatch (config had wrong states vs release)
+
+- [x] **CDC Testing frontend created**
+  - Created `/cdc-testing/explorer` route using StateChoroplethExplorer
+  - Updated navigation with submenu (Native Explorer + Shiny Legacy)
+  - Build verified successful
+
+- [x] **Outcome comparison with Shiny app**
+  - Discovered our 1000-sim files have 32 outcomes (vs Shiny's 8)
+  - Shiny uses: incidence, new, diagnosed.prevalence, testing, awareness, cdc.funded.tests, total.cdc.hiv.test.positivity, total.hiv.tests
+  - Updated models.json to match Shiny's outcomes (removed prep.uptake, suppression; added total.* outcomes)
+
+- [x] **Config-driven summary metrics** (COMPLETE)
+  - Added `summaryMetrics` section to all models in models.json
+  - Updated generate-state-summaries.ts to accept `--summary-metrics` JSON parameter
+  - Updated workflow template to pass summary metrics from config
+  - Updated frontend to render dynamic status metrics
+  - Ryan White models: use `diagnosed.prevalence` + `suppression`
+  - CDC Testing: uses `diagnosed.prevalence` + `awareness` (no suppression available)
+
+- [ ] **Full workflow run** (ready to run)
+  - Summary metrics refactor complete, ready for 18-state run
 
 ### Session 6 (planned)
-- [ ] Phase 2: Complete CDC Testing Integration
+- [ ] Complete summary metrics refactor
+- [ ] Re-run CDC Testing full workflow (18 states)
+- [ ] Verify frontend end-to-end
 - [ ] Phase 4: Documentation updates
 
 ---
@@ -766,6 +795,94 @@ Outcomes like `cdc.funded.tests` are aggregate counts (total tests) without demo
 **Available outcomes with full faceting:** `incidence`, `new`, `diagnosed.prevalence`, `testing`, `prep.uptake`, `suppression`, `awareness`
 
 **Aggregate-only outcomes:** `cdc.funded.tests` (no demographic facets)
+
+---
+
+## Summary Metrics Refactor
+
+### Problem
+
+The `generate-state-summaries.ts` script hardcodes which outcomes to extract for map hover cards:
+
+```typescript
+// Lines 258-259: Hardcoded outcome extraction
+const prevalence = extractMetric(stateData, 'diagnosed.prevalence', CURRENT_YEAR);
+const suppression = extractMetric(stateData, 'suppression', CURRENT_YEAR);
+
+// Lines 263-267: Hardcoded incidence for cumulative calculations
+const cumulativeBaseline = extractCumulativeMetric(
+  stateData, 'incidence', INTERVENTION_START_YEAR, INTERVENTION_END_YEAR, 'Baseline'
+);
+
+// Line 270: Fails if ANY metric is missing
+if (!prevalence || !suppression || !cumulativeBaseline || !cumulativeCessation) {
+  return null;
+}
+```
+
+This breaks for CDC Testing because:
+1. `suppression` is not available in CDC Testing simulations
+2. The script has no way to know which metrics each model supports
+3. Adding a new model requires editing the TypeScript script
+
+### Solution: Config-Driven Summary Metrics
+
+Add a `summaryMetrics` section to each model in `models.json`:
+
+```json
+{
+  "ryan-white-state-croi": {
+    "summaryMetrics": {
+      "statusMetrics": [
+        { "outcome": "diagnosed.prevalence", "year": 2024, "label": "People living with diagnosed HIV" },
+        { "outcome": "suppression", "year": 2024, "label": "Viral suppression rate", "format": "percent" }
+      ],
+      "impactOutcome": "incidence",
+      "impactLabel": "new HIV infections"
+    }
+  },
+
+  "cdc-testing": {
+    "summaryMetrics": {
+      "statusMetrics": [
+        { "outcome": "diagnosed.prevalence", "year": 2024, "label": "People living with diagnosed HIV" },
+        { "outcome": "awareness", "year": 2024, "label": "Awareness of HIV status", "format": "percent" }
+      ],
+      "impactOutcome": "incidence",
+      "impactLabel": "new HIV infections"
+    }
+  }
+}
+```
+
+### Implementation Steps
+
+1. **Update models.json** (jheem-backend)
+   - Add `summaryMetrics` section to each model
+   - Ryan White models: use `diagnosed.prevalence` + `suppression`
+   - CDC Testing: use `diagnosed.prevalence` + `awareness` (no suppression available)
+
+2. **Update generate-state-summaries.ts** (jheem-portal)
+   - Accept `--config-url` or `--metrics` parameter
+   - Parse metrics configuration instead of hardcoding
+   - Make the StateSummary interface flexible for variable metrics
+   - Gracefully handle missing optional metrics
+
+3. **Update workflow template** (jheem-backend)
+   - Pass metrics config to the summary script
+   - Could pass as JSON string or reference models.json URL
+
+4. **Update frontend hover cards** (jheem-portal)
+   - Make StateHoverCard component dynamic
+   - Read metric labels from config or data
+   - Handle variable number of status metrics
+
+### Benefits
+
+- **Single source of truth**: models.json defines everything about a model
+- **No code changes for new models**: Just add config, don't edit scripts
+- **Model-appropriate metrics**: CDC Testing shows awareness, Ryan White shows suppression
+- **Maintainability**: Clear separation of config from logic
 
 ### Reference: Shiny App
 

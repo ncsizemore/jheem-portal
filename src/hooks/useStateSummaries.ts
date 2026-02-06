@@ -8,43 +8,40 @@
 import { useState, useEffect } from 'react';
 import { STATE_NAME_TO_CODE } from '@/data/states';
 
+// Metric value structure - used for both status and impact metrics
+export interface MetricValue {
+  value: number;
+  lower: number;
+  upper: number;
+  year: number;
+  label: string;
+  source?: 'model';
+  format?: 'count' | 'percent';
+}
+
 // Matches output of generate-state-summaries.ts
 export interface StateSummary {
   name: string;
   shortName: string;
   coordinates: [number, number];
-  metrics: {
-    diagnosedPrevalence: {
-      value: number;
-      lower: number;
-      upper: number;
-      year: number;
-      label: string;
-      source: 'model';
-    };
-    suppressionRate: {
-      value: number;
-      lower: number;
-      upper: number;
-      year: number;
-      label: string;
-      source: 'model';
-    };
-    incidenceBaseline: {
-      value: number;
-      lower: number;
-      upper: number;
-      year: number;
-      label: string;
-    };
-    incidenceCessation: {
-      value: number;
-      lower: number;
-      upper: number;
-      year: number;
-      label: string;
-    };
+
+  // New dynamic structure - config-driven status metrics
+  statusMetrics?: Record<string, MetricValue>;
+
+  // New impact metrics structure
+  impactMetrics?: {
+    baseline: MetricValue;
+    cessation: MetricValue;
   };
+
+  // Legacy fields for backward compatibility
+  metrics?: {
+    diagnosedPrevalence?: MetricValue;
+    suppressionRate?: MetricValue;
+    incidenceBaseline?: MetricValue;
+    incidenceCessation?: MetricValue;
+  };
+
   impact: {
     cessationIncreasePercent: number;
     cessationIncreaseAbsolute: number;
@@ -52,6 +49,32 @@ export interface StateSummary {
     startYear?: number;
     headline: string;
   };
+}
+
+// Helper to get status metrics (works with both new and legacy structure)
+export function getStatusMetrics(state: StateSummary): MetricValue[] {
+  // Prefer new structure
+  if (state.statusMetrics) {
+    return Object.values(state.statusMetrics);
+  }
+  // Fall back to legacy fields
+  const metrics: MetricValue[] = [];
+  if (state.metrics?.suppressionRate) {
+    metrics.push(state.metrics.suppressionRate);
+  }
+  if (state.metrics?.diagnosedPrevalence) {
+    metrics.push(state.metrics.diagnosedPrevalence);
+  }
+  return metrics;
+}
+
+// Helper to get the status year (from first available metric)
+export function getStatusYear(state: StateSummary): number {
+  if (state.statusMetrics) {
+    const firstMetric = Object.values(state.statusMetrics)[0];
+    return firstMetric?.year ?? 2024;
+  }
+  return state.metrics?.suppressionRate?.year ?? state.metrics?.diagnosedPrevalence?.year ?? 2024;
 }
 
 export interface StateSummaries {

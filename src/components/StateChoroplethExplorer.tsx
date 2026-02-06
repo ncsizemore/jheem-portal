@@ -13,7 +13,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Map, { Source, Layer } from 'react-map-gl/mapbox';
 import type { MapMouseEvent } from 'react-map-gl/mapbox';
 import 'mapbox-gl/dist/mapbox-gl.css';
-import { useStateSummaries, type StateSummary } from '@/hooks/useStateSummaries';
+import {
+  useStateSummaries,
+  type StateSummary,
+  getStatusMetrics,
+  getStatusYear,
+} from '@/hooks/useStateSummaries';
 import type { ModelConfig } from '@/config/model-configs';
 import AnalysisView from '@/components/AnalysisView';
 import { STATE_NAME_TO_CODE } from '@/data/states';
@@ -354,26 +359,24 @@ export default function StateChoroplethExplorer({ config }: StateChoroplethExplo
                 {state.name}
               </h3>
 
-              {/* Current Status */}
+              {/* Current Status - Dynamic metrics from config */}
               <div className="py-2 border-y border-slate-100">
                 <div className="flex items-baseline justify-between mb-1.5">
                   <span className="text-[10px] uppercase tracking-wide text-slate-400">
-                    Model Estimate {state.metrics.suppressionRate.year}
+                    Model Estimate {getStatusYear(state)}
                   </span>
                 </div>
                 <div className="space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-slate-500">Viral suppression</span>
-                    <span className="text-sm font-semibold text-slate-800">
-                      {state.metrics.suppressionRate.value.toFixed(0)}%
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-slate-500">People with HIV</span>
-                    <span className="text-sm font-semibold text-slate-800">
-                      {state.metrics.diagnosedPrevalence.value.toLocaleString()}
-                    </span>
-                  </div>
+                  {getStatusMetrics(state).map((metric, idx) => (
+                    <div key={idx} className="flex items-center justify-between">
+                      <span className="text-xs text-slate-500">{metric.label}</span>
+                      <span className="text-sm font-semibold text-slate-800">
+                        {metric.format === 'percent'
+                          ? `${metric.value.toFixed(0)}%`
+                          : metric.value.toLocaleString()}
+                      </span>
+                    </div>
+                  ))}
                 </div>
               </div>
 
