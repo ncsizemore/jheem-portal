@@ -43,17 +43,30 @@ function getImpactHeadline(modelId: string, headlineOrPeriod: string): string {
   return `Relative increase in new HIV infections ${context}, ${period}`;
 }
 
-// Color scale for cessation impact (% increase in new HIV cases)
-// Uses a warm sequential palette - lighter for lower impact, darker for higher
-function getImpactColor(percentIncrease: number): string {
-  if (percentIncrease >= 100) return '#7c2d12'; // orange-900 - extreme
-  if (percentIncrease >= 75) return '#9a3412';  // orange-800
-  if (percentIncrease >= 60) return '#c2410c';  // orange-700
-  if (percentIncrease >= 50) return '#ea580c';  // orange-600
-  if (percentIncrease >= 40) return '#f97316';  // orange-500
-  if (percentIncrease >= 30) return '#fb923c';  // orange-400
-  if (percentIncrease >= 20) return '#fdba74';  // orange-300
-  return '#fed7aa'; // orange-200 - lower impact
+// Orange color palette for impact visualization (lightest to darkest)
+const IMPACT_COLORS = [
+  '#fed7aa', // orange-200 - lowest impact
+  '#fdba74', // orange-300
+  '#fb923c', // orange-400
+  '#f97316', // orange-500
+  '#ea580c', // orange-600
+  '#c2410c', // orange-700
+  '#9a3412', // orange-800
+  '#7c2d12', // orange-900 - highest impact
+];
+
+// Dynamic color scale based on data range
+// Maps value to color palette using linear interpolation within min/max range
+function getImpactColor(value: number, min: number, max: number): string {
+  if (max === min) return IMPACT_COLORS[Math.floor(IMPACT_COLORS.length / 2)];
+
+  // Normalize to 0-1 range, then map to color index
+  const normalized = Math.max(0, Math.min(1, (value - min) / (max - min)));
+  const colorIndex = Math.min(
+    IMPACT_COLORS.length - 1,
+    Math.floor(normalized * IMPACT_COLORS.length)
+  );
+  return IMPACT_COLORS[colorIndex];
 }
 
 // GeoJSON for US state boundaries
@@ -91,6 +104,16 @@ export default function StateChoroplethExplorer({ config }: StateChoroplethExplo
       code,
       name: state.name,
     }));
+  }, [summaries]);
+
+  // Compute impact range for dynamic color scaling
+  const impactRange = useMemo(() => {
+    if (!summaries?.states) return { min: 0, max: 100 };
+    const values = Object.values(summaries.states).map(s => s.impact.cessationIncreasePercent);
+    return {
+      min: Math.min(...values),
+      max: Math.max(...values),
+    };
   }, [summaries]);
 
   // Load GeoJSON on mount
@@ -192,7 +215,7 @@ export default function StateChoroplethExplorer({ config }: StateChoroplethExplo
       const stateData = summaries.states[stateCode];
       if (stateData) {
         colorEntries.push(stateName);
-        colorEntries.push(getImpactColor(stateData.impact.cessationIncreasePercent));
+        colorEntries.push(getImpactColor(stateData.impact.cessationIncreasePercent, impactRange.min, impactRange.max));
       }
     }
 
@@ -206,7 +229,7 @@ export default function StateChoroplethExplorer({ config }: StateChoroplethExplo
       ...colorEntries,
       'rgba(200, 200, 200, 0.3)' // Default for states without data
     ] as unknown as mapboxgl.Expression;
-  }, [summaries]);
+  }, [summaries, impactRange]);
 
   // Count states with data
   const stateCount = summaries ? Object.keys(summaries.states).length : 0;
@@ -323,7 +346,7 @@ export default function StateChoroplethExplorer({ config }: StateChoroplethExplo
       {/* Custom hover card */}
       {hoveredStateData && hoverPosition && (() => {
         const state = hoveredStateData;
-        const impactColor = getImpactColor(state.impact.cessationIncreasePercent);
+        const impactColor = getImpactColor(state.impact.cessationIncreasePercent, impactRange.min, impactRange.max);
 
         // Smart positioning to avoid edge cutoff
         const cardWidth = 260;
