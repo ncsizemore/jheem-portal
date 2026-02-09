@@ -28,7 +28,7 @@ export default function Navigation() {
 
   const isRyanWhiteActive = pathname === '/ryan-white' || showRyanWhiteSubmenu;
   const isStateLevelActive = pathname === '/ryan-white-state-level' || showStateLevelSubmenu;
-  const isCdcTestingActive = pathname === '/cdc-testing' || pathname?.startsWith('/cdc-testing/explorer');
+  const isCdcTestingActive = pathname === '/cdc-testing' || pathname?.startsWith('/cdc-testing/') || pathname === '/shiny/cdc-testing';
   const isHIVAgeProjectionsActive = pathname === '/aging';
   const isAnyModelActive = isRyanWhiteActive || isStateLevelActive || isCdcTestingActive || isHIVAgeProjectionsActive;
 
@@ -204,7 +204,7 @@ export default function Navigation() {
                         )}
 
                         <Link
-                          href="/cdc-testing/explorer"
+                          href="/cdc-testing"
                           className={`block px-5 py-3 transition-all duration-200 border-l-4 ${
                             isCdcTestingActive
                               ? 'bg-hopkins-blue/5 border-l-hopkins-blue'
@@ -229,32 +229,6 @@ export default function Navigation() {
                             )}
                           </div>
                         </Link>
-
-                        {/* Show CDC Testing submenu if active */}
-                        {isCdcTestingActive && (
-                          <div className="bg-gray-50 border-y border-gray-200 py-1">
-                            <Link
-                              href="/cdc-testing/explorer"
-                              className={`block px-10 py-2 text-xs font-medium transition-colors ${
-                                pathname === '/cdc-testing/explorer'
-                                  ? 'text-hopkins-blue bg-white'
-                                  : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
-                              }`}
-                            >
-                              Native Explorer (18 States)
-                            </Link>
-                            <Link
-                              href="/cdc-testing"
-                              className={`block px-10 py-2 text-xs font-medium transition-colors ${
-                                pathname === '/cdc-testing'
-                                  ? 'text-hopkins-blue bg-white'
-                                  : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
-                              }`}
-                            >
-                              Shiny App (Legacy)
-                            </Link>
-                          </div>
-                        )}
 
                         <Link
                           href="/aging"
@@ -446,7 +420,7 @@ export default function Navigation() {
                       Ryan White: State-Level
                     </Link>
                     <Link
-                      href="/cdc-testing/explorer"
+                      href="/cdc-testing"
                       className={`block px-3 py-2 rounded-lg font-medium transition-colors ${
                         isCdcTestingActive
                           ? 'bg-white/10 text-white'
@@ -455,32 +429,6 @@ export default function Navigation() {
                     >
                       CDC Testing Model
                     </Link>
-
-                    {/* CDC Testing Submenu */}
-                    {isCdcTestingActive && (
-                      <div className="ml-3 space-y-1 border-l-2 border-hopkins-gold/30 pl-3">
-                        <Link
-                          href="/cdc-testing/explorer"
-                          className={`block px-3 py-1.5 rounded text-sm transition-colors ${
-                            pathname === '/cdc-testing/explorer'
-                              ? 'text-hopkins-gold font-medium'
-                              : 'text-white/70 hover:text-white'
-                          }`}
-                        >
-                          Native Explorer
-                        </Link>
-                        <Link
-                          href="/cdc-testing"
-                          className={`block px-3 py-1.5 rounded text-sm transition-colors ${
-                            pathname === '/cdc-testing'
-                              ? 'text-hopkins-gold font-medium'
-                              : 'text-white/70 hover:text-white'
-                          }`}
-                        >
-                          Shiny App (Legacy)
-                        </Link>
-                      </div>
-                    )}
                     <Link
                       href="/aging"
                       className={`block px-3 py-2 rounded-lg font-medium transition-colors ${
