@@ -133,7 +133,6 @@ interface StatusMetricConfig {
 interface SummaryMetricsConfig {
   statusMetrics: StatusMetricConfig[];
   impactOutcome: string;
-  impactLabel: string;
 }
 
 // Default config for backward compatibility (Ryan White models)
@@ -142,8 +141,7 @@ const DEFAULT_SUMMARY_METRICS: SummaryMetricsConfig = {
     { outcome: 'diagnosed.prevalence', year: 2024, label: 'People living with diagnosed HIV', format: 'count' },
     { outcome: 'suppression', year: 2024, label: 'Viral suppression rate', format: 'percent' }
   ],
-  impactOutcome: 'incidence',
-  impactLabel: 'new HIV infections'
+  impactOutcome: 'incidence'
 };
 
 // Will be set from CLI args
@@ -326,9 +324,8 @@ function processStateFile(filePath: string): StateSummary | null {
     (cessationIncrease / cumulativeBaseline.value) * 100
   );
 
-  const impactLabel = summaryMetricsConfig.impactLabel;
-
   // Build result with new dynamic structure
+  // Note: headline/labels are kept generic - frontend constructs model-specific prose
   const result: StateSummary = {
     name: stateName,
     shortName: stateCode, // For states, short name is just the code
@@ -340,14 +337,14 @@ function processStateFile(filePath: string): StateSummary | null {
         lower: Math.round(cumulativeBaseline.lower),
         upper: Math.round(cumulativeBaseline.upper),
         year: INTERVENTION_END_YEAR,
-        label: `Cumulative ${impactLabel} (baseline, ${INTERVENTION_START_YEAR}-${INTERVENTION_END_YEAR})`,
+        label: `Cumulative baseline (${INTERVENTION_START_YEAR}-${INTERVENTION_END_YEAR})`,
       },
       cessation: {
         value: Math.round(cumulativeCessation.value),
         lower: Math.round(cumulativeCessation.lower),
         upper: Math.round(cumulativeCessation.upper),
         year: INTERVENTION_END_YEAR,
-        label: `Cumulative ${impactLabel} (if funding stops, ${INTERVENTION_START_YEAR}-${INTERVENTION_END_YEAR})`,
+        label: `Cumulative with cessation (${INTERVENTION_START_YEAR}-${INTERVENTION_END_YEAR})`,
       },
     },
     impact: {
@@ -355,7 +352,8 @@ function processStateFile(filePath: string): StateSummary | null {
       cessationIncreaseAbsolute: Math.round(cessationIncrease),
       targetYear: INTERVENTION_END_YEAR,
       startYear: INTERVENTION_START_YEAR,
-      headline: `Relative increase in ${impactLabel} if funding stops, ${INTERVENTION_START_YEAR}-${INTERVENTION_END_YEAR}`,
+      // Generic - frontend will construct model-specific headline
+      headline: `${INTERVENTION_START_YEAR}-${INTERVENTION_END_YEAR}`,
     },
   };
 
@@ -446,7 +444,7 @@ function printUsage() {
   console.error('');
   console.error('  # CDC Testing with custom metrics (diagnosed.prevalence, awareness)');
   console.error('  npx tsx scripts/generate-state-summaries.ts --single AL public/data/AL.json --start-year 2025 --end-year 2030 \\');
-  console.error('    --summary-metrics \'{"statusMetrics":[{"outcome":"diagnosed.prevalence","year":2024,"label":"People living with diagnosed HIV","format":"count"},{"outcome":"awareness","year":2024,"label":"Awareness of HIV status","format":"percent"}],"impactOutcome":"incidence","impactLabel":"new HIV infections"}\'');
+  console.error('    --summary-metrics \'{"statusMetrics":[{"outcome":"diagnosed.prevalence","year":2024,"label":"People living with diagnosed HIV","format":"count"},{"outcome":"awareness","year":2024,"label":"Awareness of HIV status","format":"percent"}],"impactOutcome":"incidence"}\'');
   console.error('');
   console.error('  npx tsx scripts/generate-state-summaries.ts --combine AL-summary.json CA-summary.json');
   console.error('');
