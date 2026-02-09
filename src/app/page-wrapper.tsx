@@ -219,14 +219,14 @@ export default function HomePageWrapper({ publications }: HomePageWrapperProps) 
                   <h3 className="text-lg font-medium text-gray-900 group-hover:text-hopkins-blue transition-colors">
                     HIV Age Distribution Projections
                   </h3>
-                  <span className="text-xs text-gray-400 whitespace-nowrap ml-3">50 states + DC</span>
+                  <span className="text-xs text-gray-400 whitespace-nowrap ml-3">24 states</span>
                 </div>
                 <p className="text-gray-600 text-sm leading-relaxed mb-4">
                   How will the HIV population age over the next 15 years?
                   State-level projections from 2025 to 2040.
                 </p>
                 <p className="text-xs text-gray-500 italic">
-                  In preparation
+                  Submitted
                 </p>
               </article>
             </Link>
