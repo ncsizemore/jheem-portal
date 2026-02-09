@@ -28,8 +28,15 @@ interface StateChoroplethExplorerProps {
 }
 
 // Construct model-specific headline for impact metric
-// The data provides the period (e.g., "2025-2030"), we add the prose
-function getImpactHeadline(modelId: string, period: string): string {
+// Handles both old format (full headline) and new format (just period)
+// TODO: Simplify once all workflows regenerate data with new format
+function getImpactHeadline(modelId: string, headlineOrPeriod: string): string {
+  // Extract period from either format
+  // Old: "Relative increase in new HIV infections if funding stops, 2025-2030"
+  // New: "2025-2030"
+  const periodMatch = headlineOrPeriod.match(/\d{4}-\d{4}/);
+  const period = periodMatch ? periodMatch[0] : headlineOrPeriod;
+
   const context = modelId === 'cdc-testing'
     ? 'if testing stops'
     : 'if funding stops';
