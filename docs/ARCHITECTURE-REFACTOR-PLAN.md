@@ -430,10 +430,10 @@ Critical for maintainability and onboarding.
 - [x] Dead routes removed
 - [x] All models use GitHub Releases (MSA migrated Session 4)
 
-### Phase 2 Complete When:
-- [ ] CDC testing explorer is live
-- [ ] No code was duplicated to add it
-- [ ] Workflow was <50 lines of new code
+### Phase 2 Complete When: ✅ DONE
+- [x] CDC testing explorer is live (18 states)
+- [x] No code was duplicated to add it (reused StateChoroplethExplorer)
+- [x] Workflow was <50 lines of new code (~40 lines)
 
 ### Phase 4 Complete When:
 - [ ] All CLAUDE.md files updated with current architecture
@@ -610,14 +610,36 @@ Focus: CDC Testing container, workflow, and frontend
   - Ryan White models: use `diagnosed.prevalence` + `suppression`
   - CDC Testing: uses `diagnosed.prevalence` + `awareness` (no suppression available)
 
-- [ ] **Full workflow run** (ready to run)
-  - Summary metrics refactor complete, ready for 18-state run
+- [x] **Full workflow run** (COMPLETE)
+  - Ran full 18-state CDC Testing workflow
+  - All states processed successfully
 
-### Session 6 (planned)
-- [ ] Complete summary metrics refactor
-- [ ] Re-run CDC Testing full workflow (18 states)
-- [ ] Verify frontend end-to-end
-- [ ] Phase 4: Documentation updates
+### Session 6 (2026-02-09)
+Focus: Config refinement and architecture assessment
+
+- [x] **Config design refinement**
+  - Removed `impactLabel` from summaryMetrics (was presentation copy, not data)
+  - Moved headline prose construction to frontend
+  - Established principle: config = what to extract, frontend = how to display
+  - Added backward-compatible headline parsing (handles old + new data format)
+
+- [x] **CDC Testing hover card fix**
+  - Fixed headline to say "if testing stops" instead of "if funding stops"
+  - Model-specific context now determined in frontend based on `config.id`
+
+- [x] **Container tech debt assessment** (documented below)
+  - Analyzed duplication across 3 container repos
+  - Identified shared base image opportunity
+  - Deferred implementation to focus on frontend polish first
+
+- [ ] **CDC Testing frontend polish** (next up)
+  - Color mapping needs tuning for CDC Testing impact ranges
+
+### Phase 2 Complete ✅
+CDC Testing integration achieved the architecture goals:
+- Added via config + thin workflow + route page
+- No component duplication
+- Shared infrastructure with Ryan White models
 
 ---
 
@@ -663,13 +685,51 @@ cdc-testing-v1.0.0        future
 3. Added `baseFilePattern: "noint"` and `filePatterns` to scenarios for workflow rename logic
 4. Re-ran AJPH workflow - data now matches publication
 
+### Container Duplication (Future Cleanup)
+
+**Status:** Documented, deferred until after CDC Testing frontend polish.
+
+**Problem:** Three container repos with significant duplication:
+
+| Repo | Purpose | Dockerfile Lines |
+|------|---------|------------------|
+| `jheem-container-minimal` | MSA + AJPH | ~220 |
+| `jheem-ryan-white-croi-container` | CROI | ~275 |
+| `jheem-cdc-testing-container` | CDC Testing | ~244 |
+
+**Duplication analysis:**
+- 4 R scripts are 100% identical across all 3 repos
+- Dockerfile base stage (~80%) is identical
+- `build-and-push.yml` workflow is nearly identical
+- Only real differences: workspace creation script, model labels
+
+**Proposed solution: Shared base image**
+```
+ghcr.io/ncsizemore/jheem-base:1.0.0  ← All R deps, common scripts (~200 lines)
+  ↳ jheem-ryan-white-model:1.0.0     ← Just workspace + labels (~30 lines)
+  ↳ jheem-ryan-white-croi:1.0.0
+  ↳ jheem-cdc-testing:1.0.0
+```
+
+**Benefits:**
+- Model containers become ~30 lines instead of ~220
+- Faster builds (base cached)
+- Single place to update common deps
+- Cleaner for scientific community sharing
+
+**Priority:** Low - containers work fine, worth doing if adding more models or sharing externally.
+
 ---
 
-## CDC Testing Integration Plan (Phase 2)
+## CDC Testing Integration Plan (Phase 2) ✅ COMPLETE
 
-### Status: Ready to Build Container
+### Status: Live and Working
 
-**Release created:** `cdc-testing-v1.0.0` ✅ (72 files, 86GB)
+**All components deployed:**
+- Release: `cdc-testing-v1.0.0` ✅ (72 files, 86GB)
+- Container: `ghcr.io/ncsizemore/jheem-cdc-testing-model:1.0.1` ✅
+- Workflow: `generate-cdc-testing.yml` ✅
+- Frontend: `/cdc-testing/explorer` ✅
 
 ### Data Configuration
 
@@ -756,7 +816,7 @@ if (CDC.TESTING.ANCHOR.YEAR==2026)
 
 3. **Plotting scripts:** Should work as-is (outcomes are standard jheem2 format)
 
-### Integration Checklist
+### Integration Checklist ✅ ALL COMPLETE
 
 - [x] Verify server has complete CDC simsets
 - [x] Create `cdc-testing-v1.0.0` release (72 files, 86GB)
@@ -768,9 +828,9 @@ if (CDC.TESTING.ANCHOR.YEAR==2026)
 - [x] Add CDC Testing config to models.json
 - [x] Create workflow wrapper (`generate-cdc-testing.yml`)
 - [x] Run workflow test (3 states: AL, CA, FL) - SUCCESS
-- [ ] Run workflow full (18 states)
-- [ ] Create frontend route (`/cdc-testing/explorer`)
-- [ ] Update navigation
+- [x] Run workflow full (18 states) - SUCCESS
+- [x] Create frontend route (`/cdc-testing/explorer`)
+- [x] Update navigation (submenu with Native Explorer + Shiny Legacy)
 
 ### Data Limitations Discovered (Session 5)
 
