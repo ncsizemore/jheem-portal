@@ -1,12 +1,7 @@
 'use client';
 
 import Link from "next/link";
-import { motion } from 'framer-motion';
 import Footer from '@/components/Footer';
-import RecentPublications from '@/components/RecentPublications';
-import PolicyNetworkIcon from '@/components/PolicyNetworkIcon';
-import TimeProjectionIcon from '@/components/TimeProjectionIcon';
-import GeographicScaleIcon from '@/components/GeographicScaleIcon';
 
 interface Publication {
   id: string;
@@ -26,290 +21,284 @@ interface HomePageWrapperProps {
 export default function HomePageWrapper({ publications }: HomePageWrapperProps) {
   return (
     <div className="min-h-screen bg-white">
-      {/* Hero Section - Icon-Forward 50/50 Design */}
-      <section className="bg-gradient-to-br from-blue-100 via-blue-50 to-slate-100 border-b border-gray-300 relative overflow-hidden">
-        {/* Subtle background pattern */}
-        <div className="absolute inset-0 opacity-[0.04]">
-          <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <pattern id="hero-grid" width="32" height="32" patternUnits="userSpaceOnUse">
-                <circle cx="16" cy="16" r="1" fill="#002D72" />
-              </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="url(#hero-grid)" />
-          </svg>
-        </div>
+      {/* Hero Section */}
+      <section className="bg-gradient-to-b from-slate-50 to-white border-b border-gray-200">
+        <div className="max-w-6xl mx-auto px-6 pt-16 pb-16">
+          {/* Main hero content */}
+          <div className="max-w-3xl mb-16">
+            <p className="text-sm font-medium text-hopkins-blue tracking-wide mb-4">
+              Johns Hopkins Bloomberg School of Public Health
+            </p>
+            <h1 className="text-4xl md:text-5xl font-normal text-gray-900 leading-tight mb-6">
+              The Johns Hopkins Epidemiological and Economic Model
+            </h1>
+            <p className="text-xl text-gray-600 leading-relaxed">
+              JHEEM provides evidence for HIV policy decisions through calibrated
+              mathematical modeling across US metropolitan areas and states.
+            </p>
+          </div>
 
-        <div className="max-w-7xl mx-auto px-6 py-16 lg:py-20 relative">
-          <div className="grid lg:grid-cols-5 gap-16 lg:gap-20 items-center">
-            {/* Left: Hero Content (40%) */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-              className="lg:col-span-2 flex flex-col justify-center"
-            >
-              <p className="text-hopkins-blue text-sm font-medium tracking-wide uppercase mb-8">
-                Johns Hopkins Epidemiological and Economic Model
-              </p>
-              <h1 className="text-5xl lg:text-7xl font-extralight text-gray-900 leading-tight mb-10 tracking-tight">
-                Evidence for<br />
-                <span className="font-medium">HIV Policy</span>
-              </h1>
-              <p className="text-xl text-gray-600 leading-relaxed font-light max-w-xl">
-                JHEEM answers critical policy questions about HIV programs, interventions, and
-                funding through calibrated mathematical modeling across US cities and states.
-              </p>
-            </motion.div>
+          {/* Model characteristics - the "how" */}
+          <div className="grid md:grid-cols-3 gap-8 max-w-4xl">
+            {/* Population dynamics */}
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0 w-14 h-14 rounded-lg bg-hopkins-blue/5 border border-hopkins-blue/10 flex items-center justify-center">
+                <svg className="w-7 h-7 text-hopkins-blue" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  {/* Compartmental boxes */}
+                  <rect x="2" y="4" width="5" height="5" rx="0.5" />
+                  <rect x="9.5" y="4" width="5" height="5" rx="0.5" />
+                  <rect x="17" y="4" width="5" height="5" rx="0.5" />
+                  {/* Arrows between */}
+                  <path d="M7 6.5h2.5M14.5 6.5h2.5" strokeLinecap="round" />
+                  {/* Population dots below */}
+                  <circle cx="4.5" cy="15" r="1" fill="currentColor" stroke="none" />
+                  <circle cx="7" cy="17" r="1" fill="currentColor" stroke="none" />
+                  <circle cx="10" cy="15.5" r="1" fill="currentColor" stroke="none" />
+                  <circle cx="12.5" cy="17.5" r="1" fill="currentColor" stroke="none" />
+                  <circle cx="15" cy="15" r="1" fill="currentColor" stroke="none" />
+                  <circle cx="18" cy="16.5" r="1" fill="currentColor" stroke="none" />
+                  <circle cx="20" cy="14.5" r="1" fill="currentColor" stroke="none" />
+                </svg>
+              </div>
+              <div>
+                <p className="font-medium text-gray-900 mb-1">Population dynamics</p>
+                <p className="text-sm text-gray-600 leading-relaxed">
+                  Disease progression modeled across 32 metros and 31 states
+                </p>
+              </div>
+            </div>
 
-            {/* Right: Structured Icon Capabilities (60%) */}
-            <motion.div
-              initial={{ opacity: 0, x: 30 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-              className="lg:col-span-3 relative"
-            >
-              {/* Population Scale */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.4 }}
-                className="flex items-center gap-8 mb-8 pb-8 border-b border-gray-300"
-              >
-                <div className="w-32 h-32 lg:w-36 lg:h-36 flex-shrink-0">
-                  <GeographicScaleIcon />
-                </div>
-                <div className="flex-1 max-w-sm">
-                  <h3 className="text-xl lg:text-2xl font-semibold text-gray-900 mb-3">Demographic Precision at Scale</h3>
-                  <p className="text-base lg:text-lg text-gray-600 leading-relaxed">
-                    Detailed disease progression modeled across 32 major metros and 31 states
-                  </p>
-                </div>
-              </motion.div>
+            {/* Scenario analysis */}
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0 w-14 h-14 rounded-lg bg-hopkins-blue/5 border border-hopkins-blue/10 flex items-center justify-center">
+                <svg className="w-7 h-7 text-hopkins-blue" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  {/* Branching paths */}
+                  <circle cx="4" cy="12" r="2" />
+                  <path d="M6 12h4" />
+                  <circle cx="12" cy="12" r="2" />
+                  <path d="M14 11l4-4M14 13l4 4" />
+                  <circle cx="20" cy="7" r="2" />
+                  <circle cx="20" cy="17" r="2" />
+                  {/* Dashed alternative */}
+                  <path d="M14 12h6" strokeDasharray="2 2" opacity="0.5" />
+                </svg>
+              </div>
+              <div>
+                <p className="font-medium text-gray-900 mb-1">Scenario analysis</p>
+                <p className="text-sm text-gray-600 leading-relaxed">
+                  What-if modeling of funding changes and interventions
+                </p>
+              </div>
+            </div>
 
-              {/* Policy Scenarios */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.5 }}
-                className="flex items-center gap-8 mb-8 pb-8 border-b border-gray-300"
-              >
-                <div className="w-32 h-32 lg:w-36 lg:h-36 flex-shrink-0">
-                  <PolicyNetworkIcon />
-                </div>
-                <div className="flex-1 max-w-sm">
-                  <h3 className="text-xl lg:text-2xl font-semibold text-gray-900 mb-3">Policy Scenarios</h3>
-                  <p className="text-base lg:text-lg text-gray-600 leading-relaxed">
-                    What-if modeling of funding cuts, intervention scale-up, service disruptions
-                  </p>
-                </div>
-              </motion.div>
-
-              {/* Time Horizons */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.6 }}
-                className="flex items-center gap-8"
-              >
-                <div className="w-32 h-32 lg:w-36 lg:h-36 flex-shrink-0">
-                  <TimeProjectionIcon />
-                </div>
-                <div className="flex-1 max-w-sm">
-                  <h3 className="text-xl lg:text-2xl font-semibold text-gray-900 mb-3">Time Horizons</h3>
-                  <p className="text-base lg:text-lg text-gray-600 leading-relaxed">
-                    Immediate impacts to long-term demographic shifts (2025-2040)
-                  </p>
-                </div>
-              </motion.div>
-            </motion.div>
+            {/* Time horizons */}
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0 w-14 h-14 rounded-lg bg-hopkins-blue/5 border border-hopkins-blue/10 flex items-center justify-center">
+                <svg className="w-7 h-7 text-hopkins-blue" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  {/* Axis */}
+                  <path d="M3 18h18M3 18V6" />
+                  {/* Projection curve */}
+                  <path d="M5 14c2-1 4-3 6-3s4 2 6 4c1 1 2 1 3 0" />
+                  {/* Uncertainty band (subtle) */}
+                  <path d="M5 12c2-2 4-4 6-4s4 3 6 5c1 1 2 2 3 1" opacity="0.3" />
+                  <path d="M5 16c2 0 4-2 6-2s4 1 6 3c1 1 2 0 3-1" opacity="0.3" />
+                </svg>
+              </div>
+              <div>
+                <p className="font-medium text-gray-900 mb-1">Time horizons</p>
+                <p className="text-sm text-gray-600 leading-relaxed">
+                  Projections from immediate impacts to 2040
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Model Applications */}
-      <section id="applications" className="py-24 bg-gradient-to-br from-slate-50/50 to-blue-50/30">
-        <div className="max-w-7xl mx-auto px-6">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-          >
-            {/* Section Header */}
-            <div className="text-center mb-16">
-              <p className="text-hopkins-blue text-sm font-semibold tracking-widest uppercase mb-4">
-                Interactive Tools
+      {/* Key Finding Highlight */}
+      <section className="border-b border-gray-200">
+        <div className="max-w-6xl mx-auto px-6 py-12">
+          <div className="flex flex-col md:flex-row md:items-center gap-6 md:gap-12 bg-amber-50/50 rounded-lg p-6 border border-amber-100">
+            <div className="flex-1">
+              <p className="text-xs font-semibold text-amber-700 uppercase tracking-wide mb-2">
+                Recent Finding
               </p>
-              <h2 className="text-4xl lg:text-5xl font-extralight text-gray-900 mb-6">
-                Explore Our <span className="font-medium">Models</span>
-              </h2>
-              <p className="text-lg text-gray-600 max-w-3xl mx-auto font-light leading-relaxed">
-                Access specialized modeling applications for HIV policy analysis across metropolitan areas and states
+              <p className="text-lg md:text-xl text-gray-900 leading-snug">
+                Our models project <span className="font-semibold">12,700 additional HIV infections</span> if
+                CDC-funded testing programs end permanently across 18 states.
               </p>
             </div>
-
-            {/* Application Cards - 2x2 Grid */}
-            <div className="grid md:grid-cols-2 gap-6 max-w-6xl mx-auto">
-              {/* Ryan White Model */}
-              <motion.div
-                initial={{ opacity: 0, x: 30 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.6, delay: 0.6 }}
+            <div className="flex-shrink-0">
+              <Link
+                href="/cdc-testing"
+                className="inline-flex items-center gap-2 text-sm font-medium text-amber-800 hover:text-amber-900 transition-colors"
               >
-                <Link href="/ryan-white" className="group block">
-                  <div className="bg-white/80 backdrop-blur-sm border border-gray-200/50 rounded-2xl p-8 hover:bg-white hover:border-hopkins-blue/30 hover:shadow-xl transition-all duration-500 hover:-translate-y-1">
-                    <div className="flex items-start gap-6">
-                      <div className="bg-gradient-to-br from-hopkins-blue to-hopkins-spirit-blue rounded-xl p-4 group-hover:shadow-lg transition-shadow duration-300">
-                        <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                        </svg>
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-3">
-                          <h3 className="text-2xl font-light text-gray-900 group-hover:text-hopkins-blue transition-colors duration-300">
-                            Ryan White HIV/AIDS Program
-                          </h3>
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-hopkins-blue/10 text-hopkins-blue border border-hopkins-blue/20">
-                            Interactive
-                          </span>
-                        </div>
-                        <p className="text-gray-600 leading-relaxed mb-4 font-light">
-                          Analyze funding scenarios and their impact on HIV care continuum outcomes across US metropolitan areas. Model the effects of brief interruptions, prolonged gaps, and complete program cessation.
-                        </p>
-                        <div className="flex items-center text-hopkins-blue text-sm font-medium group-hover:text-hopkins-spirit-blue transition-all duration-300">
-                          <span>Explore Models</span>
-                          <svg className="w-4 h-4 ml-2 transform group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                          </svg>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              </motion.div>
-
-              {/* State Level Model */}
-              <motion.div
-                initial={{ opacity: 0, x: 30 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.6, delay: 0.7 }}
-              >
-                <Link href="/ryan-white-state-level" className="group block">
-                  <div className="bg-white/80 backdrop-blur-sm border border-gray-200/50 rounded-2xl p-8 hover:bg-white hover:border-hopkins-spirit-blue/30 hover:shadow-xl transition-all duration-500 hover:-translate-y-1">
-                    <div className="flex items-start gap-6">
-                      <div className="bg-gradient-to-br from-hopkins-spirit-blue to-hopkins-blue rounded-xl p-4 group-hover:shadow-lg transition-shadow duration-300">
-                        <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-1.447-.894L15 10m0 7V10m0 0L9 7" />
-                        </svg>
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-3">
-                          <h3 className="text-2xl font-light text-gray-900 group-hover:text-hopkins-spirit-blue transition-colors duration-300">
-                            State Level Analysis
-                          </h3>
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-purple-50 text-purple-700 border border-purple-200">
-                            Shiny App
-                          </span>
-                        </div>
-                        <p className="text-gray-600 leading-relaxed mb-4 font-light">
-                          Analyze Ryan White HIV/AIDS Program funding scenarios at the state level, providing comprehensive jurisdictional insights for policy makers and program administrators.
-                        </p>
-                        <div className="flex items-center text-hopkins-spirit-blue text-sm font-medium group-hover:text-hopkins-blue transition-all duration-300">
-                          <span>Launch Application</span>
-                          <svg className="w-4 h-4 ml-2 transform group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                          </svg>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              </motion.div>
-
-              {/* CDC Testing Model */}
-              <motion.div
-                initial={{ opacity: 0, x: 30 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.6, delay: 0.8 }}
-              >
-                <Link href="/cdc-testing" className="group block">
-                  <div className="bg-white/80 backdrop-blur-sm border border-gray-200/50 rounded-2xl p-8 hover:bg-white hover:border-hopkins-gold/50 hover:shadow-xl transition-all duration-500 hover:-translate-y-1">
-                    <div className="flex items-start gap-6">
-                      <div className="bg-gradient-to-br from-hopkins-gold to-amber-400 rounded-xl p-4 group-hover:shadow-lg transition-shadow duration-300">
-                        <svg className="w-7 h-7 text-hopkins-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-3">
-                          <h3 className="text-2xl font-light text-gray-900 group-hover:text-hopkins-blue transition-colors duration-300">
-                            CDC Testing Strategies
-                          </h3>
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-purple-50 text-purple-700 border border-purple-200">
-                            Shiny App
-                          </span>
-                        </div>
-                        <p className="text-gray-600 leading-relaxed mb-4 font-light">
-                          Evaluate the epidemiological impact of cuts to CDC-funded HIV testing programs, modeling cessation, brief interruption, and prolonged interruption scenarios.
-                        </p>
-                        <div className="flex items-center text-hopkins-blue text-sm font-medium group-hover:text-amber-600 transition-all duration-300">
-                          <span>Launch Application</span>
-                          <svg className="w-4 h-4 ml-2 transform group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                          </svg>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              </motion.div>
-
-              {/* HIV Age Projections */}
-              <motion.div
-                initial={{ opacity: 0, x: 30 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.6, delay: 0.9 }}
-              >
-                <Link href="/aging" className="group block">
-                  <div className="bg-white/80 backdrop-blur-sm border border-gray-200/50 rounded-2xl p-8 hover:bg-white hover:border-emerald-500/30 hover:shadow-xl transition-all duration-500 hover:-translate-y-1">
-                    <div className="flex items-start gap-6">
-                      <div className="bg-gradient-to-br from-emerald-500 to-teal-500 rounded-xl p-4 group-hover:shadow-lg transition-shadow duration-300">
-                        <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-3">
-                          <h3 className="text-2xl font-light text-gray-900 group-hover:text-emerald-600 transition-colors duration-300">
-                            HIV Age Projections
-                          </h3>
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                            Interactive
-                          </span>
-                        </div>
-                        <p className="text-gray-600 leading-relaxed mb-4 font-light">
-                          Explore state-level projections of HIV age distributions from 2025-2040. Compare multiple states across demographic groups and visualize the aging HIV population.
-                        </p>
-                        <div className="flex items-center text-emerald-600 text-sm font-medium group-hover:text-teal-600 transition-all duration-300">
-                          <span>Explore Projections</span>
-                          <svg className="w-4 h-4 ml-2 transform group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                          </svg>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              </motion.div>
+                <span>Read the analysis</span>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </Link>
             </div>
-          </motion.div>
+          </div>
         </div>
       </section>
 
-      {/* Recent Publications - Dynamic from Group Website API */}
-      <div id="publications">
-        <RecentPublications publications={publications} />
-      </div>
+      {/* Research Applications */}
+      <section className="border-b border-gray-200">
+        <div className="max-w-6xl mx-auto px-6 py-16">
+          <h2 className="text-2xl font-normal text-gray-900 mb-2">
+            Research Applications
+          </h2>
+          <p className="text-gray-600 mb-10 max-w-2xl">
+            Interactive tools for exploring our modeling analyses. Each application
+            corresponds to peer-reviewed or preprint research.
+          </p>
+
+          <div className="grid md:grid-cols-2 gap-6">
+            {/* Ryan White - City Level */}
+            <Link href="/ryan-white" className="group block">
+              <article className="h-full p-6 bg-white border border-gray-200 rounded-lg hover:border-hopkins-blue/50 hover:shadow-sm transition-all">
+                <div className="flex items-start justify-between mb-3">
+                  <h3 className="text-lg font-medium text-gray-900 group-hover:text-hopkins-blue transition-colors">
+                    Ryan White Program: City-Level
+                  </h3>
+                  <span className="text-xs text-gray-400 whitespace-nowrap ml-3">31 cities</span>
+                </div>
+                <p className="text-gray-600 text-sm leading-relaxed mb-4">
+                  What happens if Ryan White funding is interrupted or eliminated?
+                  Modeling impacts on HIV care outcomes across major US metropolitan areas.
+                </p>
+                <p className="text-xs text-gray-500">
+                  <span className="italic">Ann Intern Med</span>, 2025
+                </p>
+              </article>
+            </Link>
+
+            {/* Ryan White - State Level */}
+            <Link href="/ryan-white-state-level" className="group block">
+              <article className="h-full p-6 bg-white border border-gray-200 rounded-lg hover:border-hopkins-blue/50 hover:shadow-sm transition-all">
+                <div className="flex items-start justify-between mb-3">
+                  <h3 className="text-lg font-medium text-gray-900 group-hover:text-hopkins-blue transition-colors">
+                    Ryan White Program: State-Level
+                  </h3>
+                  <span className="text-xs text-gray-400 whitespace-nowrap ml-3">30 states</span>
+                </div>
+                <p className="text-gray-600 text-sm leading-relaxed mb-4">
+                  Statewide projections of Ryan White funding disruption,
+                  providing jurisdictional insights for policy makers.
+                </p>
+                <p className="text-xs text-gray-500">
+                  <span className="italic">AJPH</span>, 2026 &middot; <span className="italic">CROI</span>, 2026
+                </p>
+              </article>
+            </Link>
+
+            {/* CDC Testing */}
+            <Link href="/cdc-testing" className="group block">
+              <article className="h-full p-6 bg-white border border-gray-200 rounded-lg hover:border-hopkins-blue/50 hover:shadow-sm transition-all">
+                <div className="flex items-start justify-between mb-3">
+                  <h3 className="text-lg font-medium text-gray-900 group-hover:text-hopkins-blue transition-colors">
+                    CDC-Funded HIV Testing
+                  </h3>
+                  <span className="text-xs text-gray-400 whitespace-nowrap ml-3">18 states</span>
+                </div>
+                <p className="text-gray-600 text-sm leading-relaxed mb-4">
+                  What is the epidemiological impact of ending CDC-funded testing?
+                  Modeling cessation and interruption scenarios.
+                </p>
+                <p className="text-xs text-gray-500">
+                  <span className="italic">medRxiv</span>, 2025
+                </p>
+              </article>
+            </Link>
+
+            {/* HIV Age Projections */}
+            <Link href="/aging" className="group block">
+              <article className="h-full p-6 bg-white border border-gray-200 rounded-lg hover:border-hopkins-blue/50 hover:shadow-sm transition-all">
+                <div className="flex items-start justify-between mb-3">
+                  <h3 className="text-lg font-medium text-gray-900 group-hover:text-hopkins-blue transition-colors">
+                    HIV Age Distribution Projections
+                  </h3>
+                  <span className="text-xs text-gray-400 whitespace-nowrap ml-3">50 states + DC</span>
+                </div>
+                <p className="text-gray-600 text-sm leading-relaxed mb-4">
+                  How will the HIV population age over the next 15 years?
+                  State-level projections from 2025 to 2040.
+                </p>
+                <p className="text-xs text-gray-500 italic">
+                  In preparation
+                </p>
+              </article>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Publications */}
+      <section className="bg-slate-50">
+        <div className="max-w-6xl mx-auto px-6 py-16">
+          <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-4 mb-10">
+            <div>
+              <h2 className="text-2xl font-normal text-gray-900 mb-1">
+                Recent Publications
+              </h2>
+              <p className="text-gray-600 text-sm">
+                Peer-reviewed research using JHEEM
+              </p>
+            </div>
+            <a
+              href="https://jhu-comp-epi.vercel.app/publications?project=jheem"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm text-hopkins-blue hover:text-hopkins-spirit-blue transition-colors"
+            >
+              View all publications &rarr;
+            </a>
+          </div>
+
+          {publications && publications.length > 0 ? (
+            <div className="space-y-6">
+              {publications.map((publication) => (
+                <article key={publication.id} className="group">
+                  <a
+                    href={publication.url || `https://doi.org/${publication.doi}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block bg-white rounded-lg p-6 border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all"
+                  >
+                    <div className="flex flex-col sm:flex-row sm:items-start gap-4">
+                      <div className="flex-shrink-0">
+                        <span className="inline-block px-2 py-1 bg-hopkins-blue text-white text-xs font-medium rounded">
+                          {publication.year}
+                        </span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-base text-gray-900 group-hover:text-hopkins-blue transition-colors leading-snug mb-2">
+                          {publication.title}
+                        </h3>
+                        <p className="text-sm text-gray-500 mb-1">
+                          {publication.authors.split(',').slice(0, 3).join(', ')}
+                          {publication.authors.split(',').length > 3 && ' et al.'}
+                        </p>
+                        <p className="text-sm text-hopkins-blue italic">
+                          {publication.journal}
+                        </p>
+                        {publication.keyFindings && (
+                          <p className="text-sm text-gray-600 mt-3 leading-relaxed">
+                            {publication.keyFindings}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </a>
+                </article>
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray-500">No publications available</p>
+          )}
+        </div>
+      </section>
 
       <Footer />
     </div>
