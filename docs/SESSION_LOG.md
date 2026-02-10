@@ -11,17 +11,23 @@ Append-only log of session work and context. Most recent first.
 - Moved Shiny app to `/shiny/cdc-testing` as legacy route
 - Redesigned homepage with academic framing (research questions, smaller icons, publication citations)
 - Simplified navigation (CDC Testing links to landing, no submenu)
-- Implemented dynamic color scaling for state choropleths
 - Repository cleanup: archived old docs, removed session files from git, rewrote README
+
+### Documentation Updates (Phase 4)
+- **jheem-portal**: Slimmed CLAUDE.md to architecture-only, created SESSION_LOG.md
+- **jheem-backend**: Created CLAUDE.md + rewrote README with "Adding a New Model" guide
+- **jheem-container-minimal**: Light touch - noted current usage + planned restructuring
+- **jheem-simulations**: Updated README with all releases + naming conventions
+- Marked `ryan-white-state-v1.0.0` as deprecated in GitHub Releases
+
+### Architecture Refactor Plan: CLOSED
+- All core goals achieved (see `docs/ARCHITECTURE-REFACTOR-PLAN.md`)
+- Remaining tech debt documented: container shared base image (next priority)
 
 ### Design Principles Established
 - Landing pages: Publication-focused (preprint info, key findings, tool links)
 - Homepage: Academic framing (research questions, not product features)
 - Config boundary: models.json = what to extract, frontend = how to display
-
-### Current Focus
-- Documentation updates across repos (Phase 4 of refactor plan)
-- Container tech debt (shared base image opportunity) - deferred
 
 ---
 
