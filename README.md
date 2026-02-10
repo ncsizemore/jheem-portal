@@ -1,64 +1,79 @@
-# JHEEM Interactive Application Portal
+# JHEEM Portal
 
-This project is a Next.js-based web portal designed to serve as a unified interface for accessing different functionalities of the JHEEM (Johns Hopkins Epidemiological and Economic Model) interactive applications.
+The Johns Hopkins Epidemiological and Economic Model (JHEEM) portal provides interactive tools for exploring HIV policy modeling analyses.
 
-Currently, it provides access to "Prerun Scenarios" and "Custom Simulations" from the `jheem2_interactive` Shiny application.
+**Live site:** https://jheem.org
 
-## Getting Started
+## Research Applications
+
+| Application | Description | Route |
+|-------------|-------------|-------|
+| **Ryan White: City-Level** | Impact of funding disruption across 31 MSAs | `/ryan-white` |
+| **Ryan White: State-Level** | Statewide analysis (AJPH: 11 states, CROI: 30 states) | `/ryan-white-state-level` |
+| **CDC Testing** | Impact of ending CDC-funded HIV testing (18 states) | `/cdc-testing` |
+| **HIV Age Projections** | Age distribution projections 2025-2040 (24 states) | `/aging` |
+
+## Development
 
 ### Prerequisites
 
-*   Node.js (LTS version recommended, e.g., v18.x or v20.x)
-*   npm (comes with Node.js)
-*   A running instance of the `jheem2_interactive` Shiny application.
+- Node.js 18+
+- npm
 
-### Installation
+### Setup
 
-1.  Clone the repository (if you haven't already):
-    ```bash
-    git clone <your-repository-url>
-    cd jheem-portal
-    ```
-2.  Install dependencies:
-    ```bash
-    npm install
-    ```
+```bash
+git clone https://github.com/ncsizemore/jheem-portal.git
+cd jheem-portal
+npm install
+```
 
-### Running the Portal Locally
+### Running locally
 
-1.  **Ensure your local `jheem2_interactive` Shiny application is running.**
-    The portal expects the Shiny app to be accessible. By default, it's configured to look for the Shiny app at:
-    *   Prerun: `http://127.0.0.1:4927/?initial_tab=prerun`
-    *   Custom: `http://127.0.0.1:4927/?initial_tab=custom`
-    These URLs are currently configured in `src/components/AppViewManager.tsx`. (Future improvement: Use environment variables).
+```bash
+npm run dev
+```
 
-2.  Run the Next.js development server:
-    ```bash
-    npm run dev
-    ```
+Open http://localhost:3000
 
-3.  Open [http://localhost:3000](http://localhost:3000) with your browser to see the portal.
+### Building
 
-## Key Architectural Features
+```bash
+npm run build
+```
 
-*   **Persistent Iframes:** The portal uses a component (`src/components/AppViewManager.tsx`) integrated into the main layout (`src/app/layout.tsx`). This manager renders the "Prerun Scenarios" and "Custom Simulations" views within iframes.
-*   **State Preservation:** By keeping the iframes persistently loaded within the main layout and toggling their visibility, the state of the underlying Shiny application is preserved when navigating between the "Prerun" and "Custom" sections in the portal.
+This syncs configuration from `jheem-backend/models.json` before building.
 
-## Development Scripts
+## Architecture
 
-*   `npm run dev`: Starts the development server.
-*   `npm run build`: Builds the application for production.
-*   `npm run start`: Starts a production server (after building).
-*   `npm run lint`: Lints the codebase using ESLint.
+The portal is part of a multi-repository system:
 
-## Future Enhancements (Phase 1 Considerations)
+| Repository | Purpose |
+|------------|---------|
+| **jheem-portal** | Next.js frontend (this repo) |
+| **jheem-backend** | GitHub Actions workflows, `models.json` config |
+| **jheem-simulations** | Simulation data (GitHub Releases) |
+| **jheem-*-container** | R containers for data extraction |
 
-*   **Scroll Position Persistence:** Investigate preserving the scroll position within the iframes when switching views.
+Data flows: GitHub Releases → GitHub Actions → S3/CloudFront → Portal
 
-## Deployment
+See `CLAUDE.md` for detailed architecture documentation.
 
-(Details to be added - typically deployed to platforms like Vercel or Netlify.)
+## Adding a New Model
 
----
+See [jheem-backend](https://github.com/ncsizemore/jheem-backend) for the step-by-step guide. In brief:
 
-*This project was bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app) and uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) with the [Geist](https://vercel.com/font) font family.*
+1. Add config to `models.json` (jheem-backend)
+2. Create thin workflow wrapper (~40 lines)
+3. Create route page in portal (~30 lines)
+
+## Tech Stack
+
+- **Framework:** Next.js 15, TypeScript 5
+- **Styling:** Tailwind CSS 4
+- **Visualization:** Recharts, Plotly.js
+- **Mapping:** Mapbox GL JS, react-map-gl
+
+## License
+
+[Add license information]
