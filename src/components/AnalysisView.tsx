@@ -158,6 +158,7 @@ export default function AnalysisView({
       panels: chartPanels,
       locationName: currentLocation.name,
       scenario: selectedScenario,
+      scenarioLabel: scenarioLabels[selectedScenario],
       outcome: plotData.metadata.outcome || selectedOutcome,
       statistic: selectedStatistic,
       facet: selectedFacet,
@@ -410,7 +411,7 @@ export default function AnalysisView({
                   <tr>
                     {isFaceted && <th className="px-4 py-3 text-left font-medium text-slate-700">Group</th>}
                     <th className="px-4 py-3 text-left font-medium text-slate-700">Year</th>
-                    <th className="px-4 py-3 text-right font-medium text-slate-700">Intervention</th>
+                    <th className="px-4 py-3 text-right font-medium text-slate-700">{scenarioLabels[selectedScenario] || 'Intervention'}</th>
                     <th className="px-4 py-3 text-right font-medium text-slate-700">95% CI</th>
                     <th className="px-4 py-3 text-right font-medium text-slate-700">Baseline</th>
                     <th className="px-4 py-3 text-right font-medium text-slate-700">95% CI</th>

@@ -8,6 +8,7 @@ export interface CsvExportOptions {
   panels: FacetPanel[];
   locationName: string;
   scenario: string;
+  scenarioLabel?: string;
   outcome: string;
   statistic: string;
   facet: string;
@@ -17,6 +18,7 @@ export function exportToCsv({
   panels,
   locationName,
   scenario,
+  scenarioLabel,
   outcome,
   statistic,
   facet,
@@ -26,10 +28,22 @@ export function exportToCsv({
   const rows: string[] = [];
   const isFaceted = panels.length > 1;
 
-  // Header row
+  // Metadata header
+  const exportDate = new Date().toISOString().split('T')[0];
+  rows.push(`# Location: ${locationName}`);
+  rows.push(`# Scenario: ${scenarioLabel || scenario}`);
+  rows.push(`# Outcome: ${outcome}`);
+  rows.push(`# Statistic: ${statistic}`);
+  if (isFaceted) rows.push(`# Breakdown: ${facet}`);
+  rows.push(`# Exported: ${exportDate}`);
+  rows.push(`# Source: JHEEM Portal (https://jheem.org)`);
+  rows.push('#');
+
+  // Header row - use scenario label instead of generic "Intervention"
+  const label = scenarioLabel || 'Intervention';
   const headers = isFaceted
-    ? ['Facet', 'Year', 'Intervention', 'Intervention Lower', 'Intervention Upper', 'Baseline', 'Baseline Lower', 'Baseline Upper']
-    : ['Year', 'Intervention', 'Intervention Lower', 'Intervention Upper', 'Baseline', 'Baseline Lower', 'Baseline Upper'];
+    ? ['Facet', 'Year', label, `${label} Lower`, `${label} Upper`, 'Baseline', 'Baseline Lower', 'Baseline Upper']
+    : ['Year', label, `${label} Lower`, `${label} Upper`, 'Baseline', 'Baseline Lower', 'Baseline Upper'];
   rows.push(headers.join(','));
 
   // Data rows

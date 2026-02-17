@@ -50,6 +50,7 @@ interface CustomTooltipProps {
   label?: string | number;
   displayAsPercent: boolean;
   units: string;
+  scenarioLabel?: string;
 }
 
 interface ObservationPayload {
@@ -58,7 +59,7 @@ interface ObservationPayload {
   payload?: { source?: string };
 }
 
-const CustomTooltip = ({ active, payload, label, displayAsPercent, units }: CustomTooltipProps) => {
+const CustomTooltip = ({ active, payload, label, displayAsPercent, units, scenarioLabel }: CustomTooltipProps) => {
   if (!active || !payload || payload.length === 0) return null;
 
   const interventionPoint = payload.find(p => p.dataKey === 'value');
@@ -80,8 +81,8 @@ const CustomTooltip = ({ active, payload, label, displayAsPercent, units }: Cust
       {interventionPoint && interventionPoint.value !== undefined && (
         <div className="flex items-center gap-2 mb-1">
           <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#3b82f6' }} />
-          <span className="text-sm text-gray-700">Intervention:</span>
-          <span className="text-sm font-semibold">{formatValue(interventionPoint.value)}</span>
+          <span className="text-sm text-gray-700">{scenarioLabel || 'Intervention'}:</span>
+          <span className="text-sm font-semibold text-gray-900">{formatValue(interventionPoint.value)}</span>
         </div>
       )}
 
@@ -89,7 +90,7 @@ const CustomTooltip = ({ active, payload, label, displayAsPercent, units }: Cust
         <div className="flex items-center gap-2 mb-1">
           <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#9ca3af' }} />
           <span className="text-sm text-gray-700">Baseline:</span>
-          <span className="text-sm font-semibold">{formatValue(baselinePoint.value)}</span>
+          <span className="text-sm font-semibold text-gray-900">{formatValue(baselinePoint.value)}</span>
         </div>
       )}
 
@@ -99,7 +100,7 @@ const CustomTooltip = ({ active, payload, label, displayAsPercent, units }: Cust
           <span className="text-sm text-gray-700">
             Observed{obs.payload?.source ? ` (${obs.payload.source})` : ''}:
           </span>
-          <span className="text-sm font-semibold">{formatValue(obs.value)}</span>
+          <span className="text-sm font-semibold text-gray-900">{formatValue(obs.value)}</span>
         </div>
       ))}
 
@@ -274,7 +275,7 @@ const NativeSimulationChart = memo(({
 
           {/* Tooltip disabled for individual simulations (too many lines) */}
           {!isIndividualSimulation && (
-            <Tooltip content={<CustomTooltip displayAsPercent={displayAsPercent} units={units} />} />
+            <Tooltip content={<CustomTooltip displayAsPercent={displayAsPercent} units={units} scenarioLabel={scenarioLabel} />} />
           )}
 
           {/* Legend - custom for individual simulations */}
@@ -283,7 +284,7 @@ const NativeSimulationChart = memo(({
               wrapperStyle={{ paddingTop: 20 }}
               formatter={(value: string) => {
                 const labels: Record<string, string> = {
-                  value: 'Intervention',
+                  value: scenarioLabel || 'Intervention',
                   baselineValue: 'Baseline',
                 };
                 return <span className="text-sm text-gray-700">{labels[value] || value}</span>;
@@ -298,7 +299,7 @@ const NativeSimulationChart = memo(({
             strokeDasharray="5 5"
             strokeWidth={1}
             label={{
-              value: 'Intervention Start',
+              value: `${scenarioLabel || 'Intervention'} Start`,
               position: 'top',
               fill: '#f59e0b',
               fontSize: 10,
@@ -489,7 +490,7 @@ const NativeSimulationChart = memo(({
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full bg-red-500" />
               <span className="text-sm text-gray-700">{hoveredObs.source}:</span>
-              <span className="text-sm font-semibold">{formatDisplayValue(hoveredObs.value)}</span>
+              <span className="text-sm font-semibold text-gray-900">{formatDisplayValue(hoveredObs.value)}</span>
             </div>
             <p className="text-xs text-gray-500 mt-1">{units}</p>
           </div>
