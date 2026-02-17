@@ -111,10 +111,10 @@ export default function RyanWhiteStateLevelPage() {
             >
               <div>
                 <p className="font-medium text-gray-900 group-hover:text-hopkins-blue transition-colors">
-                  AJPH Explorer
+                  11 States (2025–2030)
                 </p>
                 <p className="text-sm text-gray-500">
-                  11 states · 2026 paper
+                  AJPH · forthcoming 2026
                 </p>
               </div>
               <svg className="w-5 h-5 text-gray-400 group-hover:text-hopkins-blue transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -127,10 +127,10 @@ export default function RyanWhiteStateLevelPage() {
             >
               <div>
                 <p className="font-medium text-gray-900 group-hover:text-hopkins-blue transition-colors">
-                  CROI Explorer
+                  30 States (2026–2031)
                 </p>
                 <p className="text-sm text-gray-500">
-                  30 states · 2026 conference
+                  CROI 2026
                 </p>
               </div>
               <svg className="w-5 h-5 text-gray-400 group-hover:text-hopkins-blue transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">

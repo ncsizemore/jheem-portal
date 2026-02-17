@@ -114,9 +114,13 @@ export default function AnalysisView({
     return availableLocations.find(loc => loc.code === locationCode);
   }, [availableLocations, locationCode]);
 
-  // Derive scenario descriptions from config
+  // Derive scenario descriptions and labels from config
   const scenarioDescriptions = useMemo(() => {
     return Object.fromEntries(config.scenarios.map(s => [s.id, s.description]));
+  }, [config.scenarios]);
+
+  const scenarioLabels = useMemo(() => {
+    return Object.fromEntries(config.scenarios.map(s => [s.id, s.label]));
   }, [config.scenarios]);
 
   // Get plot data
@@ -466,6 +470,8 @@ export default function AnalysisView({
               options={displayOptions}
               height={500}
               interventionStartYear={config.interventionStartYear}
+              locationName={currentLocation?.name}
+              scenarioLabel={scenarioLabels[selectedScenario]}
             />
           </div>
         ) : (
@@ -515,6 +521,8 @@ export default function AnalysisView({
                     options={displayOptions}
                     height={300}
                     interventionStartYear={config.interventionStartYear}
+                    locationName={currentLocation?.name}
+                    scenarioLabel={scenarioLabels[selectedScenario]}
                   />
                 </div>
               ))}

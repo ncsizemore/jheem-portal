@@ -33,6 +33,8 @@ interface NativeSimulationChartProps {
   options: ChartDisplayOptions;
   height?: number;
   interventionStartYear?: number;
+  locationName?: string;
+  scenarioLabel?: string;
 }
 
 interface TooltipPayload {
@@ -119,6 +121,8 @@ const NativeSimulationChart = memo(({
   options,
   height = 400,
   interventionStartYear = 2025,
+  locationName,
+  scenarioLabel,
 }: NativeSimulationChartProps) => {
   const { showConfidenceInterval, showBaseline, showObservations } = options;
   const { data, observations, facetLabel, isIndividualSimulation, individualSimulations } = panel;
@@ -215,8 +219,14 @@ const NativeSimulationChart = memo(({
     <div className="w-full">
       <h3 className="text-lg font-semibold text-gray-900 mb-2">
         {outcomeLabel}
+        {locationName && (
+          <span className="text-gray-500 font-normal"> — {locationName}</span>
+        )}
+        {scenarioLabel && (
+          <span className="text-gray-500 font-normal"> — {scenarioLabel}</span>
+        )}
         {facetLabel !== 'All' && (
-          <span className="text-gray-500 font-normal"> - {facetLabel}</span>
+          <span className="text-gray-500 font-normal"> — {facetLabel}</span>
         )}
       </h3>
 

@@ -188,7 +188,7 @@ export default function Navigation() {
                                   : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
                               }`}
                             >
-                              AJPH Explorer (11 States)
+                              11 States (2025–2030)
                             </Link>
                             <Link
                               href="/ryan-white-state-level/explorer/croi"
@@ -198,7 +198,7 @@ export default function Navigation() {
                                   : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
                               }`}
                             >
-                              CROI Explorer (30 States)
+                              30 States (2026–2031)
                             </Link>
                           </div>
                         )}
@@ -334,7 +334,7 @@ export default function Navigation() {
                       href="/ryan-white-state-level/explorer/ajph"
                       className="text-white hover:text-hopkins-gold font-medium transition-all relative group py-1"
                     >
-                      <span>AJPH Explorer</span>
+                      <span>11 States (2025–2030)</span>
                       <span className={`absolute bottom-0 left-0 h-0.5 bg-hopkins-gold transition-all duration-300 ${
                         pathname === '/ryan-white-state-level/explorer/ajph' ? 'w-full' : 'w-0 group-hover:w-full'
                       }`}></span>
@@ -343,7 +343,7 @@ export default function Navigation() {
                       href="/ryan-white-state-level/explorer/croi"
                       className="text-white hover:text-hopkins-gold font-medium transition-all relative group py-1"
                     >
-                      <span>CROI Explorer</span>
+                      <span>30 States (2026–2031)</span>
                       <span className={`absolute bottom-0 left-0 h-0.5 bg-hopkins-gold transition-all duration-300 ${
                         pathname === '/ryan-white-state-level/explorer/croi' ? 'w-full' : 'w-0 group-hover:w-full'
                       }`}></span>

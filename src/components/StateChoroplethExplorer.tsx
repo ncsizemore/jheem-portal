@@ -205,7 +205,7 @@ export default function StateChoroplethExplorer({ config }: StateChoroplethExplo
   // Build the fill color expression for the choropleth
   const fillColorExpression = useMemo(() => {
     if (!summaries) {
-      return 'rgba(200, 200, 200, 0.3)' as const;
+      return 'rgba(200, 200, 200, 0.6)' as const;
     }
 
     const colorEntries: string[] = [];
@@ -220,14 +220,14 @@ export default function StateChoroplethExplorer({ config }: StateChoroplethExplo
     }
 
     if (colorEntries.length === 0) {
-      return 'rgba(200, 200, 200, 0.3)' as const;
+      return 'rgba(200, 200, 200, 0.6)' as const;
     }
 
     return [
       'match',
       ['get', 'NAME'],
       ...colorEntries,
-      'rgba(200, 200, 200, 0.3)' // Default for states without data
+      'rgba(200, 200, 200, 0.6)' // Default for states without data
     ] as unknown as mapboxgl.Expression;
   }, [summaries, impactRange]);
 
