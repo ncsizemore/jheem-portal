@@ -11,6 +11,7 @@
     "postinstall": "npm run sync-config"
   },
   "dependencies": {
+    "@vercel/analytics": "^1.6.1",
     "@xyflow/react": "^12.9.3",
     "framer-motion": "^12.17.0",
     "html2canvas": "^1.4.1",

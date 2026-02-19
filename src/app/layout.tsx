@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import AppViewManager from "@/components/AppViewManager";
 import Navigation from "@/components/Navigation";
 import "./globals.css";
@@ -33,6 +34,7 @@ export default function RootLayout({
         <main className="flex flex-col flex-1 min-h-0 overflow-hidden">
           <AppViewManager>{children}</AppViewManager>
         </main>
+        <Analytics />
       </body>
     </html>
   );
