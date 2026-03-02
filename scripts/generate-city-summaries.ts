@@ -97,6 +97,7 @@ interface CitySummary {
     cessationIncreasePercent: number;
     cessationIncreaseAbsolute: number;
     targetYear: number;
+    startYear: number;
     headline: string;
   };
 }
@@ -111,6 +112,8 @@ interface CitySummaries {
 // Configuration
 const CURRENT_YEAR = 2024;  // Year for "current" status metrics
 const PROJECTION_YEAR = 2030;  // Year for impact projections
+const INTERVENTION_START_YEAR = 2025;  // MSA paper intervention period start
+const INTERVENTION_END_YEAR = 2030;    // MSA paper intervention period end
 const DATA_DIR = path.join(__dirname, '../public/data');
 const OUTPUT_FILE = path.join(DATA_DIR, 'city-summaries.json');
 
@@ -140,26 +143,53 @@ function extractMetric(
   return null;
 }
 
-function extractCessationMetric(
+/**
+ * Extract cumulative (summed) metric over a year range
+ * Used for calculating relative increase in infections over the intervention period
+ */
+function extractCumulativeMetric(
   cityData: CityDataFile,
   outcome: string,
-  year: number
+  startYear: number,
+  endYear: number,
+  simset: 'Baseline' | string
 ): { value: number; lower: number; upper: number } | null {
-  // For cessation, we need to look at the cessation scenario's intervention values
+  for (const scenario of cityData.metadata.scenarios) {
+    const outcomeData = cityData.data[scenario]?.[outcome]?.['mean.and.interval']?.none?.sim;
+    if (!outcomeData) continue;
+
+    const points = outcomeData.filter(
+      (d) => d.year >= startYear && d.year <= endYear && d.simset === simset
+    );
+
+    if (points.length > 0) {
+      const value = points.reduce((sum, p) => sum + p.value, 0);
+      const lower = points.reduce((sum, p) => sum + (p['value.lower'] ?? p.value), 0);
+      const upper = points.reduce((sum, p) => sum + (p['value.upper'] ?? p.value), 0);
+      return { value, lower, upper };
+    }
+  }
+  return null;
+}
+
+function extractCumulativeCessationMetric(
+  cityData: CityDataFile,
+  outcome: string,
+  startYear: number,
+  endYear: number
+): { value: number; lower: number; upper: number } | null {
   const outcomeData = cityData.data['cessation']?.[outcome]?.['mean.and.interval']?.none?.sim;
   if (!outcomeData) return null;
 
-  // Find the non-baseline (intervention) value
-  const point = outcomeData.find(
-    (d) => d.year === year && d.simset !== 'Baseline'
+  const points = outcomeData.filter(
+    (d) => d.year >= startYear && d.year <= endYear && d.simset !== 'Baseline'
   );
 
-  if (point) {
-    return {
-      value: point.value,
-      lower: point['value.lower'] ?? point.value,
-      upper: point['value.upper'] ?? point.value,
-    };
+  if (points.length > 0) {
+    const value = points.reduce((sum, p) => sum + p.value, 0);
+    const lower = points.reduce((sum, p) => sum + (p['value.lower'] ?? p.value), 0);
+    const upper = points.reduce((sum, p) => sum + (p['value.upper'] ?? p.value), 0);
+    return { value, lower, upper };
   }
   return null;
 }
@@ -181,24 +211,29 @@ function processCityFile(filePath: string): CitySummary | null {
   const prevalence = extractMetric(cityData, 'diagnosed.prevalence', CURRENT_YEAR);
   const suppression = extractMetric(cityData, 'suppression', CURRENT_YEAR);
 
-  // Extract projection metrics
-  const incidenceBaseline = extractMetric(cityData, 'incidence', PROJECTION_YEAR, 'Baseline');
-  const incidenceCessation = extractCessationMetric(cityData, 'incidence', PROJECTION_YEAR);
+  // Extract CUMULATIVE projection metrics over the intervention period
+  // This matches the methodology used in the MSA paper (Forster et al.)
+  const cumulativeBaseline = extractCumulativeMetric(
+    cityData, 'incidence', INTERVENTION_START_YEAR, INTERVENTION_END_YEAR, 'Baseline'
+  );
+  const cumulativeCessation = extractCumulativeCessationMetric(
+    cityData, 'incidence', INTERVENTION_START_YEAR, INTERVENTION_END_YEAR
+  );
 
-  if (!prevalence || !suppression || !incidenceBaseline || !incidenceCessation) {
+  if (!prevalence || !suppression || !cumulativeBaseline || !cumulativeCessation) {
     console.warn(`Missing data for ${cityCode}:`, {
       prevalence: !!prevalence,
       suppression: !!suppression,
-      incidenceBaseline: !!incidenceBaseline,
-      incidenceCessation: !!incidenceCessation,
+      cumulativeBaseline: !!cumulativeBaseline,
+      cumulativeCessation: !!cumulativeCessation,
     });
     return null;
   }
 
-  // Calculate impact
-  const cessationIncrease = incidenceCessation.value - incidenceBaseline.value;
+  // Calculate impact from CUMULATIVE values (matches paper methodology)
+  const cessationIncrease = cumulativeCessation.value - cumulativeBaseline.value;
   const cessationIncreasePercent = Math.round(
-    (cessationIncrease / incidenceBaseline.value) * 100
+    (cessationIncrease / cumulativeBaseline.value) * 100
   );
 
   return {
@@ -223,25 +258,26 @@ function processCityFile(filePath: string): CitySummary | null {
         source: 'model',
       },
       incidenceBaseline: {
-        value: Math.round(incidenceBaseline.value),
-        lower: Math.round(incidenceBaseline.lower),
-        upper: Math.round(incidenceBaseline.upper),
+        value: Math.round(cumulativeBaseline.value),
+        lower: Math.round(cumulativeBaseline.lower),
+        upper: Math.round(cumulativeBaseline.upper),
         year: PROJECTION_YEAR,
-        label: 'Projected new HIV cases (baseline)',
+        label: `Cumulative new HIV cases, baseline (${INTERVENTION_START_YEAR}-${INTERVENTION_END_YEAR})`,
       },
       incidenceCessation: {
-        value: Math.round(incidenceCessation.value),
-        lower: Math.round(incidenceCessation.lower),
-        upper: Math.round(incidenceCessation.upper),
+        value: Math.round(cumulativeCessation.value),
+        lower: Math.round(cumulativeCessation.lower),
+        upper: Math.round(cumulativeCessation.upper),
         year: PROJECTION_YEAR,
-        label: 'Projected new HIV cases (if funding stops)',
+        label: `Cumulative new HIV cases, cessation (${INTERVENTION_START_YEAR}-${INTERVENTION_END_YEAR})`,
       },
     },
     impact: {
       cessationIncreasePercent,
       cessationIncreaseAbsolute: Math.round(cessationIncrease),
-      targetYear: PROJECTION_YEAR,
-      headline: `Funding loss could increase new HIV cases ${cessationIncreasePercent}% by ${PROJECTION_YEAR}`,
+      targetYear: INTERVENTION_END_YEAR,
+      startYear: INTERVENTION_START_YEAR,
+      headline: `Funding loss could increase new HIV cases ${cessationIncreasePercent}% over ${INTERVENTION_START_YEAR}-${INTERVENTION_END_YEAR}`,
     },
   };
 }

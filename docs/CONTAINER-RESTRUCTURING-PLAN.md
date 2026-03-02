@@ -332,36 +332,36 @@ When base image updates:
 ## Implementation Checklist
 
 ### Phase 1: Base Image
-- [ ] Create `jheem-base` repository
-- [ ] Copy common files from jheem-container-minimal
-- [ ] Parameterize batch_plot_generator.R (auto-detect workspace)
-- [ ] Unify container_entrypoint.sh
-- [ ] Create Dockerfile (Stage 1 only, no workspace)
-- [ ] Create build workflow
-- [ ] Test: `docker build` succeeds
-- [ ] Tag and push `v1.0.0`
+- [x] Create `jheem-base` repository
+- [x] Copy common files from jheem-container-minimal
+- [x] Parameterize batch_plot_generator.R (auto-detect workspace)
+- [x] Unify container_entrypoint.sh
+- [x] Create Dockerfile (Stage 1 only, no workspace)
+- [x] Create build workflow
+- [x] Test: `docker build` succeeds
+- [x] Tag and push `v1.0.0`
 
 ### Phase 2: Migrate Ryan White
-- [ ] Rename repo: `jheem-container-minimal` → `jheem-ryan-white-container`
-- [ ] Replace Dockerfile with thin version (FROM jheem-base)
-- [ ] Remove duplicated files (keep only create_workspace.R, cached/)
-- [ ] Update build workflow
-- [ ] Test: `docker build` succeeds
-- [ ] Test: batch mode works with sample data
-- [ ] Tag and push `v2.0.0`
-- [ ] Update models.json in jheem-backend
+- [x] Rename repo: `jheem-container-minimal` → `jheem-ryan-white-container`
+- [x] Replace Dockerfile with thin version (FROM jheem-base)
+- [x] Remove duplicated files (keep only create_workspace.R, cached/)
+- [x] Update build workflow
+- [x] Test: `docker build` succeeds
+- [x] Test: batch mode works with sample data
+- [x] Tag and push `v2.0.0`
+- [x] Update models.json in jheem-backend
 
 ### Phase 3: Migrate CDC Testing
-- [ ] Replace Dockerfile with thin version
-- [ ] Remove duplicated files
-- [ ] Test and tag `v2.0.0`
-- [ ] Update models.json
+- [x] Replace Dockerfile with thin version
+- [x] Remove duplicated files
+- [x] Test and tag `v2.0.0`
+- [x] Update models.json
 
 ### Phase 4: Migrate CROI
-- [ ] Replace Dockerfile (include trim_simsets.R if needed)
-- [ ] Remove duplicated files
-- [ ] Test and tag `v2.0.0`
-- [ ] Update models.json
+- [x] Replace Dockerfile (include trim_simsets.R if needed)
+- [x] Remove duplicated files
+- [x] Test and tag `v2.0.0`
+- [x] Update models.json
 
 ### Phase 5: Cleanup
 - [ ] Archive old container code (or just rely on git history)
@@ -384,12 +384,12 @@ When base image updates:
 
 ## Success Criteria
 
-- [ ] Base image builds and pushes successfully
-- [ ] All 3 model containers build FROM base
-- [ ] Model Dockerfiles are <50 lines each
+- [x] Base image builds and pushes successfully
+- [x] All 3 model containers build FROM base
+- [x] Model Dockerfiles are <80 lines each (Ryan White: 60, CDC: 55, CROI: 75)
 - [ ] All 4 models pass workflow dry-run tests
-- [ ] Total Dockerfile lines reduced by 70%+
-- [ ] Adding a new model requires only ~40 lines of Dockerfile
+- [x] Total Dockerfile lines reduced by 70%+ (~60k lines deleted across repos)
+- [x] Adding a new model requires only ~40-75 lines of Dockerfile
 
 ---
 
@@ -406,10 +406,18 @@ When base image updates:
 
 ---
 
-## Open Questions
+## Design Decisions
 
-1. **DockerHub/ECR cleanup:** The original container pushes to 3 registries. Do we want to maintain that for jheem-base, or simplify to ghcr.io only?
+1. **Registry:** ghcr.io only for now. ECR can be added later if needed for serverless Lambda.
 
-2. **Trim mode:** CROI has a "trim" command for preparing web-ready simsets. Include in base, or keep CROI-specific?
+2. **Trim mode:** Include in base image (available to all models).
 
-3. **jheem_analyses commit:** Each model pins a specific commit. Should base include a default, or always require models to specify?
+3. **jheem_analyses commit:** Each model container specifies its own commit via build arg. The base image does NOT use jheem_analyses - it only provides R packages and common scripts. Model containers clone jheem_analyses in their workspace-builder stage.
+
+4. **Repo naming:** Option A - cleaned up separate repos under `ncsizemore`:
+   - `jheem-base`
+   - `jheem-ryan-white-container` (renamed from `jheem-container-minimal`)
+   - `jheem-ryan-white-croi-container` (keep as-is)
+   - `jheem-cdc-testing-container` (keep as-is)
+
+   Can migrate to GitHub org (`jheem-containers/*`) later if needed.

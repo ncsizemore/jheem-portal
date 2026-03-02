@@ -486,10 +486,10 @@ export default function ExploreV2() {
                     <div className="pt-2">
                       <div className="flex items-baseline justify-between mb-1.5">
                         <span className="text-[10px] uppercase tracking-wide text-slate-400">Cessation Scenario</span>
-                        <span className="text-[10px] text-slate-400">by {summary.impact.targetYear}</span>
+                        <span className="text-[10px] text-slate-400">{summary.impact.startYear || 2025}-{summary.impact.targetYear}</span>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-xs text-slate-500">New HIV cases</span>
+                        <span className="text-xs text-slate-500">Cumulative new HIV cases</span>
                         <span className="text-sm font-semibold text-amber-600">
                           +{summary.impact.cessationIncreasePercent}%
                         </span>
