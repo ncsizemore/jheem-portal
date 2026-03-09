@@ -47,6 +47,22 @@ interface SourceScenario {
   filePatterns?: string[];
 }
 
+interface SourceCustomSimParameter {
+  id: string;
+  envVar: string;
+  label: string;
+  keyPrefix: string;
+  default: number;
+  unit: string;
+}
+
+interface SourceCustomSimulation {
+  simulationScript: string;
+  parameters: SourceCustomSimParameter[];
+  facets: string[];
+  statistics: string[];
+}
+
 interface SourceModel {
   _status?: string;
   displayName: string;
@@ -70,6 +86,7 @@ interface SourceModel {
     cloudfrontUrl: string;
     summaryFile: string;
   };
+  customSimulation?: SourceCustomSimulation;
 }
 
 interface SourceConfig {
@@ -119,6 +136,25 @@ function generateModelCode(modelId: string, model: SourceModel): string {
   const scenarios = model.scenarios.map(generateScenarioCode).join(',\n');
   const facetDims = model.facetDimensions || ['age', 'sex', 'race', 'risk'];
 
+  // Generate custom simulation config if present
+  let customSimCode = '';
+  if (model.customSimulation) {
+    const params = model.customSimulation.parameters
+      .map(
+        (p) =>
+          `      { id: '${p.id}', label: '${p.label}', keyPrefix: '${p.keyPrefix}', default: ${p.default}, unit: '${p.unit}' }`
+      )
+      .join(',\n');
+
+    customSimCode = `
+
+  customSimulation: {
+    parameters: [
+${params},
+    ],
+  },`;
+  }
+
   return `export const ${varName}: ModelConfig = {
   id: '${modelId}',
   name: '${model.displayName}',
@@ -147,7 +183,7 @@ ${scenarios},
     zoom: ${model.map.zoom},
   },
 
-  interventionStartYear: ${model.interventionStartYear},
+  interventionStartYear: ${model.interventionStartYear},${customSimCode}
 };`;
 }
 
@@ -215,6 +251,18 @@ export interface ScenarioConfig {
   description: string;
 }
 
+export interface CustomSimParameter {
+  id: string;
+  label: string;
+  keyPrefix: string;
+  default: number;
+  unit: string;
+}
+
+export interface CustomSimulationConfig {
+  parameters: CustomSimParameter[];
+}
+
 export interface ModelConfig {
   // Basic info
   id: string;
@@ -250,6 +298,9 @@ export interface ModelConfig {
 
   // Timeline settings
   interventionStartYear: number;
+
+  // Custom simulation support (if model supports user-specified parameters)
+  customSimulation?: CustomSimulationConfig;
 }
 
 // =============================================================================
