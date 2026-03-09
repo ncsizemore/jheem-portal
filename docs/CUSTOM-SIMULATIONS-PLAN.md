@@ -200,7 +200,13 @@ All 1000 sims complete correctly with this guard. Will fix properly in jheem2 wh
 
 **Local testing:** Verified end-to-end with Docker (AL state simset, 1000 sims). Output aggregates correctly via `aggregate-city-data.ts` and matches portal JSON format.
 
-**Next:** Rebuild container images with new code, then test workflow end-to-end on GHA.
+**GHA end-to-end test (C.12580, dry_run + live):**
+- Simulation: 3.4 min (80-sim MSA), extraction: 5.2 min (132/140 files, 8 expected facet failures)
+- Total wall time: ~10.7 min including container pull, aggregation, S3 upload
+- Data + status files verified on CloudFront: `https://d320iym4dtm9lj.cloudfront.net/ryan-white/custom/C.12580/a50-o30-r40.json`
+- Extraction slower on GHA than local (~2-3 sec/combo vs ~0.15 sec locally) — acceptable for async UX, optimization possible via parallelization
+
+**Container versions deployed:** jheem-base v1.1.1, jheem-ryan-white-model:latest (based on v1.1.1)
 
 ### Container Rebuild Sequence
 
@@ -228,18 +234,52 @@ Automate downstream container rebuilds when jheem-base changes. Currently, updat
 
 **Priority:** Low. Do after Phase 2 is validated end-to-end. Higher priority if jheem-base changes frequently (jheem2 bug fix, ADAP support, etc.).
 
-### Phase 3: Trigger Mechanism -- PENDING
+### Phase 3: Trigger Mechanism -- COMPLETE
 
-- [ ] Implement cache check (HEAD request to CloudFront for existing results)
-- [ ] Build trigger mechanism (Next.js API route or GitHub Actions API)
-- [ ] Rate limiting / deduplication (don't trigger duplicate runs for same params)
+**Files:**
 
-### Phase 4: Portal UX -- PENDING
+| File | Repo | Status |
+|------|------|--------|
+| `src/app/api/custom-sim/route.ts` | jheem-portal | Created -- Next.js API route |
+| `src/hooks/useCustomSimulation.ts` | jheem-portal | Created -- trigger/poll/fetch lifecycle hook |
+| `scripts/sync-config.ts` | jheem-portal | Updated -- syncs `customSimulation` params from models.json |
 
-- [ ] Custom simulation parameter UI (driven by models.json `customSimulation.parameters`)
-- [ ] Submission -> waiting -> results flow with progress indicator
-- [ ] Cache check (serve existing results instantly)
-- [ ] Reuse AnalysisView/NativeSimulationChart for results display
+**How it works:**
+1. Portal POSTs to `/api/custom-sim` with model ID, location, and parameter values
+2. API route derives scenario key from models.json config (imported via sync-config)
+3. Checks CloudFront cache via HEAD request -- if hit, returns `{ status: "cached", dataUrl }`
+4. Checks status file for in-progress runs -- if running, returns `{ status: "running", statusUrl }`
+5. Otherwise triggers GitHub Actions workflow via `workflow_dispatch` API, returns `{ status: "triggered", statusUrl }`
+6. `useCustomSimulation` hook polls status URL every 8 sec until complete, then fetches data
+
+**Auth:** Requires `GITHUB_TOKEN` env var on Vercel (PAT with `actions:write` scope on jheem-backend).
+
+- [x] Cache check (HEAD request to CloudFront)
+- [x] Trigger mechanism (Next.js API route -> GitHub Actions dispatch)
+- [x] Deduplication (status file check prevents re-triggering running sims)
+- [ ] Rate limiting (not yet implemented -- low priority for research use)
+
+### Phase 4: Portal UX -- IN PROGRESS
+
+**Files:**
+
+| File | Repo | Status |
+|------|------|--------|
+| `src/app/ryan-white/custom/page.tsx` | jheem-portal | Created -- parameter UI + results display |
+
+**What's done:**
+- [x] Custom simulation parameter UI (sliders driven by models.json config)
+- [x] Location selector (same city list as MSA explorer)
+- [x] Submission -> waiting -> results flow with progress indicator
+- [x] Results display using NativeSimulationChart (same components as prerun explorer)
+- [x] Facet dimension toggles, outcome/statistic selectors
+
+**What's remaining:**
+- [ ] Update navigation to point to `/ryan-white/custom` (currently links to Shiny app)
+- [ ] Set `GITHUB_TOKEN` env var on Vercel for API route auth
+- [ ] End-to-end test on deployed site
+- [ ] Polish: scenario label display in chart legend, error recovery, re-run with different params
+- [ ] Consider: landing page for custom sims (context, documentation)
 
 ### Phase 5: ADAP Model -- PENDING
 
