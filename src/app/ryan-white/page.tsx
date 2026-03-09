@@ -134,7 +134,7 @@ export default function RyanWhiteLandingPage() {
               </svg>
             </Link>
             <Link
-              href="/shiny/ryan-white-custom"
+              href="/ryan-white/custom"
               className="group flex items-center justify-between p-5 bg-white border border-gray-200 rounded-lg hover:border-gray-400 hover:shadow-md transition-all"
             >
               <div>
