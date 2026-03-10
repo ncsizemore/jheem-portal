@@ -5,14 +5,14 @@
  *   - Derives scenario key from parameters (using model-configs.ts)
  *   - Checks CloudFront cache for existing results
  *   - If cached: returns data URL immediately
- *   - If running: returns status URL for polling
- *   - If neither: triggers GitHub Actions workflow, returns status URL
+ *   - If already running (via GitHub API): returns running status
+ *   - If neither: triggers GitHub Actions workflow
  *
  * Request body:
  *   { modelId, location, parameters: { adap_loss: 50, oahs_loss: 30, ... } }
  *
  * Response:
- *   { status: "cached"|"running"|"triggered", scenarioKey, dataUrl, statusUrl }
+ *   { status: "cached"|"running"|"triggered", scenarioKey, dataUrl }
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -81,7 +81,6 @@ export async function POST(request: NextRequest) {
 
     const scenarioKey = deriveScenarioKey(config, validatedParams);
     const dataUrl = `${config.dataUrl}/custom/${location}/${scenarioKey}.json`;
-    const statusUrl = `${config.dataUrl}/custom/${location}/${scenarioKey}-status.json`;
 
     // --- Check cache: does this result already exist on CloudFront? ---
     const cacheCheck = await fetch(dataUrl, { method: 'HEAD' });
@@ -91,29 +90,10 @@ export async function POST(request: NextRequest) {
         status: 'cached',
         scenarioKey,
         dataUrl,
-        statusUrl,
       });
     }
 
-    // --- Check if already running ---
-    try {
-      const statusCheck = await fetch(statusUrl);
-      if (statusCheck.ok) {
-        const statusData = await statusCheck.json();
-        if (statusData.status === 'running') {
-          return NextResponse.json({
-            status: 'running',
-            scenarioKey,
-            dataUrl,
-            statusUrl,
-          });
-        }
-      }
-    } catch {
-      // Status file doesn't exist or isn't valid — proceed to trigger
-    }
-
-    // --- Trigger GitHub Actions workflow ---
+    // --- Check GitHub Actions for in-progress run (dedup) ---
     const githubToken = process.env.GITHUB_TOKEN;
     if (!githubToken) {
       return NextResponse.json(
@@ -122,7 +102,39 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Map portal model ID to backend model ID for the workflow
+    try {
+      const runsResponse = await fetch(
+        `${GITHUB_API}/repos/${GITHUB_REPO}/actions/workflows/${WORKFLOW_FILE}/runs?per_page=10&event=workflow_dispatch`,
+        {
+          headers: {
+            Authorization: `Bearer ${githubToken}`,
+            Accept: 'application/vnd.github.v3+json',
+          },
+        }
+      );
+
+      if (runsResponse.ok) {
+        const runsData = await runsResponse.json();
+        const matchingRun = runsData.workflow_runs?.find(
+          (run: { display_title: string; status: string }) =>
+            run.display_title.includes(location) &&
+            (run.status === 'in_progress' || run.status === 'queued')
+        );
+
+        if (matchingRun) {
+          return NextResponse.json({
+            status: 'running',
+            scenarioKey,
+            dataUrl,
+            runId: matchingRun.id,
+          });
+        }
+      }
+    } catch {
+      // GitHub API check failed — proceed to trigger
+    }
+
+    // --- Trigger GitHub Actions workflow ---
     const backendModelId = BACKEND_MODEL_ID_MAP[modelId] || modelId;
 
     const dispatchResponse = await fetch(
@@ -158,7 +170,6 @@ export async function POST(request: NextRequest) {
       status: 'triggered',
       scenarioKey,
       dataUrl,
-      statusUrl,
     });
   } catch (error) {
     console.error('Custom sim API error:', error);

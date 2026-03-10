@@ -2,9 +2,10 @@
  * Hook for triggering and polling custom simulations.
  *
  * Handles the full lifecycle:
- *   1. POST /api/custom-sim with parameters
+ *   1. POST /api/custom-sim with parameters → cache check + trigger
  *   2. If cached: fetch data immediately
- *   3. If triggered/running: poll status URL until complete, then fetch data
+ *   3. If triggered/running: poll /api/custom-sim/status for GitHub Actions progress
+ *   4. When complete: fetch data from CloudFront
  *
  * Returns the same AggregatedLocationData shape as useLocationData,
  * so the existing AnalysisView/NativeSimulationChart can render it.
@@ -21,35 +22,30 @@ export type CustomSimStatus =
   | 'complete'     // data loaded and ready
   | 'error';
 
-/** Progress phases reported by the workflow status file */
-export type SimulationPhase =
-  | 'starting'
-  | 'downloading'
-  | 'simulating'
-  | 'extracting'
-  | null;
-
-const PHASE_MESSAGES: Record<string, string> = {
-  starting: 'Initializing simulation...',
-  downloading: 'Downloading base simulation data...',
-  simulating: 'Running simulation (typically 4-10 minutes)...',
-  extracting: 'Processing and aggregating results...',
-};
-
 interface CustomSimState {
   status: CustomSimStatus;
-  phase: SimulationPhase;
   data: AggregatedLocationData | null;
   error: string | null;
   scenarioKey: string | null;
+  /** Current step label from the workflow */
+  phaseMessage: string | null;
 }
 
 interface TriggerResponse {
   status: 'cached' | 'running' | 'triggered';
   scenarioKey: string;
   dataUrl: string;
-  statusUrl: string;
+  runId?: number;
+}
+
+interface StatusResponse {
+  status: 'complete' | 'running' | 'failed' | 'not_found';
+  dataUrl?: string;
+  runId?: number;
+  label?: string;
+  phase?: string;
   error?: string;
+  startedAt?: string;
 }
 
 const POLL_INTERVAL_MS = 8000;
@@ -58,14 +54,15 @@ const POLL_TIMEOUT_MS = 15 * 60 * 1000; // 15 minutes max
 export function useCustomSimulation() {
   const [state, setState] = useState<CustomSimState>({
     status: 'idle',
-    phase: null,
     data: null,
     error: null,
     scenarioKey: null,
+    phaseMessage: null,
   });
 
   const pollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const runIdRef = useRef<number | null>(null);
 
   const cleanup = useCallback(() => {
     if (pollTimerRef.current) {
@@ -76,6 +73,7 @@ export function useCustomSimulation() {
       abortRef.current.abort();
       abortRef.current = null;
     }
+    runIdRef.current = null;
   }, []);
 
   const fetchData = useCallback(async (dataUrl: string): Promise<AggregatedLocationData> => {
@@ -89,7 +87,7 @@ export function useCustomSimulation() {
   }, []);
 
   const pollForCompletion = useCallback(
-    (statusUrl: string, dataUrl: string, scenarioKey: string, startTime: number) => {
+    (modelId: string, location: string, scenarioKey: string, dataUrl: string, startTime: number) => {
       const controller = new AbortController();
       abortRef.current = controller;
 
@@ -101,37 +99,52 @@ export function useCustomSimulation() {
           setState((prev) => ({
             ...prev,
             status: 'error',
-            phase: null,
+            phaseMessage: null,
             error: 'Simulation timed out. Please try again.',
           }));
           return;
         }
 
         try {
-          // Cache-bust the status URL so we don't get stale CloudFront responses
-          const bustUrl = `${statusUrl}${statusUrl.includes('?') ? '&' : '?'}t=${Date.now()}`;
-          const response = await fetch(bustUrl, { signal: controller.signal });
+          const params = new URLSearchParams({
+            model: modelId,
+            loc: location,
+            key: scenarioKey,
+          });
+          if (runIdRef.current) {
+            params.set('runId', String(runIdRef.current));
+          }
+
+          const response = await fetch(`/api/custom-sim/status?${params}`, {
+            signal: controller.signal,
+          });
 
           if (response.ok) {
-            const statusData = await response.json();
+            const statusData: StatusResponse = await response.json();
+
+            // Track run ID for efficient subsequent polls
+            if (statusData.runId) {
+              runIdRef.current = statusData.runId;
+            }
 
             if (statusData.status === 'complete') {
-              setState((prev) => ({ ...prev, status: 'loading', phase: null }));
+              setState((prev) => ({ ...prev, status: 'loading', phaseMessage: null }));
 
               try {
-                const data = await fetchData(dataUrl);
+                const url = statusData.dataUrl || dataUrl;
+                const data = await fetchData(url);
                 setState({
                   status: 'complete',
-                  phase: null,
                   data,
                   error: null,
                   scenarioKey,
+                  phaseMessage: null,
                 });
               } catch (err) {
                 setState((prev) => ({
                   ...prev,
                   status: 'error',
-                  phase: null,
+                  phaseMessage: null,
                   error: `Simulation completed but failed to load results: ${err}`,
                 }));
               }
@@ -142,17 +155,17 @@ export function useCustomSimulation() {
               setState((prev) => ({
                 ...prev,
                 status: 'error',
-                phase: null,
-                error: 'Simulation failed. Please try again or contact support.',
+                phaseMessage: null,
+                error: statusData.error || 'Simulation failed. Please try again.',
               }));
               return;
             }
 
-            // Update phase if the workflow reports one
-            if (statusData.phase) {
+            // Update phase message from step-level progress
+            if (statusData.label) {
               setState((prev) => ({
                 ...prev,
-                phase: statusData.phase as SimulationPhase,
+                phaseMessage: statusData.label ?? null,
               }));
             }
           }
@@ -180,10 +193,10 @@ export function useCustomSimulation() {
 
       setState({
         status: 'checking',
-        phase: null,
         data: null,
         error: null,
         scenarioKey: null,
+        phaseMessage: null,
       });
 
       try {
@@ -207,29 +220,33 @@ export function useCustomSimulation() {
           const data = await fetchData(result.dataUrl);
           setState({
             status: 'complete',
-            phase: null,
             data,
             error: null,
             scenarioKey: result.scenarioKey,
+            phaseMessage: null,
           });
         } else {
           // Running or just triggered — start polling
+          if (result.runId) {
+            runIdRef.current = result.runId;
+          }
+
           setState((prev) => ({
             ...prev,
             status: 'running',
-            phase: 'starting',
             scenarioKey: result.scenarioKey,
+            phaseMessage: 'Waiting to start...',
           }));
 
-          pollForCompletion(result.statusUrl, result.dataUrl, result.scenarioKey, Date.now());
+          pollForCompletion(modelId, location, result.scenarioKey, result.dataUrl, Date.now());
         }
       } catch (err) {
         setState({
           status: 'error',
-          phase: null,
           data: null,
           error: err instanceof Error ? err.message : 'Unknown error',
           scenarioKey: null,
+          phaseMessage: null,
         });
       }
     },
@@ -240,18 +257,15 @@ export function useCustomSimulation() {
     cleanup();
     setState({
       status: 'idle',
-      phase: null,
       data: null,
       error: null,
       scenarioKey: null,
+      phaseMessage: null,
     });
   }, [cleanup]);
 
-  const phaseMessage = state.phase ? PHASE_MESSAGES[state.phase] ?? null : null;
-
   return {
     ...state,
-    phaseMessage,
     runSimulation,
     reset,
   };
