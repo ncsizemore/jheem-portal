@@ -68,7 +68,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const scenarioKey = deriveScenarioKey(config, parameters);
+    // Validate and clamp parameter values
+    const validatedParams: Record<string, number> = {};
+    for (const paramDef of config.customSimulation.parameters) {
+      const raw = parameters[paramDef.id];
+      if (raw === undefined || raw === null || typeof raw !== 'number' || !isFinite(raw)) {
+        validatedParams[paramDef.id] = paramDef.default;
+      } else {
+        validatedParams[paramDef.id] = Math.round(Math.min(100, Math.max(0, raw)));
+      }
+    }
+
+    const scenarioKey = deriveScenarioKey(config, validatedParams);
     const dataUrl = `${config.dataUrl}/custom/${location}/${scenarioKey}.json`;
     const statusUrl = `${config.dataUrl}/custom/${location}/${scenarioKey}-status.json`;
 
@@ -128,7 +139,7 @@ export async function POST(request: NextRequest) {
           inputs: {
             model_id: backendModelId,
             location,
-            parameters: JSON.stringify(parameters),
+            parameters: JSON.stringify(validatedParams),
           },
         }),
       }
