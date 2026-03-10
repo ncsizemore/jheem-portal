@@ -4,7 +4,8 @@
  * Custom Simulations page for Ryan White model.
  *
  * Users select a location and adjust parameters, then run a custom simulation.
- * Results are displayed using the same chart components as the prerun explorer.
+ * Results are displayed using the shared AnalysisResults component (same controls,
+ * chart/table views, and export features as the prerun explorer).
  *
  * State is encoded in URL query params for shareability and leave-and-return:
  *   /ryan-white/custom?loc=C.12580&a=50&o=30&r=40
@@ -18,8 +19,8 @@ import { ryanWhiteConfig } from '@/config/model-configs';
 import { useCustomSimulation } from '@/hooks/useCustomSimulation';
 import { useAnalysisState } from '@/hooks/useAnalysisState';
 import { transformPlotData } from '@/utils/transformPlotData';
-import NativeSimulationChart from '@/components/NativeSimulationChart';
-import type { ChartDisplayOptions, FacetPanel } from '@/types/native-plotting';
+import AnalysisResults from '@/components/analysis/AnalysisResults';
+import type { FacetPanel } from '@/types/native-plotting';
 import { ALL_CITIES } from '@/data/cities';
 
 const MODEL_CONFIG = ryanWhiteConfig;
@@ -27,16 +28,6 @@ const MODEL_CONFIG = ryanWhiteConfig;
 const LOCATIONS = ALL_CITIES
   .map((c) => ({ code: c.code, name: c.name }))
   .sort((a, b) => a.name.localeCompare(b.name));
-
-function formatOptionLabel(value: string): string {
-  return value
-    .replace(/\./g, ' ')
-    .replace(/_/g, ' ')
-    .replace(/\b\w/g, (c) => c.toUpperCase())
-    .replace('And', '&');
-}
-
-const FACET_PAGE_SIZE = 9;
 
 function CustomSimulationContent() {
   const searchParams = useSearchParams();
@@ -133,14 +124,6 @@ function CustomSimulationContent() {
     isDataLoaded: !!simData,
   });
 
-  const [displayOptions] = useState<ChartDisplayOptions>({
-    showConfidenceInterval: true,
-    showBaseline: true,
-    showObservations: true,
-  });
-
-  const [showAllFacets, setShowAllFacets] = useState(false);
-
   // Use first scenario key from the data (custom sims have exactly one)
   const activeScenario = availableOptions.scenarios[0] ?? '';
 
@@ -156,8 +139,6 @@ function CustomSimulationContent() {
   const chartPanels: FacetPanel[] = useMemo(() => {
     return plotData ? transformPlotData(plotData) : [];
   }, [plotData]);
-
-  const isFaceted = chartPanels.length > 1;
 
   const handleRun = () => {
     if (!selectedLocation) return;
@@ -175,10 +156,6 @@ function CustomSimulationContent() {
 
   const locationName = LOCATIONS.find((l) => l.code === selectedLocation)?.name ?? '';
   const isRunning = simStatus === 'checking' || simStatus === 'running' || simStatus === 'loading';
-
-  const outcomeLabel = plotData?.metadata?.outcome_metadata?.display_name || selectedOutcome;
-  const units = plotData?.metadata?.outcome_metadata?.units || '';
-  const displayAsPercent = plotData?.metadata?.outcome_metadata?.display_as_percent || false;
 
   return (
     <div className="flex-1 w-full bg-slate-50 overflow-y-auto">
@@ -252,31 +229,31 @@ function CustomSimulationContent() {
 
           {/* Run button + copy link */}
           <div className="flex items-center gap-3">
-          <button
-            onClick={handleRun}
-            disabled={!selectedLocation || isRunning}
-            className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors text-sm"
-          >
-            {isRunning ? (
-              <span className="flex items-center gap-2">
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                {simStatus === 'checking' ? 'Checking cache...'
-                  : simStatus === 'loading' ? 'Loading results...'
-                  : 'Simulation running...'}
-              </span>
-            ) : (
-              'Run Simulation'
-            )}
-          </button>
-
-          {selectedLocation && (
             <button
-              onClick={copyLink}
-              className="px-4 py-2.5 border border-slate-300 hover:border-slate-400 text-slate-600 font-medium rounded-lg transition-colors text-sm"
+              onClick={handleRun}
+              disabled={!selectedLocation || isRunning}
+              className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors text-sm"
             >
-              {linkCopied ? 'Copied!' : 'Copy Link'}
+              {isRunning ? (
+                <span className="flex items-center gap-2">
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  {simStatus === 'checking' ? 'Checking cache...'
+                    : simStatus === 'loading' ? 'Loading results...'
+                    : 'Simulation running...'}
+                </span>
+              ) : (
+                'Run Simulation'
+              )}
             </button>
-          )}
+
+            {selectedLocation && (
+              <button
+                onClick={copyLink}
+                className="px-4 py-2.5 border border-slate-300 hover:border-slate-400 text-slate-600 font-medium rounded-lg transition-colors text-sm"
+              >
+                {linkCopied ? 'Copied!' : 'Copy Link'}
+              </button>
+            )}
           </div>
 
           {simError && (
@@ -308,9 +285,9 @@ function CustomSimulationContent() {
         {/* Results */}
         {simData && chartPanels.length > 0 && (
           <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-            {/* Header + controls */}
-            <div className="px-6 py-4 border-b border-slate-200">
-              <div className="flex items-center justify-between mb-4">
+            {/* Results header */}
+            <div className="px-6 py-4 border-b border-slate-200 flex-shrink-0">
+              <div className="flex items-center justify-between">
                 <h2 className="text-lg font-semibold text-slate-800">
                   Results: {locationName}
                 </h2>
@@ -318,94 +295,26 @@ function CustomSimulationContent() {
                   {scenarioKey}
                 </span>
               </div>
-
-              <div className="flex flex-wrap gap-3">
-                <select
-                  value={selectedOutcome}
-                  onChange={(e) => setSelectedOutcome(e.target.value)}
-                  className="px-3 py-1.5 border border-slate-300 rounded-lg text-sm bg-white"
-                >
-                  {availableOptions.outcomes.map((o) => (
-                    <option key={o} value={o}>{formatOptionLabel(o)}</option>
-                  ))}
-                </select>
-
-                <select
-                  value={selectedStatistic}
-                  onChange={(e) => setSelectedStatistic(e.target.value)}
-                  className="px-3 py-1.5 border border-slate-300 rounded-lg text-sm bg-white"
-                >
-                  {availableOptions.statistics.map((s) => (
-                    <option key={s} value={s}>{formatOptionLabel(s)}</option>
-                  ))}
-                </select>
-
-                <div className="flex items-center gap-1.5">
-                  {MODEL_CONFIG.facetDimensions.map((dim) => (
-                    <button
-                      key={dim}
-                      onClick={() => toggleFacetDimension(dim)}
-                      disabled={!availableFacetDimensions[dim]}
-                      className={`px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors capitalize ${
-                        facetDimensions[dim]
-                          ? 'bg-blue-100 text-blue-700 border border-blue-200'
-                          : availableFacetDimensions[dim]
-                            ? 'bg-slate-100 text-slate-500 border border-slate-200 hover:bg-slate-200'
-                            : 'bg-slate-50 text-slate-300 cursor-not-allowed border border-slate-100'
-                      }`}
-                    >
-                      {dim}
-                    </button>
-                  ))}
-                </div>
-              </div>
             </div>
 
-            {/* Chart(s) */}
-            <div className="p-6">
-              {!isFaceted ? (
-                <div className="max-w-4xl mx-auto">
-                  <NativeSimulationChart
-                    panel={chartPanels[0]}
-                    outcomeLabel={outcomeLabel}
-                    units={units}
-                    displayAsPercent={displayAsPercent}
-                    options={displayOptions}
-                    interventionStartYear={MODEL_CONFIG.interventionStartYear}
-                    locationName={locationName}
-                  />
-                </div>
-              ) : (
-                <>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {(showAllFacets ? chartPanels : chartPanels.slice(0, FACET_PAGE_SIZE)).map((panel) => (
-                      <div key={panel.facetValue} className="bg-white rounded-lg border border-slate-200 p-4">
-                        <NativeSimulationChart
-                          panel={panel}
-                          outcomeLabel={outcomeLabel}
-                          units={units}
-                          displayAsPercent={displayAsPercent}
-                          options={displayOptions}
-                          height={250}
-                          interventionStartYear={MODEL_CONFIG.interventionStartYear}
-                          locationName={locationName}
-                        />
-                      </div>
-                    ))}
-                  </div>
-                  {chartPanels.length > FACET_PAGE_SIZE && !showAllFacets && (
-                    <div className="text-center mt-4">
-                      <button
-                        onClick={() => setShowAllFacets(true)}
-                        className="text-sm text-blue-600 hover:text-blue-700 font-medium"
-                      >
-                        Show all {chartPanels.length} panels
-                      </button>
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
+            {/* Shared controls + chart/table */}
+            <AnalysisResults
+              chartPanels={chartPanels}
+              plotData={plotData}
+              selectedOutcome={selectedOutcome}
+              selectedStatistic={selectedStatistic}
+              selectedFacet={selectedFacet}
+              facetDimensions={facetDimensions}
+              availableFacetDimensions={availableFacetDimensions}
+              availableOutcomes={availableOptions.outcomes}
+              availableStatistics={availableOptions.statistics}
+              setSelectedOutcome={setSelectedOutcome}
+              setSelectedStatistic={setSelectedStatistic}
+              toggleFacetDimension={toggleFacetDimension}
+              interventionStartYear={MODEL_CONFIG.interventionStartYear}
+              locationName={locationName}
+              scenarioLabel={activeScenario}
+            />
           </div>
         )}
       </div>
