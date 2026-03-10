@@ -1,7 +1,7 @@
 # Custom Simulations: Architecture Plan
 
-**Status:** Phase 2 complete, preparing for end-to-end test
-**Date:** March 4, 2026 (updated March 6, 2026)
+**Status:** Phase 4 in progress — end-to-end pipeline live, polishing UX
+**Date:** March 4, 2026 (updated March 10, 2026)
 **Context:** PI is developing an ADAP model extension with 4 user-configurable parameters. The portal needs to support custom simulations — user-specified parameters, on-demand execution, interactive results.
 
 ---
@@ -266,6 +266,9 @@ Automate downstream container rebuilds when jheem-base changes. Currently, updat
 | File | Repo | Status |
 |------|------|--------|
 | `src/app/ryan-white/custom/page.tsx` | jheem-portal | Created -- parameter UI + results display |
+| `src/hooks/useCustomSimulation.ts` | jheem-portal | Created -- trigger/poll/fetch lifecycle |
+| `src/components/Navigation.tsx` | jheem-portal | Updated -- links to `/ryan-white/custom` |
+| `src/app/api/custom-sim/route.ts` | jheem-portal | Updated -- parameter validation |
 
 **What's done:**
 - [x] Custom simulation parameter UI (sliders driven by models.json config)
@@ -273,13 +276,61 @@ Automate downstream container rebuilds when jheem-base changes. Currently, updat
 - [x] Submission -> waiting -> results flow with progress indicator
 - [x] Results display using NativeSimulationChart (same components as prerun explorer)
 - [x] Facet dimension toggles, outcome/statistic selectors
+- [x] Navigation updated to `/ryan-white/custom`
+- [x] `GITHUB_TOKEN` env var set on Vercel
+- [x] End-to-end test on deployed site (first successful run March 10)
+- [x] Parameter validation (clamp 0-100, round to int, reject non-numeric)
+- [x] Progress phase reporting from workflow status files
+- [x] Failure detection (workflow writes `failed` status on error)
+- [x] Container version bump to v2.1.0 (fixed custom entrypoint routing)
 
-**What's remaining:**
-- [ ] Update navigation to point to `/ryan-white/custom` (currently links to Shiny app)
-- [ ] Set `GITHUB_TOKEN` env var on Vercel for API route auth
-- [ ] End-to-end test on deployed site
-- [ ] Polish: scenario label display in chart legend, error recovery, re-run with different params
-- [ ] Consider: landing page for custom sims (context, documentation)
+**What's remaining (Phase 4a: Polish):**
+- [ ] Stateful URLs -- encode location + parameters in query params (shareable links, leave and come back)
+- [ ] GitHub Actions API for progress -- replace S3 status file polling with direct API polling (real-time step-level progress, eliminates S3 status writes from workflow)
+- [ ] Scenario label display in chart legend
+- [ ] Error recovery UX (retry button, clear error state)
+
+### Phase 4b: Discovery & Pre-filling -- PLANNED
+
+The prerun and custom sim pipelines produce identical output. This phase unifies them so users see all available results in one place.
+
+**Manifest file:**
+A per-location or global JSON listing available scenario keys and metadata. Updated by the workflow after each successful run. Enables the portal to show what's instant vs what needs computation.
+
+```json
+{
+  "C.12580": {
+    "a50-o30-r40": { "label": "ADAP 50%, OAHS 30%, Other 40%", "completedAt": "..." },
+    "a0-o0-r0": { "label": "No suppression loss", "completedAt": "..." }
+  }
+}
+```
+
+**Pre-fill workflow:**
+Scheduled or manually triggered workflow that runs a grid of common parameter combinations, populating the cache. For prefilled runs (where wall time doesn't matter), we can extract full faceting (all cross-tabs), making these results richer than on-demand runs.
+
+**Unified exploration UX:**
+Custom sim page becomes the primary exploration interface:
+- Paper scenarios (cessation, interruptions) shown as named presets -- instant, full faceting
+- Pre-cached custom runs -- instant, flagged as available
+- User-defined parameters -- run on demand, wait for results
+
+Tasks:
+- [ ] Design manifest file format and S3 location
+- [ ] Update workflow to append to manifest after successful run
+- [ ] Portal reads manifest on page load to show available scenarios
+- [ ] Pre-fill workflow (parameterized grid, scheduled or manual trigger)
+- [ ] Full faceting for prefilled runs (all cross-tabs)
+- [ ] Unified UX: presets + cached + on-demand in one interface
+
+### Phase 4c: Extend to Other Models -- PLANNED
+
+The custom sim page and infrastructure are config-driven. Extending to other models is primarily a models.json + container change.
+
+- [ ] Evaluate which live models could benefit from custom parameters
+- [ ] Add `customSimulation` config to applicable models in models.json
+- [ ] Ensure containers have simulation scripts for custom mode
+- [ ] Make custom sim page generic (route by model ID, not Ryan White-specific)
 
 ### Phase 5: ADAP Model -- PENDING
 
@@ -292,21 +343,23 @@ Automate downstream container rebuilds when jheem-base changes. Currently, updat
 
 ---
 
-## Prerun vs On-Demand: Not Either/Or
+## Prerun vs On-Demand: Convergence
 
-These approaches are complementary, not competing:
+These approaches are complementary and converging:
 
 **Prerun** (predetermined parameter grid):
-- Best for: models with few discrete scenarios (current Ryan White, CDC Testing)
-- Also useful for: pre-populating the most common ADAP parameter combinations for instant results
-- Execution: existing workflow template, batch trigger
+- Paper scenarios (cessation, interruptions) as named presets
+- Pre-filled custom parameter grids for common combinations
+- Full faceting available (all cross-tabs, since wall time doesn't matter)
+- Execution: scheduled/batch workflow trigger
 
 **On-demand custom** (user-specified parameters):
-- Best for: models with continuous parameters where users want specific values
-- Essential for: ADAP model (4 parameters, large combinatorial space)
-- Execution: same pipeline, user-triggered via portal
+- User sets exact parameter values, runs on demand
+- Single-dimension facets only (faster extraction)
+- Results cached on CloudFront — becomes effectively prerun for future users
+- Execution: portal-triggered via API
 
-Both produce identical output (JSON data on CloudFront) and use identical portal rendering. The only difference is trigger mechanism and timing.
+**Both produce identical output format** (JSON on CloudFront, rendered by same portal components). The manifest file bridges them — the portal shows all available results regardless of how they were generated, and lets users request new combinations on demand.
 
 ---
 
@@ -314,13 +367,15 @@ Both produce identical output (JSON data on CloudFront) and use identical portal
 
 | Decision | Resolution |
 |----------|------------|
-| **Data extraction scope** | All outcomes, single-dimension facets only (14 x 2 x 5 = 140 combos). Covers 90%+ of use. |
+| **Data extraction scope** | On-demand: single-dimension facets (14 x 2 x 5 = 140 combos). Prefilled: full cross-tabs. |
 | **S3 path scheme** | `portal/{s3Path}/custom/{location}/{scenario-key}.json` -- deterministic from params via models.json keyPrefix |
 | **Scenario key derivation** | From models.json `customSimulation.parameters[].keyPrefix` + value (e.g., `a50-o30-r40`) |
-| **Progress UX** | Simple polling via status file on S3/CloudFront (check every 5-10 sec) |
+| **Progress UX** | Moving from S3 status file polling to GitHub Actions API polling (real-time, no caching issues) |
 | **First model** | Ryan White MSA -- `simple_ryan_white.R` is tested, simsets fit standard runner memory |
-| **Trigger mechanism** | TBD -- likely Next.js API route (simplest, stays in portal stack) |
+| **Trigger mechanism** | Next.js API route -> GitHub Actions workflow_dispatch |
 | **Parameter config** | models.json `customSimulation` block -- single source of truth for pipeline + portal UI |
+| **Stateful URLs** | Parameters encoded in query params -- shareable, bookmarkable, enables leave-and-return |
+| **Discovery** | Manifest file on S3 lists available scenario keys per location |
 
 ---
 
@@ -332,4 +387,5 @@ Both produce identical output (JSON data on CloudFront) and use identical portal
 | GitHub Actions concurrency limits under load | Low | Medium | Caching reduces repeat runs; can add queue logic if needed |
 | R container has breaking changes with new model | Low | High | Containers are versioned and pinned; test in isolation |
 | ADAP model parameters don't fit existing intervention pattern | Low | Medium | Translation guide covers this; PI can advise on mapping |
-| User expects real-time results | Medium | Low | Clear UX messaging ("results ready in ~5 minutes"); prerun common params for instant access |
+| User expects real-time results | Medium | Low | Clear UX messaging; prerun common params for instant access |
+| CloudFront caches stale status files | Medium | Medium | Moving to GitHub Actions API for progress (eliminates issue) |
