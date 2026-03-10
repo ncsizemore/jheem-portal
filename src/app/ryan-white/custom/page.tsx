@@ -5,9 +5,15 @@
  *
  * Users select a location and adjust parameters, then run a custom simulation.
  * Results are displayed using the same chart components as the prerun explorer.
+ *
+ * State is encoded in URL query params for shareability and leave-and-return:
+ *   /ryan-white/custom?loc=C.12580&a=50&o=30&r=40
+ *
+ * Parameter keys in the URL use the keyPrefix from models.json config.
  */
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback, useEffect, Suspense } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { ryanWhiteConfig } from '@/config/model-configs';
 import { useCustomSimulation } from '@/hooks/useCustomSimulation';
 import { useAnalysisState } from '@/hooks/useAnalysisState';
@@ -32,18 +38,45 @@ function formatOptionLabel(value: string): string {
 
 const FACET_PAGE_SIZE = 9;
 
-export default function CustomSimulationPage() {
-  const [selectedLocation, setSelectedLocation] = useState<string>('');
+function CustomSimulationContent() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
 
-  // Parameter state from model config
+  // Parameter config
   const paramConfig = MODEL_CONFIG.customSimulation?.parameters ?? [];
-  const [parameters, setParameters] = useState<Record<string, number>>(() => {
-    const defaults: Record<string, number> = {};
-    for (const p of paramConfig) {
-      defaults[p.id] = p.default;
-    }
-    return defaults;
+
+  // Initialize state from URL query params (fall back to defaults)
+  const [selectedLocation, setSelectedLocation] = useState<string>(() => {
+    return searchParams.get('loc') ?? '';
   });
+
+  const [parameters, setParameters] = useState<Record<string, number>>(() => {
+    const values: Record<string, number> = {};
+    for (const p of paramConfig) {
+      const urlVal = searchParams.get(p.keyPrefix);
+      if (urlVal !== null) {
+        const num = Number(urlVal);
+        values[p.id] = isFinite(num) ? Math.round(Math.min(100, Math.max(0, num))) : p.default;
+      } else {
+        values[p.id] = p.default;
+      }
+    }
+    return values;
+  });
+
+  // Sync state changes back to URL
+  const updateUrl = useCallback((loc: string, params: Record<string, number>) => {
+    const sp = new URLSearchParams();
+    if (loc) sp.set('loc', loc);
+    for (const p of paramConfig) {
+      const val = params[p.id];
+      if (val !== undefined && val !== p.default) {
+        sp.set(p.keyPrefix, String(val));
+      }
+    }
+    const qs = sp.toString();
+    router.replace(`/ryan-white/custom${qs ? `?${qs}` : ''}`, { scroll: false });
+  }, [paramConfig, router]);
 
   // Custom simulation hook
   const {
@@ -55,6 +88,18 @@ export default function CustomSimulationPage() {
     runSimulation,
     reset,
   } = useCustomSimulation();
+
+  // Auto-trigger if URL has location params (e.g., user returned via shared link)
+  const [autoTriggered, setAutoTriggered] = useState(false);
+  useEffect(() => {
+    if (!autoTriggered && selectedLocation && simStatus === 'idle') {
+      const hasUrlParams = searchParams.get('loc') !== null;
+      if (hasUrlParams) {
+        setAutoTriggered(true);
+        runSimulation(MODEL_CONFIG.id, selectedLocation, parameters);
+      }
+    }
+  }, [autoTriggered, selectedLocation, simStatus, searchParams, runSimulation, parameters]);
 
   // Extract available options from loaded data
   const availableOptions = useMemo(() => {
@@ -119,6 +164,15 @@ export default function CustomSimulationPage() {
     runSimulation(MODEL_CONFIG.id, selectedLocation, parameters);
   };
 
+  const [linkCopied, setLinkCopied] = useState(false);
+
+  const copyLink = useCallback(() => {
+    navigator.clipboard.writeText(window.location.href).then(() => {
+      setLinkCopied(true);
+      setTimeout(() => setLinkCopied(false), 2000);
+    });
+  }, []);
+
   const locationName = LOCATIONS.find((l) => l.code === selectedLocation)?.name ?? '';
   const isRunning = simStatus === 'checking' || simStatus === 'running' || simStatus === 'loading';
 
@@ -149,7 +203,9 @@ export default function CustomSimulationPage() {
             <select
               value={selectedLocation}
               onChange={(e) => {
-                setSelectedLocation(e.target.value);
+                const loc = e.target.value;
+                setSelectedLocation(loc);
+                updateUrl(loc, parameters);
                 reset();
               }}
               className="w-full max-w-md px-3 py-2 border border-slate-300 rounded-lg text-sm text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -179,7 +235,11 @@ export default function CustomSimulationPage() {
                   max={100}
                   step={5}
                   value={parameters[param.id]}
-                  onChange={(e) => setParameters((prev) => ({ ...prev, [param.id]: Number(e.target.value) }))}
+                  onChange={(e) => {
+                    const newParams = { ...parameters, [param.id]: Number(e.target.value) };
+                    setParameters(newParams);
+                    updateUrl(selectedLocation, newParams);
+                  }}
                   className="w-full accent-blue-600"
                 />
                 <div className="flex justify-between text-xs text-slate-400 mt-0.5">
@@ -190,7 +250,8 @@ export default function CustomSimulationPage() {
             ))}
           </div>
 
-          {/* Run button */}
+          {/* Run button + copy link */}
+          <div className="flex items-center gap-3">
           <button
             onClick={handleRun}
             disabled={!selectedLocation || isRunning}
@@ -207,6 +268,16 @@ export default function CustomSimulationPage() {
               'Run Simulation'
             )}
           </button>
+
+          {selectedLocation && (
+            <button
+              onClick={copyLink}
+              className="px-4 py-2.5 border border-slate-300 hover:border-slate-400 text-slate-600 font-medium rounded-lg transition-colors text-sm"
+            >
+              {linkCopied ? 'Copied!' : 'Copy Link'}
+            </button>
+          )}
+          </div>
 
           {simError && (
             <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
@@ -339,5 +410,17 @@ export default function CustomSimulationPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function CustomSimulationPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex-1 w-full bg-slate-50 flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    }>
+      <CustomSimulationContent />
+    </Suspense>
   );
 }
