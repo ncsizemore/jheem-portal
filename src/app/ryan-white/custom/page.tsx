@@ -51,6 +51,7 @@ export default function CustomSimulationPage() {
     data: simData,
     error: simError,
     scenarioKey,
+    phaseMessage,
     runSimulation,
     reset,
   } = useCustomSimulation();
@@ -199,8 +200,8 @@ export default function CustomSimulationPage() {
               <span className="flex items-center gap-2">
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                 {simStatus === 'checking' ? 'Checking cache...'
-                  : simStatus === 'running' ? 'Simulation running...'
-                  : 'Loading results...'}
+                  : simStatus === 'loading' ? 'Loading results...'
+                  : 'Simulation running...'}
               </span>
             ) : (
               'Run Simulation'
@@ -221,12 +222,12 @@ export default function CustomSimulationPage() {
               <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
               <p className="text-slate-700 text-lg font-medium">
                 {simStatus === 'checking' ? 'Checking for cached results...'
-                  : simStatus === 'running' ? 'Running simulation...'
-                  : 'Loading results...'}
+                  : simStatus === 'loading' ? 'Loading results...'
+                  : phaseMessage ?? 'Running simulation...'}
               </p>
               {simStatus === 'running' && (
                 <p className="text-slate-400 text-sm mt-2">
-                  This typically takes 5-10 minutes. You can leave this page open.
+                  You can leave this page open while the simulation runs.
                 </p>
               )}
             </div>

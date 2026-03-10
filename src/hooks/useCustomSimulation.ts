@@ -21,8 +21,24 @@ export type CustomSimStatus =
   | 'complete'     // data loaded and ready
   | 'error';
 
+/** Progress phases reported by the workflow status file */
+export type SimulationPhase =
+  | 'starting'
+  | 'downloading'
+  | 'simulating'
+  | 'extracting'
+  | null;
+
+const PHASE_MESSAGES: Record<string, string> = {
+  starting: 'Initializing simulation...',
+  downloading: 'Downloading base simulation data...',
+  simulating: 'Running simulation (typically 4-10 minutes)...',
+  extracting: 'Processing and aggregating results...',
+};
+
 interface CustomSimState {
   status: CustomSimStatus;
+  phase: SimulationPhase;
   data: AggregatedLocationData | null;
   error: string | null;
   scenarioKey: string | null;
@@ -42,6 +58,7 @@ const POLL_TIMEOUT_MS = 15 * 60 * 1000; // 15 minutes max
 export function useCustomSimulation() {
   const [state, setState] = useState<CustomSimState>({
     status: 'idle',
+    phase: null,
     data: null,
     error: null,
     scenarioKey: null,
@@ -84,25 +101,28 @@ export function useCustomSimulation() {
           setState((prev) => ({
             ...prev,
             status: 'error',
+            phase: null,
             error: 'Simulation timed out. Please try again.',
           }));
           return;
         }
 
         try {
-          const response = await fetch(statusUrl, { signal: controller.signal });
+          // Cache-bust the status URL so we don't get stale CloudFront responses
+          const bustUrl = `${statusUrl}${statusUrl.includes('?') ? '&' : '?'}t=${Date.now()}`;
+          const response = await fetch(bustUrl, { signal: controller.signal });
 
           if (response.ok) {
             const statusData = await response.json();
 
             if (statusData.status === 'complete') {
-              // Simulation finished — fetch the data
-              setState((prev) => ({ ...prev, status: 'loading' }));
+              setState((prev) => ({ ...prev, status: 'loading', phase: null }));
 
               try {
                 const data = await fetchData(dataUrl);
                 setState({
                   status: 'complete',
+                  phase: null,
                   data,
                   error: null,
                   scenarioKey,
@@ -111,10 +131,29 @@ export function useCustomSimulation() {
                 setState((prev) => ({
                   ...prev,
                   status: 'error',
+                  phase: null,
                   error: `Simulation completed but failed to load results: ${err}`,
                 }));
               }
               return;
+            }
+
+            if (statusData.status === 'failed') {
+              setState((prev) => ({
+                ...prev,
+                status: 'error',
+                phase: null,
+                error: 'Simulation failed. Please try again or contact support.',
+              }));
+              return;
+            }
+
+            // Update phase if the workflow reports one
+            if (statusData.phase) {
+              setState((prev) => ({
+                ...prev,
+                phase: statusData.phase as SimulationPhase,
+              }));
             }
           }
 
@@ -141,6 +180,7 @@ export function useCustomSimulation() {
 
       setState({
         status: 'checking',
+        phase: null,
         data: null,
         error: null,
         scenarioKey: null,
@@ -167,6 +207,7 @@ export function useCustomSimulation() {
           const data = await fetchData(result.dataUrl);
           setState({
             status: 'complete',
+            phase: null,
             data,
             error: null,
             scenarioKey: result.scenarioKey,
@@ -176,6 +217,7 @@ export function useCustomSimulation() {
           setState((prev) => ({
             ...prev,
             status: 'running',
+            phase: 'starting',
             scenarioKey: result.scenarioKey,
           }));
 
@@ -184,6 +226,7 @@ export function useCustomSimulation() {
       } catch (err) {
         setState({
           status: 'error',
+          phase: null,
           data: null,
           error: err instanceof Error ? err.message : 'Unknown error',
           scenarioKey: null,
@@ -197,14 +240,18 @@ export function useCustomSimulation() {
     cleanup();
     setState({
       status: 'idle',
+      phase: null,
       data: null,
       error: null,
       scenarioKey: null,
     });
   }, [cleanup]);
 
+  const phaseMessage = state.phase ? PHASE_MESSAGES[state.phase] ?? null : null;
+
   return {
     ...state,
+    phaseMessage,
     runSimulation,
     reset,
   };
