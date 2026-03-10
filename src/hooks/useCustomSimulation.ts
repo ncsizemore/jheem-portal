@@ -22,6 +22,12 @@ export type CustomSimStatus =
   | 'complete'     // data loaded and ready
   | 'error';
 
+export interface SimulationProgress {
+  current: number;
+  total: number;
+  percent: number;
+}
+
 interface CustomSimState {
   status: CustomSimStatus;
   data: AggregatedLocationData | null;
@@ -29,6 +35,12 @@ interface CustomSimState {
   scenarioKey: string | null;
   /** Current step label from the workflow */
   phaseMessage: string | null;
+  /** Current workflow phase identifier */
+  phase: string | null;
+  /** Simulation progress (only during 'simulating' phase) */
+  simulationProgress: SimulationProgress | null;
+  /** When the workflow started */
+  startedAt: string | null;
 }
 
 interface TriggerResponse {
@@ -46,6 +58,7 @@ interface StatusResponse {
   phase?: string;
   error?: string;
   startedAt?: string;
+  simulationProgress?: SimulationProgress | null;
 }
 
 const POLL_INTERVAL_MS = 8000;
@@ -58,6 +71,9 @@ export function useCustomSimulation() {
     error: null,
     scenarioKey: null,
     phaseMessage: null,
+    phase: null,
+    simulationProgress: null,
+    startedAt: null,
   });
 
   const pollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -100,6 +116,8 @@ export function useCustomSimulation() {
             ...prev,
             status: 'error',
             phaseMessage: null,
+            phase: null,
+            simulationProgress: null,
             error: 'Simulation timed out. Please try again.',
           }));
           return;
@@ -128,7 +146,7 @@ export function useCustomSimulation() {
             }
 
             if (statusData.status === 'complete') {
-              setState((prev) => ({ ...prev, status: 'loading', phaseMessage: null }));
+              setState((prev) => ({ ...prev, status: 'loading', phaseMessage: null, phase: null, simulationProgress: null }));
 
               try {
                 const url = statusData.dataUrl || dataUrl;
@@ -139,12 +157,17 @@ export function useCustomSimulation() {
                   error: null,
                   scenarioKey,
                   phaseMessage: null,
+                  phase: null,
+                  simulationProgress: null,
+                  startedAt: null,
                 });
               } catch (err) {
                 setState((prev) => ({
                   ...prev,
                   status: 'error',
                   phaseMessage: null,
+                  phase: null,
+                  simulationProgress: null,
                   error: `Simulation completed but failed to load results: ${err}`,
                 }));
               }
@@ -156,18 +179,21 @@ export function useCustomSimulation() {
                 ...prev,
                 status: 'error',
                 phaseMessage: null,
+                phase: null,
+                simulationProgress: null,
                 error: statusData.error || 'Simulation failed. Please try again.',
               }));
               return;
             }
 
-            // Update phase message from step-level progress
-            if (statusData.label) {
-              setState((prev) => ({
-                ...prev,
-                phaseMessage: statusData.label ?? null,
-              }));
-            }
+            // Update progress info from step-level data
+            setState((prev) => ({
+              ...prev,
+              phaseMessage: statusData.label ?? prev.phaseMessage,
+              phase: statusData.phase ?? prev.phase,
+              simulationProgress: statusData.simulationProgress ?? null,
+              startedAt: statusData.startedAt ?? prev.startedAt,
+            }));
           }
 
           // Not complete yet — poll again
@@ -197,6 +223,9 @@ export function useCustomSimulation() {
         error: null,
         scenarioKey: null,
         phaseMessage: null,
+        phase: null,
+        simulationProgress: null,
+        startedAt: null,
       });
 
       try {
@@ -224,6 +253,9 @@ export function useCustomSimulation() {
             error: null,
             scenarioKey: result.scenarioKey,
             phaseMessage: null,
+            phase: null,
+            simulationProgress: null,
+            startedAt: null,
           });
         } else {
           // Running or just triggered — start polling
@@ -236,6 +268,8 @@ export function useCustomSimulation() {
             status: 'running',
             scenarioKey: result.scenarioKey,
             phaseMessage: 'Waiting to start...',
+            phase: 'queued',
+            simulationProgress: null,
           }));
 
           pollForCompletion(modelId, location, result.scenarioKey, result.dataUrl, Date.now());
@@ -247,6 +281,9 @@ export function useCustomSimulation() {
           error: err instanceof Error ? err.message : 'Unknown error',
           scenarioKey: null,
           phaseMessage: null,
+          phase: null,
+          simulationProgress: null,
+          startedAt: null,
         });
       }
     },
@@ -261,6 +298,9 @@ export function useCustomSimulation() {
       error: null,
       scenarioKey: null,
       phaseMessage: null,
+      phase: null,
+      simulationProgress: null,
+      startedAt: null,
     });
   }, [cleanup]);
 

@@ -37,9 +37,6 @@ interface StepInfo {
   completed_at: string | null;
 }
 
-interface JobInfo {
-  steps: StepInfo[];
-}
 
 async function githubFetch(path: string, token: string) {
   const response = await fetch(`${GITHUB_API}${path}`, {
@@ -52,6 +49,33 @@ async function githubFetch(path: string, token: string) {
     throw new Error(`GitHub API error: ${response.status}`);
   }
   return response.json();
+}
+
+/** Fetch job logs and parse simulation progress percentage */
+async function getSimulationProgress(jobId: number, token: string): Promise<{ current: number; total: number; percent: number } | null> {
+  try {
+    const response = await fetch(`${GITHUB_API}/repos/${GITHUB_REPO}/actions/jobs/${jobId}/logs`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: 'application/vnd.github.v3+json',
+      },
+    });
+    if (!response.ok) return null;
+
+    const logs = await response.text();
+    // Match the last occurrence of "Simulation progress: X of Y (Z%)"
+    const matches = [...logs.matchAll(/Simulation progress: (\d+) of (\d+) \((\d+)%\)/g)];
+    if (matches.length === 0) return null;
+
+    const last = matches[matches.length - 1];
+    return {
+      current: Number(last[1]),
+      total: Number(last[2]),
+      percent: Number(last[3]),
+    };
+  } catch {
+    return null;
+  }
 }
 
 
@@ -156,13 +180,21 @@ export async function GET(request: NextRequest) {
 
         // Run still in progress — get step details
         const jobsData = await githubFetch(`/repos/${GITHUB_REPO}/actions/runs/${runId}/jobs`, githubToken);
-        const steps: StepInfo[] = jobsData.jobs?.[0]?.steps ?? [];
+        const job = jobsData.jobs?.[0];
+        const steps: StepInfo[] = job?.steps ?? [];
         const progress = getProgressFromSteps(steps);
+
+        // If currently simulating, try to get simulation % from logs
+        let simulationProgress = null;
+        if (progress.phase === 'simulating' && job?.id) {
+          simulationProgress = await getSimulationProgress(job.id, githubToken);
+        }
 
         return NextResponse.json({
           status: 'running',
           runId: Number(runId),
           ...progress,
+          simulationProgress,
           startedAt: run.run_started_at,
         });
       } catch {
@@ -192,13 +224,20 @@ export async function GET(request: NextRequest) {
       `/repos/${GITHUB_REPO}/actions/runs/${matchingRun.id}/jobs`,
       githubToken
     );
-    const steps: StepInfo[] = jobsData.jobs?.[0]?.steps ?? [];
+    const job = jobsData.jobs?.[0];
+    const steps: StepInfo[] = job?.steps ?? [];
     const progress = getProgressFromSteps(steps);
+
+    let simulationProgress = null;
+    if (progress.phase === 'simulating' && job?.id) {
+      simulationProgress = await getSimulationProgress(job.id, githubToken);
+    }
 
     return NextResponse.json({
       status: 'running',
       runId: matchingRun.id,
       ...progress,
+      simulationProgress,
       startedAt: matchingRun.run_started_at,
     });
   } catch (error) {

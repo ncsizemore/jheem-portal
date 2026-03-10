@@ -20,6 +20,7 @@ import { useCustomSimulation } from '@/hooks/useCustomSimulation';
 import { useAnalysisState } from '@/hooks/useAnalysisState';
 import { transformPlotData } from '@/utils/transformPlotData';
 import AnalysisResults from '@/components/analysis/AnalysisResults';
+import SimulationProgress from '@/components/SimulationProgress';
 import type { FacetPanel } from '@/types/native-plotting';
 import { ALL_CITIES } from '@/data/cities';
 
@@ -76,6 +77,9 @@ function CustomSimulationContent() {
     error: simError,
     scenarioKey,
     phaseMessage,
+    phase,
+    simulationProgress,
+    startedAt,
     runSimulation,
     reset,
   } = useCustomSimulation();
@@ -156,6 +160,11 @@ function CustomSimulationContent() {
 
   const locationName = LOCATIONS.find((l) => l.code === selectedLocation)?.name ?? '';
   const isRunning = simStatus === 'checking' || simStatus === 'running' || simStatus === 'loading';
+
+  // Human-readable scenario description from parameter values
+  const scenarioDescription = useMemo(() => {
+    return paramConfig.map((p) => `${p.label} ${parameters[p.id]}${p.unit}`).join(', ');
+  }, [paramConfig, parameters]);
 
   return (
     <div className="flex-1 w-full bg-slate-50 overflow-y-auto">
@@ -257,29 +266,37 @@ function CustomSimulationContent() {
           </div>
 
           {simError && (
-            <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
-              {simError}
+            <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700 flex items-center justify-between">
+              <span>{simError}</span>
+              <button
+                onClick={handleRun}
+                className="ml-4 px-3 py-1 bg-red-100 hover:bg-red-200 text-red-700 font-medium rounded-md transition-colors text-xs flex-shrink-0"
+              >
+                Retry
+              </button>
             </div>
           )}
         </div>
 
         {/* Running indicator */}
         {isRunning && !simData && (
-          <div className="bg-white rounded-xl border border-slate-200 p-12 shadow-sm">
-            <div className="text-center">
-              <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-              <p className="text-slate-700 text-lg font-medium">
-                {simStatus === 'checking' ? 'Checking for cached results...'
-                  : simStatus === 'loading' ? 'Loading results...'
-                  : phaseMessage ?? 'Running simulation...'}
-              </p>
-              {simStatus === 'running' && (
-                <p className="text-slate-400 text-sm mt-2">
-                  You can leave this page open while the simulation runs.
+          simStatus === 'running' ? (
+            <SimulationProgress
+              phase={phase}
+              phaseMessage={phaseMessage}
+              simulationProgress={simulationProgress}
+              startedAt={startedAt}
+            />
+          ) : (
+            <div className="bg-white rounded-xl border border-slate-200 p-12 shadow-sm">
+              <div className="text-center">
+                <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+                <p className="text-slate-700 text-lg font-medium">
+                  {simStatus === 'checking' ? 'Checking for cached results...' : 'Loading results...'}
                 </p>
-              )}
+              </div>
             </div>
-          </div>
+          )
         )}
 
         {/* Results */}
@@ -288,9 +305,12 @@ function CustomSimulationContent() {
             {/* Results header */}
             <div className="px-6 py-4 border-b border-slate-200 flex-shrink-0">
               <div className="flex items-center justify-between">
-                <h2 className="text-lg font-semibold text-slate-800">
-                  Results: {locationName}
-                </h2>
+                <div>
+                  <h2 className="text-lg font-semibold text-slate-800">
+                    Results: {locationName}
+                  </h2>
+                  <p className="text-sm text-slate-500 mt-0.5">{scenarioDescription}</p>
+                </div>
                 <span className="text-xs text-slate-400 bg-slate-100 px-2 py-1 rounded">
                   {scenarioKey}
                 </span>
