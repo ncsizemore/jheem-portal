@@ -54,6 +54,8 @@ async function githubFetch(path: string, token: string) {
   return response.json();
 }
 
+
+
 function getProgressFromSteps(steps: StepInfo[]) {
   // Find the currently running step (or the last completed one)
   const activeStep = steps.find((s) => s.status === 'in_progress');

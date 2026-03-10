@@ -267,8 +267,9 @@ Automate downstream container rebuilds when jheem-base changes. Currently, updat
 |------|------|--------|
 | `src/app/ryan-white/custom/page.tsx` | jheem-portal | Created -- parameter UI + results display |
 | `src/hooks/useCustomSimulation.ts` | jheem-portal | Created -- trigger/poll/fetch lifecycle |
+| `src/app/api/custom-sim/route.ts` | jheem-portal | Created -- trigger + cache check + dedup |
+| `src/app/api/custom-sim/status/route.ts` | jheem-portal | Created -- GitHub Actions API status proxy |
 | `src/components/Navigation.tsx` | jheem-portal | Updated -- links to `/ryan-white/custom` |
-| `src/app/api/custom-sim/route.ts` | jheem-portal | Updated -- parameter validation |
 
 **What's done:**
 - [x] Custom simulation parameter UI (sliders driven by models.json config)
@@ -280,15 +281,34 @@ Automate downstream container rebuilds when jheem-base changes. Currently, updat
 - [x] `GITHUB_TOKEN` env var set on Vercel
 - [x] End-to-end test on deployed site (first successful run March 10)
 - [x] Parameter validation (clamp 0-100, round to int, reject non-numeric)
-- [x] Progress phase reporting from workflow status files
-- [x] Failure detection (workflow writes `failed` status on error)
 - [x] Container version bump to v2.1.0 (fixed custom entrypoint routing)
+- [x] Stateful URLs (location + params in query string, auto-trigger on return, copy link button)
+- [x] GitHub Actions API for progress (replaced S3 status files entirely -- workflow simplified by 75 lines)
+- [x] Dedup via GitHub API (trigger endpoint checks for in-progress runs before dispatching)
 
 **What's remaining (Phase 4a: Polish):**
-- [ ] Stateful URLs -- encode location + parameters in query params (shareable links, leave and come back)
-- [ ] GitHub Actions API for progress -- replace S3 status file polling with direct API polling (real-time step-level progress, eliminates S3 status writes from workflow)
-- [ ] Scenario label display in chart legend
-- [ ] Error recovery UX (retry button, clear error state)
+
+***Shared component refactor (eliminates duplication, adds feature parity):***
+
+The custom sim page duplicates ~200 lines from `AnalysisView` (outcome/statistic selectors, facet toggles, chart grid, pagination). Meanwhile it's missing features the prerun explorer has (CSV/PNG export, table view, display options popover). The fix is to extract an `AnalysisResults` component that both pages use.
+
+- [ ] Extract `AnalysisResults` component from `AnalysisView` (controls + chart/table grid + exports)
+- [ ] Refactor `AnalysisView` to use `AnalysisResults`
+- [ ] Refactor custom sim page to use `AnalysisResults` (gains export, table view, display options for free)
+
+***Progress visualization:***
+
+The R container outputs per-simulation progress (`Simulation progress: 42 of 80 (52%)`) in the GitHub Actions logs. The logs API works for in-progress jobs, so we can parse and display real simulation percentages.
+
+- [ ] Fetch job logs during "Run custom simulation" step, parse simulation progress
+- [ ] Stepped progress bar showing workflow phases (download / simulate / extract / upload)
+- [ ] Simulation % progress bar during the simulation phase
+- [ ] Elapsed time counter (GitHub API provides `started_at`)
+
+***Other polish:***
+- [ ] Human-readable scenario summary in results header (replace `a50-o30-r40` with parameter labels)
+- [ ] Error recovery UX (retry button)
+- [ ] Parameter help text / tooltips (needs PI input on descriptions)
 
 ### Phase 4b: Discovery & Pre-filling -- PLANNED
 
@@ -370,7 +390,7 @@ These approaches are complementary and converging:
 | **Data extraction scope** | On-demand: single-dimension facets (14 x 2 x 5 = 140 combos). Prefilled: full cross-tabs. |
 | **S3 path scheme** | `portal/{s3Path}/custom/{location}/{scenario-key}.json` -- deterministic from params via models.json keyPrefix |
 | **Scenario key derivation** | From models.json `customSimulation.parameters[].keyPrefix` + value (e.g., `a50-o30-r40`) |
-| **Progress UX** | Moving from S3 status file polling to GitHub Actions API polling (real-time, no caching issues) |
+| **Progress UX** | GitHub Actions API for step-level progress + job logs for simulation %. S3 status files eliminated entirely. |
 | **First model** | Ryan White MSA -- `simple_ryan_white.R` is tested, simsets fit standard runner memory |
 | **Trigger mechanism** | Next.js API route -> GitHub Actions workflow_dispatch |
 | **Parameter config** | models.json `customSimulation` block -- single source of truth for pipeline + portal UI |
@@ -388,4 +408,4 @@ These approaches are complementary and converging:
 | R container has breaking changes with new model | Low | High | Containers are versioned and pinned; test in isolation |
 | ADAP model parameters don't fit existing intervention pattern | Low | Medium | Translation guide covers this; PI can advise on mapping |
 | User expects real-time results | Medium | Low | Clear UX messaging; prerun common params for instant access |
-| CloudFront caches stale status files | Medium | Medium | Moving to GitHub Actions API for progress (eliminates issue) |
+| CloudFront caches stale status files | -- | -- | Eliminated. Status files removed entirely; progress via GitHub Actions API. |
