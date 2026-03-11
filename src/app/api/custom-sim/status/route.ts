@@ -54,17 +54,21 @@ async function githubFetch(path: string, token: string) {
 /** Fetch job logs and parse simulation progress percentage */
 async function getSimulationProgress(jobId: number, token: string): Promise<{ current: number; total: number; percent: number } | null> {
   try {
+    // Job logs API returns plain text — must NOT follow redirects automatically
+    // as GitHub returns a 302 to a download URL
     const response = await fetch(`${GITHUB_API}/repos/${GITHUB_REPO}/actions/jobs/${jobId}/logs`, {
       headers: {
         Authorization: `Bearer ${token}`,
         Accept: 'application/vnd.github.v3+json',
       },
+      redirect: 'follow',
     });
     if (!response.ok) return null;
 
     const logs = await response.text();
-    // Match the last occurrence of "Simulation progress: X of Y (Z%)"
-    const matches = [...logs.matchAll(/Simulation progress: (\d+) of (\d+) \((\d+)%\)/g)];
+    // GitHub Actions logs include timestamps like "2024-01-15T10:30:00.1234567Z  🔄 Simulation progress: 15 of 100 (15%)"
+    // Match any occurrence of the progress pattern regardless of prefix
+    const matches = [...logs.matchAll(/Simulation progress:\s*(\d+)\s*of\s*(\d+)\s*\((\d+)%\)/g)];
     if (matches.length === 0) return null;
 
     const last = matches[matches.length - 1];

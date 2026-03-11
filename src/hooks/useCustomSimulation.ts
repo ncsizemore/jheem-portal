@@ -62,7 +62,6 @@ interface StatusResponse {
 }
 
 const POLL_INTERVAL_MS = 8000;
-const POLL_TIMEOUT_MS = 15 * 60 * 1000; // 15 minutes max
 
 export function useCustomSimulation() {
   const [state, setState] = useState<CustomSimState>({
@@ -103,25 +102,12 @@ export function useCustomSimulation() {
   }, []);
 
   const pollForCompletion = useCallback(
-    (modelId: string, location: string, scenarioKey: string, dataUrl: string, startTime: number) => {
+    (modelId: string, location: string, scenarioKey: string, dataUrl: string) => {
       const controller = new AbortController();
       abortRef.current = controller;
 
       const poll = async () => {
         if (controller.signal.aborted) return;
-
-        // Check timeout
-        if (Date.now() - startTime > POLL_TIMEOUT_MS) {
-          setState((prev) => ({
-            ...prev,
-            status: 'error',
-            phaseMessage: null,
-            phase: null,
-            simulationProgress: null,
-            error: 'Simulation timed out. Please try again.',
-          }));
-          return;
-        }
 
         try {
           const params = new URLSearchParams({
@@ -272,7 +258,7 @@ export function useCustomSimulation() {
             simulationProgress: null,
           }));
 
-          pollForCompletion(modelId, location, result.scenarioKey, result.dataUrl, Date.now());
+          pollForCompletion(modelId, location, result.scenarioKey, result.dataUrl);
         }
       } catch (err) {
         setState({
