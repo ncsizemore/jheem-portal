@@ -13,7 +13,7 @@
  * Parameter keys in the URL use the keyPrefix from models.json config.
  */
 
-import { useState, useMemo, useCallback, useEffect, Suspense } from 'react';
+import { useState, useMemo, useCallback, useEffect, useRef, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { ryanWhiteConfig } from '@/config/model-configs';
 import { useCustomSimulation } from '@/hooks/useCustomSimulation';
@@ -84,17 +84,15 @@ function CustomSimulationContent() {
     reset,
   } = useCustomSimulation();
 
-  // Auto-trigger if URL has location params (e.g., user returned via shared link)
+  // Auto-trigger only if user arrived with URL params (shared link / return visit)
+  const initialUrlHadLoc = useRef(searchParams.get('loc') !== null);
   const [autoTriggered, setAutoTriggered] = useState(false);
   useEffect(() => {
-    if (!autoTriggered && selectedLocation && simStatus === 'idle') {
-      const hasUrlParams = searchParams.get('loc') !== null;
-      if (hasUrlParams) {
-        setAutoTriggered(true);
-        runSimulation(MODEL_CONFIG.id, selectedLocation, parameters);
-      }
+    if (!autoTriggered && initialUrlHadLoc.current && selectedLocation && simStatus === 'idle') {
+      setAutoTriggered(true);
+      runSimulation(MODEL_CONFIG.id, selectedLocation, parameters);
     }
-  }, [autoTriggered, selectedLocation, simStatus, searchParams, runSimulation, parameters]);
+  }, [autoTriggered, selectedLocation, simStatus, runSimulation, parameters]);
 
   // Extract available options from loaded data
   const availableOptions = useMemo(() => {
