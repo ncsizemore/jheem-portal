@@ -5,20 +5,19 @@
  *
  * Based on actual timing data from completed runs:
  *   - Preparing (~30s): checkout, config, download, npm install
- *   - Simulating (10-20 min): the R container simulation
+ *   - Simulating (4-10 min): the R container simulation + data extraction
  *   - Finishing (~10s): aggregate, upload, CloudFront invalidation
  *
- * Shows simulation % progress bar during the simulating phase
- * and a live elapsed time counter.
+ * Shows a live elapsed time counter and the current step message
+ * from the GitHub Actions Jobs API.
  */
 
 import { useState, useEffect } from 'react';
-import type { SimulationProgress as SimProgress } from '@/hooks/useCustomSimulation';
 
 const PHASES = [
-  { id: 'preparing', label: 'Preparing', description: 'Setting up environment' },
-  { id: 'simulating', label: 'Simulating', description: 'Running simulation' },
-  { id: 'finishing', label: 'Finishing', description: 'Processing & uploading' },
+  { id: 'preparing', label: 'Preparing', description: 'Downloading data & setting up' },
+  { id: 'simulating', label: 'Running', description: 'Simulation & data extraction' },
+  { id: 'finishing', label: 'Finishing', description: 'Uploading results' },
 ] as const;
 
 /** Map API phase values to our consolidated phases */
@@ -32,7 +31,6 @@ function consolidatePhase(phase: string | null): string {
 interface SimulationProgressProps {
   phase: string | null;
   phaseMessage: string | null;
-  simulationProgress: SimProgress | null;
   startedAt: string | null;
 }
 
@@ -60,7 +58,6 @@ function ElapsedTime({ startedAt }: { startedAt: string }) {
 export default function SimulationProgress({
   phase,
   phaseMessage,
-  simulationProgress,
   startedAt,
 }: SimulationProgressProps) {
   const displayPhase = consolidatePhase(phase);
@@ -119,29 +116,11 @@ export default function SimulationProgress({
 
       {/* Status message */}
       <div className="text-center">
-        {/* Simulation progress bar */}
-        {displayPhase === 'simulating' && simulationProgress && (
-          <div className="max-w-sm mx-auto mb-5">
-            <div className="flex items-center justify-between text-sm mb-1.5">
-              <span className="text-slate-600 font-medium">
-                Simulation {simulationProgress.current} of {simulationProgress.total}
-              </span>
-              <span className="text-blue-600 font-semibold">{simulationProgress.percent}%</span>
-            </div>
-            <div className="w-full bg-slate-100 rounded-full h-3">
-              <div
-                className="bg-blue-500 h-3 rounded-full transition-all duration-500"
-                style={{ width: `${simulationProgress.percent}%` }}
-              />
-            </div>
-          </div>
-        )}
-
         {/* Phase message + spinner */}
         <div className="flex items-center justify-center gap-3">
           <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
           <p className="text-slate-700 font-medium">
-            {phaseMessage ?? 'Running simulation...'}
+            {phaseMessage ?? 'Starting up...'}
           </p>
         </div>
 

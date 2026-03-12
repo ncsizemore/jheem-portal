@@ -78,7 +78,6 @@ function CustomSimulationContent() {
     scenarioKey,
     phaseMessage,
     phase,
-    simulationProgress,
     startedAt,
     runSimulation,
     reset,
@@ -282,7 +281,6 @@ function CustomSimulationContent() {
             <SimulationProgress
               phase={phase}
               phaseMessage={phaseMessage}
-              simulationProgress={simulationProgress}
               startedAt={startedAt}
             />
           ) : (

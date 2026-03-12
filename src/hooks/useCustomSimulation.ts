@@ -22,12 +22,6 @@ export type CustomSimStatus =
   | 'complete'     // data loaded and ready
   | 'error';
 
-export interface SimulationProgress {
-  current: number;
-  total: number;
-  percent: number;
-}
-
 interface CustomSimState {
   status: CustomSimStatus;
   data: AggregatedLocationData | null;
@@ -37,8 +31,6 @@ interface CustomSimState {
   phaseMessage: string | null;
   /** Current workflow phase identifier */
   phase: string | null;
-  /** Simulation progress (only during 'simulating' phase) */
-  simulationProgress: SimulationProgress | null;
   /** When the workflow started */
   startedAt: string | null;
 }
@@ -58,7 +50,6 @@ interface StatusResponse {
   phase?: string;
   error?: string;
   startedAt?: string;
-  simulationProgress?: SimulationProgress | null;
 }
 
 const POLL_INTERVAL_MS = 8000;
@@ -89,7 +80,6 @@ export function useCustomSimulation() {
     scenarioKey: null,
     phaseMessage: null,
     phase: null,
-    simulationProgress: null,
     startedAt: null,
   });
 
@@ -150,7 +140,7 @@ export function useCustomSimulation() {
             }
 
             if (statusData.status === 'complete') {
-              setState((prev) => ({ ...prev, status: 'loading', phaseMessage: null, phase: null, simulationProgress: null }));
+              setState((prev) => ({ ...prev, status: 'loading', phaseMessage: null, phase: null }));
 
               try {
                 const url = statusData.dataUrl || dataUrl;
@@ -162,7 +152,7 @@ export function useCustomSimulation() {
                   scenarioKey,
                   phaseMessage: null,
                   phase: null,
-                  simulationProgress: null,
+
                   startedAt: null,
                 });
               } catch (err) {
@@ -171,7 +161,7 @@ export function useCustomSimulation() {
                   status: 'error',
                   phaseMessage: null,
                   phase: null,
-                  simulationProgress: null,
+
                   error: `Simulation completed but failed to load results: ${err}`,
                 }));
               }
@@ -184,7 +174,7 @@ export function useCustomSimulation() {
                 status: 'error',
                 phaseMessage: null,
                 phase: null,
-                simulationProgress: null,
+      
                 error: statusData.error || 'Simulation failed. Please try again.',
               }));
               return;
@@ -198,7 +188,6 @@ export function useCustomSimulation() {
                 ...prev,
                 phaseMessage: statusData.label ?? prev.phaseMessage,
                 phase: phaseForward ? nextPhase : prev.phase,
-                simulationProgress: statusData.simulationProgress ?? null,
                 startedAt: statusData.startedAt ?? prev.startedAt,
               };
             });
@@ -232,7 +221,6 @@ export function useCustomSimulation() {
         scenarioKey: null,
         phaseMessage: null,
         phase: null,
-        simulationProgress: null,
         startedAt: null,
       });
 
@@ -262,7 +250,7 @@ export function useCustomSimulation() {
             scenarioKey: result.scenarioKey,
             phaseMessage: null,
             phase: null,
-            simulationProgress: null,
+  
             startedAt: null,
           });
         } else {
@@ -277,7 +265,7 @@ export function useCustomSimulation() {
             scenarioKey: result.scenarioKey,
             phaseMessage: 'Waiting to start...',
             phase: 'queued',
-            simulationProgress: null,
+  
           }));
 
           pollForCompletion(modelId, location, result.scenarioKey, result.dataUrl);
@@ -290,7 +278,7 @@ export function useCustomSimulation() {
           scenarioKey: null,
           phaseMessage: null,
           phase: null,
-          simulationProgress: null,
+
           startedAt: null,
         });
       }
@@ -307,7 +295,6 @@ export function useCustomSimulation() {
       scenarioKey: null,
       phaseMessage: null,
       phase: null,
-      simulationProgress: null,
       startedAt: null,
     });
   }, [cleanup]);

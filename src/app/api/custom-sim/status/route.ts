@@ -22,18 +22,18 @@ const WORKFLOW_FILE = 'run-custom-sim.yml';
 /** Map GitHub Actions step names to user-facing phases.
  *  Multiple workflow steps can map to the same phase (e.g., all setup → 'preparing'). */
 const PROGRESS_STEPS: Record<string, { label: string; phase: string }> = {
-  'Checkout jheem-backend (for config)': { label: 'Setting up environment...', phase: 'preparing' },
-  'Load model configuration': { label: 'Loading configuration...', phase: 'preparing' },
-  'Configure AWS credentials': { label: 'Preparing...', phase: 'preparing' },
-  'Download base simset from GitHub Release': { label: 'Downloading simulation data...', phase: 'preparing' },
-  'Login to GitHub Container Registry': { label: 'Preparing container...', phase: 'preparing' },
-  'Checkout jheem-portal (for aggregation scripts)': { label: 'Preparing...', phase: 'preparing' },
-  'Setup Node.js': { label: 'Preparing...', phase: 'preparing' },
-  'Install portal dependencies': { label: 'Preparing...', phase: 'preparing' },
-  'Run custom simulation': { label: 'Running simulation...', phase: 'simulating' },
-  'Aggregate location data': { label: 'Processing results...', phase: 'processing' },
+  'Checkout jheem-backend (for config)': { label: 'Initializing workflow...', phase: 'preparing' },
+  'Load model configuration': { label: 'Loading model configuration...', phase: 'preparing' },
+  'Configure AWS credentials': { label: 'Configuring credentials...', phase: 'preparing' },
+  'Download base simset from GitHub Release': { label: 'Downloading base simulation data...', phase: 'preparing' },
+  'Login to GitHub Container Registry': { label: 'Pulling simulation container...', phase: 'preparing' },
+  'Checkout jheem-portal (for aggregation scripts)': { label: 'Preparing data pipeline...', phase: 'preparing' },
+  'Setup Node.js': { label: 'Preparing data pipeline...', phase: 'preparing' },
+  'Install portal dependencies': { label: 'Installing dependencies...', phase: 'preparing' },
+  'Run custom simulation': { label: 'Running simulation — this may take several minutes...', phase: 'simulating' },
+  'Aggregate location data': { label: 'Aggregating results...', phase: 'processing' },
   'Upload to S3': { label: 'Uploading results...', phase: 'uploading' },
-  'Invalidate CloudFront cache': { label: 'Finalizing...', phase: 'uploading' },
+  'Invalidate CloudFront cache': { label: 'Finalizing — results almost ready...', phase: 'uploading' },
 };
 
 interface StepInfo {
@@ -57,44 +57,6 @@ async function githubFetch(path: string, token: string) {
     throw new Error(`GitHub API error: ${response.status}`);
   }
   return response.json();
-}
-
-/** Fetch job logs and parse simulation progress percentage */
-async function getSimulationProgress(jobId: number, token: string): Promise<{ current: number; total: number; percent: number } | null> {
-  try {
-    // GitHub returns 302 → Azure Blob Storage URL for the raw logs
-    const response = await fetch(`${GITHUB_API}/repos/${GITHUB_REPO}/actions/jobs/${jobId}/logs`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: 'application/vnd.github.v3+json',
-      },
-      redirect: 'follow',
-    });
-
-    if (!response.ok) {
-      console.log(`[sim-progress] logs API returned ${response.status} for job ${jobId}`);
-      return null;
-    }
-
-    const logs = await response.text();
-    console.log(`[sim-progress] fetched ${logs.length} bytes of logs for job ${jobId}`);
-
-    // GitHub Actions logs include timestamps like "2026-03-12T14:46:22.2686241Z   🔄 Simulation progress: 76 of 80 (95%)"
-    const matches = [...logs.matchAll(/Simulation progress:\s*(\d+)\s*of\s*(\d+)\s*\((\d+)%\)/g)];
-    console.log(`[sim-progress] found ${matches.length} progress matches`);
-
-    if (matches.length === 0) return null;
-
-    const last = matches[matches.length - 1];
-    return {
-      current: Number(last[1]),
-      total: Number(last[2]),
-      percent: Number(last[3]),
-    };
-  } catch (err) {
-    console.log(`[sim-progress] error fetching logs for job ${jobId}:`, err);
-    return null;
-  }
 }
 
 
@@ -222,17 +184,10 @@ export async function GET(request: NextRequest) {
         const steps: StepInfo[] = job?.steps ?? [];
         const progress = getProgressFromSteps(steps);
 
-        // If currently simulating, try to get simulation % from logs
-        let simulationProgress = null;
-        if (progress.phase === 'simulating' && job?.id) {
-          simulationProgress = await getSimulationProgress(job.id, githubToken);
-        }
-
         return NextResponse.json({
           status: 'running',
           runId: Number(runId),
           ...progress,
-          simulationProgress,
           startedAt: run.run_started_at,
         });
       } catch {
@@ -266,16 +221,10 @@ export async function GET(request: NextRequest) {
     const steps: StepInfo[] = job?.steps ?? [];
     const progress = getProgressFromSteps(steps);
 
-    let simulationProgress = null;
-    if (progress.phase === 'simulating' && job?.id) {
-      simulationProgress = await getSimulationProgress(job.id, githubToken);
-    }
-
     return NextResponse.json({
       status: 'running',
       runId: matchingRun.id,
       ...progress,
-      simulationProgress,
       startedAt: matchingRun.run_started_at,
     });
   } catch (error) {
