@@ -100,7 +100,6 @@ async function getSimulationProgress(jobId: number, token: string): Promise<{ cu
 
 
 function getProgressFromSteps(steps: StepInfo[]) {
-  // Find the currently running step (or the last completed one)
   const activeStep = steps.find((s) => s.status === 'in_progress');
   const completedSteps = steps.filter((s) => s.status === 'completed' && s.conclusion === 'success');
   const failedStep = steps.find((s) => s.conclusion === 'failure');
@@ -123,8 +122,28 @@ function getProgressFromSteps(steps: StepInfo[]) {
     };
   }
 
-  // No active step — might be between steps or queued
+  // No active step — might be in a brief gap between steps.
+  // Look at the NEXT pending step (the one about to run) rather than the
+  // last completed step, so we never regress to an earlier phase.
   if (completedSteps.length > 0) {
+    const lastCompletedIdx = steps.findIndex(
+      (s) => s.name === completedSteps[completedSteps.length - 1].name
+    );
+    // Find next non-completed step
+    const nextStep = steps.slice(lastCompletedIdx + 1).find(
+      (s) => s.status !== 'completed'
+    );
+    if (nextStep) {
+      const progress = PROGRESS_STEPS[nextStep.name];
+      if (progress) {
+        return {
+          phase: progress.phase,
+          label: progress.label,
+          stepName: nextStep.name,
+        };
+      }
+    }
+    // Fallback: use last completed step
     const last = completedSteps[completedSteps.length - 1];
     const progress = PROGRESS_STEPS[last.name];
     return {

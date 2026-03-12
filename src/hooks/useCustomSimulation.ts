@@ -63,6 +63,24 @@ interface StatusResponse {
 
 const POLL_INTERVAL_MS = 8000;
 
+/** Phase ordering — never allow regression to an earlier phase */
+const PHASE_ORDER: Record<string, number> = {
+  queued: 0,
+  preparing: 1,
+  downloading: 1,
+  simulating: 2,
+  processing: 3,
+  extracting: 3,
+  uploading: 4,
+  finishing: 4,
+  finalizing: 4,
+};
+
+function isPhaseForward(current: string | null, next: string | null): boolean {
+  if (!current || !next) return true;
+  return (PHASE_ORDER[next] ?? 0) >= (PHASE_ORDER[current] ?? 0);
+}
+
 export function useCustomSimulation() {
   const [state, setState] = useState<CustomSimState>({
     status: 'idle',
@@ -172,14 +190,18 @@ export function useCustomSimulation() {
               return;
             }
 
-            // Update progress info from step-level data
-            setState((prev) => ({
-              ...prev,
-              phaseMessage: statusData.label ?? prev.phaseMessage,
-              phase: statusData.phase ?? prev.phase,
-              simulationProgress: statusData.simulationProgress ?? null,
-              startedAt: statusData.startedAt ?? prev.startedAt,
-            }));
+            // Update progress info — never regress to an earlier phase
+            setState((prev) => {
+              const nextPhase = statusData.phase ?? prev.phase;
+              const phaseForward = isPhaseForward(prev.phase, nextPhase);
+              return {
+                ...prev,
+                phaseMessage: statusData.label ?? prev.phaseMessage,
+                phase: phaseForward ? nextPhase : prev.phase,
+                simulationProgress: statusData.simulationProgress ?? null,
+                startedAt: statusData.startedAt ?? prev.startedAt,
+              };
+            });
           }
 
           // Not complete yet — poll again
