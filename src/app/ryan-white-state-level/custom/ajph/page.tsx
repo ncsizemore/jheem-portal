@@ -1,16 +1,14 @@
 'use client';
 
 import { Suspense, useMemo } from 'react';
-import { ryanWhiteConfig } from '@/config/model-configs';
+import { ajphStateLevelConfig } from '@/config/model-configs';
 import CustomSimulationExplorer from '@/components/CustomSimulationExplorer';
-import { ALL_CITIES } from '@/data/cities';
+import { STATE_CODE_TO_NAME } from '@/data/states';
 
-export default function CustomSimulationPage() {
+export default function AJPHCustomSimulationPage() {
   const locations = useMemo(() => {
-    const locationSet = new Set(ryanWhiteConfig.locations);
-    return ALL_CITIES
-      .filter((c) => locationSet.has(c.code))
-      .map((c) => ({ code: c.code, name: c.name }))
+    return ajphStateLevelConfig.locations
+      .map((code) => ({ code, name: STATE_CODE_TO_NAME[code] ?? code }))
       .sort((a, b) => a.name.localeCompare(b.name));
   }, []);
 
@@ -21,9 +19,9 @@ export default function CustomSimulationPage() {
       </div>
     }>
       <CustomSimulationExplorer
-        config={ryanWhiteConfig}
+        config={ajphStateLevelConfig}
         locations={locations}
-        basePath="/ryan-white/custom"
+        basePath="/ryan-white-state-level/custom/ajph"
       />
     </Suspense>
   );

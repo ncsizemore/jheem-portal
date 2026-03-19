@@ -637,6 +637,8 @@ CDC container (jheem-cdc-testing-container)
 └── Simsets: cdc-testing-v1.0.0
 ```
 
-**Key constraint:** Different models need different jheem2 versions because their simsets were generated at different times relative to the diffeq fix (`76859f2d`). This is why cascade rebuild is disabled — a blanket rebuild would push the wrong version to at least one container. Each container must be rebuilt individually with the correct `BASE_VERSION`.
+**Key finding (March 19, 2026):** MSA is the only model that requires the old jheem2 (1.6.2). AJPH and CROI simsets are confirmed post-fix — they work correctly with newer jheem2. CDC Testing is likely post-fix as well (untested). This means MSA is the special case, not the norm.
 
-**Resolution path:** When all simsets are regenerated with a single jheem2 version, the version split goes away and cascade rebuild can be re-enabled.
+**TODO: Retag jheem-base for clarity.** The current versioning is misleading — v1.2.0 (the "newest" tag) is actually the MSA backwards-compat pin. Consider retagging to make the special case explicit (e.g., `v1.1.1-msa` or similar), and tagging a new current version (v1.3.0) with latest jheem2 for all non-MSA models. Revisit before rebuilding any non-MSA containers.
+
+**Resolution path:** When MSA simsets are regenerated with current jheem2, the special case goes away — one base version for all, cascade rebuild re-enabled.

@@ -71,6 +71,10 @@ interface SourceModel {
   geographyType: 'city' | 'state';
   geographyLabel: string;
   geographyLabelPlural: string;
+  locations: {
+    test: string[];
+    full: string[];
+  };
   scenarios: SourceScenario[];
   facetDimensions: string[];
   defaults: {
@@ -155,6 +159,9 @@ ${params},
   },`;
   }
 
+  const locationsList = model.locations?.full || [];
+  const locationsCode = locationsList.map((l) => `'${l}'`).join(', ');
+
   return `export const ${varName}: ModelConfig = {
   id: '${modelId}',
   name: '${model.displayName}',
@@ -163,6 +170,8 @@ ${params},
   geographyType: '${model.geographyType}',
   geographyLabel: '${model.geographyLabel}',
   geographyLabelPlural: '${model.geographyLabelPlural}',
+
+  locations: [${locationsCode}],
 
   dataUrl: '${model.output.cloudfrontUrl}',
   summaryFileName: '${model.output.summaryFile}',
@@ -273,6 +282,9 @@ export interface ModelConfig {
   geographyType: 'city' | 'state';
   geographyLabel: string;
   geographyLabelPlural: string;
+
+  // Locations (from models.json full list)
+  locations: string[];
 
   // Data source
   dataUrl: string;
