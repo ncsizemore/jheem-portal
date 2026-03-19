@@ -1,7 +1,7 @@
 # Custom Simulations: Architecture Plan
 
-**Status:** Phase 4a complete — BLOCKED on simset/engine version mismatch (root cause identified, fix path clear)
-**Date:** March 4, 2026 (updated March 18, 2026)
+**Status:** Version mismatch fix deployed — validating end-to-end
+**Date:** March 4, 2026 (updated March 19, 2026)
 **Context:** PI is developing an ADAP model extension with 4 user-configurable parameters. The portal needs to support custom simulations — user-specified parameters, on-demand execution, interactive results.
 
 ---
@@ -202,7 +202,7 @@ All 1000 sims complete correctly with this guard. Will fix properly in jheem2 wh
 - Data files verified on CloudFront: `https://d320iym4dtm9lj.cloudfront.net/ryan-white/custom/C.12580/a50-o30-r40.json`
 - Extraction slower on GHA than local (~2-3 sec/combo vs ~0.15 sec locally) — acceptable for async UX, optimization possible via parallelization
 
-**Container versions deployed:** jheem-base v1.1.1, jheem-ryan-white-model v2.1.0
+**Container versions deployed:** jheem-base v1.2.0 (jheem2 1.6.2), jheem-ryan-white-model v2.2.1
 
 ### Container Rebuild Sequence
 
@@ -214,11 +214,13 @@ jheem-base (common code: custom_simulation.R, entrypoint, plotting deps)
 
 To deploy:
 1. Push jheem-base changes -> triggers `jheem-base:latest` build
-2. Tag jheem-base release (e.g., `v1.1.0`) -> tagged image pushed to GHCR
+2. Tag jheem-base release (e.g., `v1.2.0`) -> tagged image pushed to GHCR
 3. Update `jheem-container-minimal` Dockerfile `BASE_VERSION` arg -> triggers model container rebuild
 4. Update models.json container version + workflow defaults per syncNote
 
-### Infrastructure: Container Build Cascade -- COMPLETE
+**Base version source of truth:** The Dockerfile's `ARG BASE_VERSION` default is the single source of truth. The workflow only overrides it when explicitly provided via dispatch or manual input — no hardcoded workflow default. This was fixed March 19, 2026 after discovering that a stale workflow default was silently overriding the Dockerfile, causing builds to use the wrong base image.
+
+### Infrastructure: Container Build Cascade -- DISABLED
 
 Automated downstream container rebuilds when jheem-base is tagged.
 
@@ -228,9 +230,26 @@ Automated downstream container rebuilds when jheem-base is tagged.
 - [x] Update jheem-cdc-testing-container similarly
 - [x] `DISPATCH_TOKEN` configured as fine-grained PAT (scoped to 3 downstream repos, Contents read + Actions write only)
 
-**How it works:** When jheem-base is tagged (e.g., `v1.2.0`), the `notify-downstream` job fires `repository_dispatch` with `{"base_version": "1.2.0"}` to all 3 model container repos. Each downstream workflow accepts the version via dispatch payload, workflow input, or falls back to a hardcoded default. New repos can be added to the existing PAT without regenerating it.
+**How it works:** When jheem-base is tagged (e.g., `v1.2.0`), the `notify-downstream` job fires `repository_dispatch` with `{"base_version": "1.2.0"}` to all 3 model container repos. Each downstream workflow accepts the version via dispatch payload, workflow input, or falls back to the Dockerfile default. New repos can be added to the existing PAT without regenerating it.
 
-**Status: Cascade should be disabled while versions are split.** The cascade assumes all model containers use the same jheem-base version. With the version-matching strategy (see below), different models need different jheem2 versions, so a blanket cascade would force the wrong version onto at least one container. The `notify-downstream` job in jheem-base's build workflow should be removed or commented out until simsets converge to a single jheem2 version. In the meantime, rebuild each model container individually with the correct `BASE_VERSION`. Re-enable the cascade once all simsets are regenerated with a unified jheem2.
+**Status: Cascade disabled (March 19, 2026).** The cascade assumes all model containers use the same jheem-base version. With the version-matching strategy (see below), different models need different jheem2 versions, so a blanket cascade would force the wrong version onto at least one container. The `notify-downstream` job in jheem-base's build workflow has been commented out. Rebuild each model container individually with the correct `BASE_VERSION`. Re-enable the cascade once all simsets converge to a single jheem2 version.
+
+### Prebuilt Workspace (Tech Debt)
+
+The MSA container (v2.2.1) uses a **prebuilt workspace** from v2.1.0 instead of building fresh. This is because the runtime jheem2 (1.6.2, matching MSA simsets) is too old for the current `jheem_analyses` workspace creation code (`default.solver.metadata` API mismatch).
+
+The workspace is just serialized state (specification objects, constants, ontology mappings). The diffeq behavior that must match between calibration and intervention comes from the installed jheem2 package. The container entrypoint re-exports current package functions over stale workspace copies.
+
+**To rebuild fresh:** Uncomment the workspace-builder stage in the Dockerfile, update `JHEEM_ANALYSES_COMMIT`, and change `COPY --from` to `workspace-builder`. Requires jheem2 version in jheem-base to be compatible with `jheem_analyses` API.
+
+### Workflow: Two-Step Custom Sim Pipeline
+
+The custom simulation workflow (`run-custom-sim.yml`) runs two container invocations:
+
+1. **`custom` mode** — loads workspace, runs intervention simulation, saves simsets to `output/simulations/` in batch-compatible layout
+2. **`batch --output-mode data` mode** — reads saved simsets, extracts per-combination JSON files for all outcomes × statistics × facets
+
+This two-step design was introduced when custom mode was refactored to simulate-only (March 13, 2026). The workflow was updated to include the batch extraction step on March 19, 2026.
 
 ### Phase 3: Trigger Mechanism -- COMPLETE
 
@@ -395,21 +414,16 @@ The fix is straightforward: each model container's jheem2 version must match the
 
 2. **Pin each jheem-base version to the correct jheem2 commit.** The infrastructure for this already exists:
    - jheem-base's `renv.lock` pins jheem2 to a specific commit
-   - Model containers select a `BASE_VERSION` arg
-   - The cascade rebuild system propagates version changes
+   - Model containers select a `BASE_VERSION` arg via Dockerfile default
+   - Cascade rebuild is disabled; rebuild containers individually
 
-3. **For MSA (pre-fix simsets):** Pin to jheem2 `d6b7b4e` or `54f669a` (1.6.2) — last version before the diffeq change.
+3. **For MSA (pre-fix simsets):** Pinned to jheem2 `54f669a` (1.6.2) via jheem-base v1.2.0. Container v2.2.1 deployed. Uses prebuilt workspace from v2.1.0 (workspace can't be rebuilt with 1.6.2 due to jheem_analyses API mismatch).
 
-4. **For CROI state-level (post-fix simsets):** Current jheem2 version is already correct.
+4. **For CROI state-level (post-fix simsets):** Current jheem2 version (jheem-base v1.1.1) is already correct.
 
-5. **For AJPH/CDC Testing:** Check simset metadata to determine which side of the boundary they fall on, pin accordingly.
+5. **For AJPH/CDC Testing:** Simset metadata doesn't include jheem2 version. Test empirically when extending custom sims to these models.
 
-6. **Long-term:** When simsets are regenerated with a unified jheem2 version, all containers can converge to a single version. Until then, version matching per model is the correct approach.
-
-**This must be resolved before:**
-- Tagging jheem-base to trigger cascade rebuilds
-- Extending custom sims to other models
-- Any further UX polish or feature work
+6. **Long-term:** When simsets are regenerated with a unified jheem2 version, all containers can converge to a single version and cascade rebuild can be re-enabled.
 
 ---
 
@@ -529,8 +543,10 @@ These approaches are complementary and converging:
 | R container has breaking changes with new model | Low | High | Containers are versioned and pinned; test in isolation |
 | ADAP model parameters don't fit existing intervention pattern | Low | Medium | Translation guide covers this; PI can advise on mapping |
 | User expects real-time results | Medium | Low | Clear UX messaging; prerun common params for instant access |
-| **Custom sim produces wrong incidence values** | **Confirmed** | **Critical** | **Simset/engine version mismatch. Pin each container's jheem2 to match its simsets' generation version. Divergence commit: `76859f2d`.** |
-| Cascade rebuild pushes wrong version to a container | Medium | High | Cascade disabled while versions are split. Rebuild each container individually with correct `BASE_VERSION`. |
+| **Custom sim produces wrong incidence values** | **Fixed (validating)** | **Critical** | **Simset/engine version mismatch. MSA container pinned to jheem2 1.6.2 (v2.2.1). Divergence commit: `76859f2d`.** |
+| Cascade rebuild pushes wrong version to a container | Mitigated | High | Cascade disabled March 19, 2026. Rebuild each container individually. |
+| Workflow default overrides Dockerfile base version | Fixed | High | Removed hardcoded workflow defaults. Dockerfile ARG is now sole source of truth for base version (all 3 container repos). |
+| Workspace can't be rebuilt with older jheem2 | Confirmed | Medium | MSA container uses prebuilt workspace from v2.1.0. Documented in Dockerfile with instructions to re-enable workspace builder. |
 | Workspace loads stale functions into `.GlobalEnv` | Confirmed | Medium | Load workspace first, then re-export package functions. Long-term: rebuild workspace with selective serialization. |
 
 ---
@@ -563,15 +579,13 @@ The container exports ALL jheem2 internal functions to `.GlobalEnv` to work arou
 
 ---
 
-## Path Forward (as of March 18, 2026)
+## Path Forward (as of March 19, 2026)
 
 Priority-ordered. Each item is gated on the one above it.
 
-1. **Check simset metadata to determine jheem2 versions per model** (BLOCKING). Inspect the simset `.Rdata` files for each model/release to confirm which jheem2 version generated them and which side of the `76859f2d` boundary they fall on. This determines the correct engine version for each model container.
+1. **Validate MSA custom sim end-to-end** (IN PROGRESS). Container v2.2.1 deployed with jheem2 1.6.2. Workflow updated with two-step pipeline (simulate + extract). Need to run a custom sim and compare output against Shiny app / prerun values to confirm the version mismatch fix works. Then write a lightweight regression test to gate future rebuilds.
 
-2. **Pin containers to matching jheem2 versions + rebuild.** Create jheem-base versions pinned to the correct jheem2 commits per model. Disable the cascade rebuild (`notify-downstream` job) while versions are split — rebuild each model container individually with its correct `BASE_VERSION`. Validate intervention output against Shiny app / prerun values.
-
-3. **Extend custom sims to state-level + CDC Testing.** Exercise the config-driven design with non-MSA models before the ADAP model arrives. CROI containers should already be correct (post-fix simsets + post-fix engine).
+2. **Extend custom sims to state-level + CDC Testing.** Exercise the config-driven design with non-MSA models before the ADAP model arrives. CROI containers should already be correct (post-fix simsets + post-fix engine). Test and pin versions for each model at that time — simset metadata doesn't include jheem2 version, so empirical testing is required.
 
 4. **Workspace improvements** (non-blocking). Fix workspace loading pattern to prevent stale function contamination. Consider selective serialization when next rebuilding workspaces. See Workspace Tech Debt section.
 
