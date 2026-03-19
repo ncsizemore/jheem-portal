@@ -1,6 +1,6 @@
 # Custom Simulations: Architecture Plan
 
-**Status:** Version mismatch fix deployed — validating end-to-end
+**Status:** MSA custom sims validated end-to-end — pipeline operational
 **Date:** March 4, 2026 (updated March 19, 2026)
 **Context:** PI is developing an ADAP model extension with 4 user-configurable parameters. The portal needs to support custom simulations — user-specified parameters, on-demand execution, interactive results.
 
@@ -24,7 +24,7 @@ The R containers already support multiple execution modes:
 
 - **`batch` mode** (production) — extracts outcome data from pre-run simulation files -> JSON. Used by all 4 current models via GitHub Actions workflows.
 - **`custom` mode** (new) — loads workspace, accepts user parameters, creates intervention, runs simulation, saves simsets in batch-compatible directory layout. Data extraction is handled separately by `batch` mode.
-- **`simulation/simple_ryan_white.R`** — translation from research scripts to user-facing parameters. **Currently produces incorrect intervention values** — see Data Accuracy Bug section below.
+- **`simulation/simple_ryan_white.R`** — translation from research scripts to user-facing parameters.
 
 ### Backend (jheem-backend)
 
@@ -198,9 +198,12 @@ All 1000 sims complete correctly with this guard. Will fix properly in jheem2 wh
 
 **GHA end-to-end test (C.12580, dry_run + live):**
 - Simulation: 3.4 min (80-sim MSA), extraction: 5.2 min (132/140 files, 8 expected facet failures)
-- Total wall time: ~10.7 min including container pull, aggregation, S3 upload
+- Total wall time: ~12 min including container pull, aggregation, S3 upload
 - Data files verified on CloudFront: `https://d320iym4dtm9lj.cloudfront.net/ryan-white/custom/C.12580/a50-o30-r40.json`
 - Extraction slower on GHA than local (~2-3 sec/combo vs ~0.15 sec locally) — acceptable for async UX, optimization possible via parallelization
+- **Custom sim output validated against Shiny app — values match** (March 19, 2026)
+
+**8 expected facet failures:** `prep.uptake` lacks `risk` dimension (2 failures); `awareness` lacks `race`, `sex`, `risk` dimensions (6 failures). These are model ontology limitations, not bugs. The workflow tolerates partial batch extraction failures and checks file count instead of exit code.
 
 **Container versions deployed:** jheem-base v1.2.0 (jheem2 1.6.2), jheem-ryan-white-model v2.2.1
 
@@ -326,10 +329,10 @@ The GitHub Actions logs REST API returns 404 for in-progress jobs (confirmed via
 
 **Priority:** Nice-to-have. The stepped progress bar already shows which workflow phase is active, with elapsed time. Simulation % would improve UX during the 10-20 minute wait but isn't blocking.
 
-### BLOCKING: Simset/Engine Version Mismatch
+### RESOLVED: Simset/Engine Version Mismatch
 
-**Status:** Root cause identified — not a jheem2 bug, but a version mismatch between simset generation and intervention execution. Fix path is clear: match engine version to simset version per model.
-**Severity:** Critical — custom simulation outputs are unusable until containers are version-matched.
+**Status:** Fixed. MSA container pinned to jheem2 1.6.2, custom sim output validated against Shiny app (March 19, 2026).
+**Severity:** Was critical — resolved by version-matching strategy.
 **Discovered:** March 16, 2026, during sanity check comparing custom sim output against Shiny app.
 
 #### The Problem
@@ -427,6 +430,10 @@ The fix is straightforward: each model container's jheem2 version must match the
 
 ---
 
+#### Phase 4a Status: COMPLETE
+
+MSA custom simulation pipeline is fully operational as of March 19, 2026. End-to-end validated: portal trigger → GitHub Actions workflow → R container simulation → batch extraction → aggregation → S3/CloudFront → portal rendering. Output verified against Shiny app reference values.
+
 #### Phase 4b: Discovery & Pre-filling -- PLANNED
 
 The prerun and custom sim pipelines produce identical output. This phase unifies them so users see all available results in one place.
@@ -470,7 +477,7 @@ The custom sim page and infrastructure are config-driven. Extending to other mod
 - [ ] Ensure containers have simulation scripts for custom mode
 - [ ] Make custom sim page generic (route by model ID, not Ryan White-specific)
 
-**Prerequisite:** Data accuracy bug must be fixed first.
+**Prerequisite:** Version-matching strategy must be applied per model (MSA done, others TBD).
 
 ### Phase 5: ADAP Model -- PENDING
 
@@ -543,7 +550,7 @@ These approaches are complementary and converging:
 | R container has breaking changes with new model | Low | High | Containers are versioned and pinned; test in isolation |
 | ADAP model parameters don't fit existing intervention pattern | Low | Medium | Translation guide covers this; PI can advise on mapping |
 | User expects real-time results | Medium | Low | Clear UX messaging; prerun common params for instant access |
-| **Custom sim produces wrong incidence values** | **Fixed (validating)** | **Critical** | **Simset/engine version mismatch. MSA container pinned to jheem2 1.6.2 (v2.2.1). Divergence commit: `76859f2d`.** |
+| **Custom sim produces wrong incidence values** | **Fixed** | **Critical** | **Simset/engine version mismatch. MSA container pinned to jheem2 1.6.2 (v2.2.1). Divergence commit: `76859f2d`. Validated March 19, 2026.** |
 | Cascade rebuild pushes wrong version to a container | Mitigated | High | Cascade disabled March 19, 2026. Rebuild each container individually. |
 | Workflow default overrides Dockerfile base version | Fixed | High | Removed hardcoded workflow defaults. Dockerfile ARG is now sole source of truth for base version (all 3 container repos). |
 | Workspace can't be rebuilt with older jheem2 | Confirmed | Medium | MSA container uses prebuilt workspace from v2.1.0. Documented in Dockerfile with instructions to re-enable workspace builder. |
@@ -581,18 +588,55 @@ The container exports ALL jheem2 internal functions to `.GlobalEnv` to work arou
 
 ## Path Forward (as of March 19, 2026)
 
-Priority-ordered. Each item is gated on the one above it.
+Priority-ordered.
 
-1. **Validate MSA custom sim end-to-end** (IN PROGRESS). Container v2.2.1 deployed with jheem2 1.6.2. Workflow updated with two-step pipeline (simulate + extract). Need to run a custom sim and compare output against Shiny app / prerun values to confirm the version mismatch fix works. Then write a lightweight regression test to gate future rebuilds.
+1. ~~**Validate MSA custom sim end-to-end**~~ **DONE.** Container v2.2.1 with jheem2 1.6.2, two-step pipeline (simulate + extract), output validated against Shiny app.
 
-2. **Extend custom sims to state-level + CDC Testing.** Exercise the config-driven design with non-MSA models before the ADAP model arrives. CROI containers should already be correct (post-fix simsets + post-fix engine). Test and pin versions for each model at that time — simset metadata doesn't include jheem2 version, so empirical testing is required.
+2. **UI polish: disable unavailable facets.** The portal should disable facet selections that don't exist for a given outcome (e.g., `risk` for `prep.uptake`, `race`/`sex`/`risk` for `awareness`). Best approach: data-driven — if the facet combo doesn't exist in the loaded JSON, grey it out. No hardcoding needed.
 
-4. **Workspace improvements** (non-blocking). Fix workspace loading pattern to prevent stale function contamination. Consider selective serialization when next rebuilding workspaces. See Workspace Tech Debt section.
+3. **Extend custom sims to state-level + CDC Testing.** Exercise the config-driven design with non-MSA models before the ADAP model arrives. CROI containers should already be correct (post-fix simsets + post-fix engine). Test and pin versions for each model at that time — simset metadata doesn't include jheem2 version, so empirical testing is required.
 
-5. **Upstash Redis for simulation progress %.** Nice-to-have UX improvement for the 10-20 minute wait.
+4. **Discovery & pre-filling (Phase 4b).** Manifest file, pre-filled parameter grids, unified exploration UX. Pre-filling common parameter combos gives users instant results and exercises the pipeline.
 
-6. **Discovery & pre-filling (Phase 4b).** Manifest file, pre-filled parameter grids, unified exploration UX.
+5. **Performance: matrix extraction.** The two-step pipeline enables parallelizing the extraction step (currently ~5 min for 132 files). Could matrix by outcome to speed up on-demand runs. Simulation step (~8-10 min) can't be parallelized. Net benefit is modest (~3 min saved) — defer until usage patterns are clear.
 
-7. **ADAP model (Phase 5).** Dependent on PI completing model extension. The infrastructure will be ready.
+6. **Workspace improvements** (non-blocking). Fix workspace loading pattern to prevent stale function contamination. Consider selective serialization when next rebuilding workspaces. See Workspace Tech Debt section.
 
-8. **Converge to single jheem2 version** (long-term). Once all simsets are regenerated with a unified jheem2 version (post-fix), all containers can use the same jheem-base and the cascade rebuild can be re-enabled.
+7. **Upstash Redis for simulation progress %.** Nice-to-have UX improvement for the 10-20 minute wait.
+
+8. **ADAP model (Phase 5).** Dependent on PI completing model extension. The infrastructure will be ready.
+
+9. **Converge to single jheem2 version** (long-term). Once all simsets are regenerated with a unified jheem2 version (post-fix), all containers can use the same jheem-base and the cascade rebuild can be re-enabled. This would eliminate the version split complexity and allow re-enabling the cascade rebuild.
+
+---
+
+## Version Matrix (as of March 19, 2026)
+
+Understanding which versions are deployed where:
+
+```
+jheem-base (shared R runtime + scripts)
+├── v1.0.0 → jheem2 latest (pre-pin)
+├── v1.1.1 → jheem2 latest
+└── v1.2.0 → jheem2 1.6.2 (pinned for MSA simsets)
+
+MSA container (jheem-container-minimal)
+├── Base: v1.2.0 (jheem2 1.6.2, matching pre-fix MSA simsets)
+├── Workspace: prebuilt from v2.1.0 (can't rebuild with old jheem2)
+├── Tag: v2.2.1
+└── Simsets: ryan-white-msa-v1.0.0
+
+CROI container (jheem-ryan-white-croi-container)
+├── Base: v1.0.0 (jheem2 latest, matching post-fix CROI simsets)
+├── Tag: v1.0.0
+└── Simsets: ryan-white-state-v2.0.0
+
+CDC container (jheem-cdc-testing-container)
+├── Base: v1.0.0 (jheem2 latest)
+├── Tag: v2.0.0
+└── Simsets: cdc-testing-v1.0.0
+```
+
+**Key constraint:** Different models need different jheem2 versions because their simsets were generated at different times relative to the diffeq fix (`76859f2d`). This is why cascade rebuild is disabled — a blanket rebuild would push the wrong version to at least one container. Each container must be rebuilt individually with the correct `BASE_VERSION`.
+
+**Resolution path:** When all simsets are regenerated with a single jheem2 version, the version split goes away and cascade rebuild can be re-enabled.
