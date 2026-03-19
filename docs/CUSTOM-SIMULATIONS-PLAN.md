@@ -1,7 +1,7 @@
 # Custom Simulations: Architecture Plan
 
-**Status:** Phase 4a nearly complete — UX polish, simulation progress % is the remaining item
-**Date:** March 4, 2026 (updated March 12, 2026)
+**Status:** Phase 4a complete — BLOCKED on simset/engine version mismatch (root cause identified, fix path clear)
+**Date:** March 4, 2026 (updated March 18, 2026)
 **Context:** PI is developing an ADAP model extension with 4 user-configurable parameters. The portal needs to support custom simulations — user-specified parameters, on-demand execution, interactive results.
 
 ---
@@ -23,8 +23,8 @@ Custom simulations have been a planned feature since the portal's inception. Sig
 The R containers already support multiple execution modes:
 
 - **`batch` mode** (production) — extracts outcome data from pre-run simulation files -> JSON. Used by all 4 current models via GitHub Actions workflows.
-- **`custom` mode** (new) — loads workspace, accepts user parameters, creates intervention, runs simulation, extracts data in batch-compatible JSON format.
-- **`simulation/simple_ryan_white.R`** — clean translation from research scripts to user-facing parameters. Documented pattern for translating any research script (`simulation/README.md`).
+- **`custom` mode** (new) — loads workspace, accepts user parameters, creates intervention, runs simulation, saves simsets in batch-compatible directory layout. Data extraction is handled separately by `batch` mode.
+- **`simulation/simple_ryan_white.R`** — translation from research scripts to user-facing parameters. **Currently produces incorrect intervention values** — see Data Accuracy Bug section below.
 
 ### Backend (jheem-backend)
 
@@ -218,17 +218,19 @@ To deploy:
 3. Update `jheem-container-minimal` Dockerfile `BASE_VERSION` arg -> triggers model container rebuild
 4. Update models.json container version + workflow defaults per syncNote
 
-### Infrastructure: Container Build Cascade -- PENDING
+### Infrastructure: Container Build Cascade -- COMPLETE
 
-Automate downstream container rebuilds when jheem-base changes. Currently, updating jheem-base requires manually bumping `BASE_VERSION` in each model container repo and pushing.
+Automated downstream container rebuilds when jheem-base is tagged.
 
-- [ ] Add `repository_dispatch` step to jheem-base build workflow (fires `base-image-updated` event with version payload)
-- [ ] Update jheem-container-minimal to listen for `repository_dispatch` and use payload version
-- [ ] Update jheem-ryan-white-croi-container similarly
-- [ ] Update jheem-cdc-testing-container similarly
-- [ ] Remove hardcoded `BASE_VERSION` build arg from model container workflows (read from dispatch payload, fall back to default)
+- [x] Add `repository_dispatch` step to jheem-base build workflow (fires `base-image-updated` event with version payload)
+- [x] Update jheem-container-minimal to listen for `repository_dispatch` and use payload version
+- [x] Update jheem-ryan-white-croi-container similarly
+- [x] Update jheem-cdc-testing-container similarly
+- [x] `DISPATCH_TOKEN` configured as fine-grained PAT (scoped to 3 downstream repos, Contents read + Actions write only)
 
-**Priority:** Low. Do after Phase 2 is validated end-to-end. Higher priority if jheem-base changes frequently (jheem2 bug fix, ADAP support, etc.).
+**How it works:** When jheem-base is tagged (e.g., `v1.2.0`), the `notify-downstream` job fires `repository_dispatch` with `{"base_version": "1.2.0"}` to all 3 model container repos. Each downstream workflow accepts the version via dispatch payload, workflow input, or falls back to a hardcoded default. New repos can be added to the existing PAT without regenerating it.
+
+**Status: Cascade should be disabled while versions are split.** The cascade assumes all model containers use the same jheem-base version. With the version-matching strategy (see below), different models need different jheem2 versions, so a blanket cascade would force the wrong version onto at least one container. The `notify-downstream` job in jheem-base's build workflow should be removed or commented out until simsets converge to a single jheem2 version. In the meantime, rebuild each model container individually with the correct `BASE_VERSION`. Re-enable the cascade once all simsets are regenerated with a unified jheem2.
 
 ### Phase 3: Trigger Mechanism -- COMPLETE
 
@@ -270,7 +272,7 @@ Automate downstream container rebuilds when jheem-base changes. Currently, updat
 | `src/components/SimulationProgress.tsx` | jheem-portal | Created -- stepped progress bar component |
 | `src/components/Navigation.tsx` | jheem-portal | Updated -- links to `/ryan-white/custom` |
 
-#### Phase 4a: Polish -- NEARLY COMPLETE
+#### Phase 4a: Polish -- COMPLETE (UX functional, blocked on data accuracy)
 
 **Done:**
 - [x] Custom simulation parameter UI (sliders driven by models.json config)
@@ -285,32 +287,131 @@ Automate downstream container rebuilds when jheem-base changes. Currently, updat
 - [x] GitHub Actions API for progress (replaced S3 status files entirely -- workflow simplified by 75 lines)
 - [x] Dedup via GitHub API (trigger endpoint checks for in-progress runs before dispatching)
 - [x] Shared `AnalysisResults` component -- custom sim now has full feature parity with prerun explorer (table view, CSV/PNG export, display options)
-- [x] Stepped progress bar with 3 phases (Preparing / Simulating / Finishing) -- based on actual timing data from completed runs
+- [x] Stepped progress bar with 3 phases (Preparing / Running / Finishing) -- based on actual timing data from completed runs
 - [x] Phase regression prevention (forward-only phase updates in both API and hook)
 - [x] Elapsed time counter from workflow start
 - [x] Human-readable scenario description in results header
 - [x] Retry button on error state
 - [x] Removed artificial client-side poll timeout (workflow has its own timeout)
 - [x] Fixed auto-trigger: only fires on initial page load with URL params, not on location dropdown change
+- [x] Removed dead logs API code (was adding latency to every poll with guaranteed 404s)
+- [x] Refined progress step messages for better UX
+- [x] Removed simulation % progress bar from UI (can never be populated via REST API)
+- [x] Container refactored: `custom` mode is now simulate-only (saves simsets in batch-compatible layout, extraction handled by `batch --output-mode data`)
 
-**Remaining: Simulation progress percentage**
+**Deferred: Simulation progress percentage**
 
-The R container outputs `Simulation progress: 42 of 80 (52%)` to stdout during the simulation step. We attempted to read this via the GitHub Actions job logs API (`/actions/jobs/{id}/logs`), but discovered:
+The GitHub Actions logs REST API returns 404 for in-progress jobs (confirmed via web research — GitHub community discussion #154834). Real-time log streaming uses WebSockets, not REST. GitHub's roadmap has a REST streaming feature targeted for Q3 2026.
 
-- **The logs REST API returns 404 for in-progress jobs.** Logs are only available after the job/step completes.
-- The GitHub web UI uses a live WebSocket stream for real-time logs, not the REST API.
-- We confirmed the Vercel PAT has correct permissions (logs API works for completed jobs, returns full logs with progress data and regex matches correctly).
+**Best approach: Upstash Redis.** A managed Redis service with a REST API that works from both GHA (`curl`) and Vercel (`fetch()`). The R container writes progress to stdout; a wrapper script in the workflow tails output and PUTs progress to Redis with a short TTL. The status API reads from Redis. Free tier is sufficient for this use case. This is the semantically correct tool for ephemeral real-time state (vs S3 which is an object store, or GitHub annotations which only work between steps).
 
-**Viable approaches for simulation progress:**
+**Priority:** Nice-to-have. The stepped progress bar already shows which workflow phase is active, with elapsed time. Simulation % would improve UX during the 10-20 minute wait but isn't blocking.
 
-1. **S3 progress file.** The R container already outputs progress to stdout. Add a small workflow step or modify the container to periodically write a tiny JSON file (`{"current": 42, "total": 80}`) to S3 during the simulation. The status API reads this file. Lightweight (~50 bytes), reliable, no new infrastructure.
-   - *Tradeoff:* Requires a mechanism to write from inside the Docker container to S3 during execution. Options: (a) mount AWS credentials into the container and write from R, (b) use a wrapper script that tails Docker output and uploads periodically, (c) split the workflow step so progress is captured between steps.
+### BLOCKING: Simset/Engine Version Mismatch
 
-2. **GitHub Actions workflow annotations.** Use `::set-output` or write to `$GITHUB_OUTPUT` at intervals. However, these only work between steps, not within a running step.
+**Status:** Root cause identified — not a jheem2 bug, but a version mismatch between simset generation and intervention execution. Fix path is clear: match engine version to simset version per model.
+**Severity:** Critical — custom simulation outputs are unusable until containers are version-matched.
+**Discovered:** March 16, 2026, during sanity check comparing custom sim output against Shiny app.
 
-3. **Defer.** The stepped progress bar already shows which phase the workflow is in, with elapsed time. The simulation % is nice-to-have but not critical. Could revisit when/if a better mechanism becomes available.
+#### The Problem
 
-**Recommendation:** Option 1 (S3 progress file) is the most robust. The simplest variant: modify the workflow to run Docker with output piped to a script that periodically extracts the last progress line and uploads to S3. This keeps the R container unchanged.
+Custom simulation intervention produces wildly wrong values for non-cumulative outcomes (incidence, new diagnoses). Comparing Baltimore (C.12580), unfaceted, mean.and.interval, with params a50-o30-r40:
+
+| Year | Baseline (both match) | Custom Sim (jheem2 1.9.2) | Shiny App (jheem2 1.6.2) |
+|------|----------------------|---------------------------|--------------------------|
+| 2024 | 302 | 302 | 302 |
+| 2025 | 286 | **9,653** (33.7x) | 338 (1.18x) |
+| 2026 | 273 | **2,175** (8.0x) | 491 |
+| 2027 | 262 | **2,120** (8.1x) | 522 |
+
+#### Root Cause: Simset/Engine Version Mismatch
+
+**NOT a bug in jheem2 or our intervention code.** The issue is that the diffeq engine version used to run interventions must match the version used to calibrate/generate the baseline simsets.
+
+Commit `76859f2d` (April 16, 2025, "fixed bug in diffeq settings / IDU transmission denominator now restricted to just IDU") is a **legitimate bug fix** by Todd — it narrows the denominator in transmission calculations to the relevant contact category. But it changes the diffeq dynamics, so simsets calibrated under the old dynamics produce incorrect results when interventions are run under the new dynamics (and vice versa).
+
+**Evidence confirming this is a version mismatch, not a bug:**
+
+1. **MSA simsets (pre-fix) + post-fix engine = broken.** The MSA simsets (`ryan-white-msa-v1.0.0`) were generated before commit `76859f2d`. Running interventions on them with any post-fix jheem2 version produces a ~33x incidence spike.
+
+2. **CROI state simsets (post-fix) + post-fix engine = correct.** The CROI state-level simsets (`ryan-white-state-croi`) were generated after the fix. Maryland intervention results show reasonable values:
+
+   | Year | Baseline | Cessation Intervention |
+   |------|----------|----------------------|
+   | 2025 | 559 | 559 |
+   | 2027 | 501 | 855 |
+   | 2030 | 448 | 825 |
+
+   These are plausible ~1.5-1.7x ratios, confirming that matched versions produce correct output.
+
+3. **Pre-fix engine + pre-fix simsets = correct.** jheem2 1.6.2 (`ryan-white-deployment` / `54f669a`) with the same MSA simsets produces correct results (1.18x ratio). The versions match.
+
+4. **Every post-fix version produces identical wrong results.** Tested 1.9.2, 1.11.1, 1.12.3 — all show the same 33.7x spike. This is consistent with a version mismatch rather than a progressive bug.
+
+#### Systematic Version Testing
+
+Tested locally with workspace extracted from container, all versions installed from source against the same pre-fix MSA simset:
+
+| jheem2 Version | Branch/Commit | Incidence 2025 | Ratio | Result |
+|---------------|---------------|---------------|-------|--------|
+| 1.6.2 | `ryan-white-deployment` / `54f669a` | 337.7 | 1.18x | **Correct** (matches simset version) |
+| 1.9.2 | `dev` / `0e44ebb` | 9,647.6 | 33.7x | **Mismatched** |
+| 1.11.1 | `dev` / `6741633` | 9,647.6 | 33.7x | **Mismatched** |
+| 1.12.3 | `master` / `373ebf7` | 9,647.6 | 33.7x | **Mismatched** |
+
+#### Bisect Result: Exact Divergence Commit
+
+**Git bisect completed March 17, 2026.** 8 iterations across 110 commits.
+
+**Divergence commit:** `76859f2d` (April 16, 2025)
+
+```
+Author: Todd Fojo
+Message: fixed bug in diffeq settings
+         IDU transmission denominator now restricted to just IDU
+
+ R/JHEEM_diffeq_interface.R | 2 ++
+```
+
+The commit adds 2 lines to `prepare.infections.info()`:
+```r
+# Lines added at L690 and L697:
+catg[names(comp$from.applies.to)] = comp$from.applies.to
+```
+
+This is the boundary between "old dynamics" (pre-fix simsets) and "new dynamics" (post-fix simsets). Any simset must be paired with an engine on the same side of this commit.
+
+#### Workspace Namespace Pollution (discovered during debugging)
+
+While testing newer jheem2 versions, we discovered that the container workspace's `load()` dumps hundreds of objects into `.GlobalEnv`, including **old versions of jheem2 functions** from the version that built the workspace. This caused the old `create.intervention` (without the `generate.parameters.function` parameter) to shadow the installed package's version, producing what appeared to be an API break in newer versions.
+
+**The "API break" was not real.** With the correct loading pattern (load workspace first, then re-export current package functions to `.GlobalEnv`), all tested jheem2 versions successfully create and run interventions. See "Workspace Tech Debt" section below.
+
+#### Fix: Version-Matching Strategy
+
+The fix is straightforward: each model container's jheem2 version must match the version used to generate that model's simsets.
+
+1. **Check simset metadata** to confirm which jheem2 version generated each model's simsets. Simsets may store this in their metadata — needs investigation.
+
+2. **Pin each jheem-base version to the correct jheem2 commit.** The infrastructure for this already exists:
+   - jheem-base's `renv.lock` pins jheem2 to a specific commit
+   - Model containers select a `BASE_VERSION` arg
+   - The cascade rebuild system propagates version changes
+
+3. **For MSA (pre-fix simsets):** Pin to jheem2 `d6b7b4e` or `54f669a` (1.6.2) — last version before the diffeq change.
+
+4. **For CROI state-level (post-fix simsets):** Current jheem2 version is already correct.
+
+5. **For AJPH/CDC Testing:** Check simset metadata to determine which side of the boundary they fall on, pin accordingly.
+
+6. **Long-term:** When simsets are regenerated with a unified jheem2 version, all containers can converge to a single version. Until then, version matching per model is the correct approach.
+
+**This must be resolved before:**
+- Tagging jheem-base to trigger cascade rebuilds
+- Extending custom sims to other models
+- Any further UX polish or feature work
+
+---
 
 #### Phase 4b: Discovery & Pre-filling -- PLANNED
 
@@ -347,12 +448,15 @@ Tasks:
 
 #### Phase 4c: Extend to Other Models -- PLANNED
 
-The custom sim page and infrastructure are config-driven. Extending to other models is primarily a models.json + container change.
+The custom sim page and infrastructure are config-driven. Extending to other models is primarily a models.json + container change. Planned for state-level Ryan White and CDC Testing models to fully standardize the custom sim architecture before the ADAP model arrives.
 
-- [ ] Evaluate which live models could benefit from custom parameters
+- [ ] Ryan White state-level (AJPH + CROI) — same intervention pattern, 1000-sim simsets, tested on GHA at 11 GB
+- [ ] CDC Testing — different intervention type, will exercise the config-driven design with a non-RW model
 - [ ] Add `customSimulation` config to applicable models in models.json
 - [ ] Ensure containers have simulation scripts for custom mode
 - [ ] Make custom sim page generic (route by model ID, not Ryan White-specific)
+
+**Prerequisite:** Data accuracy bug must be fixed first.
 
 ### Phase 5: ADAP Model -- PENDING
 
@@ -406,7 +510,7 @@ These approaches are complementary and converging:
 | **Data extraction scope** | On-demand: single-dimension facets (14 x 2 x 5 = 140 combos). Prefilled: full cross-tabs. |
 | **S3 path scheme** | `portal/{s3Path}/custom/{location}/{scenario-key}.json` -- deterministic from params via models.json keyPrefix |
 | **Scenario key derivation** | From models.json `customSimulation.parameters[].keyPrefix` + value (e.g., `a50-o30-r40`) |
-| **Progress tracking** | GitHub Actions API for step-level phases. Simulation % requires a different mechanism (logs API only works for completed jobs). |
+| **Progress tracking** | GitHub Actions Jobs API for step-level phases. Simulation % deferred — logs REST API returns 404 for in-progress jobs; Upstash Redis identified as best approach when ready. |
 | **Shared components** | `AnalysisResults` extracted from `AnalysisView` — used by both prerun explorer and custom sim page for full feature parity. |
 | **First model** | Ryan White MSA -- `simple_ryan_white.R` is tested, simsets fit standard runner memory |
 | **Trigger mechanism** | Next.js API route -> GitHub Actions workflow_dispatch |
@@ -425,3 +529,56 @@ These approaches are complementary and converging:
 | R container has breaking changes with new model | Low | High | Containers are versioned and pinned; test in isolation |
 | ADAP model parameters don't fit existing intervention pattern | Low | Medium | Translation guide covers this; PI can advise on mapping |
 | User expects real-time results | Medium | Low | Clear UX messaging; prerun common params for instant access |
+| **Custom sim produces wrong incidence values** | **Confirmed** | **Critical** | **Simset/engine version mismatch. Pin each container's jheem2 to match its simsets' generation version. Divergence commit: `76859f2d`.** |
+| Cascade rebuild pushes wrong version to a container | Medium | High | Cascade disabled while versions are split. Rebuild each container individually with correct `BASE_VERSION`. |
+| Workspace loads stale functions into `.GlobalEnv` | Confirmed | Medium | Load workspace first, then re-export package functions. Long-term: rebuild workspace with selective serialization. |
+
+---
+
+## Workspace Tech Debt
+
+The container workspace pattern was designed to replace the team's approach of sourcing many R files into the global environment to load a model specification. It captures the fully-initialized R environment (version manager state, ontology mappings, constants, specification objects) into a single `.RData` file that loads in ~25 seconds vs minutes of sourcing.
+
+**The pattern works but has two issues exposed during this investigation:**
+
+### 1. Indiscriminate serialization
+
+`save()` on `.GlobalEnv` captures everything present at build time, including whatever version of jheem2 functions were loaded. When the workspace is `load()`ed later with a different jheem2 version, the old functions shadow the new package's exports. This caused the apparent "API break" when testing newer jheem2 versions.
+
+**Fix:** The workspace loading code in the container should:
+1. Load workspace into `.GlobalEnv` (needed — compiled specification callbacks reference global objects)
+2. **Then** re-export all current package functions to `.GlobalEnv`, overwriting stale copies
+
+The container's entrypoint already does step 2 (the `for (fn in ls(pkg_env)) assign(fn, ...)` loop), but the ORDER matters — it must happen AFTER the workspace load, not before. The current container code does workspace load → function export, which is correct. However, if the workspace is ever rebuilt, we should consider serializing only the needed state objects rather than the entire `.GlobalEnv`.
+
+### 2. Internal function export hack
+
+The container exports ALL jheem2 internal functions to `.GlobalEnv` to work around errors where internal functions were "not found" at runtime. This likely happens because serialized closures in the compiled specification capture environments that reference the global env rather than the package namespace. The proper fix would be in jheem2 itself — ensuring closures capture namespace references — but the global export workaround is functional and low-risk.
+
+### Recommended improvements (non-blocking)
+
+- **Short-term:** Ensure workspace load order is correct in container entrypoint (workspace first, then function export). Verify this is the case in current `container_entrypoint.sh`.
+- **Medium-term:** When rebuilding workspace, use selective serialization — save only `.jheem2_state`, constants, and specification objects rather than blanket `.GlobalEnv`. This prevents stale function contamination.
+- **Long-term:** Fix the namespace reference issue in jheem2 so internal functions don't need to be exported to `.GlobalEnv`. This would allow the workspace to be much smaller and cleaner.
+
+---
+
+## Path Forward (as of March 18, 2026)
+
+Priority-ordered. Each item is gated on the one above it.
+
+1. **Check simset metadata to determine jheem2 versions per model** (BLOCKING). Inspect the simset `.Rdata` files for each model/release to confirm which jheem2 version generated them and which side of the `76859f2d` boundary they fall on. This determines the correct engine version for each model container.
+
+2. **Pin containers to matching jheem2 versions + rebuild.** Create jheem-base versions pinned to the correct jheem2 commits per model. Disable the cascade rebuild (`notify-downstream` job) while versions are split — rebuild each model container individually with its correct `BASE_VERSION`. Validate intervention output against Shiny app / prerun values.
+
+3. **Extend custom sims to state-level + CDC Testing.** Exercise the config-driven design with non-MSA models before the ADAP model arrives. CROI containers should already be correct (post-fix simsets + post-fix engine).
+
+4. **Workspace improvements** (non-blocking). Fix workspace loading pattern to prevent stale function contamination. Consider selective serialization when next rebuilding workspaces. See Workspace Tech Debt section.
+
+5. **Upstash Redis for simulation progress %.** Nice-to-have UX improvement for the 10-20 minute wait.
+
+6. **Discovery & pre-filling (Phase 4b).** Manifest file, pre-filled parameter grids, unified exploration UX.
+
+7. **ADAP model (Phase 5).** Dependent on PI completing model extension. The infrastructure will be ready.
+
+8. **Converge to single jheem2 version** (long-term). Once all simsets are regenerated with a unified jheem2 version (post-fix), all containers can use the same jheem-base and the cascade rebuild can be re-enabled.
