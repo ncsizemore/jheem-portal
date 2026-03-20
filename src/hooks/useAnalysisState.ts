@@ -31,6 +31,11 @@ export interface UseAnalysisStateOptions {
   config: ModelConfig;
   availableOptions: AvailableOptions;
   isDataLoaded: boolean;
+  // Optional: scenario data keyed by outcome > statistic > facet.
+  // When provided, facet availability is computed per-outcome/statistic
+  // instead of from the global facet list.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  scenarioData?: Record<string, any> | null;
 }
 
 export interface AnalysisState {
@@ -68,6 +73,7 @@ export function useAnalysisState({
   config,
   availableOptions,
   isDataLoaded,
+  scenarioData,
 }: UseAnalysisStateOptions): AnalysisState {
   // Selection state
   const [selectedScenario, setSelectedScenario] = useState<string>('');
@@ -78,9 +84,27 @@ export function useAnalysisState({
   // Facet dimension toggles
   const [facetDimensions, setFacetDimensions] = useState<FacetDimensionState>(INITIAL_FACET_STATE);
 
-  // Compute which facet dimensions are available in the data
+  // Compute which facet dimensions are available for the current outcome/statistic.
+  // When scenarioData is provided, checks per-outcome; otherwise falls back to global list.
   const availableFacetDimensions = useMemo(() => {
     const dims: FacetDimensionState = { age: false, sex: false, race: false, risk: false };
+
+    // Try per-outcome lookup
+    if (scenarioData && selectedOutcome && selectedStatistic) {
+      const statData = scenarioData[selectedOutcome]?.[selectedStatistic];
+      if (statData) {
+        const facets = Object.keys(statData);
+        for (const facet of facets) {
+          if (facet.includes('age')) dims.age = true;
+          if (facet.includes('sex')) dims.sex = true;
+          if (facet.includes('race')) dims.race = true;
+          if (facet.includes('risk')) dims.risk = true;
+        }
+        return dims;
+      }
+    }
+
+    // Fallback: global facet list
     for (const facet of availableOptions.facets) {
       if (facet.includes('age')) dims.age = true;
       if (facet.includes('sex')) dims.sex = true;
@@ -88,7 +112,7 @@ export function useAnalysisState({
       if (facet.includes('risk')) dims.risk = true;
     }
     return dims;
-  }, [availableOptions.facets]);
+  }, [availableOptions.facets, scenarioData, selectedOutcome, selectedStatistic]);
 
   // Compute facet key from toggled dimensions
   const computedFacetKey = useMemo(() => {
@@ -98,6 +122,21 @@ export function useAnalysisState({
       .sort();
     return activeDims.length === 0 ? 'none' : activeDims.join('+');
   }, [facetDimensions]);
+
+  // Clear toggled dimensions that are no longer available (e.g., switching outcome)
+  useEffect(() => {
+    setFacetDimensions(prev => {
+      let changed = false;
+      const next = { ...prev };
+      for (const dim of ['age', 'sex', 'race', 'risk'] as FacetDimension[]) {
+        if (prev[dim] && !availableFacetDimensions[dim]) {
+          next[dim] = false;
+          changed = true;
+        }
+      }
+      return changed ? next : prev;
+    });
+  }, [availableFacetDimensions]);
 
   // Sync selectedFacet with computed key
   useEffect(() => {

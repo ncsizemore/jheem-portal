@@ -57,6 +57,13 @@ export default function AnalysisView({
   // Get available options for state management
   const availableOptions = getAvailableOptions();
 
+  // Extract first scenario's data for per-outcome facet availability
+  const scenarioData = useMemo(() => {
+    if (!locationData?.data) return null;
+    const scenarios = Object.keys(locationData.data);
+    return scenarios.length > 0 ? locationData.data[scenarios[0]] : null;
+  }, [locationData]);
+
   // Selection state (extracted hook)
   const {
     selectedScenario,
@@ -74,6 +81,7 @@ export default function AnalysisView({
     config,
     availableOptions,
     isDataLoaded: !!locationData,
+    scenarioData,
   });
 
   // Load location data when locationCode changes

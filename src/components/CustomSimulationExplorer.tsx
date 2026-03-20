@@ -102,20 +102,26 @@ export default function CustomSimulationExplorer({
   }, [autoTriggered, selectedLocation, simStatus, runSimulation, parameters, config.id]);
 
   // Extract available options from loaded data
+  // scenarioData is the raw data keyed by scenario > outcome > statistic > facet
+  const scenarioData = useMemo(() => {
+    if (!simData?.data) return null;
+    const scenarios = Object.keys(simData.data);
+    return scenarios.length > 0 ? simData.data[scenarios[0]] : null;
+  }, [simData]);
+
   const availableOptions = useMemo(() => {
     if (!simData?.data) return { scenarios: [], outcomes: [], statistics: [], facets: [] };
     const scenarios = Object.keys(simData.data);
-    const firstScenario = simData.data[scenarios[0]];
-    if (!firstScenario) return { scenarios, outcomes: [], statistics: [], facets: [] };
-    const outcomes = Object.keys(firstScenario);
-    const firstOutcome = firstScenario[outcomes[0]];
+    if (!scenarioData) return { scenarios, outcomes: [], statistics: [], facets: [] };
+    const outcomes = Object.keys(scenarioData);
+    const firstOutcome = scenarioData[outcomes[0]];
     if (!firstOutcome) return { scenarios, outcomes, statistics: [], facets: [] };
     const statistics = Object.keys(firstOutcome);
     const firstStat = firstOutcome[statistics[0]];
     if (!firstStat) return { scenarios, outcomes, statistics, facets: [] };
     const facets = Object.keys(firstStat);
     return { scenarios, outcomes, statistics, facets };
-  }, [simData]);
+  }, [simData, scenarioData]);
 
   // Analysis state
   const {
@@ -131,6 +137,7 @@ export default function CustomSimulationExplorer({
     config,
     availableOptions,
     isDataLoaded: !!simData,
+    scenarioData,
   });
 
   // Use first scenario key from the data (custom sims have exactly one)
