@@ -202,7 +202,7 @@ export default function Navigation() {
                               30 States (2026–2031)
                             </Link>
                             <Link
-                              href="/ryan-white-state-level/custom/ajph"
+                              href="/ryan-white-state-level/custom"
                               className={`block px-10 py-2 text-xs font-medium transition-colors ${
                                 pathname?.startsWith('/ryan-white-state-level/custom')
                                   ? 'text-hopkins-blue bg-white'
@@ -360,7 +360,7 @@ export default function Navigation() {
                       }`}></span>
                     </Link>
                     <Link
-                      href="/ryan-white-state-level/custom/ajph"
+                      href="/ryan-white-state-level/custom"
                       className="text-white hover:text-hopkins-gold font-medium transition-all relative group py-1"
                     >
                       <span>Custom Simulations</span>
@@ -464,7 +464,7 @@ export default function Navigation() {
                           30 States (2026–2031)
                         </Link>
                         <Link
-                          href="/ryan-white-state-level/custom/ajph"
+                          href="/ryan-white-state-level/custom"
                           className={`block px-3 py-1.5 rounded text-sm transition-colors ${
                             pathname?.startsWith('/ryan-white-state-level/custom')
                               ? 'text-hopkins-gold font-medium'

@@ -27,8 +27,9 @@ interface Location {
 interface CustomSimulationExplorerProps {
   config: ModelConfig;
   locations: Location[];
-  basePath: string; // e.g., '/ryan-white/custom' or '/ryan-white-state-level/custom/ajph'
+  basePath: string; // e.g., '/ryan-white/custom' or '/ryan-white-state-level/custom?model=ajph'
   locationPlaceholder?: string; // e.g., 'Select a city...' or 'Select a state...'
+  modelSelector?: React.ReactNode; // Optional model toggle rendered between header and parameters
 }
 
 export default function CustomSimulationExplorer({
@@ -36,6 +37,7 @@ export default function CustomSimulationExplorer({
   locations,
   basePath,
   locationPlaceholder,
+  modelSelector,
 }: CustomSimulationExplorerProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -188,6 +190,8 @@ export default function CustomSimulationExplorer({
             Explore custom Ryan White funding scenarios by adjusting suppression loss parameters.
           </p>
         </div>
+
+        {modelSelector}
 
         {/* Parameter Panel */}
         <div className="bg-white rounded-xl border border-slate-200 p-6 mb-6 shadow-sm">
