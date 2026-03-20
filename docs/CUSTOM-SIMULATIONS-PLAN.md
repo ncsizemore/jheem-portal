@@ -1,7 +1,7 @@
 # Custom Simulations: Architecture Plan
 
-**Status:** MSA custom sims validated end-to-end — pipeline operational
-**Date:** March 4, 2026 (updated March 19, 2026)
+**Status:** MSA + AJPH custom sims operational, architecture validated across 2 models
+**Date:** March 4, 2026 (updated March 20, 2026)
 **Context:** PI is developing an ADAP model extension with 4 user-configurable parameters. The portal needs to support custom simulations — user-specified parameters, on-demand execution, interactive results.
 
 ---
@@ -594,27 +594,31 @@ Facet toggle availability is now context-aware: a dimension toggle is only enabl
 
 ---
 
-## Path Forward (as of March 19, 2026)
+## Path Forward (as of March 20, 2026)
 
 Priority-ordered.
 
 1. ~~**Validate MSA custom sim end-to-end**~~ **DONE.** Container v2.2.1 with jheem2 1.6.2, two-step pipeline (simulate + extract), output validated against Shiny app.
 
-2. **UI polish: disable unavailable facets.** The portal should disable facet selections that don't exist for a given outcome (e.g., `risk` for `prep.uptake`, `race`/`sex`/`risk` for `awareness`). Best approach: data-driven — if the facet combo doesn't exist in the loaded JSON, grey it out. No hardcoding needed.
+2. ~~**Extend custom sims to AJPH**~~ **DONE.** AJPH simsets confirmed post-fix (work with container v2.1.0). Config-driven design validated — adding AJPH was models.json config + thin route page, zero workflow or container changes. Shared `CustomSimulationExplorer` component serves both MSA and AJPH. Locations synced from models.json (was previously missing from sync-config). Nav link added.
 
-3. **Extend custom sims to state-level + CDC Testing.** Exercise the config-driven design with non-MSA models before the ADAP model arrives. CROI containers should already be correct (post-fix simsets + post-fix engine). Test and pin versions for each model at that time — simset metadata doesn't include jheem2 version, so empirical testing is required.
+3. ~~**UI polish: disable unavailable facets**~~ **DONE.** Facet toggles are now context-aware: a dimension is only enabled if toggling it would produce a facet key that exists in the data for the selected outcome/statistic. Works for both custom sims (single-dimension only) and prerun explorers (multi-dimension combos). Applied globally via `useAnalysisState`.
 
-4. **Discovery & pre-filling (Phase 4b).** Manifest file, pre-filled parameter grids, unified exploration UX. Pre-filling common parameter combos gives users instant results and exercises the pipeline.
+4. **Extend custom sims to CROI.** Same container pattern as AJPH (different container repo, confirmed post-fix). Should be straightforward — add `customSimulation` to models.json, create route page, test.
 
-5. **Performance: matrix extraction.** The two-step pipeline enables parallelizing the extraction step (currently ~5 min for 132 files). Could matrix by outcome to speed up on-demand runs. Simulation step (~8-10 min) can't be parallelized. Net benefit is modest (~3 min saved) — defer until usage patterns are clear.
+5. **Extend custom sims to CDC Testing.** Different intervention type — will exercise whether the config-driven design handles non-Ryan-White models. jheem2 version compatibility unverified (likely post-fix but needs empirical test).
 
-6. **Workspace improvements** (non-blocking). Fix workspace loading pattern to prevent stale function contamination. Consider selective serialization when next rebuilding workspaces. See Workspace Tech Debt section.
+6. **Discovery & pre-filling (Phase 4b).** Manifest file, pre-filled parameter grids, unified exploration UX. Pre-filling common parameter combos gives users instant results and exercises the pipeline.
 
-7. **Upstash Redis for simulation progress %.** Nice-to-have UX improvement for the 10-20 minute wait.
+7. **Performance: matrix extraction.** The two-step pipeline enables parallelizing the extraction step (currently ~5 min for 132 files). Could matrix by outcome to speed up on-demand runs. Simulation step (~8-10 min) can't be parallelized. Net benefit is modest (~3 min saved) — defer until usage patterns are clear.
 
-8. **ADAP model (Phase 5).** Dependent on PI completing model extension. The infrastructure will be ready.
+8. **Workspace improvements** (non-blocking). Fix workspace loading pattern to prevent stale function contamination. Consider selective serialization when next rebuilding workspaces. See Workspace Tech Debt section.
 
-9. **Converge to single jheem2 version** (long-term). Once all simsets are regenerated with a unified jheem2 version (post-fix), all containers can use the same jheem-base and the cascade rebuild can be re-enabled. This would eliminate the version split complexity and allow re-enabling the cascade rebuild.
+9. **Upstash Redis for simulation progress %.** Nice-to-have UX improvement for the 10-20 minute wait.
+
+10. **ADAP model (Phase 5).** Dependent on PI completing model extension. The infrastructure will be ready.
+
+11. **Converge to single jheem2 version** (long-term). Once MSA simsets are regenerated with current jheem2, the version split goes away — one base for all, cascade rebuild re-enabled.
 
 ---
 
