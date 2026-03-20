@@ -453,11 +453,13 @@ A per-location or global JSON listing available scenario keys and metadata. Upda
 **Pre-fill workflow:**
 Scheduled or manually triggered workflow that runs a grid of common parameter combinations, populating the cache. For prefilled runs (where wall time doesn't matter), we can extract full faceting (all cross-tabs), making these results richer than on-demand runs.
 
-**Unified exploration UX:**
+**Unified exploration UX (future consideration):**
 Custom sim page becomes the primary exploration interface:
 - Paper scenarios (cessation, interruptions) shown as named presets -- instant, full faceting
 - Pre-cached custom runs -- instant, flagged as available
 - User-defined parameters -- run on demand, wait for results
+
+Longer-term, consider unifying prerun explorer and custom sims into a single page per model. Currently deferred because the interaction models are different: prerun is map-driven (click location, see instant results) while custom is parameter-driven (set sliders, wait 12 min). Unification makes sense once pre-filling makes most custom results instant — at that point the distinction between "prerun" and "cached custom" disappears for the user. The shared `CustomSimulationExplorer` and `AnalysisResults` components already ensure feature parity, so the components are ready when the UX is.
 
 Tasks:
 - [ ] Design manifest file format and S3 location

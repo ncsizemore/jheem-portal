@@ -24,7 +24,8 @@ export default function Navigation() {
 
   // Check if we should show State Level submenu
   const showStateLevelSubmenu = pathname === '/ryan-white-state-level' ||
-                                pathname?.startsWith('/ryan-white-state-level/explorer');
+                                pathname?.startsWith('/ryan-white-state-level/explorer') ||
+                                pathname?.startsWith('/ryan-white-state-level/custom');
 
   const isRyanWhiteActive = pathname === '/ryan-white' || showRyanWhiteSubmenu;
   const isStateLevelActive = pathname === '/ryan-white-state-level' || showStateLevelSubmenu;
@@ -200,6 +201,16 @@ export default function Navigation() {
                             >
                               30 States (2026–2031)
                             </Link>
+                            <Link
+                              href="/ryan-white-state-level/custom/ajph"
+                              className={`block px-10 py-2 text-xs font-medium transition-colors ${
+                                pathname?.startsWith('/ryan-white-state-level/custom')
+                                  ? 'text-hopkins-blue bg-white'
+                                  : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
+                              }`}
+                            >
+                              Custom Simulations
+                            </Link>
                           </div>
                         )}
 
@@ -348,6 +359,15 @@ export default function Navigation() {
                         pathname === '/ryan-white-state-level/explorer/croi' ? 'w-full' : 'w-0 group-hover:w-full'
                       }`}></span>
                     </Link>
+                    <Link
+                      href="/ryan-white-state-level/custom/ajph"
+                      className="text-white hover:text-hopkins-gold font-medium transition-all relative group py-1"
+                    >
+                      <span>Custom Simulations</span>
+                      <span className={`absolute bottom-0 left-0 h-0.5 bg-hopkins-gold transition-all duration-300 ${
+                        pathname?.startsWith('/ryan-white-state-level/custom') ? 'w-full' : 'w-0 group-hover:w-full'
+                      }`}></span>
+                    </Link>
                   </div>
                 </div>
               </div>
@@ -419,6 +439,43 @@ export default function Navigation() {
                     >
                       Ryan White: State-Level
                     </Link>
+
+                    {/* State-Level Submenu */}
+                    {isStateLevelActive && (
+                      <div className="ml-3 space-y-1 border-l-2 border-hopkins-gold/30 pl-3">
+                        <Link
+                          href="/ryan-white-state-level/explorer/ajph"
+                          className={`block px-3 py-1.5 rounded text-sm transition-colors ${
+                            pathname === '/ryan-white-state-level/explorer/ajph'
+                              ? 'text-hopkins-gold font-medium'
+                              : 'text-white/70 hover:text-white'
+                          }`}
+                        >
+                          11 States (2025–2030)
+                        </Link>
+                        <Link
+                          href="/ryan-white-state-level/explorer/croi"
+                          className={`block px-3 py-1.5 rounded text-sm transition-colors ${
+                            pathname === '/ryan-white-state-level/explorer/croi'
+                              ? 'text-hopkins-gold font-medium'
+                              : 'text-white/70 hover:text-white'
+                          }`}
+                        >
+                          30 States (2026–2031)
+                        </Link>
+                        <Link
+                          href="/ryan-white-state-level/custom/ajph"
+                          className={`block px-3 py-1.5 rounded text-sm transition-colors ${
+                            pathname?.startsWith('/ryan-white-state-level/custom')
+                              ? 'text-hopkins-gold font-medium'
+                              : 'text-white/70 hover:text-white'
+                          }`}
+                        >
+                          Custom Simulations
+                        </Link>
+                      </div>
+                    )}
+
                     <Link
                       href="/cdc-testing"
                       className={`block px-3 py-2 rounded-lg font-medium transition-colors ${
