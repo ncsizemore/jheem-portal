@@ -586,6 +586,10 @@ The container exports ALL jheem2 internal functions to `.GlobalEnv` to work arou
 - **Medium-term:** When rebuilding workspace, use selective serialization — save only `.jheem2_state`, constants, and specification objects rather than blanket `.GlobalEnv`. This prevents stale function contamination.
 - **Long-term:** Fix the namespace reference issue in jheem2 so internal functions don't need to be exported to `.GlobalEnv`. This would allow the workspace to be much smaller and cleaner.
 
+### Portal Data Layer Typing
+
+The `useAnalysisState` hook accepts an optional `scenarioData` prop (typed as `Record<string, any>`) to compute per-outcome facet availability. This works but bypasses type safety. The cleaner approach: have the data hooks (`useLocationData`, `useCustomSimulation`) expose a typed `getFacetsForOutcome(outcome, statistic)` method, removing the need to pass raw data into the state hook. Low priority — runtime behavior is correct, this is purely a type safety improvement.
+
 ---
 
 ## Path Forward (as of March 19, 2026)
