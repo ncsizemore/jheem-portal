@@ -1,7 +1,7 @@
 # Custom Simulations: Architecture Plan
 
-**Status:** MSA + AJPH custom sims operational, architecture validated across 2 models
-**Date:** March 4, 2026 (updated March 20, 2026)
+**Status:** All 3 Ryan White models operational (MSA, AJPH, CROI). Container architecture cleaned up. Ready for CDC Testing or ADAP.
+**Date:** March 4, 2026 (updated March 24, 2026)
 **Context:** PI is developing an ADAP model extension with 4 user-configurable parameters. The portal needs to support custom simulations — user-specified parameters, on-demand execution, interactive results.
 
 ---
@@ -469,17 +469,15 @@ Tasks:
 - [ ] Full faceting for prefilled runs (all cross-tabs)
 - [ ] Unified UX: presets + cached + on-demand in one interface
 
-#### Phase 4c: Extend to Other Models -- PLANNED
+#### Phase 4c: Extend to Other Models -- MOSTLY COMPLETE
 
-The custom sim page and infrastructure are config-driven. Extending to other models is primarily a models.json + container change. Planned for state-level Ryan White and CDC Testing models to fully standardize the custom sim architecture before the ADAP model arrives.
+The custom sim page and infrastructure are config-driven. Extending to other models is primarily a models.json + container change.
 
-- [ ] Ryan White state-level (AJPH + CROI) — same intervention pattern, 1000-sim simsets, tested on GHA at 11 GB
-- [ ] CDC Testing — different intervention type, will exercise the config-driven design with a non-RW model
-- [ ] Add `customSimulation` config to applicable models in models.json
-- [ ] Ensure containers have simulation scripts for custom mode
-- [ ] Make custom sim page generic (route by model ID, not Ryan White-specific)
-
-**Prerequisite:** Version-matching strategy must be applied per model (MSA done, others TBD).
+- [x] Ryan White state-level (AJPH + CROI) — DONE. Unified `/ryan-white-state-level/custom` page with AJPH/CROI model toggle. Both validated on GHA.
+- [x] Container architecture cleanup — DONE. Dedicated containers per model, clean base v1.3.0. See [Container Cleanup Plan](./CONTAINER-CLEANUP-PLAN.md).
+- [x] `customSimulation` config in models.json for all 3 Ryan White models
+- [x] All Ryan White containers have custom mode via base v1.3.0
+- [ ] CDC Testing — different intervention type, will exercise the config-driven design with a non-RW model. Requires defining custom sim parameters and bumping container to base v1.3.0.
 
 ### Phase 5: ADAP Model -- PENDING
 
@@ -553,9 +551,9 @@ These approaches are complementary and converging:
 | ADAP model parameters don't fit existing intervention pattern | Low | Medium | Translation guide covers this; PI can advise on mapping |
 | User expects real-time results | Medium | Low | Clear UX messaging; prerun common params for instant access |
 | **Custom sim produces wrong incidence values** | **Fixed** | **Critical** | **Simset/engine version mismatch. MSA container pinned to jheem2 1.6.2 (v2.2.1). Divergence commit: `76859f2d`. Validated March 19, 2026.** |
-| Cascade rebuild pushes wrong version to a container | Mitigated | High | Cascade disabled March 19, 2026. Rebuild each container individually. |
+| Cascade rebuild pushes wrong version to a container | **Re-enabled** | High | Container cleanup (March 24) re-enables cascade rebuilds. Each container inherits base jheem2; MSA's 1.6.2 pin is a final Dockerfile step that survives base bumps. Cascade not yet wired to new repo names. |
 | Workflow default overrides Dockerfile base version | Fixed | High | Removed hardcoded workflow defaults. Dockerfile ARG is now sole source of truth for base version (all 3 container repos). |
-| Workspace can't be rebuilt with older jheem2 | Confirmed | Medium | MSA container uses prebuilt workspace from v2.1.0. Documented in Dockerfile with instructions to re-enable workspace builder. |
+| Workspace built with wrong jheem2 version | **Fixed** | **Critical** | MSA v1.0.0 built workspace with jheem2 1.11.1, serializing `create.intervention` with `generate.parameters.function` arg incompatible with 1.6.2 runtime. Fixed in v1.0.1: prebuilt workspace from v2.1.0 (jheem2 1.9.2, compatible with 1.6.2). |
 | Workspace loads stale functions into `.GlobalEnv` | Confirmed | Medium | Load workspace first, then re-export package functions. Long-term: rebuild workspace with selective serialization. |
 
 ---
@@ -594,7 +592,7 @@ Facet toggle availability is now context-aware: a dimension toggle is only enabl
 
 ---
 
-## Path Forward (as of March 20, 2026)
+## Path Forward (as of March 24, 2026)
 
 Priority-ordered.
 
@@ -604,9 +602,9 @@ Priority-ordered.
 
 3. ~~**UI polish: disable unavailable facets**~~ **DONE.** Facet toggles are now context-aware: a dimension is only enabled if toggling it would produce a facet key that exists in the data for the selected outcome/statistic. Works for both custom sims (single-dimension only) and prerun explorers (multi-dimension combos). Applied globally via `useAnalysisState`.
 
-4. **Extend custom sims to CROI.** Same container pattern as AJPH (different container repo, confirmed post-fix). Should be straightforward — add `customSimulation` to models.json, create route page, test.
+4. ~~**Extend custom sims to CROI**~~ **DONE (March 24, 2026).** CROI custom sims added to models.json and portal (unified `/ryan-white-state-level/custom` page with AJPH/CROI model toggle). Initial test failed because CROI container (base v1.0.0) predated custom mode. This triggered a full **[Container Architecture Cleanup](./CONTAINER-CLEANUP-PLAN.md)**: dedicated containers per model, clean base v1.3.0 with jheem2 1.11.1, MSA pins its own jheem2 exception. All 3 Ryan White models validated end-to-end with new containers. MSA required an extra fix (v1.0.1) — workspace must be prebuilt with a jheem2 version whose function signatures are compatible with 1.6.2 runtime (see cleanup plan Step 4).
 
-5. **Extend custom sims to CDC Testing.** Different intervention type — will exercise whether the config-driven design handles non-Ryan-White models. jheem2 version compatibility unverified (likely post-fix but needs empirical test).
+5. **Extend custom sims to CDC Testing.** Different intervention type — will exercise whether the config-driven design handles non-Ryan-White models. Requires: (a) defining custom sim parameters for CDC Testing, (b) bumping CDC container to base v1.3.0, (c) adding `customSimulation` config to models.json, (d) creating portal route.
 
 6. **Discovery & pre-filling (Phase 4b).** Manifest file, pre-filled parameter grids, unified exploration UX. Pre-filling common parameter combos gives users instant results and exercises the pipeline.
 
@@ -618,39 +616,44 @@ Priority-ordered.
 
 10. **ADAP model (Phase 5).** Dependent on PI completing model extension. The infrastructure will be ready.
 
-11. **Converge to single jheem2 version** (long-term). Once MSA simsets are regenerated with current jheem2, the version split goes away — one base for all, cascade rebuild re-enabled.
+11. **Converge to single jheem2 version** (long-term). Once MSA simsets are regenerated with current jheem2, the version split goes away — one base for all. Cascade rebuilds are already re-enabled by the container cleanup (MSA's pin survives base bumps), but full convergence would simplify even further.
 
 ---
 
-## Version Matrix (as of March 19, 2026)
+## Version Matrix (as of March 24, 2026)
 
-Understanding which versions are deployed where:
+Post-cleanup state. Each Ryan White model has its own dedicated container. See [Container Cleanup Plan](./CONTAINER-CLEANUP-PLAN.md) for full details.
 
 ```
-jheem-base (shared R runtime + scripts)
-├── v1.0.0 → jheem2 latest (pre-pin)
-├── v1.1.1 → jheem2 latest
-└── v1.2.0 → jheem2 1.6.2 (pinned for MSA simsets)
+jheem-base v1.3.0 → jheem2 1.11.1 (commit 3b74e3c)
 
-MSA container (jheem-container-minimal)
-├── Base: v1.2.0 (jheem2 1.6.2, matching pre-fix MSA simsets)
-├── Workspace: prebuilt from v2.1.0 (can't rebuild with old jheem2)
-├── Tag: v2.2.1
+MSA container (jheem-ryan-white-msa-container)
+├── Image: ghcr.io/ncsizemore/jheem-ryan-white-msa:1.0.1
+├── Base: v1.3.0
+├── Workspace: prebuilt from jheem-ryan-white-model:2.1.0 (jheem2 1.9.2)
+├── Runtime: jheem2 1.6.2 (pinned — MSA simsets calibrated with this)
+├── Custom sims: validated
 └── Simsets: ryan-white-msa-v1.0.0
 
+AJPH container (jheem-ryan-white-ajph-container)
+├── Image: ghcr.io/ncsizemore/jheem-ryan-white-ajph:1.0.0
+├── Base: v1.3.0 (inherits jheem2 1.11.1)
+├── Workspace: built from source (jheem_analyses fc3fe1d)
+├── Custom sims: validated
+└── Simsets: ryan-white-ajph-v1.0.0
+
 CROI container (jheem-ryan-white-croi-container)
-├── Base: v1.0.0 (jheem2 latest, matching post-fix CROI simsets)
-├── Tag: v1.0.0
+├── Image: ghcr.io/ncsizemore/jheem-ryan-white-croi:2.1.0
+├── Base: v1.3.0 (inherits jheem2 1.11.1)
+├── Workspace: built from source
+├── Custom sims: validated
 └── Simsets: ryan-white-state-v2.0.0
 
 CDC container (jheem-cdc-testing-container)
-├── Base: v1.0.0 (jheem2 latest)
-├── Tag: v2.0.0
+├── Image: ghcr.io/ncsizemore/jheem-cdc-testing-model:2.0.0
+├── Base: v1.0.0 (not yet updated)
+├── Custom sims: not yet supported
 └── Simsets: cdc-testing-v1.0.0
 ```
 
-**Key finding (March 19, 2026):** MSA is the only model that requires the old jheem2 (1.6.2). AJPH and CROI simsets are confirmed post-fix — they work correctly with newer jheem2. CDC Testing is likely post-fix as well (untested). This means MSA is the special case, not the norm.
-
-**TODO: Retag jheem-base for clarity.** The current versioning is misleading — v1.2.0 (the "newest" tag) is actually the MSA backwards-compat pin. Consider retagging to make the special case explicit (e.g., `v1.1.1-msa` or similar), and tagging a new current version (v1.3.0) with latest jheem2 for all non-MSA models. Revisit before rebuilding any non-MSA containers.
-
-**Resolution path:** When MSA simsets are regenerated with current jheem2, the special case goes away — one base version for all, cascade rebuild re-enabled.
+**Key fact:** MSA is the only model that requires old jheem2 (1.6.2). All other models inherit base jheem2. This means cascade rebuilds work cleanly — MSA's pin is a final Dockerfile step.
