@@ -1,7 +1,7 @@
 # Custom Simulations: Architecture Plan
 
-**Status:** All 3 Ryan White models operational (MSA, AJPH, CROI). Container architecture cleaned up. Ready for CDC Testing or ADAP.
-**Date:** March 4, 2026 (updated March 24, 2026)
+**Status:** All 3 Ryan White models operational (MSA, AJPH, CROI). Container architecture cleaned up. CDC Testing in progress — prerequisite refactor to make `custom_simulation.R` model-agnostic.
+**Date:** March 4, 2026 (updated March 25, 2026)
 **Context:** PI is developing an ADAP model extension with 4 user-configurable parameters. The portal needs to support custom simulations — user-specified parameters, on-demand execution, interactive results.
 
 ---
@@ -604,7 +604,7 @@ Priority-ordered.
 
 4. ~~**Extend custom sims to CROI**~~ **DONE (March 24, 2026).** CROI custom sims added to models.json and portal (unified `/ryan-white-state-level/custom` page with AJPH/CROI model toggle). Initial test failed because CROI container (base v1.0.0) predated custom mode. This triggered a full **[Container Architecture Cleanup](./CONTAINER-CLEANUP-PLAN.md)**: dedicated containers per model, clean base v1.3.0 with jheem2 1.11.1, MSA pins its own jheem2 exception. All 3 Ryan White models validated end-to-end with new containers. MSA required an extra fix (v1.0.1) — workspace must be prebuilt with a jheem2 version whose function signatures are compatible with 1.6.2 runtime (see cleanup plan Step 4).
 
-5. **Extend custom sims to CDC Testing.** Different intervention type — will exercise whether the config-driven design handles non-Ryan-White models. Requires: (a) defining custom sim parameters for CDC Testing, (b) bumping CDC container to base v1.3.0, (c) adding `customSimulation` config to models.json, (d) creating portal route.
+5. **Extend custom sims to CDC Testing.** Different intervention type — exercises whether the config-driven design handles non-Ryan-White models. **Architectural gap found:** `custom_simulation.R` in jheem-base hardcodes Ryan White parameters, script paths, and function names. Prerequisite refactor needed to make it model-agnostic before CDC Testing (or any future model) can use custom sims. See [CDC Testing Custom Sims Plan](./CDC-TESTING-CUSTOM-SIMS-PLAN.md) for full details including the Step 0 refactor design.
 
 6. **Discovery & pre-filling (Phase 4b).** Manifest file, pre-filled parameter grids, unified exploration UX. Pre-filling common parameter combos gives users instant results and exercises the pipeline.
 
@@ -620,38 +620,40 @@ Priority-ordered.
 
 ---
 
-## Version Matrix (as of March 24, 2026)
+## Version Matrix (as of March 26, 2026)
 
-Post-cleanup state. Each Ryan White model has its own dedicated container. See [Container Cleanup Plan](./CONTAINER-CLEANUP-PLAN.md) for full details.
+Post-refactor state. jheem-base v1.4.0 has model-agnostic custom simulation pipeline.
 
 ```
-jheem-base v1.3.0 → jheem2 1.11.1 (commit 3b74e3c)
+jheem-base v1.4.0 → jheem2 1.11.1 (commit 3b74e3c)
+  custom_simulation.R: model-agnostic (reads SIMULATION_SCRIPT, MODEL_ID env vars)
+  Contract: simulation scripts export create_model_intervention() + run_custom_simulation()
+
+CROI container (jheem-ryan-white-croi-container)
+├── Image: ghcr.io/ncsizemore/jheem-ryan-white-croi:2.2.0
+├── Base: v1.4.0 (inherits jheem2 1.11.1)
+├── Workspace: built from source
+├── Custom sims: validated (March 26, 2026)
+└── Simsets: ryan-white-state-v2.0.0
 
 MSA container (jheem-ryan-white-msa-container)
 ├── Image: ghcr.io/ncsizemore/jheem-ryan-white-msa:1.0.1
-├── Base: v1.3.0
+├── Base: v1.3.0 (needs bump to v1.4.0 — housekeeping)
 ├── Workspace: prebuilt from jheem-ryan-white-model:2.1.0 (jheem2 1.9.2)
 ├── Runtime: jheem2 1.6.2 (pinned — MSA simsets calibrated with this)
-├── Custom sims: validated
+├── Custom sims: validated (on v1.3.0, works via hardcoded defaults)
 └── Simsets: ryan-white-msa-v1.0.0
 
 AJPH container (jheem-ryan-white-ajph-container)
 ├── Image: ghcr.io/ncsizemore/jheem-ryan-white-ajph:1.0.0
-├── Base: v1.3.0 (inherits jheem2 1.11.1)
+├── Base: v1.3.0 (needs bump to v1.4.0 — housekeeping)
 ├── Workspace: built from source (jheem_analyses fc3fe1d)
-├── Custom sims: validated
+├── Custom sims: validated (on v1.3.0, works via hardcoded defaults)
 └── Simsets: ryan-white-ajph-v1.0.0
-
-CROI container (jheem-ryan-white-croi-container)
-├── Image: ghcr.io/ncsizemore/jheem-ryan-white-croi:2.1.0
-├── Base: v1.3.0 (inherits jheem2 1.11.1)
-├── Workspace: built from source
-├── Custom sims: validated
-└── Simsets: ryan-white-state-v2.0.0
 
 CDC container (jheem-cdc-testing-container)
 ├── Image: ghcr.io/ncsizemore/jheem-cdc-testing-model:2.0.0
-├── Base: v1.0.0 (not yet updated)
+├── Base: v1.0.0 (needs bump to v1.4.0 — Step 2 of CDC plan)
 ├── Custom sims: not yet supported
 └── Simsets: cdc-testing-v1.0.0
 ```
