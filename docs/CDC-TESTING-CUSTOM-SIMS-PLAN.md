@@ -1,8 +1,8 @@
 # CDC Testing Custom Simulations
 
 **Parent plan:** [Custom Simulations Plan](./CUSTOM-SIMULATIONS-PLAN.md) (item 5 in Path Forward)
-**Status:** Step 0 complete (base v1.4.0, validated with CROI v2.2.0). Ready for Steps 1-5.
-**Date:** March 26, 2026
+**Status:** Steps 0-4 complete. Pipeline validated (AL, dry run, 18m45s). Ready for Step 5 (live end-to-end validation).
+**Date:** March 27, 2026
 
 ## Goal
 
@@ -104,9 +104,9 @@ Made `custom_simulation.R` model-agnostic. Unblocks CDC Testing and any future m
 
 **Housekeeping (non-blocking):** MSA (v1.0.1) and AJPH (v1.0.0) are still on base v1.3.0. They work fine — the old `custom_simulation.R` ignores the new env vars and uses hardcoded defaults. Should be bumped to base v1.4.0 when convenient so all containers are on the same base.
 
-### Step 1: `simple_cdc_testing.R` in CDC Testing container
+### Step 1: `simple_cdc_testing.R` in CDC Testing container — DONE (March 26, 2026)
 
-New simulation script following the contract from Step 0.
+Simulation script implementing the two-function contract. COPYed into container at `simulation/simple_cdc_testing.R`.
 
 ```r
 # simulation/simple_cdc_testing.R
@@ -178,21 +178,24 @@ Key details:
 
 The script is COPYed into the container's `simulation/` directory in the Dockerfile.
 
-### Step 2: Bump CDC Testing container
+### Step 2: Bump CDC Testing container — DONE (March 27, 2026)
 
-Update `jheem-cdc-testing-container/Dockerfile`:
-- `BASE_VERSION=1.0.0` → v1.4.0 (post-refactor base)
-- **Update `JHEEM_ANALYSES_COMMIT`** from `fc3fe1d` to current HEAD (or a pinned recent commit). Required so the workspace includes `proportion.tested.regardless` as a model element.
+Updated `jheem-cdc-testing-container/Dockerfile`:
+- `BASE_VERSION=1.0.0` → v1.4.1 (includes conditional populate_outcomes_array patch)
+- `JHEEM_ANALYSES_COMMIT` remains `51ac4957` (already has `proportion.tested.regardless` registered)
 - COPY `simple_cdc_testing.R` into `simulation/`
-- Workspace builds from source (same pattern as current, just newer base + newer jheem_analyses)
-- No jheem2 override needed (inherits base)
-- Tag v2.1.0
+- Final tag: **v2.1.2** (v2.1.0 and v2.1.1 failed, see Issues Discovered below)
 
-Also fix image naming: currently `ghcr.io/ncsizemore/jheem-cdc-testing-model`, should be `ghcr.io/ncsizemore/jheem-cdc-testing` per naming convention. Update GHA workflow's `GHCR_IMAGE_NAME` and models.json together.
+Also fixed image naming: `ghcr.io/ncsizemore/jheem-cdc-testing-model` → `ghcr.io/ncsizemore/jheem-cdc-testing` per naming convention. Updated GHA workflow's `GHCR_IMAGE_NAME` and models.json together.
 
-**Risk:** Updating jheem_analyses commit means the workspace is built from newer research code. The specification changes are additive (new `proportion.tested.regardless` element, existing quantities updated to reference it). The prerun simsets (`cdc-testing-v1.0.0`) were generated externally — verify they still extract correctly with the new workspace before going live.
+**Issues discovered during this step (see Issues Discovered section below):**
+1. Workspace creation fragility — cherry-picking individual R files broke when research code added new dependencies
+2. `populate_outcomes_array` NULL-guard patch — corrupted CDC Testing's outcome dimensions
+3. `distributions` package — needed `library(distributions)` for `generate.random.samples` S4 generic
 
-### Step 3: `customSimulation` config in models.json
+### Step 3: `customSimulation` config in models.json — DONE (March 27, 2026)
+
+Added to `models.json` in jheem-backend:
 
 ```json
 "customSimulation": {
@@ -206,16 +209,18 @@ Also fix image naming: currently `ghcr.io/ncsizemore/jheem-cdc-testing-model`, s
 }
 ```
 
+Also updated container image reference: `jheem-cdc-testing-model:2.0.0` → `jheem-cdc-testing:2.1.2` and `generate-cdc-testing.yml` default container.
+
 Scenario key example: `t100-p50` (100% reduction, 50% tested regardless).
 
-### Step 4: Portal route
+### Step 4: Portal route — DONE (March 27, 2026)
 
-New page at `/cdc-testing/custom`. Simpler than the state-level page — no model toggle needed.
+New page at `/cdc-testing/custom`. Committed in jheem-portal (`8f3b1b2`).
 
-- Reuse `CustomSimulationExplorer` component
+- Reuses `CustomSimulationExplorer` component (same as AJPH/CROI custom pages)
 - Locations from `cdcTestingConfig.locations`
 - State geography (same as AJPH/CROI)
-- Add "Custom Simulations" link to CDC Testing nav section
+- Added "Custom Simulations" link to CDC Testing nav section (desktop dropdown, sub-nav bar, mobile menu)
 
 ### Step 5: Validate end-to-end
 

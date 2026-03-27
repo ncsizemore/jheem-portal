@@ -28,6 +28,7 @@ interface CustomSimulationExplorerProps {
   config: ModelConfig;
   locations: Location[];
   basePath: string; // e.g., '/ryan-white/custom' or '/ryan-white-state-level/custom?model=ajph'
+  children?: React.ReactNode; // Page header content (title, subtitle)
   locationPlaceholder?: string; // e.g., 'Select a city...' or 'Select a state...'
   modelSelector?: React.ReactNode; // Optional model toggle rendered between header and parameters
 }
@@ -36,6 +37,7 @@ export default function CustomSimulationExplorer({
   config,
   locations,
   basePath,
+  children,
   locationPlaceholder,
   modelSelector,
 }: CustomSimulationExplorerProps) {
@@ -183,13 +185,7 @@ export default function CustomSimulationExplorer({
   return (
     <div className="flex-1 w-full bg-slate-50 overflow-y-auto">
       <div className="max-w-6xl mx-auto px-6 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-slate-800">Custom Simulations</h1>
-          <p className="text-slate-500 mt-1">
-            Explore custom Ryan White funding scenarios by adjusting suppression loss parameters.
-          </p>
-        </div>
+        {children}
 
         {modelSelector}
 

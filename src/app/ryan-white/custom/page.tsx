@@ -24,7 +24,14 @@ export default function CustomSimulationPage() {
         config={ryanWhiteConfig}
         locations={locations}
         basePath="/ryan-white/custom"
-      />
+      >
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold text-slate-800">Custom Simulations</h1>
+          <p className="text-slate-500 mt-1">
+            Explore custom Ryan White funding scenarios by adjusting suppression loss parameters.
+          </p>
+        </div>
+      </CustomSimulationExplorer>
     </Suspense>
   );
 }

@@ -22,7 +22,14 @@ export default function CDCTestingCustomSimulationPage() {
         config={cdcTestingConfig}
         locations={locations}
         basePath="/cdc-testing/custom"
-      />
+      >
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold text-slate-800">Custom Simulations</h1>
+          <p className="text-slate-500 mt-1">
+            Explore the impact of CDC testing funding changes on HIV outcomes.
+          </p>
+        </div>
+      </CustomSimulationExplorer>
     </Suspense>
   );
 }
