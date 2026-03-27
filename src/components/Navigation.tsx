@@ -29,7 +29,11 @@ export default function Navigation() {
 
   const isRyanWhiteActive = pathname === '/ryan-white' || showRyanWhiteSubmenu;
   const isStateLevelActive = pathname === '/ryan-white-state-level' || showStateLevelSubmenu;
-  const isCdcTestingActive = pathname === '/cdc-testing' || pathname?.startsWith('/cdc-testing/') || pathname === '/shiny/cdc-testing';
+  const showCdcTestingSubmenu = pathname === '/cdc-testing' ||
+                                pathname?.startsWith('/cdc-testing/explorer') ||
+                                pathname?.startsWith('/cdc-testing/custom');
+
+  const isCdcTestingActive = pathname === '/cdc-testing' || showCdcTestingSubmenu || pathname === '/shiny/cdc-testing';
   const isHIVAgeProjectionsActive = pathname === '/aging';
   const isAnyModelActive = isRyanWhiteActive || isStateLevelActive || isCdcTestingActive || isHIVAgeProjectionsActive;
 
@@ -241,6 +245,32 @@ export default function Navigation() {
                           </div>
                         </Link>
 
+                        {/* Show CDC Testing submenu if active */}
+                        {isCdcTestingActive && (
+                          <div className="bg-gray-50 border-y border-gray-200 py-1">
+                            <Link
+                              href="/cdc-testing/explorer"
+                              className={`block px-10 py-2 text-xs font-medium transition-colors ${
+                                pathname === '/cdc-testing/explorer'
+                                  ? 'text-hopkins-blue bg-white'
+                                  : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
+                              }`}
+                            >
+                              Prerun Explorer
+                            </Link>
+                            <Link
+                              href="/cdc-testing/custom"
+                              className={`block px-10 py-2 text-xs font-medium transition-colors ${
+                                pathname?.startsWith('/cdc-testing/custom')
+                                  ? 'text-hopkins-blue bg-white'
+                                  : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
+                              }`}
+                            >
+                              Custom Simulations
+                            </Link>
+                          </div>
+                        )}
+
                         <Link
                           href="/aging"
                           className={`block px-5 py-3 transition-all duration-200 border-l-4 ${
@@ -375,6 +405,47 @@ export default function Navigation() {
           )}
         </AnimatePresence>
         
+        {/* CDC Testing Sub-Navigation */}
+        <AnimatePresence>
+          {showCdcTestingSubmenu && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+              className="border-t border-white/20 overflow-hidden"
+            >
+              <div className="py-4">
+                <div className="flex items-center space-x-8">
+                  <span className="text-xs font-semibold text-hopkins-gold uppercase tracking-wider">
+                    CDC Testing Tools
+                  </span>
+                  <div className="flex items-center space-x-6">
+                    <Link
+                      href="/cdc-testing/explorer"
+                      className="text-white hover:text-hopkins-gold font-medium transition-all relative group py-1"
+                    >
+                      <span>Prerun Explorer</span>
+                      <span className={`absolute bottom-0 left-0 h-0.5 bg-hopkins-gold transition-all duration-300 ${
+                        pathname === '/cdc-testing/explorer' ? 'w-full' : 'w-0 group-hover:w-full'
+                      }`}></span>
+                    </Link>
+                    <Link
+                      href="/cdc-testing/custom"
+                      className="text-white hover:text-hopkins-gold font-medium transition-all relative group py-1"
+                    >
+                      <span>Custom Simulations</span>
+                      <span className={`absolute bottom-0 left-0 h-0.5 bg-hopkins-gold transition-all duration-300 ${
+                        pathname?.startsWith('/cdc-testing/custom') ? 'w-full' : 'w-0 group-hover:w-full'
+                      }`}></span>
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* Mobile Menu */}
         <AnimatePresence>
           {mobileMenuOpen && (
@@ -486,6 +557,33 @@ export default function Navigation() {
                     >
                       CDC Testing Model
                     </Link>
+
+                    {/* CDC Testing Submenu */}
+                    {isCdcTestingActive && (
+                      <div className="ml-3 space-y-1 border-l-2 border-hopkins-gold/30 pl-3">
+                        <Link
+                          href="/cdc-testing/explorer"
+                          className={`block px-3 py-1.5 rounded text-sm transition-colors ${
+                            pathname === '/cdc-testing/explorer'
+                              ? 'text-hopkins-gold font-medium'
+                              : 'text-white/70 hover:text-white'
+                          }`}
+                        >
+                          Prerun Explorer
+                        </Link>
+                        <Link
+                          href="/cdc-testing/custom"
+                          className={`block px-3 py-1.5 rounded text-sm transition-colors ${
+                            pathname?.startsWith('/cdc-testing/custom')
+                              ? 'text-hopkins-gold font-medium'
+                              : 'text-white/70 hover:text-white'
+                          }`}
+                        >
+                          Custom Simulations
+                        </Link>
+                      </div>
+                    )}
+
                     <Link
                       href="/aging"
                       className={`block px-3 py-2 rounded-lg font-medium transition-colors ${
