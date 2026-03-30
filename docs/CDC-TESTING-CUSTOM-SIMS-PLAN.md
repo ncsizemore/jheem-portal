@@ -1,8 +1,8 @@
 # CDC Testing Custom Simulations
 
 **Parent plan:** [Custom Simulations Plan](./CUSTOM-SIMULATIONS-PLAN.md) (item 5 in Path Forward)
-**Status:** Steps 0-4 complete. Pipeline validated (AL, dry run, 18m45s). Ready for Step 5 (live end-to-end validation).
-**Date:** March 27, 2026
+**Status:** Complete. All steps done. CDC Testing is the second model with custom simulations.
+**Date:** March 30, 2026
 
 ## Goal
 
@@ -222,12 +222,20 @@ New page at `/cdc-testing/custom`. Committed in jheem-portal (`8f3b1b2`).
 - State geography (same as AJPH/CROI)
 - Added "Custom Simulations" link to CDC Testing nav section (desktop dropdown, sub-nav bar, mobile menu)
 
-### Step 5: Validate end-to-end
+### Step 5: Validate end-to-end — DONE (March 30, 2026)
 
-1. Trigger custom sim from portal for a test state (e.g., AL)
-2. Verify workflow completes, data lands on CloudFront
-3. Verify portal renders results correctly
-4. Spot-check values against Shiny app with same parameters
+1. Triggered live custom sim from portal (CA)
+2. Workflow completed, data landed on CloudFront
+3. Portal rendered results correctly
+4. Values comparable to prerun results — sanity check sufficient for a second model validating the architecture
+
+## Issues Discovered
+
+1. **Workspace creation fragility (v2.1.0 failure).** Cherry-picking individual R files from jheem_analyses broke when research code added `CDC.TESTING.INTERVENTION.SUFFIX` as a dependency in `cdc_testing_interventions.R` (set in `cdc_testing_main.R`). Fix: source `cdc_testing_main.R` instead — the research code's own entry point handles initialization order. Required `setwd()` into jheem_analyses because main.R uses relative paths.
+
+2. **`populate_outcomes_array` NULL-guard incompatibility (v2.1.1 failure).** The jheem2 C++ function crashes on NULL `new_values`/`old_times`. The patch in `custom_simulation.R` worked for Ryan White (which has `aids.diagnoses`/`aids.deaths` outcomes that trigger the bug) but corrupted CDC Testing's different outcome dimensions (`dims [product 4860] do not match the length of object [4860000]`). Fix: made patch conditional on `MODEL_ID` — only applied for Ryan White models. Tagged jheem-base v1.4.1.
+
+3. **`distributions` package requirement.** `generate.random.samples` is an S4 generic from the custom `distributions` package. `custom_simulation.R` loads it via `library(distributions)`, but manual testing in the container missed this initially.
 
 ## Open Questions
 
