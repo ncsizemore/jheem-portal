@@ -211,7 +211,7 @@ export function useCustomSimulation() {
   );
 
   const runSimulation = useCallback(
-    async (modelId: string, location: string, parameters: Record<string, number>) => {
+    async (modelId: string, location: string, parameters: Record<string, number>, email?: string) => {
       cleanup();
 
       setState({
@@ -228,7 +228,7 @@ export function useCustomSimulation() {
         const response = await fetch('/api/custom-sim', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ modelId, location, parameters }),
+          body: JSON.stringify({ modelId, location, parameters, ...(email && { email }) }),
         });
 
         if (!response.ok) {

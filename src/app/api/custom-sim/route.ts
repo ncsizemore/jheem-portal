@@ -43,7 +43,7 @@ function deriveScenarioKey(
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { modelId, location, parameters } = body;
+    const { modelId, location, parameters, email } = body;
 
     if (!modelId || !location || !parameters) {
       return NextResponse.json(
@@ -152,6 +152,7 @@ export async function POST(request: NextRequest) {
             model_id: backendModelId,
             location,
             parameters: JSON.stringify(validatedParams),
+            ...(email && typeof email === 'string' && { email }),
           },
         }),
       }

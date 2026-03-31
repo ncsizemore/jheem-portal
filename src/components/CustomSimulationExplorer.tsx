@@ -162,8 +162,13 @@ export default function CustomSimulationExplorer({
 
   const handleRun = () => {
     if (!selectedLocation) return;
-    runSimulation(config.id, selectedLocation, parameters);
+    const emailToSend = notifyByEmail && email.trim() ? email.trim() : undefined;
+    runSimulation(config.id, selectedLocation, parameters, emailToSend);
   };
+
+  // Email notification
+  const [notifyByEmail, setNotifyByEmail] = useState(false);
+  const [email, setEmail] = useState('');
 
   const [linkCopied, setLinkCopied] = useState(false);
 
@@ -246,6 +251,28 @@ export default function CustomSimulationExplorer({
                 </div>
               </div>
             ))}
+          </div>
+
+          {/* Email notification */}
+          <div className="mb-6">
+            <label className="flex items-center gap-2 text-sm text-slate-600 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={notifyByEmail}
+                onChange={(e) => setNotifyByEmail(e.target.checked)}
+                className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+              />
+              Email me when results are ready
+            </label>
+            {notifyByEmail && (
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="your@email.com"
+                className="mt-2 w-full max-w-md px-3 py-2 border border-slate-300 rounded-lg text-sm text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+            )}
           </div>
 
           {/* Run button + copy link */}
