@@ -4,6 +4,52 @@ Append-only log of session work and context. Most recent first.
 
 ---
 
+## 2026-03-30: CDC Testing Custom Sims Complete
+
+### Completed
+- CDC Testing custom simulations — full end-to-end pipeline validated (Steps 0-5)
+- jheem-base v1.4.0→v1.4.1: model-agnostic `custom_simulation.R` with conditional `populate_outcomes_array` patch
+- CDC Testing container v2.1.2 (base v1.4.1): workspace creation fixed to source `cdc_testing_main.R`
+- Portal route `/cdc-testing/custom` with CDC-specific page header
+- Refactored page headers out of `CustomSimulationExplorer` into individual pages (children prop)
+- Updated CDC Testing plan and custom sims plan with completion notes
+
+### Issues Discovered & Resolved
+- Workspace cherry-picking fragility — research code dependency changes break manual file sourcing
+- `populate_outcomes_array` NULL-guard corrupts CDC Testing outcomes — made conditional on MODEL_ID
+- `distributions` package required for `generate.random.samples` S4 generic
+
+### Key Commits
+- jheem-base: `38bc59a` (v1.4.1)
+- jheem-cdc-testing-container: `6667b7f` (v2.1.2)
+- jheem-backend: `634f62a` (models.json + workflow)
+- jheem-portal: `8f3b1b2` (route + nav), `3a3dc2a` (header refactor)
+
+### Status
+All 4 models (MSA, AJPH, CROI, CDC Testing) have working custom simulations. Config-driven architecture validated across Ryan White and CDC Testing intervention types. Next: email notifications + Redis progress tracking.
+
+---
+
+## 2026-03-25/26: CDC Testing Custom Sims (Steps 0-1)
+
+### Completed
+- Step 0: Refactored `custom_simulation.R` to be model-agnostic (contract: `create_model_intervention()` + `run_custom_simulation()`)
+- CROI rebuilt on base v1.4.0 (v2.2.0), custom sim validated
+- Step 1: Created `simple_cdc_testing.R` simulation script for CDC Testing
+- Updated plans with Step 0 completion, version matrix, housekeeping notes
+
+---
+
+## 2026-03-24: Container Architecture Cleanup & CROI Custom Sims
+
+### Completed
+- CROI custom sims added (unified `/ryan-white-state-level/custom` page with AJPH/CROI toggle)
+- Container architecture cleanup: dedicated containers per model, clean base v1.3.0
+- MSA container fix v1.0.1 (prebuilt workspace compatibility)
+- All 3 Ryan White models validated end-to-end
+
+---
+
 ## 2026-02-10: Homepage Redesign & Documentation Cleanup
 
 ### Completed
