@@ -253,26 +253,31 @@ export default function CustomSimulationExplorer({
             ))}
           </div>
 
-          {/* Email notification */}
-          <div className="mb-6">
-            <label className="flex items-center gap-2 text-sm text-slate-600 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={notifyByEmail}
-                onChange={(e) => setNotifyByEmail(e.target.checked)}
-                className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-              />
-              Email me when results are ready
-            </label>
-            {notifyByEmail && (
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="your@email.com"
-                className="mt-2 w-full max-w-md px-3 py-2 border border-slate-300 rounded-lg text-sm text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-            )}
+          {/* Timing info + email notification */}
+          <div className="mb-6 p-4 bg-slate-50 rounded-lg border border-slate-200 text-sm">
+            <p className="text-slate-600">
+              Simulations typically take 10-20 minutes. Results are saved — you can bookmark this page or copy the link to return later.
+            </p>
+            <div className="mt-3">
+              <label className="flex items-center gap-2 text-slate-600 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={notifyByEmail}
+                  onChange={(e) => setNotifyByEmail(e.target.checked)}
+                  className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                />
+                Email me when results are ready
+              </label>
+              {notifyByEmail && (
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="your@email.com"
+                  className="mt-2 w-full max-w-md px-3 py-2 border border-slate-300 rounded-lg text-sm text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              )}
+            </div>
           </div>
 
           {/* Run button + copy link */}
@@ -320,26 +325,11 @@ export default function CustomSimulationExplorer({
         {/* Running indicator */}
         {isRunning && !simData && (
           simStatus === 'running' ? (
-            <>
-              <SimulationProgress
-                phase={phase}
-                phaseMessage={phaseMessage}
-                startedAt={startedAt}
-              />
-              <div className="mt-4 bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm text-blue-800">
-                <p className="font-medium mb-1">Simulations typically take 10-20 minutes.</p>
-                <p className="text-blue-700">
-                  You can close this page and come back later — save the URL to return to your results.
-                  {notifyByEmail && email.trim() ? ' We\u2019ll also email you when it\u2019s ready.' : ''}
-                </p>
-                <button
-                  onClick={copyLink}
-                  className="mt-3 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors text-sm"
-                >
-                  {linkCopied ? 'Copied!' : 'Copy Link to Results'}
-                </button>
-              </div>
-            </>
+            <SimulationProgress
+              phase={phase}
+              phaseMessage={phaseMessage}
+              startedAt={startedAt}
+            />
           ) : (
             <div className="bg-white rounded-xl border border-slate-200 p-12 shadow-sm">
               <div className="text-center">
