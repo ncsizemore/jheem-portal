@@ -320,11 +320,26 @@ export default function CustomSimulationExplorer({
         {/* Running indicator */}
         {isRunning && !simData && (
           simStatus === 'running' ? (
-            <SimulationProgress
-              phase={phase}
-              phaseMessage={phaseMessage}
-              startedAt={startedAt}
-            />
+            <>
+              <SimulationProgress
+                phase={phase}
+                phaseMessage={phaseMessage}
+                startedAt={startedAt}
+              />
+              <div className="mt-4 bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm text-blue-800">
+                <p className="font-medium mb-1">Simulations typically take 10-20 minutes.</p>
+                <p className="text-blue-700">
+                  You can close this page and come back later — save the URL to return to your results.
+                  {notifyByEmail && email.trim() ? ' We\u2019ll also email you when it\u2019s ready.' : ''}
+                </p>
+                <button
+                  onClick={copyLink}
+                  className="mt-3 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors text-sm"
+                >
+                  {linkCopied ? 'Copied!' : 'Copy Link to Results'}
+                </button>
+              </div>
+            </>
           ) : (
             <div className="bg-white rounded-xl border border-slate-200 p-12 shadow-sm">
               <div className="text-center">
