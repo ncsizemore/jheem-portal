@@ -253,34 +253,29 @@ export default function CustomSimulationExplorer({
             ))}
           </div>
 
-          {/* Timing info + email notification */}
-          <div className="mb-6 p-4 bg-slate-50 rounded-lg border border-slate-200 text-sm">
-            <p className="text-slate-600">
-              Simulations typically take 10-20 minutes. Results are saved — you can bookmark this page or copy the link to return later.
-            </p>
-            <div className="mt-3">
-              <label className="flex items-center gap-2 text-slate-600 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={notifyByEmail}
-                  onChange={(e) => setNotifyByEmail(e.target.checked)}
-                  className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-                />
-                Email me when results are ready
-              </label>
-              {notifyByEmail && (
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="your@email.com"
-                  className="mt-2 w-full max-w-md px-3 py-2 border border-slate-300 rounded-lg text-sm text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-              )}
-            </div>
+          {/* Email notification */}
+          <div className="mb-6">
+            <label className="flex items-center gap-2 text-sm text-slate-600 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={notifyByEmail}
+                onChange={(e) => setNotifyByEmail(e.target.checked)}
+                className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+              />
+              Email me when results are ready
+            </label>
+            {notifyByEmail && (
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="your@email.com"
+                className="mt-2 w-full max-w-md px-3 py-2 border border-slate-300 rounded-lg text-sm text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+            )}
           </div>
 
-          {/* Run button + copy link */}
+          {/* Run button */}
           <div className="flex items-center gap-3">
             <button
               onClick={handleRun}
@@ -298,15 +293,6 @@ export default function CustomSimulationExplorer({
                 'Run Simulation'
               )}
             </button>
-
-            {selectedLocation && (
-              <button
-                onClick={copyLink}
-                className="px-4 py-2.5 border border-slate-300 hover:border-slate-400 text-slate-600 font-medium rounded-lg transition-colors text-sm"
-              >
-                {linkCopied ? 'Copied!' : 'Copy Link'}
-              </button>
-            )}
           </div>
 
           {simError && (
@@ -325,11 +311,25 @@ export default function CustomSimulationExplorer({
         {/* Running indicator */}
         {isRunning && !simData && (
           simStatus === 'running' ? (
-            <SimulationProgress
-              phase={phase}
-              phaseMessage={phaseMessage}
-              startedAt={startedAt}
-            />
+            <>
+              <SimulationProgress
+                phase={phase}
+                phaseMessage={phaseMessage}
+                startedAt={startedAt}
+              />
+              <div className="mt-4 bg-slate-50 border border-slate-200 rounded-xl p-4 text-sm text-slate-600">
+                <p>
+                  Simulations typically take 10-20 minutes. You can close this page and return later — your results will be here when ready.
+                  {notifyByEmail && email.trim() ? ' We\u2019ll also send you an email when it\u2019s done.' : ''}
+                </p>
+                <button
+                  onClick={copyLink}
+                  className="mt-3 px-4 py-2 border border-slate-300 hover:border-slate-400 bg-white text-slate-700 font-medium rounded-lg transition-colors text-sm"
+                >
+                  {linkCopied ? 'Copied!' : 'Copy Link to Results'}
+                </button>
+              </div>
+            </>
           ) : (
             <div className="bg-white rounded-xl border border-slate-200 p-12 shadow-sm">
               <div className="text-center">
