@@ -19,6 +19,9 @@ const GITHUB_API = 'https://api.github.com';
 const GITHUB_REPO = 'ncsizemore/jheem-backend';
 const WORKFLOW_FILE = 'run-custom-sim.yml';
 
+// Same format whitelist as the trigger route. See notes there.
+const LOCATION_FORMAT = /^[A-Z]{2}$|^C\.\d+$/;
+
 /** Map GitHub Actions step names to user-facing phases.
  *  Multiple workflow steps can map to the same phase (e.g., all setup → 'preparing'). */
 const PROGRESS_STEPS: Record<string, { label: string; phase: string }> = {
@@ -136,6 +139,10 @@ export async function GET(request: NextRequest) {
     const config = getModelConfig(modelId);
     if (!config) {
       return NextResponse.json({ error: `Unknown model: ${modelId}` }, { status: 400 });
+    }
+
+    if (!LOCATION_FORMAT.test(location) || !config.locations.includes(location)) {
+      return NextResponse.json({ error: 'Invalid location' }, { status: 400 });
     }
 
     const dataUrl = `${config.dataUrl}/custom/${location}/${scenarioKey}.json`;

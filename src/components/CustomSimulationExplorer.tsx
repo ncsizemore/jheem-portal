@@ -95,15 +95,21 @@ export default function CustomSimulationExplorer({
     reset,
   } = useCustomSimulation();
 
-  // Auto-trigger only if user arrived with URL params (shared link / return visit)
+  // Auto-trigger only if user arrived with URL params (shared link / return visit).
+  // Only fire if the URL location is actually one we support — without this check,
+  // anyone can craft a link with ?loc=<anything> and a click would trigger a workflow
+  // run on page load. The API also rejects bad locations server-side, but bailing here
+  // avoids the wasted round trip and the (harmless) error toast.
   const initialUrlHadLoc = useRef(searchParams.get('loc') !== null);
   const [autoTriggered, setAutoTriggered] = useState(false);
   useEffect(() => {
     if (!autoTriggered && initialUrlHadLoc.current && selectedLocation && simStatus === 'idle') {
       setAutoTriggered(true);
+      const isKnownLocation = locations.some((l) => l.code === selectedLocation);
+      if (!isKnownLocation) return;
       runSimulation(config.id, selectedLocation, parameters);
     }
-  }, [autoTriggered, selectedLocation, simStatus, runSimulation, parameters, config.id]);
+  }, [autoTriggered, selectedLocation, simStatus, runSimulation, parameters, config.id, locations]);
 
   // Extract available options from loaded data
   // scenarioData is the raw data keyed by scenario > outcome > statistic > facet
