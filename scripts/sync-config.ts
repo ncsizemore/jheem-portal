@@ -26,8 +26,16 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const GITHUB_URL =
+// Public unauthenticated raw URL (fallback when no token is set and the
+// repo is public).
+const GITHUB_RAW_URL =
   'https://raw.githubusercontent.com/ncsizemore/jheem-backend/master/.github/config/models.json';
+
+// Authenticated GitHub Contents API URL — works for both public and
+// private repos when GITHUB_TOKEN is set in the env. Required during
+// the period jheem-backend is private; will keep working after.
+const GITHUB_API_URL =
+  'https://api.github.com/repos/ncsizemore/jheem-backend/contents/.github/config/models.json?ref=master';
 
 const OUTPUT_PATH = path.join(__dirname, '../src/config/model-configs.ts');
 
@@ -205,8 +213,30 @@ async function fetchConfig(): Promise<SourceConfig> {
     return JSON.parse(content);
   }
 
-  console.log(`🌐 Fetching from GitHub: ${GITHUB_URL}`);
-  const response = await fetch(GITHUB_URL);
+  // Prefer the authenticated Contents API when a token is available
+  // (works for both public and private repos). Fall back to the
+  // unauthenticated raw URL only if no token is set, which is the local
+  // dev case for a public repo.
+  const token = process.env.GITHUB_TOKEN;
+  if (token) {
+    console.log(`🌐 Fetching from GitHub API: ${GITHUB_API_URL}`);
+    const response = await fetch(GITHUB_API_URL, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        // The "raw" media type returns the file body directly instead
+        // of the metadata-wrapped JSON.
+        Accept: 'application/vnd.github.raw',
+        'User-Agent': 'jheem-portal-sync-config',
+      },
+    });
+    if (!response.ok) {
+      throw new Error(`Failed to fetch config (API): ${response.status} ${response.statusText}`);
+    }
+    return response.json();
+  }
+
+  console.log(`🌐 Fetching from GitHub (unauthenticated raw): ${GITHUB_RAW_URL}`);
+  const response = await fetch(GITHUB_RAW_URL);
   if (!response.ok) {
     throw new Error(`Failed to fetch config: ${response.status} ${response.statusText}`);
   }
