@@ -47,7 +47,10 @@ export default function CustomSimulationExplorer({
   const placeholder = locationPlaceholder ?? `Select a ${config.geographyLabel?.toLowerCase() ?? 'location'}...`;
 
   // Parameter config
-  const paramConfig = config.customSimulation?.parameters ?? [];
+  const paramConfig = useMemo(
+    () => config.customSimulation?.parameters ?? [],
+    [config.customSimulation?.parameters]
+  );
 
   // Initialize state from URL query params (fall back to defaults)
   const [selectedLocation, setSelectedLocation] = useState<string>(() => {
@@ -68,8 +71,10 @@ export default function CustomSimulationExplorer({
     return values;
   });
 
-  // Sync state changes back to URL
-  const updateUrl = useCallback((loc: string, params: Record<string, number>) => {
+  // Build a query string from the current location + parameters. Pure
+  // helper shared by updateUrl (router sync) and the share URL display
+  // below, so the two can never drift out of sync.
+  const buildQueryString = useCallback((loc: string, params: Record<string, number>) => {
     const sp = new URLSearchParams();
     if (loc) sp.set('loc', loc);
     for (const p of paramConfig) {
@@ -78,9 +83,27 @@ export default function CustomSimulationExplorer({
         sp.set(p.keyPrefix, String(val));
       }
     }
-    const qs = sp.toString();
+    return sp.toString();
+  }, [paramConfig]);
+
+  // Sync state changes back to URL
+  const updateUrl = useCallback((loc: string, params: Record<string, number>) => {
+    const qs = buildQueryString(loc, params);
     router.replace(`${basePath}${qs ? `?${qs}` : ''}`, { scroll: false });
-  }, [paramConfig, router, basePath]);
+  }, [buildQueryString, router, basePath]);
+
+  // Full absolute share URL, used by the "return to this link later" widget.
+  // Origin is captured from window after mount — it's not available during
+  // the initial SSR pass, so before hydration we fall back to a path-only
+  // string (briefly invisible on the first frame, no flash of wrong content).
+  const [origin, setOrigin] = useState('');
+  useEffect(() => {
+    if (typeof window !== 'undefined') setOrigin(window.location.origin);
+  }, []);
+  const shareUrl = useMemo(() => {
+    const qs = buildQueryString(selectedLocation, parameters);
+    return `${origin}${basePath}${qs ? `?${qs}` : ''}`;
+  }, [origin, basePath, buildQueryString, selectedLocation, parameters]);
 
   // Custom simulation hook
   const {
@@ -179,11 +202,16 @@ export default function CustomSimulationExplorer({
   const [linkCopied, setLinkCopied] = useState(false);
 
   const copyLink = useCallback(() => {
-    navigator.clipboard.writeText(window.location.href).then(() => {
+    // Prefer the derived shareUrl (guaranteed to match what the user
+    // sees in the read-only input); fall back to window.location.href
+    // only if origin hasn't been captured yet (first-frame edge case).
+    const toCopy = shareUrl || (typeof window !== 'undefined' ? window.location.href : '');
+    if (!toCopy) return;
+    navigator.clipboard.writeText(toCopy).then(() => {
       setLinkCopied(true);
       setTimeout(() => setLinkCopied(false), 2000);
     });
-  }, []);
+  }, [shareUrl]);
 
   const locationName = locations.find((l) => l.code === selectedLocation)?.name ?? '';
   const isRunning = simStatus === 'checking' || simStatus === 'running' || simStatus === 'loading';
@@ -259,26 +287,71 @@ export default function CustomSimulationExplorer({
             ))}
           </div>
 
-          {/* Email notification */}
+          {/* Return-later widget: share URL + optional email notification.
+              Single row on desktop (URL flex-grows, email collapses on the
+              right); stacks on mobile. The framing text is the actual UX
+              payload — "you don't have to wait" — with the URL and email
+              being the two paths to realizing that promise. */}
           <div className="mb-6">
-            <label className="flex items-center gap-2 text-sm text-slate-600 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={notifyByEmail}
-                onChange={(e) => setNotifyByEmail(e.target.checked)}
-                className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-              />
-              Email me when results are ready
-            </label>
-            {notifyByEmail && (
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="your@email.com"
-                className="mt-2 w-full max-w-md px-3 py-2 border border-slate-300 rounded-lg text-sm text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-            )}
+            <p className="text-sm text-slate-600 mb-2">
+              Simulations take 10&ndash;20 minutes. Return to this link later to see your results
+              {' '}&mdash; or enter an email and we&rsquo;ll notify you.
+            </p>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+              {/* URL display + copy */}
+              <div className="flex-1 flex items-center gap-2 min-w-0">
+                <input
+                  type="text"
+                  readOnly
+                  value={shareUrl}
+                  onFocus={(e) => e.currentTarget.select()}
+                  className="flex-1 min-w-0 px-3 py-2 border border-slate-300 rounded-lg text-sm text-slate-700 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono"
+                  aria-label="Shareable link to this configuration"
+                />
+                <button
+                  type="button"
+                  onClick={copyLink}
+                  className="flex-shrink-0 px-3 py-2 border border-slate-300 rounded-lg text-sm text-slate-600 hover:bg-slate-100 transition-colors inline-flex items-center gap-1.5"
+                  aria-label="Copy link to clipboard"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                  </svg>
+                  {linkCopied ? 'Copied!' : 'Copy'}
+                </button>
+              </div>
+              {/* Email toggle — compact label when unchecked, collapses to
+                  just a checkmark + input when checked. Keeps the row at a
+                  single height regardless of state. */}
+              {notifyByEmail ? (
+                <div className="flex items-center gap-2 sm:flex-shrink-0">
+                  <input
+                    type="checkbox"
+                    checked
+                    onChange={() => setNotifyByEmail(false)}
+                    className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                    aria-label="Disable email notification"
+                  />
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="your@email.com"
+                    className="flex-1 sm:w-64 px-3 py-2 border border-slate-300 rounded-lg text-sm text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+              ) : (
+                <label className="flex items-center gap-2 text-sm text-slate-600 cursor-pointer whitespace-nowrap sm:flex-shrink-0">
+                  <input
+                    type="checkbox"
+                    checked={false}
+                    onChange={() => setNotifyByEmail(true)}
+                    className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  Email me when ready
+                </label>
+              )}
+            </div>
           </div>
 
           {/* Run button */}
