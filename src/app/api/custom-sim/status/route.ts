@@ -14,6 +14,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getModelConfig } from '@/config/model-configs';
+import { logTrigger, buildEntry } from '@/lib/trigger-log';
 
 const GITHUB_API = 'https://api.github.com';
 const GITHUB_REPO = 'ncsizemore/jheem-backend';
@@ -128,6 +129,21 @@ export async function GET(request: NextRequest) {
     const location = searchParams.get('loc');
     const scenarioKey = searchParams.get('key');
     const runId = searchParams.get('runId');
+
+    // Condensed status log: just the query params, no body. Status
+    // polls run every ~10s during a sim so volume is high (~30-60 per
+    // legit run); we keep entries small. Anyone scraping this endpoint
+    // for runIds or fishing for run state will still show up in logs.
+    logTrigger(
+      buildEntry(request, 'status', {
+        query: {
+          model: modelId ?? '',
+          loc: location ?? '',
+          key: scenarioKey ?? '',
+          ...(runId ? { runId } : {}),
+        },
+      })
+    );
 
     if (!modelId || !location || !scenarioKey) {
       return NextResponse.json(

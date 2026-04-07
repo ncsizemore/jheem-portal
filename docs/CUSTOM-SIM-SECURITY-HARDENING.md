@@ -161,18 +161,113 @@ PAT rotation (Finding 6) is still recommended as cheap insurance. ECR
 - [x] **Audit other workflows**: `generate-*` wrappers safe;
       `_generate-data-template.yml` deferred; `test-custom-sim.yml`
       deleted in `0f81b1b`
-- [ ] **Test run from portal**: validation of refactored workflow,
-      in progress
-- [ ] **Finding 2/5**: Location whitelist (regex + membership) in API route
-- [ ] **Finding 3**: Email format validation in API route
-- [ ] **Finding 4**: Client-side auto-trigger validation
+- [x] **Test run from portal**: ran two sims (`C.32820` and `KY`) on
+      2026-04-06; refactored workflow handled them cleanly end-to-end
+      (runs 24045578964, 24045550193 — both `success`).
+- [x] **Finding 2/5**: Location whitelist (regex + membership) in API route — `19b64c4`
+- [x] **Finding 3**: Email format validation in API route — `19b64c4`
+- [x] **Finding 4**: Client-side auto-trigger validation — `19b64c4`
+- [x] **Deployment confirmed live**: Vercel production deployment
+      `4287714786` for `19b64c4` built 2026-04-06 23:26:57Z
+- [ ] **Finding 5**: Trigger logging via Upstash Redis — **next up**
 - [ ] **Finding 6**: Rotate PAT (user action in GitHub UI)
 - [ ] **Follow-up**: Refactor `_generate-data-template.yml` to env: pattern
 - [ ] **Housekeeping**: Cleanup stale ECR/plots/dynamo perms from
       `jheem-github-actions` (Task #14)
 
+## Second Incident: D.65153 (2026-04-06)
+
+A second mystery run appeared at 19:00:27Z, ~13 minutes after the
+legitimate `C.32820` test run. Same shape as D.41473: invalid `D.NNNNN`
+location, default parameters (`a=50&o=30&r=40`), failed at the
+"Download base simset" step after ~21 seconds. This time we had Vercel
+runtime logs (exported before the 1-hour retention expired) and could
+reconstruct the requester's session:
+
+```
+19:00:22.247  GET  /                                       Chrome 142 / Win / pdx1
+19:00:22.434  GET  /ryan-white/custom?loc=D.65153&a=50&o=30&r=40
+19:00:25.701  POST /api/custom-sim                          200, 1855ms
+19:00:26-28   ~30 _rsc= prefetches across most routes
+```
+
+Real browser executing JavaScript (the prefetch wave only fires after
+React hydration), different region from the test session (pdx1 vs iad1),
+different UA from the legitimate user (Chrome 142 vs Edge 146). The
+attack landed before `19b64c4` was deployed; the same request after
+deployment would be blocked by the location whitelist.
+
+## Re-Assessment of Attribution (2026-04-06)
+
+Initial read was "targeted attacker watching the public Actions feed
+and probing the auto-trigger vuln." On reflection, that hypothesis is
+weaker than it first appeared.
+
+**Arguments against the attacker hypothesis:**
+- An attacker who wants to confirm a trigger works only needs *one*
+  probe, not two with the same invalid-location pattern.
+- Default parameters `a=50&o=30&r=40` are exactly what the page
+  serializes when no slider has been touched — a hand-crafted probe
+  would more likely omit params or pick distinct values to verify
+  passthrough.
+- "Knows the URL shorthand" is weak — anyone who used the page sees
+  the shorthand in their address bar and can share it.
+- Different region/UA can be the same person on a different device or
+  network; not independent corroboration.
+- Two data points with intervals of ~3 min and ~13 min is not a
+  polling-loop signal, it's "happened the same day."
+- Source check: no `D.<digits>` string anywhere in `src/` or git
+  history. The portal cannot generate this URL itself.
+
+**What the data actually supports:**
+*Something automated* is hitting `/ryan-white/custom` with crafted
+`?loc=` URLs. The headless-vs-real distinction is less interesting
+than the fact that the URL pattern is closed (no internal code path
+produces it) and the timing is loosely correlated with legit runs.
+
+**Honest probability table:**
+
+| Hypothesis | Weight |
+|---|---|
+| Targeted human probing the auto-trigger vuln | ~20% |
+| Search engine / archival crawler replaying URLs found somewhere | ~25% |
+| Headless browser security scanner (Defender / Zscaler-style URL detonation) | ~20% |
+| Stale link in an external doc / paper / deck | ~15% |
+| Bug in some external surface (Shiny, supplementary material) | ~10% |
+| Coincidence — unrelated automation near legit runs | ~10% |
+
+No single hypothesis dominates. The right move is **observability** —
+add logging (Finding 5), watch for ~1 week, and re-evaluate with data
+instead of arguing from N=2.
+
+**Crucially: the agnostic-to-attribution hardening is done.** Whoever
+this is, the trigger path is now closed by `19b64c4` and the workflow
+is shell-injection-safe via `33f2a75`. The remaining question is
+forensic, not protective.
+
+## Public vs Private Repo Decision
+
+User made `jheem-portal` private after the second incident as
+defense-in-depth. Trade-offs:
+
+- **Public**: unlimited GHA minutes; reproducibility/transparency
+  consistent with academic research norms; easier collaborator
+  onboarding; aligns with original project mission.
+- **Private**: removes the public Actions feed scrape vector; hides
+  source code that exposes the trigger surface; counts GHA minutes
+  against the account quota (Pro: 3000 min/month free, ~300–600
+  custom-sim runs).
+
+**Recommendation:** revert to public *after* Finding 5 logging is
+live and has shown ~1 week of clean traffic. With `33f2a75` and
+`19b64c4` in place, privacy is obscurity-flavored defense-in-depth
+with bounded value, and the openness has real cost (academic
+mission, free CI). If logging surfaces ongoing attack attempts that
+ride the public Actions feed, revisit.
+
 ## Out of Scope for This Pass
 
 - UX refinement (copy-link on email row, URL display) — resume after.
-- Redis progress feature — resume after.
+- Redis progress feature — resume after (and now bundled with the
+  Finding 5 Upstash Redis work).
 - Rate limiting and Origin checks — track as follow-ups.

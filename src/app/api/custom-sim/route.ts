@@ -17,6 +17,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getModelConfig } from '@/config/model-configs';
+import { logTrigger, buildEntry } from '@/lib/trigger-log';
 
 const GITHUB_API = 'https://api.github.com';
 const GITHUB_REPO = 'ncsizemore/jheem-backend';
@@ -56,9 +57,21 @@ function deriveScenarioKey(
 }
 
 export async function POST(request: NextRequest) {
+  let body: Record<string, unknown> = {};
   try {
-    const body = await request.json();
-    const { modelId, location, parameters, email } = body;
+    body = await request.json();
+    const { modelId, location, parameters, email } = body as {
+      modelId?: string;
+      location?: string;
+      parameters?: Record<string, number>;
+      email?: string;
+    };
+
+    // Log the trigger attempt up front. Fire-and-forget — does not
+    // block the response. We log BEFORE validation so rejected
+    // requests still appear in the forensic log (that's the data we
+    // most want during the post-incident observability window).
+    logTrigger(buildEntry(request, 'trigger', { body }));
 
     if (!modelId || !location || !parameters) {
       return NextResponse.json(
