@@ -46,7 +46,7 @@ export default function RyanWhiteStateLevelPage() {
           </p>
           <div className="flex flex-wrap items-center gap-4">
             <a
-              href="https://doi.org/10.2105/AJPH.2025.308409"
+              href="https://ajph.aphapublications.org/doi/10.2105/AJPH.2025.308409"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-md hover:bg-gray-800 transition-colors"
@@ -255,7 +255,7 @@ export default function RyanWhiteStateLevelPage() {
                 Schnure M, et al. HIV Incidence Could Rise by 68% in 11 States if Ryan White Ends:
                 A Simulation Study. <em>Am J Public Health.</em> 2026;116(5).{' '}
                 <a
-                  href="https://doi.org/10.2105/AJPH.2025.308409"
+                  href="https://ajph.aphapublications.org/doi/10.2105/AJPH.2025.308409"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-hopkins-blue hover:underline"
