@@ -8,7 +8,7 @@ export default function RyanWhiteStateLevelPage() {
   const [citationCopied, setCitationCopied] = useState(false);
 
   const handleCopyCitation = async () => {
-    const citation = 'Schnure M, Forster R, Jones JL, Lesko CR, Batey DS, Butler I, Ward D, Musgrove K, Althoff KN, Jain MK, Gebo KA, Dowdy DW, Shah M, Kasaie P, Fojo AT. HIV Incidence Could Rise by 68% in 11 States if Ryan White Ends: A Simulation Study. medRxiv. 2025. doi:10.1101/2025.07.31.25332525';
+    const citation = 'Schnure M, Forster R, Jones JL, Lesko CR, Batey DS, Butler I, Ward D, Musgrove K, Althoff KN, Jain MK, Gebo KA, Dowdy DW, Shah M, Kasaie P, Fojo AT. HIV Incidence Could Rise by 68% in 11 States if Ryan White Ends: A Simulation Study. Am J Public Health. 2026;116(5). doi:10.2105/AJPH.2025.308409';
 
     try {
       await navigator.clipboard.writeText(citation);
@@ -35,7 +35,7 @@ export default function RyanWhiteStateLevelPage() {
           <div className="flex items-center gap-3 text-sm text-gray-500 mb-6">
             <span className="font-medium text-gray-900">AJPH</span>
             <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
-            <span>Forthcoming 2026</span>
+            <span>May 2026</span>
           </div>
           <h1 className="text-3xl md:text-[2.5rem] md:leading-tight font-normal text-gray-900 leading-tight mb-6">
             HIV Incidence Could Rise by 68% in 11 States if Ryan White Ends: A Simulation Study
@@ -46,12 +46,12 @@ export default function RyanWhiteStateLevelPage() {
           </p>
           <div className="flex flex-wrap items-center gap-4">
             <a
-              href="https://doi.org/10.1101/2025.07.31.25332525"
+              href="https://doi.org/10.2105/AJPH.2025.308409"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-md hover:bg-gray-800 transition-colors"
             >
-              Read Preprint
+              Read Paper
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
               </svg>
@@ -114,29 +114,46 @@ export default function RyanWhiteStateLevelPage() {
                   11 States (2025–2030)
                 </p>
                 <p className="text-sm text-gray-500">
-                  AJPH · forthcoming 2026
+                  AJPH · May 2026
                 </p>
               </div>
               <svg className="w-5 h-5 text-gray-400 group-hover:text-hopkins-blue transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </Link>
-            <Link
-              href="/ryan-white-state-level/explorer/croi"
-              className="group flex items-center justify-between p-5 bg-white border border-gray-200 rounded-lg hover:border-hopkins-blue hover:shadow-md transition-all"
-            >
-              <div>
-                <p className="font-medium text-gray-900 group-hover:text-hopkins-blue transition-colors">
-                  30 States (2026–2031)
-                </p>
-                <p className="text-sm text-gray-500">
-                  CROI 2026
-                </p>
-              </div>
-              <svg className="w-5 h-5 text-gray-400 group-hover:text-hopkins-blue transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </Link>
+            <div className="flex flex-col gap-2">
+              <Link
+                href="/ryan-white-state-level/explorer/croi"
+                className="group flex items-center justify-between p-5 bg-white border border-gray-200 rounded-lg hover:border-hopkins-blue hover:shadow-md transition-all"
+              >
+                <div>
+                  <p className="font-medium text-gray-900 group-hover:text-hopkins-blue transition-colors">
+                    30 States (2026–2031)
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    CROI 2026
+                  </p>
+                </div>
+                <svg className="w-5 h-5 text-gray-400 group-hover:text-hopkins-blue transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </Link>
+              <a
+                href="https://www.croiwebcasts.org/console/player/55174?mediaType=slideVideo&"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group flex items-center gap-2 px-5 py-2.5 text-sm text-gray-500 hover:text-hopkins-blue transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Watch Presentation
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+              </a>
+            </div>
             <Link
               href="/ryan-white"
               className="group flex items-center justify-between p-5 bg-white border border-gray-200 rounded-lg hover:border-gray-400 hover:shadow-md transition-all"
@@ -242,14 +259,14 @@ export default function RyanWhiteStateLevelPage() {
               </p>
               <p className="text-sm text-gray-600 leading-relaxed">
                 Schnure M, et al. HIV Incidence Could Rise by 68% in 11 States if Ryan White Ends:
-                A Simulation Study. <em>AJPH.</em> Forthcoming 2026.{' '}
+                A Simulation Study. <em>Am J Public Health.</em> 2026;116(5).{' '}
                 <a
-                  href="https://doi.org/10.1101/2025.07.31.25332525"
+                  href="https://doi.org/10.2105/AJPH.2025.308409"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-hopkins-blue hover:underline"
                 >
-                  Preprint: doi:10.1101/2025.07.31.25332525
+                  doi:10.2105/AJPH.2025.308409
                 </a>
               </p>
             </div>
