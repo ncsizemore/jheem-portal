@@ -18,6 +18,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getModelConfig } from '@/config/model-configs';
 import { logTrigger, buildEntry } from '@/lib/trigger-log';
+import { stashNotify, buildReturnUrl } from '@/lib/notify';
 
 const GITHUB_API = 'https://api.github.com';
 const GITHUB_REPO = 'ncsizemore/jheem-backend';
@@ -186,6 +187,13 @@ export async function POST(request: NextRequest) {
         );
 
         if (matchingRun) {
+          if (email) {
+            const backendModelId = BACKEND_MODEL_ID_MAP[modelId] || modelId;
+            stashNotify(backendModelId, location, scenarioKey, {
+              email,
+              url: buildReturnUrl(backendModelId, location, validatedParams, config),
+            });
+          }
           return NextResponse.json({
             status: 'running',
             scenarioKey,
@@ -216,7 +224,6 @@ export async function POST(request: NextRequest) {
             model_id: backendModelId,
             location,
             parameters: JSON.stringify(validatedParams),
-            ...(email && { email }),
           },
         }),
       }
@@ -229,6 +236,16 @@ export async function POST(request: NextRequest) {
         { error: 'Failed to trigger simulation' },
         { status: 502 }
       );
+    }
+
+    // Workflow dispatched successfully. If the user requested email
+    // notification, stash it now — the workflow will call back to
+    // /api/custom-sim/notify when it completes successfully.
+    if (email) {
+      stashNotify(backendModelId, location, scenarioKey, {
+        email,
+        url: buildReturnUrl(backendModelId, location, validatedParams, config),
+      });
     }
 
     return NextResponse.json({
