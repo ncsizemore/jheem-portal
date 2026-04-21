@@ -1,8 +1,8 @@
 # Email Notifications & Real-Time Progress for Custom Simulations
 
 **Parent plan:** [Custom Simulations Plan](./CUSTOM-SIMULATIONS-PLAN.md) (item 6 in Path Forward)
-**Status:** In progress — Step 1 (email notifications)
-**Date:** March 31, 2026
+**Status:** Feature 1 (email) COMPLETE. Feature 2 (progress) ready to start.
+**Date:** March 31, 2026 (updated April 21, 2026)
 
 ## Goal
 
@@ -15,88 +15,36 @@ These are independent features that complement each other: progress info helps u
 
 ---
 
-## Feature 1: Email Notifications
+## Feature 1: Email Notifications — COMPLETE
 
-### User Flow
+**Completed:** April 17, 2026. Verified end-to-end.
 
-1. User sets parameters and location on the custom sim page
-2. Optional "Email me when ready" checkbox + email input
-3. User submits — simulation triggers as usual
-4. User can close the tab / navigate away
-5. When the workflow completes, an email is sent with a direct link to the results
+### Architecture (differs from original plan)
 
-### Design Decision: Gmail SMTP
+The original plan used Gmail SMTP with email passed as a `workflow_dispatch` input. This was replaced during a security hardening pass (April 2026) because workflow inputs are visible in the GHA run UI to anyone with repo read access — a privacy concern that blocked re-publicizing `jheem-backend`.
 
-Options considered:
-- **Gmail SMTP via `curl`** — team already has a Gmail account used for Shiny app notifications (via `blastula` R package). Zero new services, two GitHub secrets, one workflow step.
-- **AWS SES** — already have AWS infra, but sandbox mode requires AWS support request to send to unverified emails. Overkill for a research tool sending a few notifications per week.
-- **Third-party (Resend, SendGrid, Postmark)** — clean APIs but unnecessary new dependency.
+**Implemented design:** Email never transits the workflow.
 
-**Gmail SMTP is the right choice.** The only cosmetic downside is a `@gmail.com` sender address instead of `@jheem.org`. For a research tool sending to collaborators, this doesn't matter. Can upgrade later if needed without changing the architecture.
+1. Portal `/api/custom-sim` validates email, stashes `{email, returnUrl}` in **Upstash Redis** (keyed by `notify:{modelId}:{location}:{scenarioKey}`, 24h TTL)
+2. Workflow runs without any email input
+3. On success, workflow POSTs to `/api/custom-sim/notify` (Bearer-auth'd via `NOTIFY_SECRET`)
+4. Notify endpoint drains the Redis list and sends via **Resend** (`notifications@jheem.org`)
 
-**Where the email is sent from: GitHub Actions workflow.**
-The workflow sends email directly at the end of `run-custom-sim.yml` via `curl` to Gmail's SMTP server. The email address is passed as a workflow input. No portal-side email infrastructure needed.
+**Key files:**
+| File | Repo | Purpose |
+|------|------|---------|
+| `src/lib/notify.ts` | jheem-portal | Stash/drain helpers, Resend sender, URL builder |
+| `src/app/api/custom-sim/notify/route.ts` | jheem-portal | Bearer-auth'd endpoint called by workflow |
+| `src/app/api/custom-sim/route.ts` | jheem-portal | Stashes email in Upstash instead of passing to workflow |
+| `.github/workflows/run-custom-sim.yml` | jheem-backend | "Notify completion" step (curl to portal) |
 
-**Email content:**
-- Subject: "Your JHEEM simulation is ready"
-- Body: Model name, location, parameter summary, direct link to results (with query params so it auto-loads)
-- Plain text + simple HTML
-- From: existing JHEEM Gmail account
-
-### Implementation Steps
-
-**One-time setup:**
-1. Generate Gmail App Password (Google Account > Security > App Passwords)
-2. Add `GMAIL_ADDRESS` and `GMAIL_APP_PASSWORD` as GitHub repo secrets on jheem-backend
-
-**Portal changes:**
-- Add optional email input to `CustomSimulationExplorer` form
-- Pass `email` through `useCustomSimulation` hook to `/api/custom-sim` POST
-- API route forwards `email` as a workflow input in the `workflow_dispatch`
-
-**Backend changes (jheem-backend):**
-- Add `email` as optional input to `run-custom-sim.yml`
-- Add email send step at end of workflow (conditional on email being provided)
-
-**Files to modify:**
-
-| File | Repo | Change |
-|------|------|--------|
-| `src/components/CustomSimulationExplorer.tsx` | jheem-portal | Email input UI |
-| `src/hooks/useCustomSimulation.ts` | jheem-portal | Pass email to trigger |
-| `src/app/api/custom-sim/route.ts` | jheem-portal | Forward email to workflow dispatch |
-| `.github/workflows/run-custom-sim.yml` | jheem-backend | Accept email input, send step |
-
-**Workflow email step:**
-
-```yaml
-- name: Send notification email
-  if: inputs.email != ''
-  env:
-    GMAIL_ADDRESS: ${{ secrets.GMAIL_ADDRESS }}
-    GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
-  run: |
-    curl --url "smtps://smtp.gmail.com:465" \
-      --ssl-reqd \
-      --mail-from "$GMAIL_ADDRESS" \
-      --mail-rcpt "${{ inputs.email }}" \
-      --user "$GMAIL_ADDRESS:$GMAIL_APP_PASSWORD" \
-      --upload-file - <<EOF
-    From: JHEEM Notifications <$GMAIL_ADDRESS>
-    To: ${{ inputs.email }}
-    Subject: Your JHEEM simulation is ready
-    Content-Type: text/html; charset=UTF-8
-
-    <p>Your custom simulation is ready.</p>
-    <p><strong>Location:</strong> ${{ inputs.location }}</p>
-    <p><a href="https://jheem.org/...">View results</a></p>
-    EOF
-```
-
-### Open Questions
-
-1. **Gmail account:** Which Gmail address? Need credentials to generate the App Password.
-2. **Results URL construction:** The workflow needs to build a portal URL with the right query params (model, location, parameters). The `run-custom-sim.yml` already has all these inputs — just need to format the URL.
+**Env vars required:**
+| Var | Location | Purpose |
+|-----|----------|---------|
+| `RESEND_API_KEY` | Vercel | Sending email via Resend API |
+| `NOTIFY_SECRET` | Vercel + GitHub secrets | Shared secret for notify endpoint auth |
+| `UPSTASH_REDIS_REST_URL` | Vercel | Redis connection (also used by trigger logging) |
+| `UPSTASH_REDIS_REST_TOKEN` | Vercel | Redis auth |
 
 ---
 
@@ -107,6 +55,8 @@ The workflow sends email directly at the end of `run-custom-sim.yml` via `curl` 
 The GitHub Actions REST API returns 404 for logs of in-progress jobs (confirmed — GitHub community discussion #154834). The portal currently shows a 3-phase progress bar (Preparing / Running / Finishing) based on the workflow's job/step status, but can't show simulation completion percentage during the ~10-20 minute simulation step.
 
 ### Solution: Upstash Redis
+
+**Status:** Ready to start. Upstash is already provisioned (done during security hardening for trigger logging, April 2026). `@upstash/redis` is installed. Env vars are configured in both Vercel and GHA.
 
 **Why Upstash:**
 - REST API — accessible from both GitHub Actions (`curl`) and Vercel/Next.js (`fetch()`)
@@ -187,15 +137,12 @@ The exact regex depends on jheem2's stdout format — need to verify what progre
 
 ## Implementation Order
 
-### Step 1: Email notifications
-1. Confirm Gmail account + generate App Password
-2. Add email input to portal custom sim UI
-3. Pass email through API → workflow dispatch
-4. Add Gmail SMTP send step to workflow
-5. Test end-to-end
+### Step 1: Email notifications — COMPLETE
+Implemented April 2026. Architecture changed from Gmail SMTP to Resend via portal-side Upstash stash/drain. See Feature 1 section above.
 
-### Step 2: Redis progress
-1. Create Upstash Redis database, configure secrets
+### Step 2: Redis progress — READY TO START
+Infrastructure already in place (Upstash provisioned, env vars configured).
+1. ~~Create Upstash Redis database~~ DONE (April 2026, for trigger logging)
 2. Verify jheem2 stdout progress format
 3. Add wrapper script to workflow
 4. Update portal status API to read from Redis
@@ -203,9 +150,8 @@ The exact regex depends on jheem2's stdout format — need to verify what progre
 6. Test end-to-end
 
 ### Step 3: Polish
-- Email: error handling (SMTP failure shouldn't fail the workflow), nicer HTML template
 - Progress: smoothing (don't jump backwards), handle stale data gracefully
-- UI: email input validation, progress animation
+- UI: progress animation
 
 ---
 
@@ -213,7 +159,7 @@ The exact regex depends on jheem2's stdout format — need to verify what progre
 
 | Service | Free Tier | Expected Usage | Cost |
 |---------|-----------|---------------|------|
-| Gmail SMTP | 500 emails/day | <10/week | $0 |
+| Resend | 3,000 emails/month | <50/month | $0 |
 | Upstash Redis | 10,000 commands/day | ~5,000/day max | $0 |
 
 Both features operate entirely within free tiers at research-tool scale.

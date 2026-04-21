@@ -12,6 +12,7 @@ The Johns Hopkins Epidemiological and Economic Model (JHEEM) portal provides int
 | **Ryan White: State-Level** | Statewide analysis (AJPH: 11 states, CROI: 30 states) | `/ryan-white-state-level` |
 | **CDC Testing** | Impact of ending CDC-funded HIV testing (18 states) | `/cdc-testing` |
 | **HIV Age Projections** | Age distribution projections 2025-2040 (24 states) | `/aging` |
+| **Custom Simulations** | User-specified parameters, on-demand results | `/ryan-white/custom`, `/cdc-testing/custom` |
 
 ## Development
 
@@ -53,7 +54,8 @@ The portal is part of a multi-repository system:
 | **jheem-portal** | Next.js frontend (this repo) |
 | **jheem-backend** | GitHub Actions workflows, `models.json` config |
 | **jheem-simulations** | Simulation data (GitHub Releases) |
-| **jheem-*-container** | R containers for data extraction |
+| **jheem-base** | Shared R container base |
+| **jheem-*-container** | Per-model R containers |
 
 Data flows: GitHub Releases → GitHub Actions → S3/CloudFront → Portal
 
@@ -69,7 +71,7 @@ See [jheem-backend](https://github.com/ncsizemore/jheem-backend) for the step-by
 
 ## Tech Stack
 
-- **Framework:** Next.js 15, TypeScript 5
+- **Framework:** Next.js 16, TypeScript 5
 - **Styling:** Tailwind CSS 4
 - **Visualization:** Recharts, Plotly.js
 - **Mapping:** Mapbox GL JS, react-map-gl

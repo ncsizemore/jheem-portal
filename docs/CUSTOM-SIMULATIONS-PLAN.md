@@ -1,7 +1,7 @@
 # Custom Simulations: Architecture Plan
 
-**Status:** All 4 models operational (MSA, AJPH, CROI, CDC Testing). Config-driven architecture validated across both Ryan White and CDC Testing intervention types.
-**Date:** March 4, 2026 (updated March 30, 2026)
+**Status:** All 4 models operational (MSA, AJPH, CROI, CDC Testing). Config-driven architecture validated across both Ryan White and CDC Testing intervention types. Email notifications live. Security hardening complete (see `CUSTOM-SIM-SECURITY-HARDENING.md`).
+**Date:** March 4, 2026 (updated April 21, 2026)
 **Context:** PI is developing an ADAP model extension with 4 user-configurable parameters. The portal needs to support custom simulations — user-specified parameters, on-demand execution, interactive results.
 
 ---
@@ -545,7 +545,7 @@ These approaches are complementary and converging:
 
 | Risk | Likelihood | Impact | Mitigation |
 |------|-----------|--------|------------|
-| State-level simsets OOM on standard runners | Low | Medium | Tested at 11 GB / 15 GB available. Self-hosted runners as fallback. |
+| State-level simsets OOM on standard runners | **Medium** | **High** | Tested at 11 GB RSS. Public repos get 16 GB runners (works). Private repos get only 8 GB (confirmed OOM April 2026 on AJPH/CA). Repos MUST stay public for state-level custom sims. |
 | GitHub Actions concurrency limits under load | Low | Medium | Caching reduces repeat runs; can add queue logic if needed |
 | R container has breaking changes with new model | Low | High | Containers are versioned and pinned; test in isolation |
 | ADAP model parameters don't fit existing intervention pattern | Low | Medium | Translation guide covers this; PI can advise on mapping |
@@ -602,7 +602,7 @@ Priority-ordered.
 4. ~~**Extend custom sims to CROI**~~ **DONE (March 24, 2026).**
 5. ~~**Extend custom sims to CDC Testing**~~ **DONE (March 30, 2026).** See [CDC Testing Custom Sims Plan](./CDC-TESTING-CUSTOM-SIMS-PLAN.md).
 
-6. **Email notifications + real-time progress.** Team-requested features for the 10-20 min async wait. Email via AWS SES (already in stack), progress via Upstash Redis (REST API, free tier). See [Email & Progress Plan](./EMAIL-AND-PROGRESS-PLAN.md).
+6. ~~**Email notifications**~~ **DONE (April 17, 2026).** Portal-side Resend via Upstash stash/drain. Email never transits workflow (privacy). See [Email & Progress Plan](./EMAIL-AND-PROGRESS-PLAN.md). **Real-time progress:** Ready to start — Upstash already provisioned. See same plan doc.
 
 7. **Discovery & pre-filling (Phase 4b).** Manifest file, pre-filled parameter grids, unified exploration UX. Pre-filling common parameter combos gives users instant results. Key design questions: grid granularity (depends on scientific significance of parameter steps), location prioritization, and UI that nudges users toward pre-filled combos. S3 storage cost is negligible; GHA compute is free (public repos). See Phase 4b section above.
 

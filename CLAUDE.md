@@ -5,8 +5,9 @@
 Interactive portal for exploring HIV policy modeling analyses from the Johns Hopkins Epidemiological and Economic Model.
 
 - **Live site**: https://jheem.org
-- **Session log**: `docs/SESSION_LOG.md` (recent work and context)
-- **Refactor plan**: `docs/ARCHITECTURE-REFACTOR-PLAN.md` (detailed implementation notes)
+- **Custom sims plan**: `docs/CUSTOM-SIMULATIONS-PLAN.md` (architecture, progress, version matrix)
+- **Security hardening**: `docs/CUSTOM-SIM-SECURITY-HARDENING.md` (findings, fixes, parked backlog)
+- **Email & progress plan**: `docs/EMAIL-AND-PROGRESS-PLAN.md` (notification + real-time progress)
 
 ---
 
@@ -41,9 +42,11 @@ jheem-simulations          jheem-*-container
 |------------|---------|
 | **jheem-portal** | Next.js frontend |
 | **jheem-backend** | GitHub Actions workflows, `models.json` config, AWS infra |
-| **jheem-container-minimal** | R container for MSA + AJPH (`v1.0.0`) |
-| **jheem-ryan-white-croi-container** | R container for CROI (`v1.0.0`) |
-| **jheem-cdc-testing-container** | R container for CDC Testing (`v1.0.1`) |
+| **jheem-ryan-white-msa-container** | R container for MSA (jheem2 1.6.2, pinned) |
+| **jheem-ryan-white-ajph-container** | R container for AJPH |
+| **jheem-ryan-white-croi-container** | R container for CROI |
+| **jheem-cdc-testing-container** | R container for CDC Testing |
+| **jheem-base** | Shared R container base (custom_simulation.R, entrypoint) |
 | **jheem-simulations** | Simulation data via GitHub Releases |
 
 ### Data Releases (jheem-simulations)
@@ -82,9 +85,12 @@ jheem-simulations          jheem-*-container
 | `/ryan-white-state-level/explorer/croi` | CROI explorer (30 states) |
 | `/cdc-testing` | CDC Testing landing page |
 | `/cdc-testing/explorer` | CDC Testing explorer (18 states) |
+| `/ryan-white/custom` | MSA custom simulations |
+| `/ryan-white-state-level/custom` | State custom simulations (AJPH/CROI toggle) |
+| `/cdc-testing/custom` | CDC Testing custom simulations |
 | `/aging` | HIV Age Projections (24 states) |
 | `/shiny/cdc-testing` | Legacy Shiny app |
-| `/shiny/ryan-white-custom` | Custom simulations Shiny app |
+| `/shiny/ryan-white-custom` | Custom simulations Shiny app (legacy) |
 
 ---
 
@@ -104,25 +110,42 @@ jheem-simulations          jheem-*-container
 ### Components
 | File | Purpose |
 |------|---------|
-| `src/components/AnalysisView.tsx` | Shared analysis UI (~540 lines) |
+| `src/components/AnalysisView.tsx` | Shared prerun analysis UI |
+| `src/components/CustomSimulationExplorer.tsx` | Config-driven custom sim page (params, trigger, results) |
+| `src/components/analysis/AnalysisResults.tsx` | Shared controls + chart/table (used by both prerun and custom) |
+| `src/components/SimulationProgress.tsx` | Stepped progress bar for custom sims |
 | `src/components/StateChoroplethExplorer.tsx` | Config-driven state map |
 | `src/components/NativeSimulationChart.tsx` | Recharts-based charts |
 | `src/components/Navigation.tsx` | Site navigation |
+
+### API Routes
+| File | Purpose |
+|------|---------|
+| `src/app/api/custom-sim/route.ts` | POST trigger: cache check → dedup → workflow_dispatch |
+| `src/app/api/custom-sim/status/route.ts` | GET status: CloudFront cache → GHA Jobs API progress |
+| `src/app/api/custom-sim/notify/route.ts` | POST notify: Bearer-auth'd, called by workflow on completion, drains email queue from Upstash and sends via Resend |
 
 ### Configuration
 | File | Purpose |
 |------|---------|
 | `src/config/model-configs.ts` | Generated from models.json (don't edit) |
-| `scripts/sync-config.ts` | Syncs models.json → model-configs.ts |
+| `scripts/sync-config.ts` | Syncs models.json → model-configs.ts (authenticated GitHub API) |
 | `src/data/states.ts` | State coordinates |
 | `src/data/cities.ts` | MSA coordinates |
 
 ### Hooks
 | File | Purpose |
 |------|---------|
+| `src/hooks/useCustomSimulation.ts` | Custom sim lifecycle: trigger → poll → fetch |
 | `src/hooks/useLocationData.ts` | Location data fetching |
 | `src/hooks/useStateSummaries.ts` | State summary fetching |
 | `src/hooks/useAnalysisState.ts` | Analysis selection state |
+
+### Libraries
+| File | Purpose |
+|------|---------|
+| `src/lib/trigger-log.ts` | Upstash Redis forensic logging (fire-and-forget) |
+| `src/lib/notify.ts` | Email notification stash/drain + Resend sender |
 
 ---
 
@@ -151,16 +174,30 @@ jheem-simulations          jheem-*-container
 - CloudFront free tier: 1M requests, 100GB/month
 - **Why:** Research project budget. Per-run costs reduced from ~$8 to effectively $0.
 
+### Custom Simulations
+User-specified parameters trigger on-demand R simulations via GitHub Actions. Results land on S3/CloudFront in the same JSON format as prerun data — the portal renders both identically.
+
+**Flow:** Portal POST → `/api/custom-sim` → cache check → dedup → `workflow_dispatch` → R container → S3 → CloudFront → portal polls `/api/custom-sim/status` → renders results.
+
+**Caching:** Deterministic scenario keys (e.g., `a50-o30-r40`) mean identical parameters always hit the same S3 path. Once computed, results are instant for all future users.
+
+**Email notifications:** User optionally provides email at trigger time. Portal stashes `{email, url}` in Upstash Redis. Workflow calls `/api/custom-sim/notify` (Bearer-auth'd) on success. Portal drains queue and sends via Resend. Email never transits the workflow (privacy: no PII in GHA logs/inputs).
+
+**Security:** Location whitelist (regex + membership), email format validation, auto-trigger guard on client, Upstash forensic logging on all API requests. Workflow uses `env:` blocks for all inputs (no shell injection). See `docs/CUSTOM-SIM-SECURITY-HARDENING.md`.
+
+**Supported models:** All 4 (MSA, AJPH, CROI, CDC Testing). Config-driven via `models.json` `customSimulation` block.
+
 ---
 
 ## Tech Stack
 
-**Frontend:** Next.js 15, TypeScript 5, Tailwind CSS 4
+**Frontend:** Next.js 16, TypeScript 5, Tailwind CSS 4
 **Visualization:** Recharts, Plotly.js
 **Mapping:** Mapbox GL JS, react-map-gl
 **Workflows:** GitHub Actions (reusable template)
 **Storage:** S3 + CloudFront
 **Registry:** ghcr.io
+**Notifications:** Resend (email), Upstash Redis (logging + notification queue)
 
 ---
 
