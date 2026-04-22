@@ -33,6 +33,8 @@ interface CustomSimState {
   phase: string | null;
   /** When the workflow started */
   startedAt: string | null;
+  /** Live simulation progress from Redis (only during simulating phase) */
+  simulationProgress: SimulationProgress | null;
 }
 
 interface TriggerResponse {
@@ -40,6 +42,12 @@ interface TriggerResponse {
   scenarioKey: string;
   dataUrl: string;
   runId?: number;
+}
+
+interface SimulationProgress {
+  percent: number;
+  simsComplete: number;
+  simsTotal: number;
 }
 
 interface StatusResponse {
@@ -50,6 +58,7 @@ interface StatusResponse {
   phase?: string;
   error?: string;
   startedAt?: string;
+  simulationProgress?: SimulationProgress;
 }
 
 const POLL_INTERVAL_MS = 8000;
@@ -81,6 +90,7 @@ export function useCustomSimulation() {
     phaseMessage: null,
     phase: null,
     startedAt: null,
+    simulationProgress: null,
   });
 
   const pollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -140,7 +150,7 @@ export function useCustomSimulation() {
             }
 
             if (statusData.status === 'complete') {
-              setState((prev) => ({ ...prev, status: 'loading', phaseMessage: null, phase: null }));
+              setState((prev) => ({ ...prev, status: 'loading', phaseMessage: null, phase: null, simulationProgress: null }));
 
               try {
                 const url = statusData.dataUrl || dataUrl;
@@ -152,8 +162,8 @@ export function useCustomSimulation() {
                   scenarioKey,
                   phaseMessage: null,
                   phase: null,
-
                   startedAt: null,
+                  simulationProgress: null,
                 });
               } catch (err) {
                 setState((prev) => ({
@@ -161,7 +171,7 @@ export function useCustomSimulation() {
                   status: 'error',
                   phaseMessage: null,
                   phase: null,
-
+                  simulationProgress: null,
                   error: `Simulation completed but failed to load results: ${err}`,
                 }));
               }
@@ -174,7 +184,7 @@ export function useCustomSimulation() {
                 status: 'error',
                 phaseMessage: null,
                 phase: null,
-      
+                simulationProgress: null,
                 error: statusData.error || 'Simulation failed. Please try again.',
               }));
               return;
@@ -184,11 +194,18 @@ export function useCustomSimulation() {
             setState((prev) => {
               const nextPhase = statusData.phase ?? prev.phase;
               const phaseForward = isPhaseForward(prev.phase, nextPhase);
+              // Only accept simulation progress if it moves forward (never jump backwards)
+              const nextSimProgress = statusData.simulationProgress ?? null;
+              const simProgress = nextSimProgress &&
+                (!prev.simulationProgress || nextSimProgress.percent >= prev.simulationProgress.percent)
+                ? nextSimProgress
+                : prev.simulationProgress;
               return {
                 ...prev,
                 phaseMessage: statusData.label ?? prev.phaseMessage,
                 phase: phaseForward ? nextPhase : prev.phase,
                 startedAt: statusData.startedAt ?? prev.startedAt,
+                simulationProgress: phaseForward && nextPhase !== 'simulating' ? null : simProgress,
               };
             });
           }
@@ -222,6 +239,7 @@ export function useCustomSimulation() {
         phaseMessage: null,
         phase: null,
         startedAt: null,
+        simulationProgress: null,
       });
 
       try {
@@ -250,8 +268,8 @@ export function useCustomSimulation() {
             scenarioKey: result.scenarioKey,
             phaseMessage: null,
             phase: null,
-  
             startedAt: null,
+            simulationProgress: null,
           });
         } else {
           // Running or just triggered — start polling
@@ -265,7 +283,7 @@ export function useCustomSimulation() {
             scenarioKey: result.scenarioKey,
             phaseMessage: 'Waiting to start...',
             phase: 'queued',
-  
+            simulationProgress: null,
           }));
 
           pollForCompletion(modelId, location, result.scenarioKey, result.dataUrl);
@@ -278,8 +296,8 @@ export function useCustomSimulation() {
           scenarioKey: null,
           phaseMessage: null,
           phase: null,
-
           startedAt: null,
+          simulationProgress: null,
         });
       }
     },
@@ -296,6 +314,7 @@ export function useCustomSimulation() {
       phaseMessage: null,
       phase: null,
       startedAt: null,
+      simulationProgress: null,
     });
   }, [cleanup]);
 

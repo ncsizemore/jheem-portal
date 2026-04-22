@@ -13,8 +13,38 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { Redis } from '@upstash/redis';
 import { getModelConfig } from '@/config/model-configs';
 import { logTrigger, buildEntry } from '@/lib/trigger-log';
+
+// --- Upstash Redis for simulation progress ---
+let redisClient: Redis | null = null;
+function getRedis(): Redis | null {
+  if (redisClient) return redisClient;
+  const url = process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  if (!url || !token) return null;
+  redisClient = new Redis({ url, token });
+  return redisClient;
+}
+
+interface SimProgress {
+  percent: number;
+  simsComplete: number;
+  simsTotal: number;
+}
+
+async function getSimProgress(modelId: string, location: string, scenarioKey: string): Promise<SimProgress | null> {
+  const redis = getRedis();
+  if (!redis) return null;
+  try {
+    const data = await redis.get<SimProgress>(`progress:${modelId}:${location}:${scenarioKey}`);
+    if (data && typeof data.percent === 'number') return data;
+    return null;
+  } catch {
+    return null;
+  }
+}
 
 const GITHUB_API = 'https://api.github.com';
 const GITHUB_REPO = 'ncsizemore/jheem-backend';
@@ -207,10 +237,16 @@ export async function GET(request: NextRequest) {
         const steps: StepInfo[] = job?.steps ?? [];
         const progress = getProgressFromSteps(steps);
 
+        // If we're in the simulation phase, check Redis for live progress %
+        const simProgress = progress.phase === 'simulating'
+          ? await getSimProgress(modelId, location, scenarioKey)
+          : null;
+
         return NextResponse.json({
           status: 'running',
           runId: Number(runId),
           ...progress,
+          ...(simProgress && { simulationProgress: simProgress }),
           startedAt: run.run_started_at,
         });
       } catch {
@@ -244,10 +280,16 @@ export async function GET(request: NextRequest) {
     const steps: StepInfo[] = job?.steps ?? [];
     const progress = getProgressFromSteps(steps);
 
+    // If we're in the simulation phase, check Redis for live progress %
+    const simProgress = progress.phase === 'simulating'
+      ? await getSimProgress(modelId, location, scenarioKey)
+      : null;
+
     return NextResponse.json({
       status: 'running',
       runId: matchingRun.id,
       ...progress,
+      ...(simProgress && { simulationProgress: simProgress }),
       startedAt: matchingRun.run_started_at,
     });
   } catch (error) {

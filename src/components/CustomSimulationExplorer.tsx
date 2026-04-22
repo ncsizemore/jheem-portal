@@ -114,6 +114,7 @@ export default function CustomSimulationExplorer({
     phaseMessage,
     phase,
     startedAt,
+    simulationProgress,
     runSimulation,
     reset,
   } = useCustomSimulation();
@@ -413,6 +414,7 @@ export default function CustomSimulationExplorer({
               phase={phase}
               phaseMessage={phaseMessage}
               startedAt={startedAt}
+              simulationProgress={simulationProgress}
             />
           ) : (
             <div className="bg-white rounded-xl border border-slate-200 p-12 shadow-sm">

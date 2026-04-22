@@ -28,10 +28,17 @@ function consolidatePhase(phase: string | null): string {
   return 'preparing'; // queued, downloading, and all setup phases
 }
 
+interface SimProgressData {
+  percent: number;
+  simsComplete: number;
+  simsTotal: number;
+}
+
 interface SimulationProgressProps {
   phase: string | null;
   phaseMessage: string | null;
   startedAt: string | null;
+  simulationProgress: SimProgressData | null;
 }
 
 function ElapsedTime({ startedAt }: { startedAt: string }) {
@@ -59,6 +66,7 @@ export default function SimulationProgress({
   phase,
   phaseMessage,
   startedAt,
+  simulationProgress,
 }: SimulationProgressProps) {
   const displayPhase = consolidatePhase(phase);
   const currentPhaseIndex = PHASES.findIndex((p) => p.id === displayPhase);
@@ -123,6 +131,22 @@ export default function SimulationProgress({
             {phaseMessage ?? 'Starting up...'}
           </p>
         </div>
+
+        {/* Simulation progress bar — shown during simulating phase when we have live data */}
+        {displayPhase === 'simulating' && simulationProgress && (
+          <div className="mt-4 max-w-sm mx-auto">
+            <div className="flex items-center justify-between text-sm text-slate-500 mb-1.5">
+              <span>Simulation {simulationProgress.simsComplete} of {simulationProgress.simsTotal}</span>
+              <span className="font-medium text-blue-600">{simulationProgress.percent}%</span>
+            </div>
+            <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-blue-500 rounded-full transition-all duration-700 ease-out"
+                style={{ width: `${simulationProgress.percent}%` }}
+              />
+            </div>
+          </div>
+        )}
 
         {/* Elapsed time */}
         {startedAt && (
