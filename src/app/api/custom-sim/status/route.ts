@@ -46,6 +46,12 @@ async function getSimProgress(modelId: string, location: string, scenarioKey: st
   }
 }
 
+// Portal model ID → backend model ID (same mapping as route.ts).
+// The workflow writes progress keys using the backend ID.
+const BACKEND_MODEL_ID_MAP: Record<string, string> = {
+  'ryan-white': 'ryan-white-msa',
+};
+
 const GITHUB_API = 'https://api.github.com';
 const GITHUB_REPO = 'ncsizemore/jheem-backend';
 const WORKFLOW_FILE = 'run-custom-sim.yml';
@@ -191,6 +197,9 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid location' }, { status: 400 });
     }
 
+    // The workflow writes Redis keys using the backend model ID
+    const backendModelId = BACKEND_MODEL_ID_MAP[modelId] || modelId;
+
     const dataUrl = `${config.dataUrl}/custom/${location}/${scenarioKey}.json`;
 
     // --- Check if data already exists on CloudFront ---
@@ -239,7 +248,7 @@ export async function GET(request: NextRequest) {
 
         // If we're in the simulation phase, check Redis for live progress %
         const simProgress = progress.phase === 'simulating'
-          ? await getSimProgress(modelId, location, scenarioKey)
+          ? await getSimProgress(backendModelId, location, scenarioKey)
           : null;
 
         return NextResponse.json({
@@ -282,7 +291,7 @@ export async function GET(request: NextRequest) {
 
     // If we're in the simulation phase, check Redis for live progress %
     const simProgress = progress.phase === 'simulating'
-      ? await getSimProgress(modelId, location, scenarioKey)
+      ? await getSimProgress(backendModelId, location, scenarioKey)
       : null;
 
     return NextResponse.json({
