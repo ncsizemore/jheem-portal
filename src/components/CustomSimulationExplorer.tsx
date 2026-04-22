@@ -375,25 +375,6 @@ export default function CustomSimulationExplorer({
             </button>
           </div>
 
-          {/* Running — return later info (inside parameter panel) */}
-          {isRunning && !simData && (
-            <div className="mt-5 pt-5 border-t border-slate-200 text-sm text-slate-500">
-              <p>
-                Simulations typically take 10-20 minutes. You can close this page and return later.
-                {notifyByEmail && email.trim() ? ' We\u2019ll email you when it\u2019s done.' : ''}
-              </p>
-              <button
-                onClick={copyLink}
-                className="mt-2 inline-flex items-center gap-1.5 text-sm text-slate-600 hover:text-slate-800 transition-colors"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                </svg>
-                {linkCopied ? 'Copied!' : 'Copy link to results'}
-              </button>
-            </div>
-          )}
-
           {simError && (
             <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700 flex items-center justify-between">
               <span>{simError}</span>
