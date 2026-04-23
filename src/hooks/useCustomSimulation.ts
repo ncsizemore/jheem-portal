@@ -45,9 +45,13 @@ interface TriggerResponse {
 }
 
 interface SimulationProgress {
-  percent: number;
-  simsComplete: number;
-  simsTotal: number;
+  phase: string;
+  message?: string;
+  percent?: number;
+  simsComplete?: number;
+  simsTotal?: number;
+  filesComplete?: number;
+  filesTotal?: number;
 }
 
 interface StatusResponse {
@@ -63,17 +67,21 @@ interface StatusResponse {
 
 const POLL_INTERVAL_MS = 8000;
 
-/** Phase ordering — never allow regression to an earlier phase */
+/** Phase ordering — never allow regression to an earlier phase.
+ *  Phases 2-5 come from Redis (sub-phases within the "Run custom simulation"
+ *  GHA step). Phases 1 and 6 come from the GHA step-level API. */
 const PHASE_ORDER: Record<string, number> = {
   queued: 0,
   preparing: 1,
   downloading: 1,
-  simulating: 2,
-  processing: 3,
-  extracting: 3,
-  uploading: 4,
-  finishing: 4,
-  finalizing: 4,
+  loading: 2,
+  simulating: 3,
+  saving: 4,
+  extracting: 5,
+  processing: 5,
+  uploading: 6,
+  finishing: 6,
+  finalizing: 6,
 };
 
 function isPhaseForward(current: string | null, next: string | null): boolean {
@@ -197,7 +205,7 @@ export function useCustomSimulation() {
               // Only accept simulation progress if it moves forward (never jump backwards)
               const nextSimProgress = statusData.simulationProgress ?? null;
               const simProgress = nextSimProgress &&
-                (!prev.simulationProgress || nextSimProgress.percent >= prev.simulationProgress.percent)
+                (!prev.simulationProgress || (nextSimProgress.percent ?? 0) >= (prev.simulationProgress.percent ?? 0))
                 ? nextSimProgress
                 : prev.simulationProgress;
               return {
@@ -205,7 +213,7 @@ export function useCustomSimulation() {
                 phaseMessage: statusData.label ?? prev.phaseMessage,
                 phase: phaseForward ? nextPhase : prev.phase,
                 startedAt: statusData.startedAt ?? prev.startedAt,
-                simulationProgress: phaseForward && nextPhase !== 'simulating' ? null : simProgress,
+                simulationProgress: simProgress,
               };
             });
           }

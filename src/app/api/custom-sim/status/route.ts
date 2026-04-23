@@ -28,18 +28,22 @@ function getRedis(): Redis | null {
   return redisClient;
 }
 
-interface SimProgress {
-  percent: number;
-  simsComplete: number;
-  simsTotal: number;
+interface RedisProgress {
+  phase: string;
+  message?: string;
+  percent?: number;
+  simsComplete?: number;
+  simsTotal?: number;
+  filesComplete?: number;
+  filesTotal?: number;
 }
 
-async function getSimProgress(modelId: string, location: string, scenarioKey: string): Promise<SimProgress | null> {
+async function getRedisProgress(modelId: string, location: string, scenarioKey: string): Promise<RedisProgress | null> {
   const redis = getRedis();
   if (!redis) return null;
   try {
-    const data = await redis.get<SimProgress>(`progress:${modelId}:${location}:${scenarioKey}`);
-    if (data && typeof data.percent === 'number') return data;
+    const data = await redis.get<RedisProgress>(`progress:${modelId}:${location}:${scenarioKey}`);
+    if (data && typeof data.phase === 'string') return data;
     return null;
   } catch {
     return null;
@@ -246,16 +250,23 @@ export async function GET(request: NextRequest) {
         const steps: StepInfo[] = job?.steps ?? [];
         const progress = getProgressFromSteps(steps);
 
-        // If we're in the simulation phase, check Redis for live progress %
-        const simProgress = progress.phase === 'simulating'
-          ? await getSimProgress(backendModelId, location, scenarioKey)
+        // Check Redis for fine-grained progress (covers loading, simulating,
+        // extracting, uploading — all sub-phases within the "Run custom
+        // simulation" GHA step that the step-level API can't distinguish).
+        const redisProgress = (progress.phase === 'simulating' || progress.phase === 'processing')
+          ? await getRedisProgress(backendModelId, location, scenarioKey)
           : null;
 
         return NextResponse.json({
           status: 'running',
           runId: Number(runId),
           ...progress,
-          ...(simProgress && { simulationProgress: simProgress }),
+          // Redis progress overrides GHA step-level phase when available
+          ...(redisProgress && {
+            phase: redisProgress.phase,
+            label: redisProgress.message ?? progress.label,
+            simulationProgress: redisProgress,
+          }),
           startedAt: run.run_started_at,
         });
       } catch {
@@ -289,16 +300,19 @@ export async function GET(request: NextRequest) {
     const steps: StepInfo[] = job?.steps ?? [];
     const progress = getProgressFromSteps(steps);
 
-    // If we're in the simulation phase, check Redis for live progress %
-    const simProgress = progress.phase === 'simulating'
-      ? await getSimProgress(backendModelId, location, scenarioKey)
+    const redisProgress = (progress.phase === 'simulating' || progress.phase === 'processing')
+      ? await getRedisProgress(backendModelId, location, scenarioKey)
       : null;
 
     return NextResponse.json({
       status: 'running',
       runId: matchingRun.id,
       ...progress,
-      ...(simProgress && { simulationProgress: simProgress }),
+      ...(redisProgress && {
+        phase: redisProgress.phase,
+        label: redisProgress.message ?? progress.label,
+        simulationProgress: redisProgress,
+      }),
       startedAt: matchingRun.run_started_at,
     });
   } catch (error) {
