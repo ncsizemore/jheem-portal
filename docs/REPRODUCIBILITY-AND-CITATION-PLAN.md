@@ -222,6 +222,36 @@ build won't catch (a regular build break, like the V8 one, is caught by the buil
 
 ---
 
+## 5d. Data provenance — the OneDrive gap (decision: defer, per-manager)
+
+Model containers build their workspaces from data managers fetched at build time. MSA `COPY`s a frozen
+workspace; **AJPH/CROI/CDC build from `jheem_analyses` source + `wget` the cached data managers from
+OneDrive links** (`data_manager_cache_metadata.Rdata`). Those links are external/mutable/personal-account
+— the same bus-factor risk as code-under-personal-account, for *data*. Pinning the `jheem_analyses` commit
+pins the *link set* but not the *durability* (links can rot).
+
+**The fix exists but isn't ours to drive now.** A data-manager CI pipeline (`CI_PIPELINE_PLAN.md` in
+jheem_analyses) already versions raw data + managers as immutable GitHub Releases and auto-loads via
+`cache_manager.R` / `data_manager_sources.json` — the full "commit + data version + deps = deterministic"
+closure. But it's (a) only implemented for the **syphilis** manager, (b) still incomplete even there
+(section builds run manually, not yet on CI), and (c) owned by the data teammate.
+
+**Decision: defer; don't detour.** Migrating managers to the pipeline is non-blocking (OneDrive works now),
+externally owned, and unbounded (gated on section-build CI). So for the container migration:
+- Source data from OneDrive **as-is**; don't couple this work to the unfinished data pipeline.
+- **Pin what we control:** CROI's `jheem_analyses` commit (AJPH/CDC already pin); base + jheem2 already pinned.
+- **Be honest in provenance:** `version` reports data as OneDrive-sourced / *not release-pinned* (flips to a
+  data-release version per-manager as they graduate — same "fill the blank later" pattern as the Zenodo DOI).
+- Safety net: for pinned-commit models the build is reproducible *today* (risk is future link-rot), and the
+  golden test would catch a data shift.
+
+**End-state (per-manager, when that manager's pipeline is proven end-to-end):** the container drops the
+OneDrive `wget`, consumes the pinned data-manager release via `cache_manager.R`, and `version` reports the
+data-release version. "Port a manager to CI" and "switch its container to the release" are **one unit of
+work**, done in the right hands at the right time — not a detour bolted onto the base migration.
+
+---
+
 ## 6. Known / deferred debt (tracked, not scheduled)
 
 - MSA workspace version skew (1.6.2 calibrated / 1.9.2 serialized) — document loudly even if not re-derived.
