@@ -217,8 +217,12 @@ build won't catch (a regular build break, like the V8 one, is caught by the buil
     `version` output) — seconds, gate every build.
   - **Slow golden tests** (the ~5-min sim) — nightly or on base-version changes; parametrized over the
     scenario×model matrix (34 cached production goldens exist across the 4 models).
-- Widen the golden slice beyond incidence/sex (the golden file already holds the full aggregation).
-- Per-model goldens for AJPH / CROI / CDC-Testing when those are wired to rocker.
+- Widen the golden slice beyond incidence/sex (the golden files already hold the full aggregation).
+- ~~Per-model goldens for AJPH / CROI / CDC-Testing~~ — **done**: all four models are on
+  rocker and each reproduces its production golden bit-for-bit (0.0); the four goldens are
+  preserved in each repo's `tests/golden/`. Consolidating the comparator/runner into one
+  parametrized pytest suite is deferred to the container monorepo (§5e) — not stood up in a
+  soon-to-be-subsumed location.
 
 ---
 
@@ -252,14 +256,57 @@ work**, done in the right hands at the right time — not a detour bolted onto t
 
 ---
 
+## 5e. Container repo architecture — consolidate to a monorepo (recommendation)
+
+The rocker migration made the cost of the current **polyrepo** structure (base +
+one repo per model) concrete:
+- **Base↔model coordination is manual and N-times.** A base bump (1.6.0→1.6.1)
+  meant hand-bumping `BASE_VERSION` in every model repo + a push each; the
+  cascade-rebuild that would automate it is disabled.
+- **The four model Dockerfiles are ~90% identical** (clone jheem_analyses → wget
+  OneDrive → build workspace → verify), differing only in ~6 baked values.
+- **Cross-cutting concerns have no home** (run/version/fetch scripts, the
+  comparator, the goldens, provenance) — which is what the test-location question
+  was really about.
+
+**Decisive argument — internal consistency:** the project's own principle is
+config-driven design (`models.json` as single source of truth), yet the containers
+are the one place that's duplicated polyrepo boilerplate rather than config-driven.
+
+**Recommendation: a `jheem-containers` monorepo** — `base/`, `models/{msa,ajph,
+croi,cdc}/` (thin per-model config over a shared parametrized build), `shared/`
+(run scripts), `tests/` (the pytest suite + goldens) — with **per-image tags**
+(`msa/v1.0.2`) and **path-filtered matrix CI** (build only the changed image).
+Independent versioning/freezing is preserved (a per-image tag at a monorepo commit
+freezes that image's source; the image digest is the real freeze), and the team
+already does component-scoped tags in one repo (jheem_analyses). Scope: **only the
+container-packaging repos** — NOT jheem2 / jheem_analyses / jheem-simulations.
+
+**Sequencing: execute with the Tier 1 org migration**, not before — those repos get
+rehomed to the org anyway, so that's the once-only moment to consolidate rather than
+shuffle twice. The decision can be made now; execution rides the org move.
+
+**Interim (done):** the four production goldens are preserved per-repo
+(`tests/golden/`); the pytest suite is deliberately NOT stood up in a soon-to-be-
+subsumed location — it lands in the monorepo `tests/`.
+
+---
+
 ## 6. Known / deferred debt (tracked, not scheduled)
 
 - MSA workspace version skew (1.6.2 calibrated / 1.9.2 serialized) — document loudly even if not re-derived.
 - Hardcoded `START.YEAR` (2025.5) / `end.year` (2035) / `LOSS.LAG` in `simple_ryan_white.R` (README TODO).
   Fine if frozen per-release, but a drift risk vs. a manuscript's stated horizon.
-- ~~No end-to-end smoke test in the container build workflows~~ — partially addressed: MSA has a golden
-  regression test (§5c). Not yet wired into CI as a build gate (roadmap), and not yet replicated per-model.
-- Manual base↔model version coordination (cascade disabled). The `version` mode at least makes drift detectable.
+- ~~No end-to-end smoke test in the container build workflows~~ — addressed off-CI: all four models have a
+  preserved golden and reproduce production bit-for-bit. Not yet wired into CI as a build gate, and the
+  comparator/runner consolidate into the monorepo pytest suite (§5c/§5e).
+- Manual base↔model version coordination (cascade disabled). The `version` mode makes drift detectable; the
+  monorepo (§5e) is the real fix.
+- **Base v1.6.2 follow-up (bundle, then rebuild all four):** (1) `fetch_simset.R` retry/resume — large
+  state simsets (1+ GB) can truncate on a network blip with no retry (hit during CDC validation; real for
+  Parastu downloading state simsets via `run`); (2) `version.sh` should *print* `JHEEM_ANALYSES_REF` (baked
+  as ENV, `docker inspect`-visible, but not yet in the `version` output) so from-source models surface their
+  pinned commit. Both are base changes; do them together, then rebuild the now-uniformly-rocker fleet.
 
 ---
 
@@ -275,14 +322,16 @@ work**, done in the right hands at the right time — not a detour bolted onto t
 
 ## 8. Sequencing summary
 
-- **Done (2026-06-18):** Tier 2 (run/version/fetch) + the base migration to rocker (§5a) + equivalence
-  proof + MSA golden test (§5c). Clean stopping point.
+- **Done (2026-06-18 → 06-22):** Tier 2 (run/version/fetch) + base migration to rocker (§5a) + equivalence
+  proof (§5c). **All four models migrated to rocker and reproduce production bit-for-bit (0.0)** — MSA,
+  AJPH, CDC, CROI (CROI's `jheem_analyses` commit traced + pinned, closing the unpinned-HEAD hole). Four
+  goldens preserved per-repo. A coherent, validated stopping point.
 - **No deadline pressure.** Tier 1 is blocked on Todd's return, and there is no hard manuscript deadline —
-  the team's value is *do it right* over rushing the initial ask. So remaining work is paced for
-  correctness, with each piece driven to an explicit "done" rather than left sprawling.
+  the team's value is *do it right* over rushing the initial ask. Remaining work is paced for correctness.
 - **Forward-compat rule:** Tier 2 provenance carries `TBD` tag/DOI fields; don't add new hardcoded
   `tfojo1/...` references. So Tier 1 later is filling blanks + a find-and-replace, not a redesign.
 - **Next, roughly in order:** (a) reply to Parastu / tee up the org decision; (b) when Todd's back, Tier 1
   (org → tags → release bundles → Zenodo → fix monkeypatches upstream) — the track that closes Parastu's
-  request; (c) opportunistically, wire the other 3 models to rocker + their goldens, and the container-CI
-  suite (§5c roadmap). (a)+(b) are the actual deliverable; (c) is foundational, not on a clock.
+  request, and the moment to execute the **container monorepo** (§5e) + the **pytest suite** + the base
+  v1.6.2 follow-up (§6); (a)+(b) are the actual deliverable; (c) the monorepo/pytest/v1.6.2 work is
+  foundational, rides the org move, not on a clock.
