@@ -290,6 +290,12 @@ shuffle twice. The decision can be made now; execution rides the org move.
 (`tests/golden/`); the pytest suite is deliberately NOT stood up in a soon-to-be-
 subsumed location — it lands in the monorepo `tests/`.
 
+**Detailed migration plan:** `CONTAINER-MONOREPO-MIGRATION-PLAN.md` — decoupled from
+the org move (do it now in the personal account; org transfer becomes a simple later
+step), with the key de-risking sequence (relocate-with-history first, config-driven
+refactor second; goldens as the gate at every step) and the production-safety
+constraint (preserve published image names so `models.json` is untouched).
+
 ---
 
 ## 6. Known / deferred debt (tracked, not scheduled)
