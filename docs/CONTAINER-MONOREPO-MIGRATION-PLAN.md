@@ -68,6 +68,16 @@ pushing to the exact same names** so `models.json` and the live pipeline are unt
 `<name>` per model; the owner stays `ncsizemore`. **Result: production sees no change.** (At org-transfer
 time the owner changes → names change → that's the one coordinated `models.json` cutover — see §7.)
 
+> **Prerequisite (one-time, manual): grant the monorepo write access to the existing ghcr packages.**
+> Each package (`jheem-base`, `jheem-ryan-white-{msa,ajph,croi}`, `jheem-cdc-testing`) is currently *linked
+> to its original repo*, so the monorepo's `GITHUB_TOKEN` gets `permission_denied: write_package` on first
+> push. Fix per package: **Package → Settings → Manage Actions access → Add repository → `jheem-containers`
+> → Write** (`https://github.com/users/ncsizemore/packages/container/<pkg>/settings`). No REST API exists for
+> user-package actions-access, so it's UI-only. (Alternative: a `write:packages` PAT as the registry password
+> instead of `GITHUB_TOKEN` works because it authenticates as the package owner — but that's a broad
+> long-lived secret; the per-package grant is least-privilege and preferred.) Found when the base build
+> succeeded but failed at push.
+
 ---
 
 ## 4. Migration sequence — relocate first, refactor second
@@ -96,8 +106,15 @@ move or the refactor?" — exactly the lesson from the rocker A/B work.
 - **Change detection** → build only affected images: a change under `models/<m>/` builds `<m>`; a change
   under `base/`, `build/`, or `common/` builds **all** models. This **restores the base→model cascade**
   we lost (the disabled cross-repo `repository_dispatch`) — for free, as an in-repo path filter.
-- **Per-image tags:** `<model>-vX.Y.Z` (e.g. `ryan-white-msa-v1.0.2`) + `latest`/sha, via
-  `docker/metadata-action` per matrix entry. Independent versioning preserved without separate repos.
+- **Per-image tags (decided): prefixed semver git tags** `<image>-vMAJOR.MINOR.PATCH` (e.g.
+  `ryan-white-msa-v1.0.2`, `base-v1.7.0`). `docker/metadata-action` strips the prefix → the image tag is
+  clean semver (`…/jheem-ryan-white-msa:1.0.2` + `:1.0` + `:latest`), matching what `models.json` pins.
+  Semver intent: **major** = recalibration/result-changing; **minor** = notable change; **patch** =
+  rebuild/fix preserving results (base bump, dep fix). Rolling vs release split: **main pushes →
+  `:latest` + `:sha`** (the path-filter cascade rebuilds these on base changes); **a `<image>-vX.Y.Z`
+  tag → the pinned release**; **production pins specific `:X.Y.Z`** via `models.json`, insulated from
+  `:latest` churn. A base change never auto-bumps a model's released version — releases stay deliberate
+  (the build/promote separation jheem_analyses already uses). Per-image semver, not one repo-wide version.
 - **Image name:** keep `${{ github.repository_owner }}/<name>` so it's correct in both the personal
   account and (post-transfer) the org with no edits.
 - **Golden gate:** run the pytest suite (fast structural checks always; slow golden runs on base changes
@@ -137,12 +154,11 @@ Once the monorepo is green and production runs off it unchanged:
 
 ---
 
-## 9. Open decisions (yours)
+## 9. Decisions (settled 2026-06-22)
 
-1. **Repo name** — `jheem-containers`? (assumed throughout).
-2. **Phase B timing** — do the config-driven refactor immediately after relocation, or land Phase A and
-   pause? (I'd land A first — it's a shippable, production-safe win — then do B deliberately.)
-3. **MSA's prebuilt-workspace variant** — keep it as the one `prebuilt` template indefinitely, or revisit
-   whether MSA could move to from-source (would require resolving the 1.6.2/1.9.2 skew — out of scope here,
-   tracked in the reproducibility plan's known debt).
-4. **Tag scheme** — `<model>-vX.Y.Z` per image (assumed) vs a single monorepo version line.
+1. **Repo name** — `jheem-containers`. ✓
+2. **Phase B timing** — **land Phase A first** (shippable, production-safe), then do the config-driven
+   refactor deliberately. ✓
+3. **MSA's prebuilt-workspace variant** — **keep it** as the one `prebuilt` template (avoid yak-shaving
+   the 1.6.2/1.9.2 skew; tracked in the reproducibility plan's known debt). ✓
+4. **Tag scheme** — **per-image prefixed semver** (`<image>-vX.Y.Z`), detailed in §5. ✓
