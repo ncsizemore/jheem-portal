@@ -85,11 +85,13 @@ time the owner changes → names change → that's the one coordinated `models.j
 **The single most important de-risking decision: do NOT combine relocation and the config-driven refactor
 in one big-bang.** Two phases, each independently verifiable:
 
-**Phase A — Relocate (provably identical).** Move the five repos into the monorepo *with history
-preserved*, keeping each Dockerfile essentially as-is (just repathed). Set up matrix CI pushing the
-**same image names**. Success criterion: every image still builds and **the four goldens still pass 0.0**
-+ the base image is byte-equivalent. This phase changes *where code lives and how CI runs* — not what's
-built. Low risk, fully validated by the goldens we already have.
+**Phase A — Relocate (provably identical). ✅ DONE (2026-06-23).** Five repos moved into the monorepo
+*with history preserved* (`git-filter-repo`, so `blame`/`log` trace through the move), Dockerfiles repathed
+but unchanged. Matrix CI (`.github/workflows/build.yml`) authored + validated: **all five images build and
+push from the monorepo to their existing names**, and a monorepo-built MSA image reproduces its production
+golden bit-for-bit (0.0). One prerequisite surfaced + fixed: per-package ghcr Actions write-access grant
+(§3b). Production untouched (it pins semver tags, not the monorepo's `:latest`). **Closeout still pending:**
+archive the five old container repos once confident the monorepo fully replaces them (single source of truth).
 
 **Phase B — Refactor to config-driven.** Collapse the per-model Dockerfiles into the two shared templates
 + `models.yml`. Success criterion: **goldens still pass 0.0** (the refactor is correct iff outputs are
