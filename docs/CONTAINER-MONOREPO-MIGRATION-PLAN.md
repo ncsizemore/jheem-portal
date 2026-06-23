@@ -106,14 +106,20 @@ move or the refactor?" — exactly the lesson from the rocker A/B work.
 ## 5. CI design (path-filtered matrix)
 
 - **Change detection** → build only affected images: a change under `models/<m>/` builds `<m>`; a change
-  under `base/`, `build/`, or `common/` builds **all** models. This **restores the base→model cascade**
-  we lost (the disabled cross-repo `repository_dispatch`) — for free, as an in-repo path filter.
+  under `base/`, `build/`, or `common/` builds **all** models. ⚠️ **Phase A caveat (corrected per the
+  independent review):** this restores build **fan-out**, *not* a true dependency cascade. In Phase A the
+  model jobs run concurrently and still `FROM` a *published* base tag — they do **not** consume the base
+  built from the same commit, so a green run does not prove the changed base is compatible with its
+  dependents. The **true digest cascade** (build candidate base → pass its digest into model builds → test
+  → promote) is **Phase B** work, informed by the review's distinction between *compatibility fan-out*
+  (test all models against a candidate base) and *release fan-out* (release only models that should adopt
+  it — which matters because MSA's `jheem2` constraints differ).
 - **Per-image tags (decided): prefixed semver git tags** `<image>-vMAJOR.MINOR.PATCH` (e.g.
   `ryan-white-msa-v1.0.2`, `base-v1.7.0`). `docker/metadata-action` strips the prefix → the image tag is
   clean semver (`…/jheem-ryan-white-msa:1.0.2` + `:1.0` + `:latest`), matching what `models.json` pins.
   Semver intent: **major** = recalibration/result-changing; **minor** = notable change; **patch** =
   rebuild/fix preserving results (base bump, dep fix). Rolling vs release split: **main pushes →
-  `:latest` + `:sha`** (the path-filter cascade rebuilds these on base changes); **a `<image>-vX.Y.Z`
+  `:latest` + `:sha`** (the path filter rebuilds these on base changes); **a `<image>-vX.Y.Z`
   tag → the pinned release**; **production pins specific `:X.Y.Z`** via `models.json`, insulated from
   `:latest` churn. A base change never auto-bumps a model's released version — releases stay deliberate
   (the build/promote separation jheem_analyses already uses). Per-image semver, not one repo-wide version.
@@ -149,7 +155,7 @@ Once the monorepo is green and production runs off it unchanged:
 ## 8. Definition of done
 
 - Monorepo builds all five images (**same names**) green; four goldens pass 0.0; pytest suite passing.
-- Base change auto-rebuilds dependent models (cascade restored).
+- Base change auto-rebuilds dependent models (build fan-out; the true digest cascade is Phase B — §5/§review).
 - `models.yml` is the per-model source of truth; adding a model = config + dir.
 - Old repos archived read-only once the monorepo is authoritative.
 - `models.json` / production **unchanged** (the org image-namespace cutover is a separate, later step).
