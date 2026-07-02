@@ -1,0 +1,47 @@
+{
+  "generatedAt": "2026-07-02T15:55:00Z",
+  "sourceRData": "/Users/cristina/Downloads/ryan_white_results_state_costing_ADAP2026_2026-04-03.Rdata",
+  "sourceFundingCsv": "/Volumes/WD_Black/wiley/Documents/jheem/code/jheem_analyses/applications/ryan_white/Ryan_white_costing/rw_funding_by_state.csv",
+  "horizon": {
+    "startYear": 2026,
+    "endYear": 2035
+  },
+  "intervalLevel": "p025_p975",
+  "defaultCostScenario": "median",
+  "defaultFocusState": "FL",
+  "dollarYear": "2026 USD",
+  "fundingAdjustment": {
+    "applied": true,
+    "description": "Funding CSV values multiplied by BLS medical-care CPI deflator 2025 to 2026: 1.019258."
+  },
+  "modeledStates": ["AL", "AR", "AZ", "CA", "CO", "FL", "GA", "IL", "IN", "KY", "LA", "MA", "MD", "MI", "MN", "MO", "MS", "NC", "NJ", "NV", "NY", "OH", "OK", "PA", "SC", "TN", "TX", "VA", "WA", "WI"],
+  "excludedFundingLocations": ["DC"],
+  "assumptions": ["State-level model outputs use the 30 locations shared by total.results and rw_funding_by_state.csv.", "DC funding is excluded from national summaries because no DC epidemiologic output is present.", "National funding is the sum of the 30 modeled states.", "The 2035 fixed horizon truncates downstream costs for infections occurring late in the horizon.", "Negative per-simulation excess infections are preserved and reported as diagnostics, not floored.", "Funding comparators are deterministic under the current CSV inputs.", "Net-cost uncertainty is driven by modeled care-cost uncertainty, with deterministic funding offsets."],
+  "deterministicFields": ["cumulativeAdapSpendingAvoided", "cumulativeTotalRwhapSpendingAvoided"],
+  "modelParameters": {
+    "reengagementPi": 0.86,
+    "reengagementLambda": 1.2,
+    "discountRate": 0.03,
+    "cd4Weights": {
+      "CD4 >500": 0.54,
+      "CD4 200-500": 0.37,
+      "CD4 <200": 0.09
+    },
+    "artDrugCosts": {
+      "low": 18500,
+      "median": 33000,
+      "high": 47400
+    },
+    "routineCareCost": 3502.43,
+    "immediateStartCareFractionDescription": "Per simulation/location, immediate starts equal excess new diagnoses multiplied by the 2025 no-intervention suppression divided by diagnosed prevalence."
+  },
+  "validation": {
+    "totalEqualsStateSum": true,
+    "totalEqualsStateSumMaxAbsDiff": 0,
+    "missingFundingLocations": [],
+    "extraFundingLocations": ["DC"],
+    "negativeExcessNewCount": 22,
+    "negativeExcessNewShare": 7.1e-05
+  },
+  "reviewQuestions": ["Should DC be excluded, included through separate non-model funding context, or modeled separately?", "Are the CSV dollars 2025 nominal dollars, 2026 dollars, or another fiscal-year convention?", "Does part_b include ADAP funding, or is it Part B excluding ADAP?", "Should low/median/high ART drug-cost assumptions be shown separately, pooled, or both?", "Should the primary comparison be ADAP only, total RWHAP, or both?", "What payer perspective should govern the net calculation?", "In the counterfactual, would downstream care for excess infections be ADAP/RWHAP-eligible?", "Should negative per-simulation excess infections be preserved, floored at zero, or shown as a sensitivity?"]
+}

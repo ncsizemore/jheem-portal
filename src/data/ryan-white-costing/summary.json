@@ -1,0 +1,3291 @@
+{
+  "national": {
+    "finalYear": {
+      "year": 2035,
+      "cumulativeCareCost": {
+        "low": {
+          "median": 10961738851,
+          "lower": 1313067921,
+          "upper": 17366771179
+        },
+        "median": {
+          "median": 18170967002,
+          "lower": 2176640321,
+          "upper": 28788386261
+        },
+        "high": {
+          "median": 25330476338,
+          "lower": 3034257048,
+          "upper": 40131231584
+        }
+      },
+      "cumulativeAdapSpendingAvoided": 6483904673,
+      "cumulativeTotalRwhapSpendingAvoided": 18233956140,
+      "cumulativeNetCostVsAdap": {
+        "low": {
+          "median": 4477834178,
+          "lower": -5170836752,
+          "upper": 10882866505
+        },
+        "median": {
+          "median": 11687062329,
+          "lower": -4307264352,
+          "upper": 22304481588
+        },
+        "high": {
+          "median": 18846571665,
+          "lower": -3449647625,
+          "upper": 33647326911
+        }
+      },
+      "cumulativeNetCostVsTotalRwhap": {
+        "low": {
+          "median": -7272217290,
+          "lower": -16920888219,
+          "upper": -867184962
+        },
+        "median": {
+          "median": -62989139,
+          "lower": -16057315820,
+          "upper": 10554430121
+        },
+        "high": {
+          "median": 7096520198,
+          "lower": -15199699092,
+          "upper": 21897275444
+        }
+      },
+      "cumulativeExcessNewDiagnoses": {
+        "median": 105692.5,
+        "lower": 12595.7,
+        "upper": 167819.2
+      },
+      "cumulativePersonYearsOnArt": {
+        "median": 426213.7,
+        "lower": 51075.4,
+        "upper": 675147.1
+      },
+      "negativeExcessNewShare": 0,
+      "cumulativeNetCostRatioVsAdap": {
+        "low": {
+          "median": 0.691,
+          "lower": -0.797,
+          "upper": 1.678
+        },
+        "median": {
+          "median": 1.802,
+          "lower": -0.664,
+          "upper": 3.44
+        },
+        "high": {
+          "median": 2.907,
+          "lower": -0.532,
+          "upper": 5.189
+        }
+      },
+      "cumulativeNetCostRatioVsTotalRwhap": {
+        "low": {
+          "median": -0.399,
+          "lower": -0.928,
+          "upper": -0.048
+        },
+        "median": {
+          "median": -0.003,
+          "lower": -0.881,
+          "upper": 0.579
+        },
+        "high": {
+          "median": 0.389,
+          "lower": -0.834,
+          "upper": 1.201
+        }
+      }
+    }
+  },
+  "states": [
+    {
+      "state": "AL",
+      "finalYear": {
+        "year": 2035,
+        "cumulativeCareCost": {
+          "low": {
+            "median": 402818027,
+            "lower": 59976708,
+            "upper": 585744469
+          },
+          "median": {
+            "median": 667737235,
+            "lower": 99420559,
+            "upper": 970971923
+          },
+          "high": {
+            "median": 930829414,
+            "lower": 138592384,
+            "upper": 1353542637
+          }
+        },
+        "cumulativeAdapSpendingAvoided": 95321538,
+        "cumulativeTotalRwhapSpendingAvoided": 221358529,
+        "cumulativeNetCostVsAdap": {
+          "low": {
+            "median": 307496489,
+            "lower": -35344830,
+            "upper": 490422931
+          },
+          "median": {
+            "median": 572415697,
+            "lower": 4099021,
+            "upper": 875650386
+          },
+          "high": {
+            "median": 835507877,
+            "lower": 43270846,
+            "upper": 1258221099
+          }
+        },
+        "cumulativeNetCostVsTotalRwhap": {
+          "low": {
+            "median": 181459498,
+            "lower": -161381821,
+            "upper": 364385940
+          },
+          "median": {
+            "median": 446378706,
+            "lower": -121937970,
+            "upper": 749613394
+          },
+          "high": {
+            "median": 709470885,
+            "lower": -82766145,
+            "upper": 1132184108
+          }
+        },
+        "cumulativeExcessNewDiagnoses": {
+          "median": 3943.6,
+          "lower": 606.9,
+          "upper": 5605.9
+        },
+        "cumulativePersonYearsOnArt": {
+          "median": 15656.2,
+          "lower": 2326.7,
+          "upper": 22758.8
+        },
+        "negativeExcessNewShare": 0,
+        "cumulativeNetCostRatioVsAdap": {
+          "low": {
+            "median": 3.226,
+            "lower": -0.371,
+            "upper": 5.145
+          },
+          "median": {
+            "median": 6.005,
+            "lower": 0.043,
+            "upper": 9.186
+          },
+          "high": {
+            "median": 8.765,
+            "lower": 0.454,
+            "upper": 13.2
+          }
+        },
+        "cumulativeNetCostRatioVsTotalRwhap": {
+          "low": {
+            "median": 0.82,
+            "lower": -0.729,
+            "upper": 1.646
+          },
+          "median": {
+            "median": 2.017,
+            "lower": -0.551,
+            "upper": 3.386
+          },
+          "high": {
+            "median": 3.205,
+            "lower": -0.374,
+            "upper": 5.115
+          }
+        },
+        "rankByNetCostVsAdap": 7,
+        "rankByNetCostRatioVsAdap": 3
+      }
+    },
+    {
+      "state": "AR",
+      "finalYear": {
+        "year": 2035,
+        "cumulativeCareCost": {
+          "low": {
+            "median": 90189870,
+            "lower": 8573875,
+            "upper": 177267138
+          },
+          "median": {
+            "median": 149504199,
+            "lower": 14212443,
+            "upper": 293850256
+          },
+          "high": {
+            "median": 208409463,
+            "lower": 19812124,
+            "upper": 409629352
+          }
+        },
+        "cumulativeAdapSpendingAvoided": 41272661,
+        "cumulativeTotalRwhapSpendingAvoided": 93748985,
+        "cumulativeNetCostVsAdap": {
+          "low": {
+            "median": 48917209,
+            "lower": -32698786,
+            "upper": 135994477
+          },
+          "median": {
+            "median": 108231538,
+            "lower": -27060218,
+            "upper": 252577595
+          },
+          "high": {
+            "median": 167136802,
+            "lower": -21460537,
+            "upper": 368356691
+          }
+        },
+        "cumulativeNetCostVsTotalRwhap": {
+          "low": {
+            "median": -3559116,
+            "lower": -85175110,
+            "upper": 83518152
+          },
+          "median": {
+            "median": 55755213,
+            "lower": -79536543,
+            "upper": 200101270
+          },
+          "high": {
+            "median": 114660478,
+            "lower": -73936862,
+            "upper": 315880366
+          }
+        },
+        "cumulativeExcessNewDiagnoses": {
+          "median": 909.7,
+          "lower": 87.9,
+          "upper": 1740.4
+        },
+        "cumulativePersonYearsOnArt": {
+          "median": 3504.5,
+          "lower": 332.3,
+          "upper": 6890
+        },
+        "negativeExcessNewShare": 0,
+        "cumulativeNetCostRatioVsAdap": {
+          "low": {
+            "median": 1.185,
+            "lower": -0.792,
+            "upper": 3.295
+          },
+          "median": {
+            "median": 2.622,
+            "lower": -0.656,
+            "upper": 6.12
+          },
+          "high": {
+            "median": 4.05,
+            "lower": -0.52,
+            "upper": 8.925
+          }
+        },
+        "cumulativeNetCostRatioVsTotalRwhap": {
+          "low": {
+            "median": -0.038,
+            "lower": -0.909,
+            "upper": 0.891
+          },
+          "median": {
+            "median": 0.595,
+            "lower": -0.848,
+            "upper": 2.134
+          },
+          "high": {
+            "median": 1.223,
+            "lower": -0.789,
+            "upper": 3.369
+          }
+        },
+        "rankByNetCostVsAdap": 23,
+        "rankByNetCostRatioVsAdap": 11
+      }
+    },
+    {
+      "state": "AZ",
+      "finalYear": {
+        "year": 2035,
+        "cumulativeCareCost": {
+          "low": {
+            "median": 160991561,
+            "lower": 14716281,
+            "upper": 318021524
+          },
+          "median": {
+            "median": 266873791,
+            "lower": 24395189,
+            "upper": 527176724
+          },
+          "high": {
+            "median": 372025798,
+            "lower": 34007345,
+            "upper": 734889474
+          }
+        },
+        "cumulativeAdapSpendingAvoided": 112557793,
+        "cumulativeTotalRwhapSpendingAvoided": 331969841,
+        "cumulativeNetCostVsAdap": {
+          "low": {
+            "median": 48433769,
+            "lower": -97841512,
+            "upper": 205463731
+          },
+          "median": {
+            "median": 154315998,
+            "lower": -88162604,
+            "upper": 414618931
+          },
+          "high": {
+            "median": 259468005,
+            "lower": -78550447,
+            "upper": 622331682
+          }
+        },
+        "cumulativeNetCostVsTotalRwhap": {
+          "low": {
+            "median": -170978279,
+            "lower": -317253560,
+            "upper": -13948317
+          },
+          "median": {
+            "median": -65096050,
+            "lower": -307574652,
+            "upper": 195206883
+          },
+          "high": {
+            "median": 40055957,
+            "lower": -297962495,
+            "upper": 402919634
+          }
+        },
+        "cumulativeExcessNewDiagnoses": {
+          "median": 1533.6,
+          "lower": 135.7,
+          "upper": 3068.1
+        },
+        "cumulativePersonYearsOnArt": {
+          "median": 6273.5,
+          "lower": 574.2,
+          "upper": 12371.8
+        },
+        "negativeExcessNewShare": 0,
+        "cumulativeNetCostRatioVsAdap": {
+          "low": {
+            "median": 0.43,
+            "lower": -0.869,
+            "upper": 1.825
+          },
+          "median": {
+            "median": 1.371,
+            "lower": -0.783,
+            "upper": 3.684
+          },
+          "high": {
+            "median": 2.305,
+            "lower": -0.698,
+            "upper": 5.529
+          }
+        },
+        "cumulativeNetCostRatioVsTotalRwhap": {
+          "low": {
+            "median": -0.515,
+            "lower": -0.956,
+            "upper": -0.042
+          },
+          "median": {
+            "median": -0.196,
+            "lower": -0.927,
+            "upper": 0.588
+          },
+          "high": {
+            "median": 0.121,
+            "lower": -0.898,
+            "upper": 1.214
+          }
+        },
+        "rankByNetCostVsAdap": 19,
+        "rankByNetCostRatioVsAdap": 21
+      }
+    },
+    {
+      "state": "CA",
+      "finalYear": {
+        "year": 2035,
+        "cumulativeCareCost": {
+          "low": {
+            "median": 760931907,
+            "lower": 69316181,
+            "upper": 1552516826
+          },
+          "median": {
+            "median": 1261375320,
+            "lower": 114903080,
+            "upper": 2573563422
+          },
+          "high": {
+            "median": 1758367399,
+            "lower": 160175586,
+            "upper": 3587568317
+          }
+        },
+        "cumulativeAdapSpendingAvoided": 917050671,
+        "cumulativeTotalRwhapSpendingAvoided": 2500692385,
+        "cumulativeNetCostVsAdap": {
+          "low": {
+            "median": -156118763,
+            "lower": -847734489,
+            "upper": 635466155
+          },
+          "median": {
+            "median": 344324649,
+            "lower": -802147591,
+            "upper": 1656512751
+          },
+          "high": {
+            "median": 841316728,
+            "lower": -756875085,
+            "upper": 2670517646
+          }
+        },
+        "cumulativeNetCostVsTotalRwhap": {
+          "low": {
+            "median": -1739760477,
+            "lower": -2431376203,
+            "upper": -948175559
+          },
+          "median": {
+            "median": -1239317065,
+            "lower": -2385789305,
+            "upper": 72871037
+          },
+          "high": {
+            "median": -742324986,
+            "lower": -2340516799,
+            "upper": 1086875932
+          }
+        },
+        "cumulativeExcessNewDiagnoses": {
+          "median": 7392.1,
+          "lower": 670.7,
+          "upper": 15077.4
+        },
+        "cumulativePersonYearsOnArt": {
+          "median": 29585.5,
+          "lower": 2693.2,
+          "upper": 60363.7
+        },
+        "negativeExcessNewShare": 0,
+        "cumulativeNetCostRatioVsAdap": {
+          "low": {
+            "median": -0.17,
+            "lower": -0.924,
+            "upper": 0.693
+          },
+          "median": {
+            "median": 0.375,
+            "lower": -0.875,
+            "upper": 1.806
+          },
+          "high": {
+            "median": 0.917,
+            "lower": -0.825,
+            "upper": 2.912
+          }
+        },
+        "cumulativeNetCostRatioVsTotalRwhap": {
+          "low": {
+            "median": -0.696,
+            "lower": -0.972,
+            "upper": -0.379
+          },
+          "median": {
+            "median": -0.496,
+            "lower": -0.954,
+            "upper": 0.029
+          },
+          "high": {
+            "median": -0.297,
+            "lower": -0.936,
+            "upper": 0.435
+          }
+        },
+        "rankByNetCostVsAdap": 10,
+        "rankByNetCostRatioVsAdap": 26
+      }
+    },
+    {
+      "state": "CO",
+      "finalYear": {
+        "year": 2035,
+        "cumulativeCareCost": {
+          "low": {
+            "median": 230620020,
+            "lower": 21544725,
+            "upper": 474370649
+          },
+          "median": {
+            "median": 382288191,
+            "lower": 35713804,
+            "upper": 786337881
+          },
+          "high": {
+            "median": 532910375,
+            "lower": 49785165,
+            "upper": 1096153614
+          }
+        },
+        "cumulativeAdapSpendingAvoided": 83878928,
+        "cumulativeTotalRwhapSpendingAvoided": 239493449,
+        "cumulativeNetCostVsAdap": {
+          "low": {
+            "median": 146741092,
+            "lower": -62334204,
+            "upper": 390491721
+          },
+          "median": {
+            "median": 298409263,
+            "lower": -48165125,
+            "upper": 702458952
+          },
+          "high": {
+            "median": 449031447,
+            "lower": -34093763,
+            "upper": 1012274686
+          }
+        },
+        "cumulativeNetCostVsTotalRwhap": {
+          "low": {
+            "median": -8873429,
+            "lower": -217948725,
+            "upper": 234877200
+          },
+          "median": {
+            "median": 142794742,
+            "lower": -203779646,
+            "upper": 546844431
+          },
+          "high": {
+            "median": 293416926,
+            "lower": -189708284,
+            "upper": 856660165
+          }
+        },
+        "cumulativeExcessNewDiagnoses": {
+          "median": 2433.3,
+          "lower": 223.8,
+          "upper": 5265.6
+        },
+        "cumulativePersonYearsOnArt": {
+          "median": 8947.7,
+          "lower": 836.4,
+          "upper": 18384.1
+        },
+        "negativeExcessNewShare": 0,
+        "cumulativeNetCostRatioVsAdap": {
+          "low": {
+            "median": 1.749,
+            "lower": -0.743,
+            "upper": 4.655
+          },
+          "median": {
+            "median": 3.558,
+            "lower": -0.574,
+            "upper": 8.375
+          },
+          "high": {
+            "median": 5.353,
+            "lower": -0.406,
+            "upper": 12.068
+          }
+        },
+        "cumulativeNetCostRatioVsTotalRwhap": {
+          "low": {
+            "median": -0.037,
+            "lower": -0.91,
+            "upper": 0.981
+          },
+          "median": {
+            "median": 0.596,
+            "lower": -0.851,
+            "upper": 2.283
+          },
+          "high": {
+            "median": 1.225,
+            "lower": -0.792,
+            "upper": 3.577
+          }
+        },
+        "rankByNetCostVsAdap": 11,
+        "rankByNetCostRatioVsAdap": 6
+      }
+    },
+    {
+      "state": "FL",
+      "finalYear": {
+        "year": 2035,
+        "cumulativeCareCost": {
+          "low": {
+            "median": 1721872957,
+            "lower": 234540626,
+            "upper": 2553178694
+          },
+          "median": {
+            "median": 2854327918,
+            "lower": 388796139,
+            "upper": 4232367147
+          },
+          "high": {
+            "median": 3978972844,
+            "lower": 541987821,
+            "upper": 5899974989
+          }
+        },
+        "cumulativeAdapSpendingAvoided": 751897125,
+        "cumulativeTotalRwhapSpendingAvoided": 1988433337,
+        "cumulativeNetCostVsAdap": {
+          "low": {
+            "median": 969975832,
+            "lower": -517356499,
+            "upper": 1801281568
+          },
+          "median": {
+            "median": 2102430792,
+            "lower": -363100987,
+            "upper": 3480470021
+          },
+          "high": {
+            "median": 3227075719,
+            "lower": -209909305,
+            "upper": 5148077864
+          }
+        },
+        "cumulativeNetCostVsTotalRwhap": {
+          "low": {
+            "median": -266560379,
+            "lower": -1753892711,
+            "upper": 564745357
+          },
+          "median": {
+            "median": 865894581,
+            "lower": -1599637198,
+            "upper": 2243933810
+          },
+          "high": {
+            "median": 1990539507,
+            "lower": -1446445516,
+            "upper": 3911541653
+          }
+        },
+        "cumulativeExcessNewDiagnoses": {
+          "median": 16193.4,
+          "lower": 2157.1,
+          "upper": 24249.7
+        },
+        "cumulativePersonYearsOnArt": {
+          "median": 67077.5,
+          "lower": 9141.3,
+          "upper": 99433.5
+        },
+        "negativeExcessNewShare": 0,
+        "cumulativeNetCostRatioVsAdap": {
+          "low": {
+            "median": 1.29,
+            "lower": -0.688,
+            "upper": 2.396
+          },
+          "median": {
+            "median": 2.796,
+            "lower": -0.483,
+            "upper": 4.629
+          },
+          "high": {
+            "median": 4.292,
+            "lower": -0.279,
+            "upper": 6.847
+          }
+        },
+        "cumulativeNetCostRatioVsTotalRwhap": {
+          "low": {
+            "median": -0.134,
+            "lower": -0.882,
+            "upper": 0.284
+          },
+          "median": {
+            "median": 0.435,
+            "lower": -0.804,
+            "upper": 1.128
+          },
+          "high": {
+            "median": 1.001,
+            "lower": -0.727,
+            "upper": 1.967
+          }
+        },
+        "rankByNetCostVsAdap": 1,
+        "rankByNetCostRatioVsAdap": 8
+      }
+    },
+    {
+      "state": "GA",
+      "finalYear": {
+        "year": 2035,
+        "cumulativeCareCost": {
+          "low": {
+            "median": 730100897,
+            "lower": 103892193,
+            "upper": 1023124882
+          },
+          "median": {
+            "median": 1210256084,
+            "lower": 172216739,
+            "upper": 1695985298
+          },
+          "high": {
+            "median": 1687099856,
+            "lower": 240070080,
+            "upper": 2364205296
+          }
+        },
+        "cumulativeAdapSpendingAvoided": 361961401,
+        "cumulativeTotalRwhapSpendingAvoided": 1062995483,
+        "cumulativeNetCostVsAdap": {
+          "low": {
+            "median": 368139496,
+            "lower": -258069207,
+            "upper": 661163481
+          },
+          "median": {
+            "median": 848294683,
+            "lower": -189744662,
+            "upper": 1334023897
+          },
+          "high": {
+            "median": 1325138455,
+            "lower": -121891321,
+            "upper": 2002243895
+          }
+        },
+        "cumulativeNetCostVsTotalRwhap": {
+          "low": {
+            "median": -332894586,
+            "lower": -959103289,
+            "upper": -39870600
+          },
+          "median": {
+            "median": 147260601,
+            "lower": -890778744,
+            "upper": 632989815
+          },
+          "high": {
+            "median": 624104373,
+            "lower": -822925402,
+            "upper": 1301209814
+          }
+        },
+        "cumulativeExcessNewDiagnoses": {
+          "median": 7225.7,
+          "lower": 1063.7,
+          "upper": 10081.1
+        },
+        "cumulativePersonYearsOnArt": {
+          "median": 28326.6,
+          "lower": 4028.3,
+          "upper": 39688.1
+        },
+        "negativeExcessNewShare": 0,
+        "cumulativeNetCostRatioVsAdap": {
+          "low": {
+            "median": 1.017,
+            "lower": -0.713,
+            "upper": 1.827
+          },
+          "median": {
+            "median": 2.344,
+            "lower": -0.524,
+            "upper": 3.686
+          },
+          "high": {
+            "median": 3.661,
+            "lower": -0.337,
+            "upper": 5.532
+          }
+        },
+        "cumulativeNetCostRatioVsTotalRwhap": {
+          "low": {
+            "median": -0.313,
+            "lower": -0.902,
+            "upper": -0.038
+          },
+          "median": {
+            "median": 0.139,
+            "lower": -0.838,
+            "upper": 0.595
+          },
+          "high": {
+            "median": 0.587,
+            "lower": -0.774,
+            "upper": 1.224
+          }
+        },
+        "rankByNetCostVsAdap": 4,
+        "rankByNetCostRatioVsAdap": 12
+      }
+    },
+    {
+      "state": "IL",
+      "finalYear": {
+        "year": 2035,
+        "cumulativeCareCost": {
+          "low": {
+            "median": 476290215,
+            "lower": 42632359,
+            "upper": 935075202
+          },
+          "median": {
+            "median": 789525113,
+            "lower": 70670899,
+            "upper": 1550050799
+          },
+          "high": {
+            "median": 1100599770,
+            "lower": 98516070,
+            "upper": 2160785184
+          }
+        },
+        "cumulativeAdapSpendingAvoided": 249755883,
+        "cumulativeTotalRwhapSpendingAvoided": 731033693,
+        "cumulativeNetCostVsAdap": {
+          "low": {
+            "median": 226534332,
+            "lower": -207123525,
+            "upper": 685319319
+          },
+          "median": {
+            "median": 539769230,
+            "lower": -179084984,
+            "upper": 1300294915
+          },
+          "high": {
+            "median": 850843887,
+            "lower": -151239813,
+            "upper": 1911029301
+          }
+        },
+        "cumulativeNetCostVsTotalRwhap": {
+          "low": {
+            "median": -254743478,
+            "lower": -688401334,
+            "upper": 204041509
+          },
+          "median": {
+            "median": 58491420,
+            "lower": -660362794,
+            "upper": 819017106
+          },
+          "high": {
+            "median": 369566077,
+            "lower": -632517623,
+            "upper": 1429751491
+          }
+        },
+        "cumulativeExcessNewDiagnoses": {
+          "median": 4633.8,
+          "lower": 393.2,
+          "upper": 9012.5
+        },
+        "cumulativePersonYearsOnArt": {
+          "median": 18491.5,
+          "lower": 1659.6,
+          "upper": 36379.6
+        },
+        "negativeExcessNewShare": 0,
+        "cumulativeNetCostRatioVsAdap": {
+          "low": {
+            "median": 0.907,
+            "lower": -0.829,
+            "upper": 2.744
+          },
+          "median": {
+            "median": 2.161,
+            "lower": -0.717,
+            "upper": 5.206
+          },
+          "high": {
+            "median": 3.407,
+            "lower": -0.606,
+            "upper": 7.652
+          }
+        },
+        "cumulativeNetCostRatioVsTotalRwhap": {
+          "low": {
+            "median": -0.348,
+            "lower": -0.942,
+            "upper": 0.279
+          },
+          "median": {
+            "median": 0.08,
+            "lower": -0.903,
+            "upper": 1.12
+          },
+          "high": {
+            "median": 0.506,
+            "lower": -0.865,
+            "upper": 1.956
+          }
+        },
+        "rankByNetCostVsAdap": 8,
+        "rankByNetCostRatioVsAdap": 15
+      }
+    },
+    {
+      "state": "IN",
+      "finalYear": {
+        "year": 2035,
+        "cumulativeCareCost": {
+          "low": {
+            "median": 100802314,
+            "lower": 8252840,
+            "upper": 206121672
+          },
+          "median": {
+            "median": 167095857,
+            "lower": 13680312,
+            "upper": 341677316
+          },
+          "high": {
+            "median": 232932204,
+            "lower": 19070354,
+            "upper": 476298094
+          }
+        },
+        "cumulativeAdapSpendingAvoided": 79997626,
+        "cumulativeTotalRwhapSpendingAvoided": 262244589,
+        "cumulativeNetCostVsAdap": {
+          "low": {
+            "median": 20804688,
+            "lower": -71744786,
+            "upper": 126124046
+          },
+          "median": {
+            "median": 87098232,
+            "lower": -66317314,
+            "upper": 261679690
+          },
+          "high": {
+            "median": 152934578,
+            "lower": -60927272,
+            "upper": 396300468
+          }
+        },
+        "cumulativeNetCostVsTotalRwhap": {
+          "low": {
+            "median": -161442275,
+            "lower": -253991749,
+            "upper": -56122917
+          },
+          "median": {
+            "median": -95148732,
+            "lower": -248564277,
+            "upper": 79432727
+          },
+          "high": {
+            "median": -29312385,
+            "lower": -243174236,
+            "upper": 214053505
+          }
+        },
+        "cumulativeExcessNewDiagnoses": {
+          "median": 1018.7,
+          "lower": 83.2,
+          "upper": 2073.7
+        },
+        "cumulativePersonYearsOnArt": {
+          "median": 3913.3,
+          "lower": 320,
+          "upper": 7991.9
+        },
+        "negativeExcessNewShare": 0.001,
+        "cumulativeNetCostRatioVsAdap": {
+          "low": {
+            "median": 0.26,
+            "lower": -0.897,
+            "upper": 1.577
+          },
+          "median": {
+            "median": 1.089,
+            "lower": -0.829,
+            "upper": 3.271
+          },
+          "high": {
+            "median": 1.912,
+            "lower": -0.762,
+            "upper": 4.954
+          }
+        },
+        "cumulativeNetCostRatioVsTotalRwhap": {
+          "low": {
+            "median": -0.616,
+            "lower": -0.969,
+            "upper": -0.214
+          },
+          "median": {
+            "median": -0.363,
+            "lower": -0.948,
+            "upper": 0.303
+          },
+          "high": {
+            "median": -0.112,
+            "lower": -0.927,
+            "upper": 0.816
+          }
+        },
+        "rankByNetCostVsAdap": 26,
+        "rankByNetCostRatioVsAdap": 23
+      }
+    },
+    {
+      "state": "KY",
+      "finalYear": {
+        "year": 2035,
+        "cumulativeCareCost": {
+          "low": {
+            "median": 127349597,
+            "lower": 11771574,
+            "upper": 268245509
+          },
+          "median": {
+            "median": 211103405,
+            "lower": 19513596,
+            "upper": 444662357
+          },
+          "high": {
+            "median": 294279601,
+            "lower": 27202225,
+            "upper": 619862538
+          }
+        },
+        "cumulativeAdapSpendingAvoided": 51287301,
+        "cumulativeTotalRwhapSpendingAvoided": 140856209,
+        "cumulativeNetCostVsAdap": {
+          "low": {
+            "median": 76062296,
+            "lower": -39515728,
+            "upper": 216958208
+          },
+          "median": {
+            "median": 159816104,
+            "lower": -31773706,
+            "upper": 393375056
+          },
+          "high": {
+            "median": 242992300,
+            "lower": -24085076,
+            "upper": 568575236
+          }
+        },
+        "cumulativeNetCostVsTotalRwhap": {
+          "low": {
+            "median": -13506611,
+            "lower": -129084635,
+            "upper": 127389301
+          },
+          "median": {
+            "median": 70247197,
+            "lower": -121342613,
+            "upper": 303806149
+          },
+          "high": {
+            "median": 153423392,
+            "lower": -113653984,
+            "upper": 479006329
+          }
+        },
+        "cumulativeExcessNewDiagnoses": {
+          "median": 1232.1,
+          "lower": 109.4,
+          "upper": 2634.1
+        },
+        "cumulativePersonYearsOnArt": {
+          "median": 4947.1,
+          "lower": 458.6,
+          "upper": 10426.6
+        },
+        "negativeExcessNewShare": 0,
+        "cumulativeNetCostRatioVsAdap": {
+          "low": {
+            "median": 1.483,
+            "lower": -0.77,
+            "upper": 4.23
+          },
+          "median": {
+            "median": 3.116,
+            "lower": -0.62,
+            "upper": 7.67
+          },
+          "high": {
+            "median": 4.738,
+            "lower": -0.47,
+            "upper": 11.086
+          }
+        },
+        "cumulativeNetCostRatioVsTotalRwhap": {
+          "low": {
+            "median": -0.096,
+            "lower": -0.916,
+            "upper": 0.904
+          },
+          "median": {
+            "median": 0.499,
+            "lower": -0.861,
+            "upper": 2.157
+          },
+          "high": {
+            "median": 1.089,
+            "lower": -0.807,
+            "upper": 3.401
+          }
+        },
+        "rankByNetCostVsAdap": 18,
+        "rankByNetCostRatioVsAdap": 7
+      }
+    },
+    {
+      "state": "LA",
+      "finalYear": {
+        "year": 2035,
+        "cumulativeCareCost": {
+          "low": {
+            "median": 258788625,
+            "lower": 25878723,
+            "upper": 496460162
+          },
+          "median": {
+            "median": 428988191,
+            "lower": 42898287,
+            "upper": 822972563
+          },
+          "high": {
+            "median": 598013968,
+            "lower": 59800475,
+            "upper": 1147233154
+          }
+        },
+        "cumulativeAdapSpendingAvoided": 148118579,
+        "cumulativeTotalRwhapSpendingAvoided": 437494027,
+        "cumulativeNetCostVsAdap": {
+          "low": {
+            "median": 110670046,
+            "lower": -122239856,
+            "upper": 348341584
+          },
+          "median": {
+            "median": 280869613,
+            "lower": -105220292,
+            "upper": 674853984
+          },
+          "high": {
+            "median": 449895389,
+            "lower": -88318104,
+            "upper": 999114575
+          }
+        },
+        "cumulativeNetCostVsTotalRwhap": {
+          "low": {
+            "median": -178705402,
+            "lower": -411615304,
+            "upper": 58966136
+          },
+          "median": {
+            "median": -8505835,
+            "lower": -394595739,
+            "upper": 385478536
+          },
+          "high": {
+            "median": 160519941,
+            "lower": -377693552,
+            "upper": 709739127
+          }
+        },
+        "cumulativeExcessNewDiagnoses": {
+          "median": 2351.9,
+          "lower": 239.3,
+          "upper": 4510.3
+        },
+        "cumulativePersonYearsOnArt": {
+          "median": 10069.3,
+          "lower": 1005.5,
+          "upper": 19323.5
+        },
+        "negativeExcessNewShare": 0,
+        "cumulativeNetCostRatioVsAdap": {
+          "low": {
+            "median": 0.747,
+            "lower": -0.825,
+            "upper": 2.352
+          },
+          "median": {
+            "median": 1.896,
+            "lower": -0.71,
+            "upper": 4.556
+          },
+          "high": {
+            "median": 3.037,
+            "lower": -0.596,
+            "upper": 6.745
+          }
+        },
+        "cumulativeNetCostRatioVsTotalRwhap": {
+          "low": {
+            "median": -0.408,
+            "lower": -0.941,
+            "upper": 0.135
+          },
+          "median": {
+            "median": -0.019,
+            "lower": -0.902,
+            "upper": 0.881
+          },
+          "high": {
+            "median": 0.367,
+            "lower": -0.863,
+            "upper": 1.622
+          }
+        },
+        "rankByNetCostVsAdap": 13,
+        "rankByNetCostRatioVsAdap": 17
+      }
+    },
+    {
+      "state": "MA",
+      "finalYear": {
+        "year": 2035,
+        "cumulativeCareCost": {
+          "low": {
+            "median": 143605818,
+            "lower": 12887851,
+            "upper": 294681259
+          },
+          "median": {
+            "median": 238051475,
+            "lower": 21363724,
+            "upper": 488480356
+          },
+          "high": {
+            "median": 331845783,
+            "lower": 29781143,
+            "upper": 680942908
+          }
+        },
+        "cumulativeAdapSpendingAvoided": 130391653,
+        "cumulativeTotalRwhapSpendingAvoided": 437777668,
+        "cumulativeNetCostVsAdap": {
+          "low": {
+            "median": 13214165,
+            "lower": -117503802,
+            "upper": 164289606
+          },
+          "median": {
+            "median": 107659822,
+            "lower": -109027929,
+            "upper": 358088703
+          },
+          "high": {
+            "median": 201454129,
+            "lower": -100610510,
+            "upper": 550551255
+          }
+        },
+        "cumulativeNetCostVsTotalRwhap": {
+          "low": {
+            "median": -294171850,
+            "lower": -424889817,
+            "upper": -143096409
+          },
+          "median": {
+            "median": -199726193,
+            "lower": -416413944,
+            "upper": 50702688
+          },
+          "high": {
+            "median": -105931885,
+            "lower": -407996525,
+            "upper": 243165240
+          }
+        },
+        "cumulativeExcessNewDiagnoses": {
+          "median": 1424.4,
+          "lower": 128.4,
+          "upper": 2988.7
+        },
+        "cumulativePersonYearsOnArt": {
+          "median": 5580.8,
+          "lower": 500.6,
+          "upper": 11437
+        },
+        "negativeExcessNewShare": 0,
+        "cumulativeNetCostRatioVsAdap": {
+          "low": {
+            "median": 0.101,
+            "lower": -0.901,
+            "upper": 1.26
+          },
+          "median": {
+            "median": 0.826,
+            "lower": -0.836,
+            "upper": 2.746
+          },
+          "high": {
+            "median": 1.545,
+            "lower": -0.772,
+            "upper": 4.222
+          }
+        },
+        "cumulativeNetCostRatioVsTotalRwhap": {
+          "low": {
+            "median": -0.672,
+            "lower": -0.971,
+            "upper": -0.327
+          },
+          "median": {
+            "median": -0.456,
+            "lower": -0.951,
+            "upper": 0.116
+          },
+          "high": {
+            "median": -0.242,
+            "lower": -0.932,
+            "upper": 0.555
+          }
+        },
+        "rankByNetCostVsAdap": 24,
+        "rankByNetCostRatioVsAdap": 24
+      }
+    },
+    {
+      "state": "MD",
+      "finalYear": {
+        "year": 2035,
+        "cumulativeCareCost": {
+          "low": {
+            "median": 157544577,
+            "lower": 14617364,
+            "upper": 357558141
+          },
+          "median": {
+            "median": 261159015,
+            "lower": 24231097,
+            "upper": 592716609
+          },
+          "high": {
+            "median": 364058870,
+            "lower": 33778528,
+            "upper": 826253294
+          }
+        },
+        "cumulativeAdapSpendingAvoided": 207891912,
+        "cumulativeTotalRwhapSpendingAvoided": 483004626,
+        "cumulativeNetCostVsAdap": {
+          "low": {
+            "median": -50347336,
+            "lower": -193274548,
+            "upper": 149666228
+          },
+          "median": {
+            "median": 53267102,
+            "lower": -183660815,
+            "upper": 384824697
+          },
+          "high": {
+            "median": 156166958,
+            "lower": -174113384,
+            "upper": 618361382
+          }
+        },
+        "cumulativeNetCostVsTotalRwhap": {
+          "low": {
+            "median": -325460049,
+            "lower": -468387261,
+            "upper": -125446485
+          },
+          "median": {
+            "median": -221845611,
+            "lower": -458773529,
+            "upper": 109711983
+          },
+          "high": {
+            "median": -118945756,
+            "lower": -449226098,
+            "upper": 343248669
+          }
+        },
+        "cumulativeExcessNewDiagnoses": {
+          "median": 1464.3,
+          "lower": 132.3,
+          "upper": 3327.6
+        },
+        "cumulativePersonYearsOnArt": {
+          "median": 6127.9,
+          "lower": 569.8,
+          "upper": 13914.1
+        },
+        "negativeExcessNewShare": 0.001,
+        "cumulativeNetCostRatioVsAdap": {
+          "low": {
+            "median": -0.242,
+            "lower": -0.93,
+            "upper": 0.72
+          },
+          "median": {
+            "median": 0.256,
+            "lower": -0.883,
+            "upper": 1.851
+          },
+          "high": {
+            "median": 0.751,
+            "lower": -0.838,
+            "upper": 2.974
+          }
+        },
+        "cumulativeNetCostRatioVsTotalRwhap": {
+          "low": {
+            "median": -0.674,
+            "lower": -0.97,
+            "upper": -0.26
+          },
+          "median": {
+            "median": -0.459,
+            "lower": -0.95,
+            "upper": 0.227
+          },
+          "high": {
+            "median": -0.246,
+            "lower": -0.93,
+            "upper": 0.711
+          }
+        },
+        "rankByNetCostVsAdap": 28,
+        "rankByNetCostRatioVsAdap": 27
+      }
+    },
+    {
+      "state": "MI",
+      "finalYear": {
+        "year": 2035,
+        "cumulativeCareCost": {
+          "low": {
+            "median": 124652260,
+            "lower": 11705051,
+            "upper": 240266693
+          },
+          "median": {
+            "median": 206632147,
+            "lower": 19403205,
+            "upper": 398278093
+          },
+          "high": {
+            "median": 288046654,
+            "lower": 27048269,
+            "upper": 555199759
+          }
+        },
+        "cumulativeAdapSpendingAvoided": 116193764,
+        "cumulativeTotalRwhapSpendingAvoided": 343095101,
+        "cumulativeNetCostVsAdap": {
+          "low": {
+            "median": 8458496,
+            "lower": -104488714,
+            "upper": 124072929
+          },
+          "median": {
+            "median": 90438382,
+            "lower": -96790559,
+            "upper": 282084329
+          },
+          "high": {
+            "median": 171852890,
+            "lower": -89145495,
+            "upper": 439005995
+          }
+        },
+        "cumulativeNetCostVsTotalRwhap": {
+          "low": {
+            "median": -218442840,
+            "lower": -331390050,
+            "upper": -102828407
+          },
+          "median": {
+            "median": -136462954,
+            "lower": -323691896,
+            "upper": 55182992
+          },
+          "high": {
+            "median": -55048446,
+            "lower": -316046832,
+            "upper": 212104658
+          }
+        },
+        "cumulativeExcessNewDiagnoses": {
+          "median": 1178.8,
+          "lower": 110.6,
+          "upper": 2272.8
+        },
+        "cumulativePersonYearsOnArt": {
+          "median": 4844.8,
+          "lower": 455.4,
+          "upper": 9317.6
+        },
+        "negativeExcessNewShare": 0,
+        "cumulativeNetCostRatioVsAdap": {
+          "low": {
+            "median": 0.073,
+            "lower": -0.899,
+            "upper": 1.068
+          },
+          "median": {
+            "median": 0.778,
+            "lower": -0.833,
+            "upper": 2.428
+          },
+          "high": {
+            "median": 1.479,
+            "lower": -0.767,
+            "upper": 3.778
+          }
+        },
+        "cumulativeNetCostRatioVsTotalRwhap": {
+          "low": {
+            "median": -0.637,
+            "lower": -0.966,
+            "upper": -0.3
+          },
+          "median": {
+            "median": -0.398,
+            "lower": -0.943,
+            "upper": 0.161
+          },
+          "high": {
+            "median": -0.16,
+            "lower": -0.921,
+            "upper": 0.618
+          }
+        },
+        "rankByNetCostVsAdap": 25,
+        "rankByNetCostRatioVsAdap": 25
+      }
+    },
+    {
+      "state": "MN",
+      "finalYear": {
+        "year": 2035,
+        "cumulativeCareCost": {
+          "low": {
+            "median": 111030415,
+            "lower": 10852863,
+            "upper": 229680264
+          },
+          "median": {
+            "median": 184049772,
+            "lower": 17990110,
+            "upper": 380728707
+          },
+          "high": {
+            "median": 256565548,
+            "lower": 25078135,
+            "upper": 530735437
+          }
+        },
+        "cumulativeAdapSpendingAvoided": 56911101,
+        "cumulativeTotalRwhapSpendingAvoided": 203896923,
+        "cumulativeNetCostVsAdap": {
+          "low": {
+            "median": 54119314,
+            "lower": -46058238,
+            "upper": 172769163
+          },
+          "median": {
+            "median": 127138671,
+            "lower": -38920991,
+            "upper": 323817606
+          },
+          "high": {
+            "median": 199654447,
+            "lower": -31832966,
+            "upper": 473824337
+          }
+        },
+        "cumulativeNetCostVsTotalRwhap": {
+          "low": {
+            "median": -92866508,
+            "lower": -193044060,
+            "upper": 25783341
+          },
+          "median": {
+            "median": -19847150,
+            "lower": -185906812,
+            "upper": 176831785
+          },
+          "high": {
+            "median": 52668625,
+            "lower": -178818787,
+            "upper": 326838515
+          }
+        },
+        "cumulativeExcessNewDiagnoses": {
+          "median": 1123.5,
+          "lower": 110.5,
+          "upper": 2339.5
+        },
+        "cumulativePersonYearsOnArt": {
+          "median": 4305,
+          "lower": 420.2,
+          "upper": 8903.5
+        },
+        "negativeExcessNewShare": 0,
+        "cumulativeNetCostRatioVsAdap": {
+          "low": {
+            "median": 0.951,
+            "lower": -0.809,
+            "upper": 3.036
+          },
+          "median": {
+            "median": 2.234,
+            "lower": -0.684,
+            "upper": 5.69
+          },
+          "high": {
+            "median": 3.508,
+            "lower": -0.559,
+            "upper": 8.326
+          }
+        },
+        "cumulativeNetCostRatioVsTotalRwhap": {
+          "low": {
+            "median": -0.455,
+            "lower": -0.947,
+            "upper": 0.126
+          },
+          "median": {
+            "median": -0.097,
+            "lower": -0.912,
+            "upper": 0.867
+          },
+          "high": {
+            "median": 0.258,
+            "lower": -0.877,
+            "upper": 1.603
+          }
+        },
+        "rankByNetCostVsAdap": 20,
+        "rankByNetCostRatioVsAdap": 14
+      }
+    },
+    {
+      "state": "MO",
+      "finalYear": {
+        "year": 2035,
+        "cumulativeCareCost": {
+          "low": {
+            "median": 444708662,
+            "lower": 46228782,
+            "upper": 914401384
+          },
+          "median": {
+            "median": 737181326,
+            "lower": 76632246,
+            "upper": 1515775929
+          },
+          "high": {
+            "median": 1027636938,
+            "lower": 106826030,
+            "upper": 2113003063
+          }
+        },
+        "cumulativeAdapSpendingAvoided": 88911408,
+        "cumulativeTotalRwhapSpendingAvoided": 275681984,
+        "cumulativeNetCostVsAdap": {
+          "low": {
+            "median": 355797253,
+            "lower": -42682627,
+            "upper": 825489975
+          },
+          "median": {
+            "median": 648269918,
+            "lower": -12279163,
+            "upper": 1426864521
+          },
+          "high": {
+            "median": 938725529,
+            "lower": 17914622,
+            "upper": 2024091655
+          }
+        },
+        "cumulativeNetCostVsTotalRwhap": {
+          "low": {
+            "median": 169026677,
+            "lower": -229453203,
+            "upper": 638719399
+          },
+          "median": {
+            "median": 461499342,
+            "lower": -199049739,
+            "upper": 1240093945
+          },
+          "high": {
+            "median": 751954954,
+            "lower": -168855954,
+            "upper": 1837321079
+          }
+        },
+        "cumulativeExcessNewDiagnoses": {
+          "median": 4285,
+          "lower": 434.2,
+          "upper": 8662.7
+        },
+        "cumulativePersonYearsOnArt": {
+          "median": 17292.3,
+          "lower": 1797.9,
+          "upper": 35546.2
+        },
+        "negativeExcessNewShare": 0,
+        "cumulativeNetCostRatioVsAdap": {
+          "low": {
+            "median": 4.002,
+            "lower": -0.48,
+            "upper": 9.284
+          },
+          "median": {
+            "median": 7.291,
+            "lower": -0.138,
+            "upper": 16.048
+          },
+          "high": {
+            "median": 10.558,
+            "lower": 0.201,
+            "upper": 22.765
+          }
+        },
+        "cumulativeNetCostRatioVsTotalRwhap": {
+          "low": {
+            "median": 0.613,
+            "lower": -0.832,
+            "upper": 2.317
+          },
+          "median": {
+            "median": 1.674,
+            "lower": -0.722,
+            "upper": 4.498
+          },
+          "high": {
+            "median": 2.728,
+            "lower": -0.613,
+            "upper": 6.665
+          }
+        },
+        "rankByNetCostVsAdap": 5,
+        "rankByNetCostRatioVsAdap": 2
+      }
+    },
+    {
+      "state": "MS",
+      "finalYear": {
+        "year": 2035,
+        "cumulativeCareCost": {
+          "low": {
+            "median": 155179958,
+            "lower": 28212112,
+            "upper": 246083423
+          },
+          "median": {
+            "median": 257239700,
+            "lower": 46766455,
+            "upper": 407935385
+          },
+          "high": {
+            "median": 358595582,
+            "lower": 65192838,
+            "upper": 568671127
+          }
+        },
+        "cumulativeAdapSpendingAvoided": 68299190,
+        "cumulativeTotalRwhapSpendingAvoided": 162789174,
+        "cumulativeNetCostVsAdap": {
+          "low": {
+            "median": 86880768,
+            "lower": -40087079,
+            "upper": 177784232
+          },
+          "median": {
+            "median": 188940510,
+            "lower": -21532735,
+            "upper": 339636195
+          },
+          "high": {
+            "median": 290296391,
+            "lower": -3106353,
+            "upper": 500371937
+          }
+        },
+        "cumulativeNetCostVsTotalRwhap": {
+          "low": {
+            "median": -7609216,
+            "lower": -134577062,
+            "upper": 83294249
+          },
+          "median": {
+            "median": 94450526,
+            "lower": -116022719,
+            "upper": 245146211
+          },
+          "high": {
+            "median": 195806408,
+            "lower": -97596336,
+            "upper": 405881953
+          }
+        },
+        "cumulativeExcessNewDiagnoses": {
+          "median": 1401.4,
+          "lower": 246.3,
+          "upper": 2184.5
+        },
+        "cumulativePersonYearsOnArt": {
+          "median": 6048.1,
+          "lower": 1097.1,
+          "upper": 9613.5
+        },
+        "negativeExcessNewShare": 0.001,
+        "cumulativeNetCostRatioVsAdap": {
+          "low": {
+            "median": 1.272,
+            "lower": -0.587,
+            "upper": 2.603
+          },
+          "median": {
+            "median": 2.766,
+            "lower": -0.315,
+            "upper": 4.973
+          },
+          "high": {
+            "median": 4.25,
+            "lower": -0.045,
+            "upper": 7.326
+          }
+        },
+        "cumulativeNetCostRatioVsTotalRwhap": {
+          "low": {
+            "median": -0.047,
+            "lower": -0.827,
+            "upper": 0.512
+          },
+          "median": {
+            "median": 0.58,
+            "lower": -0.713,
+            "upper": 1.506
+          },
+          "high": {
+            "median": 1.203,
+            "lower": -0.6,
+            "upper": 2.493
+          }
+        },
+        "rankByNetCostVsAdap": 16,
+        "rankByNetCostRatioVsAdap": 9
+      }
+    },
+    {
+      "state": "NC",
+      "finalYear": {
+        "year": 2035,
+        "cumulativeCareCost": {
+          "low": {
+            "median": 477287355,
+            "lower": 45297577,
+            "upper": 905917079
+          },
+          "median": {
+            "median": 791188735,
+            "lower": 75089093,
+            "upper": 1501722602
+          },
+          "high": {
+            "median": 1102925277,
+            "lower": 104675150,
+            "upper": 2093419122
+          }
+        },
+        "cumulativeAdapSpendingAvoided": 210728972,
+        "cumulativeTotalRwhapSpendingAvoided": 564075196,
+        "cumulativeNetCostVsAdap": {
+          "low": {
+            "median": 266558383,
+            "lower": -165431395,
+            "upper": 695188107
+          },
+          "median": {
+            "median": 580459763,
+            "lower": -135639879,
+            "upper": 1290993630
+          },
+          "high": {
+            "median": 892196305,
+            "lower": -106053822,
+            "upper": 1882690150
+          }
+        },
+        "cumulativeNetCostVsTotalRwhap": {
+          "low": {
+            "median": -86787841,
+            "lower": -518777619,
+            "upper": 341841882
+          },
+          "median": {
+            "median": 227113539,
+            "lower": -488986103,
+            "upper": 937647406
+          },
+          "high": {
+            "median": 538850081,
+            "lower": -459400046,
+            "upper": 1529343926
+          }
+        },
+        "cumulativeExcessNewDiagnoses": {
+          "median": 4510.9,
+          "lower": 427.2,
+          "upper": 8520.6
+        },
+        "cumulativePersonYearsOnArt": {
+          "median": 18571,
+          "lower": 1763.8,
+          "upper": 35266.5
+        },
+        "negativeExcessNewShare": 0,
+        "cumulativeNetCostRatioVsAdap": {
+          "low": {
+            "median": 1.265,
+            "lower": -0.785,
+            "upper": 3.299
+          },
+          "median": {
+            "median": 2.755,
+            "lower": -0.644,
+            "upper": 6.126
+          },
+          "high": {
+            "median": 4.234,
+            "lower": -0.503,
+            "upper": 8.934
+          }
+        },
+        "cumulativeNetCostRatioVsTotalRwhap": {
+          "low": {
+            "median": -0.154,
+            "lower": -0.92,
+            "upper": 0.606
+          },
+          "median": {
+            "median": 0.403,
+            "lower": -0.867,
+            "upper": 1.662
+          },
+          "high": {
+            "median": 0.955,
+            "lower": -0.814,
+            "upper": 2.711
+          }
+        },
+        "rankByNetCostVsAdap": 6,
+        "rankByNetCostRatioVsAdap": 10
+      }
+    },
+    {
+      "state": "NJ",
+      "finalYear": {
+        "year": 2035,
+        "cumulativeCareCost": {
+          "low": {
+            "median": 172141549,
+            "lower": 14661445,
+            "upper": 409502729
+          },
+          "median": {
+            "median": 285351190,
+            "lower": 24303733,
+            "upper": 678825668
+          },
+          "high": {
+            "median": 397780074,
+            "lower": 33879523,
+            "upper": 946291208
+          }
+        },
+        "cumulativeAdapSpendingAvoided": 236822403,
+        "cumulativeTotalRwhapSpendingAvoided": 685126588,
+        "cumulativeNetCostVsAdap": {
+          "low": {
+            "median": -64680854,
+            "lower": -222160958,
+            "upper": 172680326
+          },
+          "median": {
+            "median": 48528787,
+            "lower": -212518670,
+            "upper": 442003265
+          },
+          "high": {
+            "median": 160957671,
+            "lower": -202942881,
+            "upper": 709468804
+          }
+        },
+        "cumulativeNetCostVsTotalRwhap": {
+          "low": {
+            "median": -512985039,
+            "lower": -670465143,
+            "upper": -275623860
+          },
+          "median": {
+            "median": -399775399,
+            "lower": -660822855,
+            "upper": -6300920
+          },
+          "high": {
+            "median": -287346515,
+            "lower": -651247066,
+            "upper": 261164619
+          }
+        },
+        "cumulativeExcessNewDiagnoses": {
+          "median": 1773.2,
+          "lower": 156.1,
+          "upper": 4036.8
+        },
+        "cumulativePersonYearsOnArt": {
+          "median": 6688.3,
+          "lower": 569.4,
+          "upper": 15943
+        },
+        "negativeExcessNewShare": 0,
+        "cumulativeNetCostRatioVsAdap": {
+          "low": {
+            "median": -0.273,
+            "lower": -0.938,
+            "upper": 0.729
+          },
+          "median": {
+            "median": 0.205,
+            "lower": -0.897,
+            "upper": 1.866
+          },
+          "high": {
+            "median": 0.68,
+            "lower": -0.857,
+            "upper": 2.996
+          }
+        },
+        "cumulativeNetCostRatioVsTotalRwhap": {
+          "low": {
+            "median": -0.749,
+            "lower": -0.979,
+            "upper": -0.402
+          },
+          "median": {
+            "median": -0.584,
+            "lower": -0.965,
+            "upper": -0.009
+          },
+          "high": {
+            "median": -0.419,
+            "lower": -0.951,
+            "upper": 0.381
+          }
+        },
+        "rankByNetCostVsAdap": 29,
+        "rankByNetCostRatioVsAdap": 28
+      }
+    },
+    {
+      "state": "NV",
+      "finalYear": {
+        "year": 2035,
+        "cumulativeCareCost": {
+          "low": {
+            "median": 106641179,
+            "lower": 10083301,
+            "upper": 209190691
+          },
+          "median": {
+            "median": 176776052,
+            "lower": 16714791,
+            "upper": 346772638
+          },
+          "high": {
+            "median": 246427235,
+            "lower": 23300548,
+            "upper": 483405745
+          }
+        },
+        "cumulativeAdapSpendingAvoided": 66850257,
+        "cumulativeTotalRwhapSpendingAvoided": 200544736,
+        "cumulativeNetCostVsAdap": {
+          "low": {
+            "median": 39790922,
+            "lower": -56766956,
+            "upper": 142340434
+          },
+          "median": {
+            "median": 109925795,
+            "lower": -50135466,
+            "upper": 279922381
+          },
+          "high": {
+            "median": 179576978,
+            "lower": -43549710,
+            "upper": 416555487
+          }
+        },
+        "cumulativeNetCostVsTotalRwhap": {
+          "low": {
+            "median": -93903556,
+            "lower": -190461435,
+            "upper": 8645955
+          },
+          "median": {
+            "median": -23768684,
+            "lower": -183829944,
+            "upper": 146227903
+          },
+          "high": {
+            "median": 45882500,
+            "lower": -177244188,
+            "upper": 282861009
+          }
+        },
+        "cumulativeExcessNewDiagnoses": {
+          "median": 1044.1,
+          "lower": 99.5,
+          "upper": 2017.1
+        },
+        "cumulativePersonYearsOnArt": {
+          "median": 4146.4,
+          "lower": 392,
+          "upper": 8140.7
+        },
+        "negativeExcessNewShare": 0,
+        "cumulativeNetCostRatioVsAdap": {
+          "low": {
+            "median": 0.595,
+            "lower": -0.849,
+            "upper": 2.129
+          },
+          "median": {
+            "median": 1.644,
+            "lower": -0.75,
+            "upper": 4.187
+          },
+          "high": {
+            "median": 2.686,
+            "lower": -0.651,
+            "upper": 6.231
+          }
+        },
+        "cumulativeNetCostRatioVsTotalRwhap": {
+          "low": {
+            "median": -0.468,
+            "lower": -0.95,
+            "upper": 0.043
+          },
+          "median": {
+            "median": -0.119,
+            "lower": -0.917,
+            "upper": 0.729
+          },
+          "high": {
+            "median": 0.229,
+            "lower": -0.884,
+            "upper": 1.41
+          }
+        },
+        "rankByNetCostVsAdap": 22,
+        "rankByNetCostRatioVsAdap": 20
+      }
+    },
+    {
+      "state": "NY",
+      "finalYear": {
+        "year": 2035,
+        "cumulativeCareCost": {
+          "low": {
+            "median": 543825953,
+            "lower": 49728550,
+            "upper": 1137179529
+          },
+          "median": {
+            "median": 901475620,
+            "lower": 82432182,
+            "upper": 1885057168
+          },
+          "high": {
+            "median": 1256658738,
+            "lower": 114910271,
+            "upper": 2627777030
+          }
+        },
+        "cumulativeAdapSpendingAvoided": 787533423,
+        "cumulativeTotalRwhapSpendingAvoided": 2357365666,
+        "cumulativeNetCostVsAdap": {
+          "low": {
+            "median": -243707470,
+            "lower": -737804873,
+            "upper": 349646106
+          },
+          "median": {
+            "median": 113942198,
+            "lower": -705101241,
+            "upper": 1097523745
+          },
+          "high": {
+            "median": 469125316,
+            "lower": -672623152,
+            "upper": 1840243608
+          }
+        },
+        "cumulativeNetCostVsTotalRwhap": {
+          "low": {
+            "median": -1813539713,
+            "lower": -2307637116,
+            "upper": -1220186137
+          },
+          "median": {
+            "median": -1455890046,
+            "lower": -2274933485,
+            "upper": -472308498
+          },
+          "high": {
+            "median": -1100706928,
+            "lower": -2242455395,
+            "upper": 270411364
+          }
+        },
+        "cumulativeExcessNewDiagnoses": {
+          "median": 5501.4,
+          "lower": 520.8,
+          "upper": 11271.2
+        },
+        "cumulativePersonYearsOnArt": {
+          "median": 21098.9,
+          "lower": 1926.9,
+          "upper": 44153.7
+        },
+        "negativeExcessNewShare": 0,
+        "cumulativeNetCostRatioVsAdap": {
+          "low": {
+            "median": -0.309,
+            "lower": -0.937,
+            "upper": 0.444
+          },
+          "median": {
+            "median": 0.145,
+            "lower": -0.895,
+            "upper": 1.394
+          },
+          "high": {
+            "median": 0.596,
+            "lower": -0.854,
+            "upper": 2.337
+          }
+        },
+        "cumulativeNetCostRatioVsTotalRwhap": {
+          "low": {
+            "median": -0.769,
+            "lower": -0.979,
+            "upper": -0.518
+          },
+          "median": {
+            "median": -0.618,
+            "lower": -0.965,
+            "upper": -0.2
+          },
+          "high": {
+            "median": -0.467,
+            "lower": -0.951,
+            "upper": 0.115
+          }
+        },
+        "rankByNetCostVsAdap": 21,
+        "rankByNetCostRatioVsAdap": 30
+      }
+    },
+    {
+      "state": "OH",
+      "finalYear": {
+        "year": 2035,
+        "cumulativeCareCost": {
+          "low": {
+            "median": 211321257,
+            "lower": 18547587,
+            "upper": 457852064
+          },
+          "median": {
+            "median": 350297928,
+            "lower": 30745532,
+            "upper": 758973374
+          },
+          "high": {
+            "median": 488316140,
+            "lower": 42859354,
+            "upper": 1058017985
+          }
+        },
+        "cumulativeAdapSpendingAvoided": 152408771,
+        "cumulativeTotalRwhapSpendingAvoided": 356842135,
+        "cumulativeNetCostVsAdap": {
+          "low": {
+            "median": 58912486,
+            "lower": -133861185,
+            "upper": 305443293
+          },
+          "median": {
+            "median": 197889157,
+            "lower": -121663239,
+            "upper": 606564602
+          },
+          "high": {
+            "median": 335907368,
+            "lower": -109549418,
+            "upper": 905609213
+          }
+        },
+        "cumulativeNetCostVsTotalRwhap": {
+          "low": {
+            "median": -145520878,
+            "lower": -338294548,
+            "upper": 101009929
+          },
+          "median": {
+            "median": -6544206,
+            "lower": -326096603,
+            "upper": 402131239
+          },
+          "high": {
+            "median": 131474005,
+            "lower": -313982781,
+            "upper": 701175850
+          }
+        },
+        "cumulativeExcessNewDiagnoses": {
+          "median": 2056.1,
+          "lower": 186,
+          "upper": 4324.6
+        },
+        "cumulativePersonYearsOnArt": {
+          "median": 8208.6,
+          "lower": 719.9,
+          "upper": 17824.8
+        },
+        "negativeExcessNewShare": 0,
+        "cumulativeNetCostRatioVsAdap": {
+          "low": {
+            "median": 0.387,
+            "lower": -0.878,
+            "upper": 2.004
+          },
+          "median": {
+            "median": 1.298,
+            "lower": -0.798,
+            "upper": 3.98
+          },
+          "high": {
+            "median": 2.204,
+            "lower": -0.719,
+            "upper": 5.942
+          }
+        },
+        "cumulativeNetCostRatioVsTotalRwhap": {
+          "low": {
+            "median": -0.408,
+            "lower": -0.948,
+            "upper": 0.283
+          },
+          "median": {
+            "median": -0.018,
+            "lower": -0.914,
+            "upper": 1.127
+          },
+          "high": {
+            "median": 0.368,
+            "lower": -0.88,
+            "upper": 1.965
+          }
+        },
+        "rankByNetCostVsAdap": 14,
+        "rankByNetCostRatioVsAdap": 22
+      }
+    },
+    {
+      "state": "OK",
+      "finalYear": {
+        "year": 2035,
+        "cumulativeCareCost": {
+          "low": {
+            "median": 77957938,
+            "lower": 6424243,
+            "upper": 168510641
+          },
+          "median": {
+            "median": 129224736,
+            "lower": 10648896,
+            "upper": 279328502
+          },
+          "high": {
+            "median": 180137971,
+            "lower": 14844413,
+            "upper": 389382102
+          }
+        },
+        "cumulativeAdapSpendingAvoided": 44889755,
+        "cumulativeTotalRwhapSpendingAvoided": 100146031,
+        "cumulativeNetCostVsAdap": {
+          "low": {
+            "median": 33068183,
+            "lower": -38465512,
+            "upper": 123620887
+          },
+          "median": {
+            "median": 84334982,
+            "lower": -34240859,
+            "upper": 234438748
+          },
+          "high": {
+            "median": 135248217,
+            "lower": -30045342,
+            "upper": 344492347
+          }
+        },
+        "cumulativeNetCostVsTotalRwhap": {
+          "low": {
+            "median": -22188093,
+            "lower": -93721788,
+            "upper": 68364611
+          },
+          "median": {
+            "median": 29078706,
+            "lower": -89497135,
+            "upper": 179182471
+          },
+          "high": {
+            "median": 79991940,
+            "lower": -85301618,
+            "upper": 289236071
+          }
+        },
+        "cumulativeExcessNewDiagnoses": {
+          "median": 899.7,
+          "lower": 75,
+          "upper": 1879.1
+        },
+        "cumulativePersonYearsOnArt": {
+          "median": 3013.5,
+          "lower": 248,
+          "upper": 6520.2
+        },
+        "negativeExcessNewShare": 0,
+        "cumulativeNetCostRatioVsAdap": {
+          "low": {
+            "median": 0.737,
+            "lower": -0.857,
+            "upper": 2.754
+          },
+          "median": {
+            "median": 1.879,
+            "lower": -0.763,
+            "upper": 5.223
+          },
+          "high": {
+            "median": 3.013,
+            "lower": -0.669,
+            "upper": 7.674
+          }
+        },
+        "cumulativeNetCostRatioVsTotalRwhap": {
+          "low": {
+            "median": -0.222,
+            "lower": -0.936,
+            "upper": 0.683
+          },
+          "median": {
+            "median": 0.29,
+            "lower": -0.894,
+            "upper": 1.789
+          },
+          "high": {
+            "median": 0.799,
+            "lower": -0.852,
+            "upper": 2.888
+          }
+        },
+        "rankByNetCostVsAdap": 27,
+        "rankByNetCostRatioVsAdap": 18
+      }
+    },
+    {
+      "state": "PA",
+      "finalYear": {
+        "year": 2035,
+        "cumulativeCareCost": {
+          "low": {
+            "median": 163223903,
+            "lower": 13655182,
+            "upper": 355069050
+          },
+          "median": {
+            "median": 270572249,
+            "lower": 22635978,
+            "upper": 588583242
+          },
+          "high": {
+            "median": 377180261,
+            "lower": 31554837,
+            "upper": 820486992
+          }
+        },
+        "cumulativeAdapSpendingAvoided": 225738355,
+        "cumulativeTotalRwhapSpendingAvoided": 699966457,
+        "cumulativeNetCostVsAdap": {
+          "low": {
+            "median": -62514452,
+            "lower": -212083173,
+            "upper": 129330694
+          },
+          "median": {
+            "median": 44833894,
+            "lower": -203102378,
+            "upper": 362844887
+          },
+          "high": {
+            "median": 151441906,
+            "lower": -194183519,
+            "upper": 594748637
+          }
+        },
+        "cumulativeNetCostVsTotalRwhap": {
+          "low": {
+            "median": -536742554,
+            "lower": -686311275,
+            "upper": -344897407
+          },
+          "median": {
+            "median": -429394208,
+            "lower": -677330479,
+            "upper": -111383214
+          },
+          "high": {
+            "median": -322786195,
+            "lower": -668411620,
+            "upper": 120520535
+          }
+        },
+        "cumulativeExcessNewDiagnoses": {
+          "median": 1623.6,
+          "lower": 135.3,
+          "upper": 3505.8
+        },
+        "cumulativePersonYearsOnArt": {
+          "median": 6343,
+          "lower": 531.7,
+          "upper": 13783.9
+        },
+        "negativeExcessNewShare": 0,
+        "cumulativeNetCostRatioVsAdap": {
+          "low": {
+            "median": -0.277,
+            "lower": -0.94,
+            "upper": 0.573
+          },
+          "median": {
+            "median": 0.199,
+            "lower": -0.9,
+            "upper": 1.607
+          },
+          "high": {
+            "median": 0.671,
+            "lower": -0.86,
+            "upper": 2.635
+          }
+        },
+        "cumulativeNetCostRatioVsTotalRwhap": {
+          "low": {
+            "median": -0.767,
+            "lower": -0.98,
+            "upper": -0.493
+          },
+          "median": {
+            "median": -0.613,
+            "lower": -0.968,
+            "upper": -0.159
+          },
+          "high": {
+            "median": -0.461,
+            "lower": -0.955,
+            "upper": 0.172
+          }
+        },
+        "rankByNetCostVsAdap": 30,
+        "rankByNetCostRatioVsAdap": 29
+      }
+    },
+    {
+      "state": "SC",
+      "finalYear": {
+        "year": 2035,
+        "cumulativeCareCost": {
+          "low": {
+            "median": 342216260,
+            "lower": 45670460,
+            "upper": 564929519
+          },
+          "median": {
+            "median": 567284056,
+            "lower": 75706846,
+            "upper": 936471459
+          },
+          "high": {
+            "median": 790799661,
+            "lower": 105536084,
+            "upper": 1305451040
+          }
+        },
+        "cumulativeAdapSpendingAvoided": 119156637,
+        "cumulativeTotalRwhapSpendingAvoided": 285919541,
+        "cumulativeNetCostVsAdap": {
+          "low": {
+            "median": 223059623,
+            "lower": -73486177,
+            "upper": 445772882
+          },
+          "median": {
+            "median": 448127419,
+            "lower": -43449791,
+            "upper": 817314822
+          },
+          "high": {
+            "median": 671643024,
+            "lower": -13620553,
+            "upper": 1186294403
+          }
+        },
+        "cumulativeNetCostVsTotalRwhap": {
+          "low": {
+            "median": 56296719,
+            "lower": -240249080,
+            "upper": 279009978
+          },
+          "median": {
+            "median": 281364515,
+            "lower": -210212695,
+            "upper": 650551918
+          },
+          "high": {
+            "median": 504880120,
+            "lower": -180383457,
+            "upper": 1019531500
+          }
+        },
+        "cumulativeExcessNewDiagnoses": {
+          "median": 3213.2,
+          "lower": 427.3,
+          "upper": 5274.8
+        },
+        "cumulativePersonYearsOnArt": {
+          "median": 13314.2,
+          "lower": 1776.7,
+          "upper": 21982.3
+        },
+        "negativeExcessNewShare": 0,
+        "cumulativeNetCostRatioVsAdap": {
+          "low": {
+            "median": 1.872,
+            "lower": -0.617,
+            "upper": 3.741
+          },
+          "median": {
+            "median": 3.761,
+            "lower": -0.365,
+            "upper": 6.859
+          },
+          "high": {
+            "median": 5.637,
+            "lower": -0.114,
+            "upper": 9.956
+          }
+        },
+        "cumulativeNetCostRatioVsTotalRwhap": {
+          "low": {
+            "median": 0.197,
+            "lower": -0.84,
+            "upper": 0.976
+          },
+          "median": {
+            "median": 0.984,
+            "lower": -0.735,
+            "upper": 2.275
+          },
+          "high": {
+            "median": 1.766,
+            "lower": -0.631,
+            "upper": 3.566
+          }
+        },
+        "rankByNetCostVsAdap": 9,
+        "rankByNetCostRatioVsAdap": 5
+      }
+    },
+    {
+      "state": "TN",
+      "finalYear": {
+        "year": 2035,
+        "cumulativeCareCost": {
+          "low": {
+            "median": 702198718,
+            "lower": 99108440,
+            "upper": 1046726858
+          },
+          "median": {
+            "median": 1164013708,
+            "lower": 164288194,
+            "upper": 1735124741
+          },
+          "high": {
+            "median": 1622643767,
+            "lower": 229018433,
+            "upper": 2418775053
+          }
+        },
+        "cumulativeAdapSpendingAvoided": 124440743,
+        "cumulativeTotalRwhapSpendingAvoided": 383626271,
+        "cumulativeNetCostVsAdap": {
+          "low": {
+            "median": 577757975,
+            "lower": -25332304,
+            "upper": 922286114
+          },
+          "median": {
+            "median": 1039572965,
+            "lower": 39847451,
+            "upper": 1610683998
+          },
+          "high": {
+            "median": 1498203024,
+            "lower": 104577690,
+            "upper": 2294334310
+          }
+        },
+        "cumulativeNetCostVsTotalRwhap": {
+          "low": {
+            "median": 318572447,
+            "lower": -284517831,
+            "upper": 663100587
+          },
+          "median": {
+            "median": 780387437,
+            "lower": -219338077,
+            "upper": 1351498470
+          },
+          "high": {
+            "median": 1239017496,
+            "lower": -154607838,
+            "upper": 2035148782
+          }
+        },
+        "cumulativeExcessNewDiagnoses": {
+          "median": 6972.6,
+          "lower": 1002.1,
+          "upper": 10283.8
+        },
+        "cumulativePersonYearsOnArt": {
+          "median": 27289,
+          "lower": 3848.5,
+          "upper": 40675.8
+        },
+        "negativeExcessNewShare": 0,
+        "cumulativeNetCostRatioVsAdap": {
+          "low": {
+            "median": 4.643,
+            "lower": -0.204,
+            "upper": 7.411
+          },
+          "median": {
+            "median": 8.354,
+            "lower": 0.32,
+            "upper": 12.943
+          },
+          "high": {
+            "median": 12.039,
+            "lower": 0.84,
+            "upper": 18.437
+          }
+        },
+        "cumulativeNetCostRatioVsTotalRwhap": {
+          "low": {
+            "median": 0.83,
+            "lower": -0.742,
+            "upper": 1.729
+          },
+          "median": {
+            "median": 2.034,
+            "lower": -0.572,
+            "upper": 3.523
+          },
+          "high": {
+            "median": 3.23,
+            "lower": -0.403,
+            "upper": 5.305
+          }
+        },
+        "rankByNetCostVsAdap": 3,
+        "rankByNetCostRatioVsAdap": 1
+      }
+    },
+    {
+      "state": "TX",
+      "finalYear": {
+        "year": 2035,
+        "cumulativeCareCost": {
+          "low": {
+            "median": 1328567390,
+            "lower": 198947394,
+            "upper": 2112118330
+          },
+          "median": {
+            "median": 2202336540,
+            "lower": 329794881,
+            "upper": 3501212564
+          },
+          "high": {
+            "median": 3070079696,
+            "lower": 459739972,
+            "upper": 4880726838
+          }
+        },
+        "cumulativeAdapSpendingAvoided": 662954266,
+        "cumulativeTotalRwhapSpendingAvoided": 1861698610,
+        "cumulativeNetCostVsAdap": {
+          "low": {
+            "median": 665613124,
+            "lower": -464006872,
+            "upper": 1449164064
+          },
+          "median": {
+            "median": 1539382275,
+            "lower": -333159385,
+            "upper": 2838258298
+          },
+          "high": {
+            "median": 2407125431,
+            "lower": -203214294,
+            "upper": 4217772572
+          }
+        },
+        "cumulativeNetCostVsTotalRwhap": {
+          "low": {
+            "median": -533131220,
+            "lower": -1662751217,
+            "upper": 250419720
+          },
+          "median": {
+            "median": 340637930,
+            "lower": -1531903729,
+            "upper": 1639513954
+          },
+          "high": {
+            "median": 1208381086,
+            "lower": -1401958639,
+            "upper": 3019028228
+          }
+        },
+        "cumulativeExcessNewDiagnoses": {
+          "median": 12437.5,
+          "lower": 1859,
+          "upper": 20055
+        },
+        "cumulativePersonYearsOnArt": {
+          "median": 51698,
+          "lower": 7760.2,
+          "upper": 82184.7
+        },
+        "negativeExcessNewShare": 0,
+        "cumulativeNetCostRatioVsAdap": {
+          "low": {
+            "median": 1.004,
+            "lower": -0.7,
+            "upper": 2.186
+          },
+          "median": {
+            "median": 2.322,
+            "lower": -0.503,
+            "upper": 4.281
+          },
+          "high": {
+            "median": 3.631,
+            "lower": -0.307,
+            "upper": 6.362
+          }
+        },
+        "cumulativeNetCostRatioVsTotalRwhap": {
+          "low": {
+            "median": -0.286,
+            "lower": -0.893,
+            "upper": 0.135
+          },
+          "median": {
+            "median": 0.183,
+            "lower": -0.823,
+            "upper": 0.881
+          },
+          "high": {
+            "median": 0.649,
+            "lower": -0.753,
+            "upper": 1.622
+          }
+        },
+        "rankByNetCostVsAdap": 2,
+        "rankByNetCostRatioVsAdap": 13
+      }
+    },
+    {
+      "state": "VA",
+      "finalYear": {
+        "year": 2035,
+        "cumulativeCareCost": {
+          "low": {
+            "median": 272259146,
+            "lower": 23858879,
+            "upper": 580573131
+          },
+          "median": {
+            "median": 451320685,
+            "lower": 39550716,
+            "upper": 962406391
+          },
+          "high": {
+            "median": 629147316,
+            "lower": 55134333,
+            "upper": 1341606319
+          }
+        },
+        "cumulativeAdapSpendingAvoided": 160026694,
+        "cumulativeTotalRwhapSpendingAvoided": 354542600,
+        "cumulativeNetCostVsAdap": {
+          "low": {
+            "median": 112232452,
+            "lower": -136167815,
+            "upper": 420546437
+          },
+          "median": {
+            "median": 291293991,
+            "lower": -120475978,
+            "upper": 802379697
+          },
+          "high": {
+            "median": 469120622,
+            "lower": -104892361,
+            "upper": 1181579625
+          }
+        },
+        "cumulativeNetCostVsTotalRwhap": {
+          "low": {
+            "median": -82283453,
+            "lower": -330683721,
+            "upper": 226030531
+          },
+          "median": {
+            "median": 96778085,
+            "lower": -314991884,
+            "upper": 607863792
+          },
+          "high": {
+            "median": 274604717,
+            "lower": -299408267,
+            "upper": 987063720
+          }
+        },
+        "cumulativeExcessNewDiagnoses": {
+          "median": 2498.9,
+          "lower": 215.4,
+          "upper": 5424.4
+        },
+        "cumulativePersonYearsOnArt": {
+          "median": 10606.2,
+          "lower": 930.1,
+          "upper": 22604.9
+        },
+        "negativeExcessNewShare": 0,
+        "cumulativeNetCostRatioVsAdap": {
+          "low": {
+            "median": 0.701,
+            "lower": -0.851,
+            "upper": 2.628
+          },
+          "median": {
+            "median": 1.82,
+            "lower": -0.753,
+            "upper": 5.014
+          },
+          "high": {
+            "median": 2.932,
+            "lower": -0.655,
+            "upper": 7.384
+          }
+        },
+        "cumulativeNetCostRatioVsTotalRwhap": {
+          "low": {
+            "median": -0.232,
+            "lower": -0.933,
+            "upper": 0.638
+          },
+          "median": {
+            "median": 0.273,
+            "lower": -0.888,
+            "upper": 1.715
+          },
+          "high": {
+            "median": 0.775,
+            "lower": -0.844,
+            "upper": 2.784
+          }
+        },
+        "rankByNetCostVsAdap": 12,
+        "rankByNetCostRatioVsAdap": 19
+      }
+    },
+    {
+      "state": "WA",
+      "finalYear": {
+        "year": 2035,
+        "cumulativeCareCost": {
+          "low": {
+            "median": 168911639,
+            "lower": 15215614,
+            "upper": 348965263
+          },
+          "median": {
+            "median": 279994807,
+            "lower": 25221759,
+            "upper": 578456668
+          },
+          "high": {
+            "median": 390311885,
+            "lower": 35158897,
+            "upper": 806365374
+          }
+        },
+        "cumulativeAdapSpendingAvoided": 88565429,
+        "cumulativeTotalRwhapSpendingAvoided": 295150037,
+        "cumulativeNetCostVsAdap": {
+          "low": {
+            "median": 80346210,
+            "lower": -73349815,
+            "upper": 260399834
+          },
+          "median": {
+            "median": 191429378,
+            "lower": -63343670,
+            "upper": 489891239
+          },
+          "high": {
+            "median": 301746456,
+            "lower": -53406532,
+            "upper": 717799944
+          }
+        },
+        "cumulativeNetCostVsTotalRwhap": {
+          "low": {
+            "median": -126238398,
+            "lower": -279934423,
+            "upper": 53815226
+          },
+          "median": {
+            "median": -15155229,
+            "lower": -269928277,
+            "upper": 283306631
+          },
+          "high": {
+            "median": 95161848,
+            "lower": -259991140,
+            "upper": 511215337
+          }
+        },
+        "cumulativeExcessNewDiagnoses": {
+          "median": 1746.8,
+          "lower": 157.6,
+          "upper": 3590.1
+        },
+        "cumulativePersonYearsOnArt": {
+          "median": 6542,
+          "lower": 588.2,
+          "upper": 13507.3
+        },
+        "negativeExcessNewShare": 0,
+        "cumulativeNetCostRatioVsAdap": {
+          "low": {
+            "median": 0.907,
+            "lower": -0.828,
+            "upper": 2.94
+          },
+          "median": {
+            "median": 2.161,
+            "lower": -0.715,
+            "upper": 5.531
+          },
+          "high": {
+            "median": 3.407,
+            "lower": -0.603,
+            "upper": 8.105
+          }
+        },
+        "cumulativeNetCostRatioVsTotalRwhap": {
+          "low": {
+            "median": -0.428,
+            "lower": -0.948,
+            "upper": 0.182
+          },
+          "median": {
+            "median": -0.051,
+            "lower": -0.915,
+            "upper": 0.96
+          },
+          "high": {
+            "median": 0.322,
+            "lower": -0.881,
+            "upper": 1.732
+          }
+        },
+        "rankByNetCostVsAdap": 15,
+        "rankByNetCostRatioVsAdap": 15
+      }
+    },
+    {
+      "state": "WI",
+      "finalYear": {
+        "year": 2035,
+        "cumulativeCareCost": {
+          "low": {
+            "median": 133280159,
+            "lower": 23201262,
+            "upper": 206851392
+          },
+          "median": {
+            "median": 220934343,
+            "lower": 38459228,
+            "upper": 342882243
+          },
+          "high": {
+            "median": 307984016,
+            "lower": 53611966,
+            "upper": 477974951
+          }
+        },
+        "cumulativeAdapSpendingAvoided": 42090433,
+        "cumulativeTotalRwhapSpendingAvoided": 172386273,
+        "cumulativeNetCostVsAdap": {
+          "low": {
+            "median": 91189726,
+            "lower": -18889171,
+            "upper": 164760960
+          },
+          "median": {
+            "median": 178843911,
+            "lower": -3631205,
+            "upper": 300791811
+          },
+          "high": {
+            "median": 265893583,
+            "lower": 11521534,
+            "upper": 435884518
+          }
+        },
+        "cumulativeNetCostVsTotalRwhap": {
+          "low": {
+            "median": -39106114,
+            "lower": -149185011,
+            "upper": 34465119
+          },
+          "median": {
+            "median": 48548070,
+            "lower": -133927045,
+            "upper": 170495970
+          },
+          "high": {
+            "median": 135597743,
+            "lower": -118774307,
+            "upper": 305588678
+          }
+        },
+        "cumulativeExcessNewDiagnoses": {
+          "median": 1317.6,
+          "lower": 233.2,
+          "upper": 2145
+        },
+        "cumulativePersonYearsOnArt": {
+          "median": 5170.3,
+          "lower": 898.2,
+          "upper": 7998.9
+        },
+        "negativeExcessNewShare": 0,
+        "cumulativeNetCostRatioVsAdap": {
+          "low": {
+            "median": 2.167,
+            "lower": -0.449,
+            "upper": 3.914
+          },
+          "median": {
+            "median": 4.249,
+            "lower": -0.086,
+            "upper": 7.146
+          },
+          "high": {
+            "median": 6.317,
+            "lower": 0.274,
+            "upper": 10.356
+          }
+        },
+        "cumulativeNetCostRatioVsTotalRwhap": {
+          "low": {
+            "median": -0.227,
+            "lower": -0.865,
+            "upper": 0.2
+          },
+          "median": {
+            "median": 0.282,
+            "lower": -0.777,
+            "upper": 0.989
+          },
+          "high": {
+            "median": 0.787,
+            "lower": -0.689,
+            "upper": 1.773
+          }
+        },
+        "rankByNetCostVsAdap": 17,
+        "rankByNetCostRatioVsAdap": 4
+      }
+    }
+  ],
+  "sensitivity": {
+    "costScenarios": ["low", "median", "high"],
+    "primaryScenario": "median"
+  }
+}
