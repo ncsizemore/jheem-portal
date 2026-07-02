@@ -27,11 +27,16 @@ export interface RankedStatePoint {
   state: string;
   stateName: string;
   careCost: number;
+  careLower: number;
+  careUpper: number;
   adapBenchmark: number;
   totalRwhapBenchmark: number;
   netCost: number;
+  netLower: number;
+  netUpper: number;
   netRatio: number;
   excessDiagnoses: number;
+  artPersonYears: number;
 }
 
 export interface ScenarioComparisonPoint {
@@ -44,6 +49,33 @@ export interface ScenarioComparisonPoint {
   netLower: number;
   netUpper: number;
   ratioMedian: number;
+}
+
+export type MapMetric = 'netCost' | 'netRatio' | 'careCost' | 'excessDiagnoses';
+
+export interface MapMetricConfig {
+  id: MapMetric;
+  label: string;
+  description: string;
+  format: (value: number) => string;
+}
+
+export interface CostBridge {
+  adapBenchmark: number;
+  careMedian: number;
+  careLower: number;
+  careUpper: number;
+  netMedian: number;
+  netLower: number;
+  netUpper: number;
+  maxValue: number;
+}
+
+export interface MechanismStep {
+  id: string;
+  label: string;
+  value: string;
+  detail: string;
 }
 
 export const SCENARIO_LABELS: Record<CostScenarioId, string> = {
@@ -59,6 +91,33 @@ export const SCENARIO_SHORT_LABELS: Record<CostScenarioId, string> = {
 };
 
 export const SCENARIO_ORDER: CostScenarioId[] = ['low', 'median', 'high'];
+
+export const MAP_METRICS: MapMetricConfig[] = [
+  {
+    id: 'netCost',
+    label: 'Net cost',
+    description: 'Care cost minus ADAP benchmark',
+    format: formatCompactDollars,
+  },
+  {
+    id: 'netRatio',
+    label: 'Net ratio',
+    description: 'Net cost divided by ADAP benchmark',
+    format: formatRatio,
+  },
+  {
+    id: 'careCost',
+    label: 'Care cost',
+    description: 'Downstream HIV care cost',
+    format: formatCompactDollars,
+  },
+  {
+    id: 'excessDiagnoses',
+    label: 'Excess diagnoses',
+    description: 'Cumulative excess diagnoses',
+    format: formatNumber,
+  },
+];
 
 export function stateName(code: string): string {
   return STATE_CODE_TO_NAME[code] ?? code;
@@ -148,15 +207,22 @@ export function buildRankedStates(
   return states
     .map((item) => {
       const final = item.finalYear;
+      const care = scenarioMetric(final.cumulativeCareCost, scenario);
+      const net = scenarioMetric(final.cumulativeNetCostVsAdap, scenario);
       return {
         state: item.state,
         stateName: stateName(item.state),
-        careCost: scenarioMetric(final.cumulativeCareCost, scenario).median,
+        careCost: care.median,
+        careLower: care.lower,
+        careUpper: care.upper,
         adapBenchmark: final.cumulativeAdapSpendingAvoided,
         totalRwhapBenchmark: final.cumulativeTotalRwhapSpendingAvoided,
-        netCost: scenarioMetric(final.cumulativeNetCostVsAdap, scenario).median,
+        netCost: net.median,
+        netLower: net.lower,
+        netUpper: net.upper,
         netRatio: scenarioMetric(final.cumulativeNetCostRatioVsAdap, scenario).median,
         excessDiagnoses: final.cumulativeExcessNewDiagnoses.median,
+        artPersonYears: final.cumulativePersonYearsOnArt.median,
       };
     })
     .sort((a, b) => b.netCost - a.netCost);
@@ -190,4 +256,78 @@ export function buildScenarioComparison(final: FinalYearSummary): ScenarioCompar
       ratioMedian: ratio.median,
     };
   });
+}
+
+export function getMapMetricConfig(metric: MapMetric): MapMetricConfig {
+  return MAP_METRICS.find((item) => item.id === metric) ?? MAP_METRICS[0];
+}
+
+export function getStateMetricValue(state: RankedStatePoint, metric: MapMetric): number {
+  return state[metric];
+}
+
+export function buildStateLookup(states: RankedStatePoint[]): Record<string, RankedStatePoint> {
+  return Object.fromEntries(states.map((item) => [item.state, item]));
+}
+
+export function buildMetricDomain(states: RankedStatePoint[], metric: MapMetric): { min: number; max: number } {
+  const values = states.map((state) => getStateMetricValue(state, metric));
+  return {
+    min: Math.min(...values),
+    max: Math.max(...values),
+  };
+}
+
+export function buildCostBridge(final: FinalYearSummary, scenario: CostScenarioId): CostBridge {
+  const care = scenarioMetric(final.cumulativeCareCost, scenario);
+  const net = scenarioMetric(final.cumulativeNetCostVsAdap, scenario);
+
+  return {
+    adapBenchmark: final.cumulativeAdapSpendingAvoided,
+    careMedian: care.median,
+    careLower: care.lower,
+    careUpper: care.upper,
+    netMedian: net.median,
+    netLower: net.lower,
+    netUpper: net.upper,
+    maxValue: Math.max(care.upper, final.cumulativeAdapSpendingAvoided, Math.abs(net.upper), Math.abs(net.lower)),
+  };
+}
+
+export function buildMechanismSteps(final: FinalYearSummary, scenario: CostScenarioId): MechanismStep[] {
+  const care = scenarioMetric(final.cumulativeCareCost, scenario);
+  const net = scenarioMetric(final.cumulativeNetCostVsAdap, scenario);
+
+  return [
+    {
+      id: 'diagnoses',
+      label: 'Excess diagnoses',
+      value: formatNumber(final.cumulativeExcessNewDiagnoses.median),
+      detail: 'Model-estimated additional diagnoses over the costing horizon.',
+    },
+    {
+      id: 'person-years',
+      label: 'ART person-years',
+      value: formatNumber(final.cumulativePersonYearsOnArt.median),
+      detail: 'Cumulative treatment person-years generated by immediate and delayed care engagement.',
+    },
+    {
+      id: 'care-cost',
+      label: 'Care cost',
+      value: formatBillions(care.median),
+      detail: `${formatBillions(care.lower)} to ${formatBillions(care.upper)} interval.`,
+    },
+    {
+      id: 'funding',
+      label: 'ADAP benchmark',
+      value: formatBillions(final.cumulativeAdapSpendingAvoided),
+      detail: 'Deterministic funding comparator from the state funding CSV.',
+    },
+    {
+      id: 'net',
+      label: 'Net gap',
+      value: formatBillions(net.median),
+      detail: 'Downstream care cost minus deterministic ADAP benchmark.',
+    },
+  ];
 }
