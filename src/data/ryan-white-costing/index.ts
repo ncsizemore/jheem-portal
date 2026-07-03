@@ -18,10 +18,13 @@ export type {
   AnnualCostPoint,
   CostScenarioId,
   FinalYearSummary,
+  QuantileCurve,
   QuantileValue,
   RyanWhiteCostingMetadata,
   RyanWhiteCostingSeries,
   RyanWhiteCostingSummary,
+  ScenarioQuantileCurves,
+  ScenarioShares,
   ScenarioValues,
   StateCostingSummary,
 } from './types';

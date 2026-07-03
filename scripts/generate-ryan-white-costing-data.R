@@ -60,7 +60,11 @@ if (!file.exists(funding_csv_path)) {
 }
 
 data_env <- new.env(parent = emptyenv())
+cat("Loading RData object...\n")
+flush.console()
 load(rdata_path, envir = data_env)
+cat("Loaded RData object.\n")
+flush.console()
 
 if (!exists("total.results", envir = data_env, inherits = FALSE)) {
   stop("RData must contain total.results")
@@ -235,11 +239,50 @@ q_value <- function(values, digits = 0) {
   )
 }
 
+q_curve <- function(values, digits = 0) {
+  values <- values[is.finite(values)]
+  labels <- c("p025", "p05", "p10", "p25", "p50", "p75", "p90", "p95", "p975")
+  probs <- c(0.025, 0.05, 0.10, 0.25, 0.50, 0.75, 0.90, 0.95, 0.975)
+
+  if (length(values) == 0) {
+    return(as.list(setNames(rep(NA_real_, length(labels)), labels)))
+  }
+
+  as.list(setNames(
+    round(as.numeric(stats::quantile(values, probs, names = FALSE)), digits),
+    labels
+  ))
+}
+
 scenario_values <- function(values_by_scenario, digits = 0) {
   list(
     low = q_value(values_by_scenario$low, digits = digits),
     median = q_value(values_by_scenario$median, digits = digits),
     high = q_value(values_by_scenario$high, digits = digits)
+  )
+}
+
+scenario_quantile_curves <- function(values_by_scenario, digits = 0) {
+  list(
+    low = q_curve(values_by_scenario$low, digits = digits),
+    median = q_curve(values_by_scenario$median, digits = digits),
+    high = q_curve(values_by_scenario$high, digits = digits)
+  )
+}
+
+scenario_positive_shares <- function(values_by_scenario, digits = 6) {
+  compute_share <- function(values) {
+    values <- values[is.finite(values)]
+    if (length(values) == 0) {
+      return(NA_real_)
+    }
+    round(mean(values > 0), digits)
+  }
+
+  list(
+    low = compute_share(values_by_scenario$low),
+    median = compute_share(values_by_scenario$median),
+    high = compute_share(values_by_scenario$high)
   )
 }
 
@@ -325,6 +368,9 @@ compute_location <- function(location) {
       )
       point$cumulativeNetCostRatioVsAdap <- scenario_values(ratio_vs_adap, digits = 3)
       point$cumulativeNetCostRatioVsTotalRwhap <- scenario_values(ratio_vs_total_rwhap, digits = 3)
+      point$cumulativeNetCostVsAdapQuantiles <- scenario_quantile_curves(net_vs_adap, digits = 0)
+      point$cumulativeCareCostQuantiles <- scenario_quantile_curves(care_values, digits = 0)
+      point$shareNetCostPositiveVsAdap <- scenario_positive_shares(net_vs_adap, digits = 6)
     }
 
     point

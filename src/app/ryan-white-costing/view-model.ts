@@ -2,8 +2,11 @@ import type {
   AnnualCostPoint,
   CostScenarioId,
   FinalYearSummary,
+  QuantileCurve,
   RyanWhiteCostingSeries,
   RyanWhiteCostingSummary,
+  ScenarioQuantileCurves,
+  ScenarioShares,
   ScenarioValues,
   StateCostingSummary,
 } from '@/data/ryan-white-costing';
@@ -35,8 +38,14 @@ export interface RankedStatePoint {
   netLower: number;
   netUpper: number;
   netRatio: number;
+  netQuantiles: QuantileCurve;
+  careQuantiles: QuantileCurve;
+  shareNetPositive: number;
+  crossesZero: boolean;
+  boundedPositive: boolean;
   excessDiagnoses: number;
   artPersonYears: number;
+  binIndex?: number;
 }
 
 export interface ScenarioComparisonPoint {
@@ -51,7 +60,7 @@ export interface ScenarioComparisonPoint {
   ratioMedian: number;
 }
 
-export type MapMetric = 'netCost' | 'netRatio' | 'careCost' | 'excessDiagnoses';
+export type MapMetric = 'netCost' | 'careCost' | 'excessDiagnoses';
 
 export interface MapMetricConfig {
   id: MapMetric;
@@ -78,6 +87,43 @@ export interface MechanismStep {
   detail: string;
 }
 
+export interface ScenarioEvidencePoint {
+  scenario: CostScenarioId;
+  label: string;
+  shortLabel: string;
+  curve: QuantileCurve;
+  careCurve: QuantileCurve;
+  shareNetPositive: number;
+  netMedian: number;
+  netLower: number;
+  netUpper: number;
+  careMedian: number;
+}
+
+export interface EvidenceDomain {
+  min: number;
+  max: number;
+  zero: number;
+}
+
+export interface StateUncertaintySummary {
+  total: number;
+  crossing: number;
+  boundedPositive: RankedStatePoint[];
+}
+
+export interface MapBin {
+  min: number;
+  max: number;
+  label: string;
+}
+
+export interface ReviewCard {
+  title: string;
+  items: Array<{ label: string; value: string }>;
+  note?: string;
+}
+
 export const SCENARIO_LABELS: Record<CostScenarioId, string> = {
   low: 'Low drug cost',
   median: 'Median drug cost',
@@ -95,20 +141,14 @@ export const SCENARIO_ORDER: CostScenarioId[] = ['low', 'median', 'high'];
 export const MAP_METRICS: MapMetricConfig[] = [
   {
     id: 'netCost',
-    label: 'Net cost',
-    description: 'Care cost minus ADAP benchmark',
+    label: 'Net cost vs ADAP',
+    description: 'Median magnitude ranking',
     format: formatCompactDollars,
   },
   {
-    id: 'netRatio',
-    label: 'Net ratio',
-    description: 'Net cost divided by ADAP benchmark',
-    format: formatRatio,
-  },
-  {
     id: 'careCost',
-    label: 'Care cost',
-    description: 'Downstream HIV care cost',
+    label: 'Downstream care cost',
+    description: 'Median care-cost burden',
     format: formatCompactDollars,
   },
   {
@@ -127,6 +167,14 @@ export function scenarioMetric(values: ScenarioValues, scenario: CostScenarioId)
   return values[scenario];
 }
 
+export function scenarioCurve(values: ScenarioQuantileCurves, scenario: CostScenarioId): QuantileCurve {
+  return values[scenario];
+}
+
+export function scenarioShare(values: ScenarioShares, scenario: CostScenarioId): number {
+  return values[scenario];
+}
+
 export function formatBillions(value: number): string {
   const abs = Math.abs(value);
   const sign = value < 0 ? '-' : '';
@@ -140,7 +188,7 @@ export function formatCompactDollars(value: number): string {
     style: 'currency',
     currency: 'USD',
     notation: 'compact',
-    maximumFractionDigits: 1,
+    maximumFractionDigits: Math.abs(value) >= 1_000_000_000 ? 1 : 0,
   }).format(value);
 }
 
@@ -151,7 +199,7 @@ export function formatNumber(value: number): string {
 }
 
 export function formatPercent(value: number): string {
-  return `${(value * 100).toLocaleString('en-US', { maximumFractionDigits: 2 })}%`;
+  return `${(value * 100).toLocaleString('en-US', { maximumFractionDigits: 1 })}%`;
 }
 
 export function formatRatio(value: number): string {
@@ -209,6 +257,8 @@ export function buildRankedStates(
       const final = item.finalYear;
       const care = scenarioMetric(final.cumulativeCareCost, scenario);
       const net = scenarioMetric(final.cumulativeNetCostVsAdap, scenario);
+      const netQuantiles = scenarioCurve(final.cumulativeNetCostVsAdapQuantiles, scenario);
+      const careQuantiles = scenarioCurve(final.cumulativeCareCostQuantiles, scenario);
       return {
         state: item.state,
         stateName: stateName(item.state),
@@ -221,6 +271,11 @@ export function buildRankedStates(
         netLower: net.lower,
         netUpper: net.upper,
         netRatio: scenarioMetric(final.cumulativeNetCostRatioVsAdap, scenario).median,
+        netQuantiles,
+        careQuantiles,
+        shareNetPositive: scenarioShare(final.shareNetCostPositiveVsAdap, scenario),
+        crossesZero: net.lower <= 0 && net.upper >= 0,
+        boundedPositive: net.lower > 0,
         excessDiagnoses: final.cumulativeExcessNewDiagnoses.median,
         artPersonYears: final.cumulativePersonYearsOnArt.median,
       };
@@ -258,6 +313,38 @@ export function buildScenarioComparison(final: FinalYearSummary): ScenarioCompar
   });
 }
 
+export function buildScenarioEvidence(final: FinalYearSummary): ScenarioEvidencePoint[] {
+  return SCENARIO_ORDER.map((scenario) => {
+    const net = scenarioMetric(final.cumulativeNetCostVsAdap, scenario);
+    const care = scenarioMetric(final.cumulativeCareCost, scenario);
+
+    return {
+      scenario,
+      label: SCENARIO_LABELS[scenario],
+      shortLabel: SCENARIO_SHORT_LABELS[scenario],
+      curve: scenarioCurve(final.cumulativeNetCostVsAdapQuantiles, scenario),
+      careCurve: scenarioCurve(final.cumulativeCareCostQuantiles, scenario),
+      shareNetPositive: scenarioShare(final.shareNetCostPositiveVsAdap, scenario),
+      netMedian: net.median,
+      netLower: net.lower,
+      netUpper: net.upper,
+      careMedian: care.median,
+    };
+  });
+}
+
+export function buildEvidenceDomain(points: ScenarioEvidencePoint[]): EvidenceDomain {
+  const min = Math.min(0, ...points.map((point) => point.curve.p025));
+  const max = Math.max(0, ...points.map((point) => point.curve.p975));
+  const roundTo = 1_000_000_000;
+
+  return {
+    min: Math.floor(min / roundTo) * roundTo,
+    max: Math.ceil(max / roundTo) * roundTo,
+    zero: 0,
+  };
+}
+
 export function getMapMetricConfig(metric: MapMetric): MapMetricConfig {
   return MAP_METRICS.find((item) => item.id === metric) ?? MAP_METRICS[0];
 }
@@ -275,6 +362,44 @@ export function buildMetricDomain(states: RankedStatePoint[], metric: MapMetric)
   return {
     min: Math.min(...values),
     max: Math.max(...values),
+  };
+}
+
+export function buildRankBins(states: RankedStatePoint[], metric: MapMetric, count = 5): MapBin[] {
+  const sortedValues = states
+    .map((state) => getStateMetricValue(state, metric))
+    .filter(Number.isFinite)
+    .sort((a, b) => a - b);
+
+  if (sortedValues.length === 0) return [];
+
+  return Array.from({ length: count }, (_, index) => {
+    const start = Math.floor((index * sortedValues.length) / count);
+    const end = Math.min(sortedValues.length - 1, Math.floor(((index + 1) * sortedValues.length) / count) - 1);
+    const min = sortedValues[start] ?? sortedValues[0];
+    const max = sortedValues[end] ?? sortedValues[sortedValues.length - 1];
+    return {
+      min,
+      max,
+      label: `${getMapMetricConfig(metric).format(min)}-${getMapMetricConfig(metric).format(max)}`,
+    };
+  });
+}
+
+export function getRankBinIndex(value: number, bins: MapBin[]): number {
+  const index = bins.findIndex((bin, binIndex) => {
+    const isLast = binIndex === bins.length - 1;
+    return value >= bin.min && (value <= bin.max || isLast);
+  });
+
+  return index >= 0 ? index : Math.max(0, bins.length - 1);
+}
+
+export function buildStateUncertaintySummary(states: RankedStatePoint[]): StateUncertaintySummary {
+  return {
+    total: states.length,
+    crossing: states.filter((state) => state.crossesZero).length,
+    boundedPositive: states.filter((state) => state.boundedPositive),
   };
 }
 
@@ -328,6 +453,32 @@ export function buildMechanismSteps(final: FinalYearSummary, scenario: CostScena
       label: 'Net gap',
       value: formatBillions(net.median),
       detail: 'Downstream care cost minus deterministic ADAP benchmark.',
+    },
+  ];
+}
+
+export function buildReviewCards(final: FinalYearSummary): ReviewCard[] {
+  return [
+    {
+      title: 'Current accounting frame',
+      items: [
+        { label: 'Comparator', value: 'ADAP spending avoided' },
+        { label: 'Net metric', value: 'Care cost minus ADAP' },
+      ],
+      note: 'This is not a settled payer-perspective conclusion; downstream care may be ADAP/RWHAP-eligible under alternative counterfactuals.',
+    },
+    {
+      title: 'National uncertainty',
+      items: [
+        { label: 'Median net', value: formatCompactDollars(scenarioMetric(final.cumulativeNetCostVsAdap, 'median').median) },
+        {
+          label: 'Interval',
+          value: `${formatCompactDollars(scenarioMetric(final.cumulativeNetCostVsAdap, 'median').lower)} to ${formatCompactDollars(
+            scenarioMetric(final.cumulativeNetCostVsAdap, 'median').upper
+          )}`,
+        },
+        { label: 'Draws above zero', value: formatPercent(final.shareNetCostPositiveVsAdap.median) },
+      ],
     },
   ];
 }

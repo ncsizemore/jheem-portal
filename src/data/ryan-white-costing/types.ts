@@ -8,10 +8,34 @@ export interface QuantileValue {
   upper: number;
 }
 
+export interface QuantileCurve {
+  p025: number;
+  p05: number;
+  p10: number;
+  p25: number;
+  p50: number;
+  p75: number;
+  p90: number;
+  p95: number;
+  p975: number;
+}
+
 export interface ScenarioValues {
   low: QuantileValue;
   median: QuantileValue;
   high: QuantileValue;
+}
+
+export interface ScenarioQuantileCurves {
+  low: QuantileCurve;
+  median: QuantileCurve;
+  high: QuantileCurve;
+}
+
+export interface ScenarioShares {
+  low: number;
+  median: number;
+  high: number;
 }
 
 export interface AnnualCostPoint {
@@ -29,6 +53,9 @@ export interface AnnualCostPoint {
 export interface FinalYearSummary extends AnnualCostPoint {
   cumulativeNetCostRatioVsAdap: ScenarioValues;
   cumulativeNetCostRatioVsTotalRwhap: ScenarioValues;
+  cumulativeNetCostVsAdapQuantiles: ScenarioQuantileCurves;
+  cumulativeCareCostQuantiles: ScenarioQuantileCurves;
+  shareNetCostPositiveVsAdap: ScenarioShares;
   rankByNetCostVsAdap?: number;
   rankByNetCostRatioVsAdap?: number;
 }
