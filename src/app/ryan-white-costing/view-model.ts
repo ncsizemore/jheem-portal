@@ -183,13 +183,16 @@ export function formatBillions(value: number): string {
   })}B`;
 }
 
+// Deterministic compact currency: Intl compact notation renders differently
+// across the server's Node ICU and the browser's ICU, which caused an SSR/
+// client hydration mismatch. This hand-rolled version is stable everywhere.
 export function formatCompactDollars(value: number): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    notation: 'compact',
-    maximumFractionDigits: Math.abs(value) >= 1_000_000_000 ? 1 : 0,
-  }).format(value);
+  const sign = value < 0 ? '-' : '';
+  const abs = Math.abs(value);
+  if (abs >= 1_000_000_000) return `${sign}$${(abs / 1_000_000_000).toFixed(1)}B`;
+  if (abs >= 1_000_000) return `${sign}$${Math.round(abs / 1_000_000)}M`;
+  if (abs >= 1_000) return `${sign}$${Math.round(abs / 1_000)}K`;
+  return `${sign}$${Math.round(abs)}`;
 }
 
 export function formatNumber(value: number): string {
