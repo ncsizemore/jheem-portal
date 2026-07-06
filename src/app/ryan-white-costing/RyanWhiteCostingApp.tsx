@@ -25,7 +25,6 @@ import {
 } from '@/data/ryan-white-costing';
 import {
   buildRankedStates,
-  buildReviewCards,
   buildScenarioEvidence,
   buildTrajectoryData,
   formatCompactDollars,
@@ -414,6 +413,13 @@ interface SwarmDot extends RankedStatePoint {
   r: number;
 }
 
+interface SwarmLabel {
+  x: number;
+  y: number;
+  anchor: 'start' | 'middle' | 'end';
+  box: { left: number; right: number; top: number; bottom: number };
+}
+
 function computeSwarm(states: RankedStatePoint[]): SwarmDot[] {
   const maxNet = Math.max(1, ...states.map((s) => Math.abs(s.netCost)));
   const rOf = (net: number) => 6 + Math.sqrt(Math.abs(net) / maxNet) * 16;
@@ -435,6 +441,55 @@ function computeSwarm(states: RankedStatePoint[]): SwarmDot[] {
     placed.push({ ...s, cx: x, cy: y, r });
   }
   return placed;
+}
+
+function intersects(a: SwarmLabel['box'], b: SwarmLabel['box']): boolean {
+  return a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
+}
+
+function labelBox(x: number, y: number, anchor: SwarmLabel['anchor'], text: string): SwarmLabel['box'] {
+  const width = text.length * 7.4 + 5;
+  const left = anchor === 'middle' ? x - width / 2 : anchor === 'end' ? x - width : x;
+  const right = anchor === 'middle' ? x + width / 2 : anchor === 'end' ? x : x + width;
+  return { left, right, top: y - 11, bottom: y + 3 };
+}
+
+function labelCandidate(dot: SwarmDot, placement: 'top' | 'bottom' | 'left' | 'right'): SwarmLabel {
+  const x =
+    placement === 'left'
+      ? dot.cx - dot.r - 7
+      : placement === 'right'
+      ? dot.cx + dot.r + 7
+      : Math.max(14, Math.min(SWARM.w - 14, dot.cx));
+  const y = placement === 'top' ? dot.cy - dot.r - 7 : placement === 'bottom' ? dot.cy + dot.r + 15 : dot.cy + 4;
+  const anchor = placement === 'left' ? 'end' : placement === 'right' ? 'start' : 'middle';
+  return { x, y, anchor, box: labelBox(x, y, anchor, dot.state) };
+}
+
+function computeSwarmLabels(dots: SwarmDot[], avoidBoxes: SwarmLabel['box'][]): Map<string, SwarmLabel> {
+  const labels = new Map<string, SwarmLabel>();
+  const boxes: SwarmLabel['box'][] = [...avoidBoxes];
+  const midY = (SWARM.padTop + (SWARM.h - SWARM.padBottom)) / 2;
+  const ordered = [...dots].sort((a, b) => b.r - a.r || a.cx - b.cx);
+
+  for (const dot of ordered) {
+    const placements: Array<'top' | 'bottom' | 'left' | 'right'> =
+      dot.shareNetPositive < 0.66
+        ? ['bottom', 'left', 'right', 'top']
+        : dot.cy < midY
+        ? ['top', 'bottom', 'right', 'left']
+        : ['bottom', 'top', 'right', 'left'];
+    const candidates = placements.map((placement) => labelCandidate(dot, placement));
+    const chosen =
+      candidates.find((candidate) => {
+        const inBounds = candidate.box.left >= 4 && candidate.box.right <= SWARM.w - 4 && candidate.box.top >= 8 && candidate.box.bottom <= SWARM.h - 8;
+        return inBounds && boxes.every((box) => !intersects(candidate.box, box));
+      }) ?? candidates[0];
+    labels.set(dot.state, chosen);
+    boxes.push(chosen.box);
+  }
+
+  return labels;
 }
 
 function SwarmReadout({ dot }: { dot: SwarmDot }) {
@@ -484,7 +539,11 @@ function StateSwarm({
   const tossUps = dots.filter((d) => d.shareNetPositive < 0.66);
   const bracketL = Math.min(...tossUps.map((d) => d.cx - d.r));
   const bracketR = Math.max(...tossUps.map((d) => d.cx + d.r));
-  const bracketY = Math.min(...tossUps.map((d) => d.cy - d.r)) - 14;
+  const bracketY = Math.max(26, Math.min(...tossUps.map((d) => d.cy - d.r)) - 18);
+  const bracketAvoid = tossUps.length
+    ? [{ left: bracketL - 8, right: bracketR + 8, top: bracketY - 22, bottom: bracketY + 12 }]
+    : [];
+  const labels = useMemo(() => computeSwarmLabels(dots, bracketAvoid), [dots, bracketL, bracketR, bracketY]);
   const active = hovered ?? (selected !== 'Total' ? selected : null);
   const hoverDot = hovered ? dots.find((d) => d.state === hovered) ?? null : null;
   const pinged = dots.filter((d) => d.shareNetPositive < 0.66 || d.state === selected);
@@ -560,7 +619,7 @@ function StateSwarm({
       {dots.map((d) => {
         const isSel = d.state === selected;
         const isActive = d.state === active;
-        const labelY = d.cy < (SWARM.padTop + axisY) / 2 ? d.cy - d.r - 6 : d.cy + d.r + 14;
+        const label = labels.get(d.state) ?? labelCandidate(d, 'bottom');
         return (
           <g
             key={d.state}
@@ -590,9 +649,9 @@ function StateSwarm({
               strokeWidth={isSel ? 2.5 : isActive ? 1.6 : 1}
             />
             <text
-              x={d.cx}
-              y={labelY}
-              textAnchor="middle"
+              x={label.x}
+              y={label.y}
+              textAnchor={label.anchor}
               fontSize={isSel || isActive ? 13 : 11.5}
               fontWeight={isSel || isActive ? 800 : 650}
               fill={isSel || isActive ? INK : '#475569'}
@@ -703,9 +762,10 @@ function ImpactScatter({
   const renderDot = (props: unknown) => {
     const { cx: x, cy: y, payload } = props as { cx?: number; cy?: number; payload?: RankedStatePoint };
     if (typeof x !== 'number' || typeof y !== 'number' || !payload) return <g />;
-    const r = 4 + (Math.sqrt(payload.excessDiagnoses) / Math.sqrt(maxDx)) * 10;
+    const r = 5 + (Math.sqrt(payload.excessDiagnoses) / Math.sqrt(maxDx)) * 11;
     const isSel = payload.state === selected;
     const isActive = payload.state === active;
+    const color = confColor(payload.shareNetPositive);
     return (
       <g
         className="cursor-pointer"
@@ -724,16 +784,18 @@ function ImpactScatter({
           }
         }}
       >
+        <circle cx={x} cy={y} r={isSel || isActive ? r + 7 : r + 4} fill={color} fillOpacity={isSel || isActive ? 0.18 : 0.1} />
+        {(isSel || isActive) && <circle cx={x} cy={y} r={r + 4} fill="none" stroke={isSel ? NAVY : INK} strokeOpacity={0.5} strokeWidth={1.4} />}
         <motion.circle
           cx={x}
           cy={y}
           initial={false}
           animate={{ r: isSel || isActive ? r + 2 : r }}
           transition={{ duration: reduce ? 0 : 0.45, ease: EASE }}
-          fill={confColor(payload.shareNetPositive)}
-          fillOpacity={isSel || isActive ? 1 : 0.8}
+          fill={color}
+          fillOpacity={isSel || isActive ? 1 : 0.92}
           stroke={isSel ? NAVY : isActive ? INK : '#ffffff'}
-          strokeWidth={isSel ? 2.5 : isActive ? 1.6 : 1}
+          strokeWidth={isSel ? 3 : isActive ? 2 : 1.8}
         />
         {(label.has(payload.state) || isSel || isActive) && (
           <text x={x + r + 3} y={y + 4} fontSize={11} fill="#475569" fontWeight={isSel || isActive ? 700 : 500}>
@@ -782,8 +844,9 @@ function ImpactScatter({
                 { x: 0, y: 0 },
                 { x: maxAxis, y: maxAxis },
               ]}
-              stroke="#cbd5e1"
+              stroke="#94a3b8"
               strokeDasharray="5 5"
+              strokeWidth={1.4}
             />
             <Tooltip content={<ScatterTip />} cursor={{ strokeDasharray: '3 3', stroke: '#cbd5e1' }} />
             <Scatter
@@ -796,7 +859,7 @@ function ImpactScatter({
                 if (payload?.state) onSelect(payload.state);
               }}
             >
-              <ErrorBar dataKey="careError" direction="y" stroke="#cbd5e1" width={3} />
+              <ErrorBar dataKey="careError" direction="y" stroke="#cbd5e1" strokeOpacity={0.9} width={4} />
             </Scatter>
           </ScatterChart>
         </ResponsiveContainer>
@@ -868,60 +931,129 @@ function Trajectory({
 }
 
 // -----------------------------------------------------------------------------
-// Model review
+// Methods and assumptions
 // -----------------------------------------------------------------------------
 function ModelReview() {
-  const final = ryanWhiteCostingSummary.national.finalYear;
-  const cards = buildReviewCards(final);
   const p = ryanWhiteCostingMetadata.modelParameters;
-  const questions = ryanWhiteCostingMetadata.reviewQuestions.slice(0, 6);
-
-  const costCard: ReviewCard = {
-    title: 'Cost assumptions',
-    items: [
-      { label: 'Drug tiers', value: SCENARIO_ORDER.map((s) => formatCompactDollars(p.artDrugCosts[s])).join(' / ') },
-      { label: 'Routine care', value: formatCompactDollars(p.routineCareCost) },
-      { label: 'Discount rate', value: formatPercent(p.discountRate) },
-    ],
-  };
+  const cd4Mix = Object.entries(p.cd4Weights)
+    .map(([label, value]) => `${label} ${formatPercent(value)}`)
+    .join(' / ');
+  const methodSections: ReviewCard[] = [
+    {
+      title: 'Accounting frame',
+      items: [
+        { label: 'Comparator', value: 'ADAP spending avoided' },
+        { label: 'Net metric', value: 'Care cost minus ADAP' },
+      ],
+      note: 'Interpretation remains payer-perspective dependent; downstream care may be ADAP/RWHAP-eligible under another counterfactual.',
+    },
+    {
+      title: 'Costing assumptions',
+      items: [
+        { label: 'Drug tiers', value: SCENARIO_ORDER.map((s) => formatCompactDollars(p.artDrugCosts[s])).join(' / ') },
+        { label: 'Routine care', value: formatCompactDollars(p.routineCareCost) },
+        { label: 'Discount rate', value: formatPercent(p.discountRate) },
+      ],
+    },
+    {
+      title: 'Engagement model',
+      items: [
+        { label: 'Reengagement', value: `pi ${p.reengagementPi} / lambda ${p.reengagementLambda}` },
+        { label: 'CD4 mix', value: cd4Mix },
+      ],
+      note: p.immediateStartCareFractionDescription,
+    },
+    {
+      title: 'Data scope',
+      items: [
+        { label: 'Locations', value: '30 modeled states' },
+        { label: 'Funding benchmark', value: 'Fixed state inputs' },
+        { label: 'Horizon', value: `${ryanWhiteCostingMetadata.horizon.startYear}-${ryanWhiteCostingMetadata.horizon.endYear}` },
+      ],
+      note: 'DC funding is excluded because no DC epidemiologic output is present. Intervals reflect modeled epidemiologic and care-cost uncertainty, not funding uncertainty.',
+    },
+  ];
 
   return (
-    <section className="border-y border-slate-200 bg-slate-50">
+    <section className="border-t border-slate-200 bg-slate-50">
       <div className="mx-auto w-full max-w-full px-5 py-16 sm:max-w-6xl sm:px-6">
         <Reveal>
-          <SectionHead n="03" eyebrow="Model review" title="Assumptions worth challenging">
-            Left visible on purpose: these parameters can move the conclusion.
+          <SectionHead n="04" eyebrow="Methods" title="Accounting frame and model assumptions">
+            Cost, engagement, scope, and uncertainty conventions for interpreting the figures.
           </SectionHead>
 
-          <div className="mt-10 grid gap-x-10 gap-y-8 border-t border-slate-200 pt-8 sm:grid-cols-2 lg:grid-cols-3">
-            {[...cards, costCard].map((card) => (
-              <div key={card.title}>
-                <h3 className="text-sm font-semibold text-slate-900">{card.title}</h3>
-                <dl className="mt-3 space-y-2">
-                  {card.items.map((item) => (
-                    <div key={item.label} className="flex items-baseline justify-between gap-4 border-b border-slate-200 pb-2">
-                      <dt className="text-sm text-slate-500">{item.label}</dt>
-                      <dd className="text-right font-mono text-sm font-medium tabular-nums text-slate-900">{item.value}</dd>
+          <div className="mt-10 divide-y divide-slate-200 border-y border-slate-200 bg-white">
+            {methodSections.map((section) => (
+              <div key={section.title} className="grid gap-4 px-4 py-5 sm:grid-cols-[190px_minmax(0,1fr)] sm:px-5">
+                <div>
+                  <h3 className="text-sm font-semibold text-slate-900">{section.title}</h3>
+                  {section.note && <p className="mt-2 text-xs leading-relaxed text-slate-500">{section.note}</p>}
+                </div>
+                <dl className="grid gap-3 sm:grid-cols-2">
+                  {section.items.map((item) => (
+                    <div key={item.label} className="min-w-0">
+                      <dt className="text-[0.68rem] font-semibold uppercase tracking-wide text-slate-400">{item.label}</dt>
+                      <dd className="mt-1 font-mono text-sm font-medium tabular-nums text-slate-900">{item.value}</dd>
                     </div>
                   ))}
                 </dl>
-                {card.note && <p className="mt-3 text-xs leading-relaxed text-slate-500">{card.note}</p>}
               </div>
             ))}
           </div>
-
-          <div className="mt-10">
-            <h3 className="text-sm font-semibold text-slate-900">Open questions for reviewers</h3>
-            <ol className="mt-4 grid gap-x-10 gap-y-3 sm:grid-cols-2">
-              {questions.map((q, i) => (
-                <li key={q} className="flex gap-3 text-sm leading-relaxed text-slate-600">
-                  <span className="font-mono text-slate-400">{String(i + 1).padStart(2, '0')}</span>
-                  <span>{q}</span>
-                </li>
-              ))}
-            </ol>
-          </div>
         </Reveal>
+      </div>
+    </section>
+  );
+}
+
+function QuestionsToResolve() {
+  const groups = [
+    {
+      label: 'Funding scope',
+      items: [
+        'Should DC be excluded, included as separate funding context, or modeled separately?',
+        'Does Part B include ADAP funding in this CSV, or is it Part B excluding ADAP?',
+        'Are the CSV dollar values 2025 nominal dollars, 2026 dollars, or another fiscal-year convention?',
+      ],
+    },
+    {
+      label: 'Perspective',
+      items: [
+        'Should the primary comparator be ADAP only, total RWHAP, or both?',
+        'Which payer perspective should govern the net calculation?',
+        'In the no-ADAP funding comparison, would downstream care for excess infections be ADAP/RWHAP-eligible?',
+      ],
+    },
+    {
+      label: 'Model choices',
+      items: [
+        'Should low, median, and high drug-cost assumptions be shown separately, pooled, or both?',
+        'Should negative per-simulation excess infections be preserved, floored at zero, or shown as a sensitivity?',
+      ],
+    },
+  ];
+
+  return (
+    <section className="bg-white">
+      <div className="mx-auto w-full max-w-full px-5 pb-4 sm:max-w-6xl sm:px-6">
+        <div className="rounded-lg border border-amber-200 bg-amber-50/45 p-5">
+          <h2 className="text-sm font-semibold text-slate-900">Questions to resolve</h2>
+          <div className="mt-4 grid gap-5 lg:grid-cols-3">
+            {groups.map((group) => (
+              <div key={group.label}>
+                <p className="text-[0.68rem] font-semibold uppercase tracking-wide text-amber-700/80">{group.label}</p>
+                <ul className="mt-2 space-y-2">
+                  {group.items.map((item) => (
+                    <li key={item} className="flex gap-2 text-sm leading-relaxed text-slate-700">
+                      <span className="mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-amber-500/70" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </section>
   );
@@ -1008,12 +1140,10 @@ export default function RyanWhiteCostingApp() {
         </div>
       </section>
 
-      <ModelReview />
-
       <section className="bg-white">
         <div className="mx-auto w-full max-w-full px-5 py-16 sm:max-w-6xl sm:px-6">
           <Reveal>
-            <SectionHead n="04" eyebrow="Detail" title="Trajectories and the full state table" />
+            <SectionHead n="03" eyebrow="Detail" title="Trajectories and the full state table" />
           </Reveal>
           <div className="mt-10 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
             <Reveal>
@@ -1070,11 +1200,15 @@ export default function RyanWhiteCostingApp() {
         </div>
       </section>
 
+      <ModelReview />
+
+      <QuestionsToResolve />
+
       <footer className="mx-auto w-full max-w-full px-5 py-12 sm:max-w-6xl sm:px-6">
         <p className="text-xs leading-relaxed text-slate-400">
-          30 modeled states. DC funding is excluded (no DC epidemiologic output). Funding comparators are deterministic;
-          care-cost intervals are computed after per-simulation cumulative costing. Internal review preview; figures are
-          provisional.
+          30 modeled states. DC funding is excluded because no DC epidemiologic output is present. Funding benchmarks are
+          fixed state inputs; care-cost intervals are computed after per-simulation cumulative costing. Internal review
+          preview; figures are provisional.
         </p>
       </footer>
     </div>
