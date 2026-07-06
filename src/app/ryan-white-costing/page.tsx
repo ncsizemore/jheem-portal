@@ -19,7 +19,7 @@ export const metadata: Metadata = {
 
 export default function RyanWhiteCostingPage() {
   return (
-    <div className={serif.variable}>
+    <div className={`${serif.variable} w-full min-w-0 max-w-full overflow-x-hidden`}>
       <RyanWhiteCostingApp />
     </div>
   );
