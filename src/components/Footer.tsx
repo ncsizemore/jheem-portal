@@ -1,75 +1,83 @@
-'use client';
+import Link from 'next/link';
 
-import { motion } from 'framer-motion';
+const APPLICATION_LINKS = [
+  { href: '/ryan-white', label: 'Ryan White: City-Level' },
+  { href: '/ryan-white-state-level', label: 'Ryan White: State-Level' },
+  { href: '/cdc-testing', label: 'CDC-Funded HIV Testing' },
+  { href: '/aging', label: 'HIV Age Projections' },
+];
 
 export default function Footer() {
   return (
-    <section className="py-24 bg-gradient-to-br from-slate-900 via-hopkins-blue to-hopkins-spirit-blue">
-      <div className="max-w-7xl mx-auto px-6">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-        >
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
-            <div>
-              <div className="w-12 h-px bg-gradient-to-r from-hopkins-gold to-transparent mb-8"></div>
-              <h2 className="text-3xl font-extralight text-white mb-8 leading-tight">
-                Research <span className="font-medium">Funding</span><br />
-                <span className="text-hopkins-gold text-xl font-light">& Institutional Support</span>
-              </h2>
-              
-              <p className="text-blue-100 leading-relaxed mb-8 font-light text-lg">
-                This research is supported by grants from the National Institute of Mental Health,
-                the National Institute of Allergy and Infectious Diseases, and the National Institute
-                on Minority Health and Health Disparities.
-              </p>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="flex items-center gap-4">
-                  <div className="w-2 h-2 bg-hopkins-gold rounded-full"></div>
-                  <span className="text-white font-mono text-sm">K08MH118094</span>
-                </div>
-                <div className="flex items-center gap-4">
-                  <div className="w-2 h-2 bg-hopkins-gold rounded-full"></div>
-                  <span className="text-white font-mono text-sm">K01AI138853</span>
-                </div>
-                <div className="flex items-center gap-4">
-                  <div className="w-2 h-2 bg-hopkins-gold rounded-full"></div>
-                  <span className="text-white font-mono text-sm">P30-AI094189</span>
-                </div>
-                <div className="flex items-center gap-4">
-                  <div className="w-2 h-2 bg-hopkins-gold rounded-full"></div>
-                  <span className="text-white font-mono text-sm">R01MD018539</span>
-                </div>
-              </div>
-            </div>
-            
+    <footer className="bg-hopkins-blue text-white">
+      <div className="max-w-6xl mx-auto px-6 py-14">
+        <div className="grid gap-10 md:grid-cols-3">
+          <div>
+            <p className="font-serif text-2xl leading-tight">
+              <span className="text-hopkins-gold">JHEEM</span>{' '}
+              <span className="text-white/90">Portal</span>
+            </p>
+            <p className="mt-3 max-w-xs text-sm leading-relaxed text-white/70">
+              Interactive HIV policy modeling from the Joint HIV Epidemiology and
+              Economic Model.
+            </p>
             <a
               href="https://jhu-comp-epi.vercel.app/"
               target="_blank"
               rel="noopener noreferrer"
-              className="block bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20 hover:bg-white/15 hover:border-white/30 transition-all duration-300 group"
+              className="mt-5 inline-block text-sm text-white/85 transition-colors hover:text-white"
             >
-              <div className="text-center">
-                <p className="text-xs font-medium text-hopkins-gold uppercase tracking-[0.2em] mb-3">
-                  Part of
-                </p>
-                <p className="font-serif text-3xl text-white mb-2 group-hover:text-hopkins-gold transition-colors duration-300">
-                  CIPHER <span className="text-white/80">Lab</span>
-                </p>
-                <p className="text-hopkins-gold text-xs font-medium tracking-wider uppercase mb-4">
-                  Computational &amp; Infectious Disease Public Health Epidemiology Research
-                </p>
-                <div className="h-px bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
-                <p className="text-blue-100 text-sm mt-4 font-light">
-                  Johns Hopkins Schools of Public Health and Medicine
-                </p>
-              </div>
+              Part of <span className="font-medium text-hopkins-gold">CIPHER Lab</span> &rarr;
             </a>
           </div>
-        </motion.div>
+
+          <div>
+            <h4 className="mb-3 text-xs font-semibold uppercase tracking-wider text-white/60">
+              Research Applications
+            </h4>
+            <ul className="space-y-2 text-sm">
+              {APPLICATION_LINKS.map((item) => (
+                <li key={item.href}>
+                  <Link href={item.href} className="text-white/85 hover:underline">
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="mb-3 text-xs font-semibold uppercase tracking-wider text-white/60">
+              Institution
+            </h4>
+            <p className="max-w-xs text-sm leading-relaxed text-white/85">
+              Johns Hopkins Schools of Public Health and Medicine
+            </p>
+            <div className="mt-4 flex flex-col gap-2 text-sm">
+              <a
+                href="https://www.jhu.edu"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-white/70 hover:text-white hover:underline"
+              >
+                Johns Hopkins University
+              </a>
+              <a
+                href="https://publichealth.jhu.edu"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-white/70 hover:text-white hover:underline"
+              >
+                Bloomberg School of Public Health
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-12 border-t border-white/15 pt-6 text-xs text-white/60">
+          {`© ${new Date().getFullYear()} JHEEM · Joint HIV Epidemiology and Economic Model`}
+        </div>
       </div>
-    </section>
+    </footer>
   );
 }

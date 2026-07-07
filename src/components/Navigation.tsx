@@ -38,28 +38,20 @@ export default function Navigation() {
   const isAnyModelActive = isRyanWhiteActive || isStateLevelActive || isCdcTestingActive || isHIVAgeProjectionsActive;
 
   return (
-    <header className="bg-hopkins-blue shadow-lg sticky top-0 z-50 border-b border-hopkins-blue/30">
+    <header className="bg-hopkins-blue/95 backdrop-blur sticky top-0 z-50 border-b border-white/10 shadow-[0_1px_0_rgba(255,255,255,0.06)]">
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Main Navigation */}
         <div className="flex justify-between items-center h-20">
           {/* Logo and Branding */}
-          <Link href="/" className="flex items-center group relative overflow-hidden">
-            <div className="flex-shrink-0 flex items-center">
-              <div className="flex items-center">
-                <div className="w-12 h-12 bg-gradient-to-br from-hopkins-spirit-blue to-hopkins-blue rounded-lg flex items-center justify-center group-hover:from-hopkins-gold group-hover:to-hopkins-spirit-blue transition-all duration-300 shadow-lg">
-                  <span className="text-white font-bold text-lg">J</span>
-                </div>
-              </div>
-              
-              <div className="border-l border-white/30 mx-4 h-12 hidden md:block"></div>
-              
-              <div className="hidden md:block">
-                <div className="text-white font-bold text-xl group-hover:text-hopkins-gold transition-colors duration-300">JHEEM Portal</div>
-                <div className="text-white/80 text-xs tracking-wider group-hover:text-white transition-colors duration-300">Dynamic HIV modeling across US metropolitan areas</div>
-              </div>
-            </div>
-            {/* Subtle hover effect - animated underline */}
-            <div className="absolute bottom-0 left-0 w-0 h-0.5 bg-hopkins-gold transition-all duration-300 group-hover:w-full"></div>
+          <Link href="/" className="group flex items-center gap-4">
+            <span className="font-serif text-2xl leading-none tracking-tight">
+              <span className="text-hopkins-gold">JHEEM</span>{' '}
+              <span className="text-white/90 transition-colors group-hover:text-white">Portal</span>
+            </span>
+            <span className="hidden md:block h-8 w-px bg-white/20" aria-hidden="true"></span>
+            <span className="hidden md:block max-w-[15rem] text-xs leading-snug text-white/65">
+              Joint HIV Epidemiology and Economic Model
+            </span>
           </Link>
           
           {/* Desktop Navigation with Models Dropdown */}
@@ -99,7 +91,7 @@ export default function Navigation() {
                     {/* Bridge to prevent hover gap */}
                     <div className="w-full h-2 bg-transparent -mt-2"></div>
 
-                    <div className="w-96 bg-gradient-to-br from-white to-blue-50 rounded-lg shadow-xl border border-gray-200 overflow-hidden">
+                    <div className="w-96 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden">
                       <div className="py-2">
                         {/* Ryan White with submenu indicator */}
                         <Link

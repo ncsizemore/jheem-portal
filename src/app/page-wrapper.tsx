@@ -81,10 +81,10 @@ export default function HomePageWrapper({ publications }: HomePageWrapperProps) 
           <div className="grid lg:grid-cols-[minmax(0,1fr)_20rem] gap-12 lg:gap-16 items-start">
             {/* Intro + model overview */}
             <div>
-              <p className="text-sm font-medium text-hopkins-blue tracking-wide mb-4">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-hopkins-blue mb-5">
                 Johns Hopkins Bloomberg School of Public Health
               </p>
-              <h1 className="text-4xl md:text-5xl font-normal text-gray-900 leading-tight mb-6">
+              <h1 className="font-serif text-5xl md:text-6xl font-normal text-gray-900 leading-[1.05] tracking-[-0.01em] mb-6">
                 Joint HIV Epidemiology and Economic Model
               </h1>
               <p className="text-xl text-gray-600 leading-relaxed mb-6">
@@ -112,8 +112,8 @@ export default function HomePageWrapper({ publications }: HomePageWrapperProps) 
 
             {/* Recent Finding */}
             <aside className="lg:pt-1">
-              <div className="rounded-lg p-6 bg-amber-50/50 border border-amber-100">
-                <p className="text-xs font-semibold text-amber-700 uppercase tracking-wide mb-3">
+              <div className="border-t-2 border-hopkins-gold bg-slate-50/70 p-6">
+                <p className="text-xs font-semibold text-hopkins-blue uppercase tracking-[0.16em] mb-3">
                   Recent Finding
                 </p>
                 <p className="text-base text-gray-900 leading-snug mb-4">
@@ -122,7 +122,7 @@ export default function HomePageWrapper({ publications }: HomePageWrapperProps) 
                 </p>
                 <Link
                   href="/cdc-testing"
-                  className="inline-flex items-center gap-2 text-sm font-medium text-amber-800 hover:text-amber-900 transition-colors"
+                  className="inline-flex items-center gap-2 text-sm font-medium text-hopkins-blue hover:gap-3 transition-all"
                 >
                   <span>Read the analysis</span>
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -213,7 +213,7 @@ export default function HomePageWrapper({ publications }: HomePageWrapperProps) 
       {/* Research Applications */}
       <section className="border-b border-gray-200">
         <div className="max-w-6xl mx-auto px-6 py-16">
-          <h2 className="text-2xl font-normal text-gray-900 mb-2">
+          <h2 className="font-serif text-3xl font-normal text-gray-900 mb-2">
             Research Applications
           </h2>
           <p className="text-gray-600 mb-10 max-w-2xl">
@@ -223,25 +223,25 @@ export default function HomePageWrapper({ publications }: HomePageWrapperProps) 
 
           <div className="grid md:grid-cols-2 gap-6">
             {APPLICATIONS.map((app) => (
-              <Link key={app.href} href={app.href} className="group block">
-                <article className="h-full p-6 bg-white border border-gray-200 rounded-lg hover:border-hopkins-blue/50 hover:shadow-sm transition-all">
-                  <div className="flex items-start justify-between gap-3 mb-3">
-                    <h3 className="text-lg font-medium text-gray-900 group-hover:text-hopkins-blue transition-colors">
-                      {app.title}
-                    </h3>
-                    <div className="flex flex-col items-end gap-1 flex-shrink-0">
-                      {app.isNew && (
-                        <span className="text-[10px] font-semibold uppercase tracking-wide text-amber-800 bg-amber-100 rounded px-1.5 py-0.5">
-                          New
-                        </span>
-                      )}
-                      <span className="text-xs text-gray-400 whitespace-nowrap">{app.scope}</span>
-                    </div>
+              <Link key={app.href} href={app.href} className="group block h-full">
+                <article className="flex h-full flex-col border border-gray-200 bg-white p-6 transition-colors hover:border-hopkins-blue/50">
+                  <div className="mb-3 flex items-center justify-between gap-3">
+                    <span className="text-xs font-medium uppercase tracking-[0.14em] text-gray-400">
+                      {app.scope}
+                    </span>
+                    {app.isNew && (
+                      <span className="text-[10px] font-semibold uppercase tracking-wide text-amber-800 bg-amber-100 rounded px-1.5 py-0.5">
+                        New
+                      </span>
+                    )}
                   </div>
-                  <p className="text-gray-600 text-sm leading-relaxed mb-4">
+                  <h3 className="font-serif text-xl leading-snug text-gray-900 transition-colors group-hover:text-hopkins-blue">
+                    {app.title}
+                  </h3>
+                  <p className="mt-3 text-sm leading-relaxed text-gray-600">
                     {app.description}
                   </p>
-                  <p className="text-xs text-gray-500">
+                  <p className="mt-auto border-t border-gray-100 pt-4 text-xs text-gray-500">
                     {app.citation}
                   </p>
                 </article>
@@ -256,7 +256,7 @@ export default function HomePageWrapper({ publications }: HomePageWrapperProps) 
         <div className="max-w-6xl mx-auto px-6 py-16">
           <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-4 mb-10">
             <div>
-              <h2 className="text-2xl font-normal text-gray-900 mb-1">
+              <h2 className="font-serif text-3xl font-normal text-gray-900 mb-1">
                 Recent Publications
               </h2>
               <p className="text-gray-600 text-sm">
@@ -314,6 +314,36 @@ export default function HomePageWrapper({ publications }: HomePageWrapperProps) 
           ) : (
             <p className="text-gray-500">No publications available</p>
           )}
+        </div>
+      </section>
+
+      {/* Funding & support */}
+      <section className="bg-white border-t border-gray-200">
+        <div className="max-w-6xl mx-auto px-6 py-14">
+          <div className="grid gap-8 lg:grid-cols-[16rem_minmax(0,1fr)]">
+            <div>
+              <p className="text-xs font-medium uppercase tracking-[0.18em] text-hopkins-blue mb-3">
+                Funding &amp; support
+              </p>
+              <h2 className="font-serif text-2xl leading-tight text-gray-900">
+                Institutional support
+              </h2>
+            </div>
+            <div>
+              <p className="max-w-2xl text-base leading-relaxed text-gray-600">
+                This research is supported by grants from the National Institute of
+                Mental Health, the National Institute of Allergy and Infectious
+                Diseases, and the National Institute on Minority Health and Health
+                Disparities.
+              </p>
+              <ul className="mt-6 grid max-w-lg grid-cols-2 gap-x-8 gap-y-2 font-mono text-sm text-gray-500 sm:grid-cols-4 [&>li]:whitespace-nowrap">
+                <li>K08MH118094</li>
+                <li>K01AI138853</li>
+                <li>P30-AI094189</li>
+                <li>R01MD018539</li>
+              </ul>
+            </div>
+          </div>
         </div>
       </section>
 

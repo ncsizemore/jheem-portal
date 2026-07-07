@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Newsreader } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import AppViewManager from "@/components/AppViewManager";
 import Navigation from "@/components/Navigation";
@@ -15,6 +15,16 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+// Editorial display serif, shared across the portal (matches the group site
+// and the Ryan White costing explorer).
+const newsreader = Newsreader({
+  variable: "--font-newsreader",
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  style: ["normal", "italic"],
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   title: "JHEEM Portal",
   description: "JHEEM Interactive Application Portal",
@@ -28,7 +38,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen`}
+        className={`${geistSans.variable} ${geistMono.variable} ${newsreader.variable} antialiased flex flex-col min-h-screen`}
       >
         <Navigation />
         <main className="flex flex-col flex-1 min-h-0 overflow-hidden">
