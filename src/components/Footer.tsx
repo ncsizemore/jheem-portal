@@ -49,21 +49,21 @@ export default function Footer() {
               href="https://jhu-comp-epi.vercel.app/"
               target="_blank"
               rel="noopener noreferrer"
-              className="block bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20 hover:bg-white/15 hover:border-white/30 transition-all duration-300 hover:scale-105 group"
+              className="block bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20 hover:bg-white/15 hover:border-white/30 transition-all duration-300 group"
             >
               <div className="text-center">
-                <div className="w-16 h-16 bg-gradient-to-br from-hopkins-gold to-amber-400 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:from-amber-400 group-hover:to-hopkins-gold transition-all duration-300">
-                  <span className="text-hopkins-blue font-bold text-xl">JH</span>
-                </div>
-                <h3 className="text-xl font-medium text-white mb-2 group-hover:text-hopkins-gold transition-colors duration-300">
-                  Johns Hopkins Bloomberg School of Public Health
-                </h3>
-                <p className="text-hopkins-gold text-sm font-medium tracking-wider uppercase mb-4">
-                  Computational Epidemiology Research Group
+                <p className="text-xs font-medium text-hopkins-gold uppercase tracking-[0.2em] mb-3">
+                  Part of
+                </p>
+                <p className="font-serif text-3xl text-white mb-2 group-hover:text-hopkins-gold transition-colors duration-300">
+                  CIPHER <span className="text-white/80">Lab</span>
+                </p>
+                <p className="text-hopkins-gold text-xs font-medium tracking-wider uppercase mb-4">
+                  Computational &amp; Infectious Disease Public Health Epidemiology Research
                 </p>
                 <div className="h-px bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
                 <p className="text-blue-100 text-sm mt-4 font-light">
-                  Advancing mathematical modeling for HIV prevention and control
+                  Johns Hopkins Schools of Public Health and Medicine
                 </p>
               </div>
             </a>
