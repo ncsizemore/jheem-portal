@@ -20,12 +20,13 @@ interface HomePageWrapperProps {
 }
 
 interface Application {
-  href: string;
+  // Omit href for analyses that aren't navigable yet (shown as a preview card).
+  href?: string;
   title: string;
   scope: string;
   description: string;
   citation: ReactNode;
-  isNew?: boolean;
+  badge?: string;
 }
 
 const APPLICATIONS: Application[] = [
@@ -62,13 +63,13 @@ const APPLICATIONS: Application[] = [
     citation: <span className="italic">Submitted</span>,
   },
   {
-    href: "/ryan-white-costing",
+    // Not navigable yet — economic-impact analysis still in progress.
     title: "The Economic Impact of Ryan White Program Elimination: State-Level Impact Projections",
     scope: "30 states",
     description:
       "What are the economic consequences of eliminating the Ryan White program? Weighing downstream HIV care costs against the ADAP spending avoided, 2026–2035.",
     citation: <span className="italic">Working paper</span>,
-    isNew: true,
+    badge: "Coming soon",
   },
 ];
 
@@ -222,20 +223,28 @@ export default function HomePageWrapper({ publications }: HomePageWrapperProps) 
           </p>
 
           <div className="grid md:grid-cols-2 gap-6">
-            {APPLICATIONS.map((app) => (
-              <Link key={app.href} href={app.href} className="group block h-full">
-                <article className="flex h-full flex-col border border-gray-200 bg-white p-6 transition-colors hover:border-hopkins-blue/50">
+            {APPLICATIONS.map((app) => {
+              const card = (
+                <article
+                  className={`flex h-full flex-col border border-gray-200 bg-white p-6 transition-colors ${
+                    app.href ? 'hover:border-hopkins-blue/50' : ''
+                  }`}
+                >
                   <div className="mb-3 flex items-center justify-between gap-3">
                     <span className="text-xs font-medium uppercase tracking-[0.14em] text-gray-400">
                       {app.scope}
                     </span>
-                    {app.isNew && (
+                    {app.badge && (
                       <span className="text-[10px] font-semibold uppercase tracking-wide text-amber-800 bg-amber-100 rounded px-1.5 py-0.5">
-                        New
+                        {app.badge}
                       </span>
                     )}
                   </div>
-                  <h3 className="font-serif text-xl leading-snug text-gray-900 transition-colors group-hover:text-hopkins-blue">
+                  <h3
+                    className={`font-serif text-xl leading-snug text-gray-900 transition-colors ${
+                      app.href ? 'group-hover:text-hopkins-blue' : ''
+                    }`}
+                  >
                     {app.title}
                   </h3>
                   <p className="mt-3 text-sm leading-relaxed text-gray-600">
@@ -245,8 +254,18 @@ export default function HomePageWrapper({ publications }: HomePageWrapperProps) 
                     {app.citation}
                   </p>
                 </article>
-              </Link>
-            ))}
+              );
+
+              return app.href ? (
+                <Link key={app.title} href={app.href} className="group block h-full">
+                  {card}
+                </Link>
+              ) : (
+                <div key={app.title} className="h-full">
+                  {card}
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
