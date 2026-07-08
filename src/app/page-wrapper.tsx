@@ -97,16 +97,140 @@ const APPLICATIONS: Application[] = [
   },
 ];
 
+const HERO_STATS = [
+  { value: "31", label: "metros" },
+  { value: "30", label: "state analyses" },
+  { value: "2040", label: "longest horizon" },
+];
+
+function HeroEvidencePanel() {
+  return (
+    <aside className="min-w-0 lg:pt-1">
+      <figure className="overflow-hidden border border-gray-200 bg-white shadow-[0_18px_50px_rgba(15,23,42,0.10)]">
+        <div className="bg-[#061321] p-5 text-white sm:p-6">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-sm font-semibold text-[#9eeaf0]">
+                CDC-funded testing cessation
+              </p>
+              <p className="mt-2 max-w-[18rem] text-sm leading-relaxed text-white/68">
+                Permanent program ending scenario across 18 states.
+              </p>
+            </div>
+            <span className="border border-white/15 px-2 py-1 font-mono text-[0.64rem] uppercase tracking-[0.16em] text-white/58">
+              2026
+            </span>
+          </div>
+
+          <div className="mt-6 grid gap-5 sm:grid-cols-[10rem_minmax(0,1fr)] lg:grid-cols-1">
+            <div>
+              <p className="font-serif text-5xl leading-none text-white">
+                12,700
+              </p>
+              <p className="mt-2 text-sm font-medium leading-snug text-white/78">
+                additional HIV infections projected
+              </p>
+            </div>
+
+            <svg
+              className="h-auto w-full"
+              viewBox="0 0 360 188"
+              fill="none"
+              role="img"
+              aria-label="Map-like data field with city and state model signals"
+            >
+              <rect width="360" height="188" fill="#061321" />
+              <g opacity="0.18" stroke="#9eeaf0" strokeWidth="0.8">
+                <path d="M14 35H346M14 75H346M14 115H346M14 155H346" />
+                <path d="M48 16V172M98 16V172M148 16V172M198 16V172M248 16V172M298 16V172" />
+              </g>
+              <path
+                d="M38 126C62 92 89 72 122 76C146 79 161 98 186 93C215 86 224 50 258 47C284 45 306 64 329 86"
+                stroke="#9eeaf0"
+                strokeOpacity="0.72"
+                strokeWidth="1.4"
+              />
+              <path
+                d="M37 141C69 134 93 126 124 121C158 115 190 118 220 106C250 94 283 93 327 101"
+                stroke="#F2C413"
+                strokeOpacity="0.9"
+                strokeWidth="1.5"
+                strokeDasharray="5 7"
+              />
+              <path
+                d="M52 112C87 74 128 54 170 60C217 66 240 38 286 51C304 56 320 68 334 83V128C300 118 265 120 232 130C187 144 147 133 106 139C79 143 58 151 39 160L52 112Z"
+                fill="#9eeaf0"
+                opacity="0.08"
+              />
+              {[
+                [62, 120, 6, "#9eeaf0"],
+                [92, 97, 4, "#9eeaf0"],
+                [126, 82, 5, "#F2C413"],
+                [165, 90, 4, "#9eeaf0"],
+                [203, 88, 6, "#9eeaf0"],
+                [238, 62, 5, "#F2C413"],
+                [285, 58, 4, "#9eeaf0"],
+                [319, 84, 5, "#9eeaf0"],
+                [264, 118, 4, "#9eeaf0"],
+                [214, 134, 4, "#F2C413"],
+                [142, 129, 3.5, "#9eeaf0"],
+                [83, 145, 3.5, "#9eeaf0"],
+              ].map(([cx, cy, r, fill]) => (
+                <g key={`${cx}-${cy}`}>
+                  <circle cx={cx} cy={cy} r={Number(r) + 6} fill={String(fill)} opacity="0.09" />
+                  <circle cx={cx} cy={cy} r={r} fill={String(fill)} stroke="#061321" strokeWidth="1.5" />
+                </g>
+              ))}
+              <g transform="translate(28 24)">
+                <path d="M0 0H82V28H0Z" fill="#0B2436" stroke="#24485A" />
+                <text x="10" y="12" fill="#9eeaf0" fontSize="8" fontFamily="ui-monospace, monospace" letterSpacing="1">
+                  STATES
+                </text>
+                <text x="10" y="23" fill="#FFFFFF" fillOpacity="0.82" fontSize="10" fontFamily="system-ui, sans-serif">
+                  modeled signal
+                </text>
+              </g>
+            </svg>
+          </div>
+        </div>
+
+        <figcaption className="flex items-center justify-between gap-4 border-t border-gray-200 bg-white px-5 py-4 sm:px-6">
+          <p className="text-sm leading-snug text-gray-600">
+            Latest result in the portal.
+          </p>
+          <Link
+            href="/cdc-testing"
+            className="inline-flex shrink-0 items-center gap-2 text-sm font-semibold text-hopkins-blue transition-all hover:gap-3"
+          >
+            <span>Open result</span>
+            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </Link>
+        </figcaption>
+      </figure>
+    </aside>
+  );
+}
+
 export default function HomePageWrapper({ publications }: HomePageWrapperProps) {
   return (
     <div className="min-h-screen overflow-hidden bg-white text-gray-900">
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-slate-50 to-white border-b border-gray-200">
+      <section className="relative overflow-hidden border-b border-gray-200 bg-[#f8fbfd]">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 hidden opacity-70 [background-image:linear-gradient(to_right,rgba(0,45,114,0.045)_1px,transparent_1px),linear-gradient(to_bottom,rgba(0,45,114,0.04)_1px,transparent_1px)] [background-size:42px_42px] md:block"
+        />
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-gradient-to-b from-transparent to-white"
+        />
         <div className="relative mx-auto max-w-6xl px-5 py-12 sm:px-6 md:py-16">
-          <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,1fr)_24rem] lg:gap-16">
+          <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,1fr)_26rem] lg:gap-16">
             <div className="min-w-0">
-              <h1 className="max-w-4xl break-words font-serif text-[2.65rem] font-normal leading-[1.02] text-gray-950 sm:text-5xl md:text-6xl">
-                Explore HIV policy scenarios across U.S. cities and states.
+              <h1 className="max-w-4xl break-words font-serif text-[2.75rem] font-normal leading-[1.01] text-gray-950 sm:text-5xl md:text-6xl">
+                HIV policy scenarios, translated into local projections.
               </h1>
               <p className="mt-6 max-w-2xl text-lg leading-relaxed text-gray-700 md:text-xl">
                 Compare JHEEM-based projections of how funding and policy changes
@@ -118,71 +242,36 @@ export default function HomePageWrapper({ publications }: HomePageWrapperProps) 
                 analysis and calibrated to local epidemic data.
               </p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                <Link
-                  href="/cdc-testing"
+                <a
+                  href="#analyses"
                   className="inline-flex items-center justify-center gap-2 bg-hopkins-blue px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#123f7d]"
                 >
-                  <span>Open CDC testing model</span>
+                  <span>Browse analyses</span>
                   <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 17L17 7M9 7h8v8" />
                   </svg>
-                </Link>
+                </a>
                 <a
-                  href="#analyses"
+                  href="#evidence"
                   className="inline-flex items-center justify-center border border-gray-300 bg-white px-4 py-3 text-sm font-semibold text-hopkins-blue transition-colors hover:border-hopkins-blue/50 hover:bg-hopkins-blue/5"
                 >
-                  Browse modeling tools
+                  Published evidence
                 </a>
               </div>
+
+              <dl className="mt-10 grid max-w-2xl grid-cols-3 border-y border-gray-200 bg-white/50">
+                {HERO_STATS.map((item) => (
+                  <div key={item.label} className="border-r border-gray-200 px-4 py-4 last:border-r-0 first:pl-0 sm:first:pl-4">
+                    <dt className="font-serif text-3xl leading-none text-gray-950">{item.value}</dt>
+                    <dd className="mt-1 text-xs font-medium uppercase tracking-[0.12em] text-gray-500">
+                      {item.label}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
             </div>
 
-            <aside className="min-w-0 lg:pt-1">
-              <div className="border border-gray-200 border-t-2 border-t-hopkins-gold bg-white p-5 shadow-sm sm:p-6">
-                <p className="text-sm font-semibold text-hopkins-blue">
-                  CDC-funded testing cessation
-                </p>
-                <div className="mt-5 border-y border-gray-100 py-5">
-                  <p className="font-serif text-5xl leading-none text-gray-950">
-                    12,700
-                  </p>
-                  <p className="mt-2 text-base font-medium leading-snug text-gray-900">
-                    additional HIV infections projected across 18 states.
-                  </p>
-                  <p className="mt-3 text-sm leading-relaxed text-gray-600">
-                    Permanent program ending scenario.
-                  </p>
-                </div>
-
-                <svg
-                  className="mt-5 h-auto w-full text-hopkins-blue"
-                  viewBox="0 0 320 118"
-                  fill="none"
-                  role="img"
-                  aria-label="Compact scenario chart showing modeled increase under testing cessation"
-                >
-                  <path d="M10 91H304" stroke="#E5E7EB" />
-                  <path d="M10 61H304" stroke="#E5E7EB" />
-                  <path d="M10 31H304" stroke="#E5E7EB" />
-                  <path d="M22 86C64 84 98 78 128 66C165 51 188 39 224 34C254 30 279 23 303 13" stroke="#002D72" strokeWidth="2.5" />
-                  <path d="M22 92C64 90 98 87 128 82C165 76 188 72 224 69C254 66 279 62 303 57" stroke="#F2C413" strokeWidth="2" strokeDasharray="6 7" />
-                  <path d="M22 86C64 84 98 78 128 66C165 51 188 39 224 34C254 30 279 23 303 13V58C279 63 254 67 224 70C188 74 165 78 128 84C98 89 64 91 22 93V86Z" fill="#002D72" opacity="0.08" />
-                  <circle cx="303" cy="13" r="4.5" fill="#002D72" />
-                  <circle cx="303" cy="57" r="4" fill="#F2C413" />
-                </svg>
-
-                <p className="mt-5">
-                  <Link
-                    href="/cdc-testing"
-                    className="inline-flex items-center gap-2 text-sm font-semibold text-hopkins-blue transition-all hover:gap-3"
-                  >
-                    <span>Open CDC testing model</span>
-                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </Link>
-                </p>
-              </div>
-            </aside>
+            <HeroEvidencePanel />
           </div>
         </div>
       </section>
@@ -193,10 +282,11 @@ export default function HomePageWrapper({ publications }: HomePageWrapperProps) 
           <div className="mb-10 max-w-3xl">
             <div>
               <h2 className="font-serif text-3xl font-normal leading-tight text-gray-950 md:text-4xl">
-                Choose a policy question.
+                Funding interruptions, testing disruptions, and population change.
               </h2>
               <p className="mt-4 max-w-2xl text-base leading-relaxed text-gray-600">
-                Inspect modeled outcomes by place, scenario, and time horizon.
+                Open an analysis to compare modeled outcomes by place, scenario,
+                and time horizon.
               </p>
             </div>
           </div>
@@ -205,8 +295,8 @@ export default function HomePageWrapper({ publications }: HomePageWrapperProps) 
             {APPLICATIONS.map((app) => {
               const card = (
                 <article
-                  className={`flex h-full min-w-0 flex-col border border-gray-200 bg-white p-5 transition-colors sm:p-6 ${
-                    app.href ? 'hover:border-hopkins-blue/50' : 'bg-slate-50/60'
+                  className={`flex h-full min-w-0 flex-col border border-gray-200 bg-white p-5 transition-all sm:p-6 ${
+                    app.href ? 'hover:-translate-y-0.5 hover:border-hopkins-blue/50 hover:shadow-[0_18px_44px_rgba(15,23,42,0.08)]' : 'bg-slate-50/60'
                   }`}
                 >
                   <div className="mb-4 flex flex-wrap items-center gap-2">
@@ -238,7 +328,7 @@ export default function HomePageWrapper({ publications }: HomePageWrapperProps) 
                   </p>
                   <div className="mt-6 border-y border-gray-100 py-4">
                     <p className="text-sm leading-snug text-gray-500">
-                      <span className="mr-2 whitespace-nowrap font-serif text-3xl leading-none text-gray-950">
+                      <span className="mr-2 whitespace-nowrap font-serif text-[2rem] leading-none text-gray-950">
                         {app.metric}
                       </span>
                       {app.metricLabel}
@@ -268,17 +358,16 @@ export default function HomePageWrapper({ publications }: HomePageWrapperProps) 
       </section>
 
       {/* Publications */}
-      <section className="bg-white">
+      <section id="evidence" className="scroll-mt-24 bg-white">
         <div className="mx-auto max-w-6xl px-5 py-14 sm:px-6 md:py-16">
           <div className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-baseline sm:justify-between">
             <div>
               <h2 className="font-serif text-3xl font-normal leading-tight text-gray-950 md:text-4xl">
-                Publications behind the portal.
+                Published analyses and assumptions.
               </h2>
               <p className="mt-3 max-w-2xl text-base leading-relaxed text-gray-600">
-                Recent peer-reviewed and submitted research using JHEEM. Portal
-                tools should be read alongside the assumptions and methods in the
-                corresponding papers.
+                Portal tools should be read alongside the papers that define each
+                scenario, calibration target, and modeled time horizon.
               </p>
             </div>
             <a
@@ -341,7 +430,7 @@ export default function HomePageWrapper({ publications }: HomePageWrapperProps) 
           <div className="grid gap-10 lg:grid-cols-[16rem_minmax(0,1fr)]">
             <div>
               <h2 className="font-serif text-2xl leading-tight text-gray-950">
-                Model notes
+                Scenario estimates, not forecasts.
               </h2>
             </div>
             <div className="grid gap-8 md:grid-cols-3">
