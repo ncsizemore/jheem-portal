@@ -27,7 +27,7 @@ const newsreader = Newsreader({
 
 export const metadata: Metadata = {
   title: "JHEEM Portal",
-  description: "JHEEM Interactive Application Portal",
+  description: "Interactive HIV policy modeling tools from JHEEM",
 };
 
 export default function RootLayout({

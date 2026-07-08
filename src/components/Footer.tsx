@@ -33,7 +33,7 @@ export default function Footer() {
 
           <div>
             <h4 className="mb-3 text-xs font-semibold uppercase tracking-wider text-white/60">
-              Research Applications
+              Modeling Tools
             </h4>
             <ul className="space-y-2 text-sm">
               {APPLICATION_LINKS.map((item) => (

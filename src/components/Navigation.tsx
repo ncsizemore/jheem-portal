@@ -64,7 +64,7 @@ export default function Navigation() {
               <button
                 className="text-white hover:text-hopkins-gold font-medium transition-all relative group py-2 flex items-center gap-2"
               >
-                <span>Research Applications</span>
+                <span>Modeling Tools</span>
                 <svg
                   className={`w-4 h-4 transition-transform duration-200 ${modelsDropdownOpen ? 'rotate-180' : ''}`}
                   fill="none"
@@ -452,7 +452,7 @@ export default function Navigation() {
                 {/* Models Section */}
                 <div className="px-3">
                   <p className="text-xs font-semibold text-hopkins-gold uppercase tracking-wider mb-2">
-                    Research Applications
+                    Modeling Tools
                   </p>
                   <div className="space-y-1">
                     <Link
