@@ -8,7 +8,7 @@ export default function CdcTestingLandingPage() {
   const [citationCopied, setCitationCopied] = useState(false);
 
   const handleCopyCitation = async () => {
-    const citation = 'Balasubramanian R, Schnure M, Forster R, Hanage WP, Batey DS, Althoff KN, Gebo KA, Dowdy DW, Shah M, Kasaie P, Fojo AT. The Potential Effect of Ending CDC Funding for HIV Tests: A Modeling Study in 18 States. medRxiv. 2025. doi:10.1101/2025.09.19.25336182';
+    const citation = 'Balasubramanian R, Schnure M, Forster R, Hanage WP, Batey DS, Althoff KN, Gebo KA, Dowdy DW, Shah M, Kasaie P, Fojo AT. The Potential Effect of Ending CDC Funding for HIV Tests: A Modeling Study in 18 States. Clin Infect Dis. 2026;82(4):e746. doi:10.1093/cid/ciag038';
 
     try {
       await navigator.clipboard.writeText(citation);
@@ -34,11 +34,9 @@ export default function CdcTestingLandingPage() {
       <header className="border-b border-gray-200">
         <div className="max-w-4xl mx-auto px-6 pt-16 pb-12">
           <div className="flex items-center gap-3 text-sm text-gray-500 mb-6">
-            <span className="font-medium text-gray-900">medRxiv</span>
+            <span className="font-medium text-gray-900">Clinical Infectious Diseases</span>
             <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
-            <span>2025</span>
-            <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
-            <span className="text-amber-600 font-medium">Preprint</span>
+            <span>2026</span>
           </div>
           <h1 className="text-3xl md:text-[2.5rem] md:leading-tight font-normal text-gray-900 leading-tight mb-6">
             The Potential Effect of Ending CDC Funding for HIV Tests: A Modeling Study in 18 States
@@ -49,12 +47,12 @@ export default function CdcTestingLandingPage() {
           </p>
           <div className="flex flex-wrap items-center gap-4">
             <a
-              href="https://doi.org/10.1101/2025.09.19.25336182"
+              href="https://doi.org/10.1093/cid/ciag038"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-md hover:bg-gray-800 transition-colors"
             >
-              Read Preprint
+              Read Paper
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
               </svg>
@@ -235,14 +233,14 @@ export default function CdcTestingLandingPage() {
               <p className="text-sm text-gray-600 leading-relaxed">
                 Balasubramanian R, et al. The Potential Effect of Ending CDC Funding
                 for HIV Tests: A Modeling Study in 18 States.{' '}
-                <em>medRxiv.</em> 2025.{' '}
+                <em>Clin Infect Dis.</em> 2026;82(4):e746.{' '}
                 <a
-                  href="https://doi.org/10.1101/2025.09.19.25336182"
+                  href="https://doi.org/10.1093/cid/ciag038"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-hopkins-blue hover:underline"
                 >
-                  doi:10.1101/2025.09.19.25336182
+                  doi:10.1093/cid/ciag038
                 </a>
               </p>
             </div>

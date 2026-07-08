@@ -52,7 +52,7 @@ const APPLICATIONS: Application[] = [
     scope: "18 states",
     description:
       "What is the epidemiological impact of ending CDC-funded testing? Modeling cessation and interruption scenarios.",
-    citation: <><span className="italic">medRxiv</span>, 2025</>,
+    citation: <><span className="italic">Clin Infect Dis</span>, 2026</>,
   },
   {
     href: "/aging",
