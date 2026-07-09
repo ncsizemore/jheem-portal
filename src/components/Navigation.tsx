@@ -49,7 +49,7 @@ export default function Navigation() {
               <span className="text-white/90 transition-colors group-hover:text-white">Portal</span>
             </span>
             <span className="hidden md:block h-8 w-px bg-white/20" aria-hidden="true"></span>
-            <span className="hidden md:block max-w-[15rem] text-xs leading-snug text-white/65">
+            <span className="hidden lg:block whitespace-nowrap text-xs leading-snug text-white/65">
               Joint HIV Epidemiology and Economic Model
             </span>
           </Link>
@@ -62,7 +62,10 @@ export default function Navigation() {
               onMouseLeave={() => setModelsDropdownOpen(false)}
             >
               <button
-                className="text-white hover:text-hopkins-gold font-medium transition-all relative group py-2 flex items-center gap-2"
+                type="button"
+                aria-haspopup="true"
+                aria-expanded={modelsDropdownOpen}
+                className="text-white hover:text-hopkins-gold font-medium transition-all relative group py-2 flex items-center gap-2 whitespace-nowrap"
               >
                 <span>Modeling Tools</span>
                 <svg
@@ -223,7 +226,7 @@ export default function Navigation() {
                               <div className={`text-sm font-semibold ${
                                 isCdcTestingActive ? 'text-hopkins-blue' : 'text-gray-900'
                               }`}>
-                                CDC Testing Model
+                                CDC Testing
                               </div>
                               <div className="text-xs text-gray-500 mt-0.5">
                                 CDC-funded HIV testing (18 States)
@@ -319,7 +322,7 @@ export default function Navigation() {
               <div className="py-4">
                 <div className="flex items-center space-x-8">
                   <span className="text-xs font-semibold text-hopkins-gold uppercase tracking-wider">
-                    Ryan White Tools
+                    Ryan White
                   </span>
                   <div className="flex items-center space-x-6">
                     <Link
@@ -360,7 +363,7 @@ export default function Navigation() {
               <div className="py-4">
                 <div className="flex items-center space-x-8">
                   <span className="text-xs font-semibold text-hopkins-gold uppercase tracking-wider">
-                    State-Level Tools
+                    State-Level Ryan White
                   </span>
                   <div className="flex items-center space-x-6">
                     <Link
@@ -410,7 +413,7 @@ export default function Navigation() {
               <div className="py-4">
                 <div className="flex items-center space-x-8">
                   <span className="text-xs font-semibold text-hopkins-gold uppercase tracking-wider">
-                    CDC Testing Tools
+                    CDC Testing
                   </span>
                   <div className="flex items-center space-x-6">
                     <Link
@@ -547,7 +550,7 @@ export default function Navigation() {
                           : 'text-white/80 hover:text-white hover:bg-white/5'
                       }`}
                     >
-                      CDC Testing Model
+                      CDC Testing
                     </Link>
 
                     {/* CDC Testing Submenu */}

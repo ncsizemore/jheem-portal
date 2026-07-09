@@ -217,7 +217,7 @@ export default function HomePageWrapper({ publications }: HomePageWrapperProps) 
                 mathematical modeling across US metropolitan areas and states.
               </p>
               <p className="mt-5 max-w-2xl text-base leading-relaxed text-gray-600">
-                The model uses mathematical modeling to understand and predict HIV
+                We use mathematical modeling to understand and predict HIV
                 transmission and the impact of interventions across local
                 populations. The simulated population is stratified by age, race,
                 sex, sexual behavior, and drug use, and is calibrated to
@@ -250,12 +250,12 @@ export default function HomePageWrapper({ publications }: HomePageWrapperProps) 
         </div>
       </section>
 
-      {/* Research Applications */}
+      {/* Modeling Tools */}
       <section id="analyses" className="scroll-mt-24 border-b border-gray-200">
         <div className="mx-auto max-w-6xl px-5 py-14 sm:px-6 md:py-16">
           <div className="mb-9 max-w-2xl">
             <h2 className="mb-2 font-serif text-3xl font-normal text-gray-950">
-              Research Applications
+              Modeling Tools
             </h2>
           </div>
 
