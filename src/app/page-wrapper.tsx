@@ -23,11 +23,7 @@ interface Application {
   // Omit href for analyses that aren't navigable yet (shown as a preview card).
   href?: string;
   title: string;
-  question: string;
-  geography: string;
-  scenario: string;
-  metric: string;
-  metricLabel: string;
+  scope: string;
   description: string;
   citation: ReactNode;
   badge?: string;
@@ -36,308 +32,271 @@ interface Application {
 const APPLICATIONS: Application[] = [
   {
     href: "/ryan-white",
-    title: "Ryan White disruption projections",
-    question: "What if Ryan White HIV/AIDS Program funding ends?",
-    geography: "31 cities",
-    scenario: "Program cessation",
-    metric: "79,153",
-    metricLabel: "additional infections projected",
+    title: "Ryan White Program Disruptions: City-Level Impact Projections",
+    scope: "31 cities",
     description:
-      "Explore projected HIV care and transmission impacts across high-burden metropolitan areas.",
+      "What happens if Ryan White funding is interrupted or eliminated? Modeling impacts on HIV care outcomes across major US metropolitan areas.",
     citation: <><span className="italic">Ann Intern Med</span>, 2025</>,
   },
   {
     href: "/ryan-white-state-level",
-    title: "Ryan White state-level projections",
-    question: "How do funding disruptions vary by state?",
-    geography: "30 states",
-    scenario: "Program cessation",
-    metric: "2026-2031",
-    metricLabel: "projection horizon",
+    title: "Ryan White Program Disruptions: State-Level Impact Projections",
+    scope: "30 states",
     description:
-      "Compare jurisdiction-level impacts for statewide planning, policy, and resource-allocation questions.",
+      "Statewide projections of Ryan White funding disruption, providing jurisdictional insights for policy makers.",
     citation: <><span className="italic">AJPH</span>, 2026 &middot; <span className="italic">CROI</span>, 2026</>,
   },
   {
     href: "/cdc-testing",
-    title: "CDC-funded HIV testing projections",
-    question: "What if CDC-funded HIV testing programs end?",
-    geography: "18 states",
-    scenario: "Testing cessation",
-    metric: "12,700",
-    metricLabel: "additional infections projected",
+    title: "CDC-Funded HIV Testing Disruptions: State-Level Impact Projections",
+    scope: "18 states",
     description:
-      "Inspect modeled consequences of ending or interrupting CDC-funded HIV testing services.",
+      "What is the epidemiological impact of ending CDC-funded testing? Modeling cessation and interruption scenarios.",
     citation: <><span className="italic">Clin Infect Dis</span>, 2026</>,
   },
   {
     href: "/aging",
-    title: "HIV population aging projections",
-    question: "How will the population of people with HIV age?",
-    geography: "24 states",
-    scenario: "Demographic projection",
-    metric: "2040",
-    metricLabel: "projection horizon",
+    title: "Projecting the Age Distribution of Persons With HIV in the US",
+    scope: "24 states",
     description:
-      "Explore how age distributions among people with HIV are projected to change over time.",
+      "How will the HIV population age over the next 15 years? State-level projections from 2025 to 2040.",
     citation: <span className="italic">Submitted</span>,
   },
   {
     // Not navigable yet - economic-impact analysis still in progress.
-    title: "Ryan White economic impact projections",
-    question: "What are the economic consequences of eliminating the program?",
-    geography: "30 states",
-    scenario: "Program elimination",
-    metric: "2026-2035",
-    metricLabel: "economic horizon",
+    title: "The Economic Impact of Ryan White Program Elimination: State-Level Impact Projections",
+    scope: "30 states",
     description:
-      "Weigh downstream HIV care costs against ADAP spending avoided under elimination scenarios.",
+      "What are the economic consequences of eliminating the Ryan White program? Weighing downstream HIV care costs against the ADAP spending avoided, 2026-2035.",
     citation: <span className="italic">Working paper</span>,
     badge: "Coming soon",
   },
 ];
 
-const HERO_STATS = [
-  { value: "31", label: "metros" },
-  { value: "30", label: "state analyses" },
-  { value: "2040", label: "longest horizon" },
+const MODEL_CHARACTERISTICS = [
+  {
+    title: "Local calibration",
+    description: "City and state projections anchored to surveillance data",
+    icon: (
+      <svg className="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
+        <path d="M12 3v3M12 18v3M3 12h3M18 12h3" strokeLinecap="round" />
+        <circle cx="12" cy="12" r="6" />
+        <circle cx="12" cy="12" r="2" fill="currentColor" stroke="none" />
+        <path d="M7.5 16.5 5 19M16.5 7.5 19 5" strokeLinecap="round" opacity="0.45" />
+      </svg>
+    ),
+  },
+  {
+    title: "Structured populations",
+    description: "Age, race, sex, behavior, and drug-use strata represented in the model",
+    icon: (
+      <svg className="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
+        <rect x="3" y="4" width="7" height="6" rx="0.75" />
+        <rect x="14" y="4" width="7" height="6" rx="0.75" />
+        <rect x="3" y="14" width="7" height="6" rx="0.75" />
+        <rect x="14" y="14" width="7" height="6" rx="0.75" />
+        <path d="M10 7h4M10 17h4M6.5 10v4M17.5 10v4" strokeLinecap="round" opacity="0.5" />
+      </svg>
+    ),
+  },
+  {
+    title: "Policy scenarios",
+    description: "Funding, testing, and intervention assumptions compared over time",
+    icon: (
+      <svg className="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
+        <circle cx="4" cy="12" r="2" />
+        <path d="M6 12h4" />
+        <circle cx="12" cy="12" r="2" />
+        <path d="M14 11l4-4M14 13l4 4" />
+        <circle cx="20" cy="7" r="2" />
+        <circle cx="20" cy="17" r="2" />
+        <path d="M14 12h6" strokeDasharray="2 2" opacity="0.45" />
+      </svg>
+    ),
+  },
 ];
 
-function HeroEvidencePanel() {
+function HeroEvidenceTexture() {
   return (
-    <aside className="min-w-0 lg:pt-1">
-      <figure className="overflow-hidden border border-gray-200 bg-white shadow-[0_18px_50px_rgba(15,23,42,0.10)]">
-        <div className="bg-[#061321] p-5 text-white sm:p-6">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <p className="text-sm font-semibold text-[#9eeaf0]">
-                CDC-funded testing cessation
-              </p>
-              <p className="mt-2 max-w-[18rem] text-sm leading-relaxed text-white/68">
-                Permanent program ending scenario across 18 states.
-              </p>
-            </div>
-            <span className="border border-white/15 px-2 py-1 font-mono text-[0.64rem] uppercase tracking-[0.16em] text-white/58">
-              2026
-            </span>
-          </div>
+    <svg
+      aria-hidden="true"
+      className="pointer-events-none absolute right-[-6rem] top-8 hidden h-[30rem] w-[43rem] opacity-75 lg:block"
+      viewBox="0 0 560 390"
+      fill="none"
+    >
+      <g opacity="0.16" stroke="#002D72" strokeWidth="0.8">
+        <path d="M64 62H520M64 128H520M64 194H520M64 260H520M64 326H520" />
+        <path d="M112 32V356M184 32V356M256 32V356M328 32V356M400 32V356M472 32V356" />
+      </g>
+      <path
+        d="M74 279C124 226 178 204 232 216C277 226 299 258 342 246C397 231 414 162 471 152C509 146 535 167 552 192"
+        stroke="#68ACE5"
+        strokeOpacity="0.58"
+        strokeWidth="1.5"
+      />
+      <path
+        d="M70 310C121 296 174 288 227 292C286 297 329 282 382 270C428 260 481 265 548 284"
+        stroke="#F2C413"
+        strokeOpacity="0.58"
+        strokeWidth="1.4"
+        strokeDasharray="6 8"
+      />
+      {[
+        [112, 256, "#002D72"],
+        [166, 224, "#68ACE5"],
+        [229, 216, "#F2C413"],
+        [301, 246, "#68ACE5"],
+        [372, 235, "#002D72"],
+        [443, 158, "#F2C413"],
+        [512, 172, "#68ACE5"],
+        [486, 282, "#002D72"],
+        [352, 276, "#68ACE5"],
+        [214, 292, "#002D72"],
+      ].map(([cx, cy, fill]) => (
+        <g key={`${cx}-${cy}`}>
+          <circle cx={cx} cy={cy} r="12" fill={String(fill)} opacity="0.07" />
+          <circle cx={cx} cy={cy} r="4" fill={String(fill)} opacity="0.55" />
+        </g>
+      ))}
+    </svg>
+  );
+}
 
-          <div className="mt-6 grid gap-5 sm:grid-cols-[10rem_minmax(0,1fr)] lg:grid-cols-1">
-            <div>
-              <p className="font-serif text-5xl leading-none text-white">
-                12,700
-              </p>
-              <p className="mt-2 text-sm font-medium leading-snug text-white/78">
-                additional HIV infections projected
-              </p>
-            </div>
-
-            <svg
-              className="h-auto w-full"
-              viewBox="0 0 360 188"
-              fill="none"
-              role="img"
-              aria-label="Map-like data field with city and state model signals"
-            >
-              <rect width="360" height="188" fill="#061321" />
-              <g opacity="0.18" stroke="#9eeaf0" strokeWidth="0.8">
-                <path d="M14 35H346M14 75H346M14 115H346M14 155H346" />
-                <path d="M48 16V172M98 16V172M148 16V172M198 16V172M248 16V172M298 16V172" />
-              </g>
-              <path
-                d="M38 126C62 92 89 72 122 76C146 79 161 98 186 93C215 86 224 50 258 47C284 45 306 64 329 86"
-                stroke="#9eeaf0"
-                strokeOpacity="0.72"
-                strokeWidth="1.4"
-              />
-              <path
-                d="M37 141C69 134 93 126 124 121C158 115 190 118 220 106C250 94 283 93 327 101"
-                stroke="#F2C413"
-                strokeOpacity="0.9"
-                strokeWidth="1.5"
-                strokeDasharray="5 7"
-              />
-              <path
-                d="M52 112C87 74 128 54 170 60C217 66 240 38 286 51C304 56 320 68 334 83V128C300 118 265 120 232 130C187 144 147 133 106 139C79 143 58 151 39 160L52 112Z"
-                fill="#9eeaf0"
-                opacity="0.08"
-              />
-              {[
-                [62, 120, 6, "#9eeaf0"],
-                [92, 97, 4, "#9eeaf0"],
-                [126, 82, 5, "#F2C413"],
-                [165, 90, 4, "#9eeaf0"],
-                [203, 88, 6, "#9eeaf0"],
-                [238, 62, 5, "#F2C413"],
-                [285, 58, 4, "#9eeaf0"],
-                [319, 84, 5, "#9eeaf0"],
-                [264, 118, 4, "#9eeaf0"],
-                [214, 134, 4, "#F2C413"],
-                [142, 129, 3.5, "#9eeaf0"],
-                [83, 145, 3.5, "#9eeaf0"],
-              ].map(([cx, cy, r, fill]) => (
-                <g key={`${cx}-${cy}`}>
-                  <circle cx={cx} cy={cy} r={Number(r) + 6} fill={String(fill)} opacity="0.09" />
-                  <circle cx={cx} cy={cy} r={r} fill={String(fill)} stroke="#061321" strokeWidth="1.5" />
-                </g>
-              ))}
-              <g transform="translate(28 24)">
-                <path d="M0 0H82V28H0Z" fill="#0B2436" stroke="#24485A" />
-                <text x="10" y="12" fill="#9eeaf0" fontSize="8" fontFamily="ui-monospace, monospace" letterSpacing="1">
-                  STATES
-                </text>
-                <text x="10" y="23" fill="#FFFFFF" fillOpacity="0.82" fontSize="10" fontFamily="system-ui, sans-serif">
-                  modeled signal
-                </text>
-              </g>
-            </svg>
-          </div>
-        </div>
-
-        <figcaption className="flex items-center justify-between gap-4 border-t border-gray-200 bg-white px-5 py-4 sm:px-6">
-          <p className="text-sm leading-snug text-gray-600">
-            Latest result in the portal.
-          </p>
-          <Link
-            href="/cdc-testing"
-            className="inline-flex shrink-0 items-center gap-2 text-sm font-semibold text-hopkins-blue transition-all hover:gap-3"
-          >
-            <span>Open result</span>
-            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-          </Link>
-        </figcaption>
-      </figure>
+function RecentFinding() {
+  return (
+    <aside className="lg:pt-1">
+      <div className="relative overflow-hidden border border-slate-200 bg-white p-6 shadow-[0_18px_45px_rgba(15,23,42,0.07)]">
+        <div className="absolute inset-x-0 top-0 h-1 bg-hopkins-gold" />
+        <p className="mb-3 text-xs font-semibold uppercase tracking-[0.16em] text-hopkins-blue">
+          Recent Finding
+        </p>
+        <p className="mb-4 text-base leading-snug text-gray-900">
+          Our models project <span className="font-semibold">12,700 additional HIV infections</span> if
+          CDC-funded testing programs end permanently across 18 states.
+        </p>
+        <Link
+          href="/cdc-testing"
+          className="inline-flex items-center gap-2 text-sm font-medium text-hopkins-blue transition-all hover:gap-3"
+        >
+          <span>Read the analysis</span>
+          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </Link>
+      </div>
     </aside>
   );
 }
 
 export default function HomePageWrapper({ publications }: HomePageWrapperProps) {
   return (
-    <div className="min-h-screen overflow-hidden bg-white text-gray-900">
+    <div className="min-h-screen bg-white text-gray-900">
       {/* Hero Section */}
-      <section className="relative overflow-hidden border-b border-gray-200 bg-[#f8fbfd]">
+      <section className="relative overflow-hidden border-b border-gray-200 bg-gradient-to-b from-[#f6f9fc] via-white to-white">
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 hidden opacity-70 [background-image:linear-gradient(to_right,rgba(0,45,114,0.045)_1px,transparent_1px),linear-gradient(to_bottom,rgba(0,45,114,0.04)_1px,transparent_1px)] [background-size:42px_42px] md:block"
+          className="pointer-events-none absolute inset-0 hidden opacity-80 [background-image:linear-gradient(to_right,rgba(0,45,114,0.045)_1px,transparent_1px),linear-gradient(to_bottom,rgba(0,45,114,0.035)_1px,transparent_1px)] [background-size:42px_42px] md:block"
         />
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-gradient-to-b from-transparent to-white"
+          className="pointer-events-none absolute right-0 top-0 hidden h-full w-1/2 bg-[radial-gradient(circle_at_70%_20%,rgba(104,172,229,0.16),transparent_30%),radial-gradient(circle_at_78%_68%,rgba(242,196,19,0.10),transparent_28%)] lg:block"
         />
-        <div className="relative mx-auto max-w-6xl px-5 py-12 sm:px-6 md:py-16">
-          <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,1fr)_26rem] lg:gap-16">
-            <div className="min-w-0">
-              <h1 className="max-w-4xl break-words font-serif text-[2.75rem] font-normal leading-[1.01] text-gray-950 sm:text-5xl md:text-6xl">
-                HIV policy scenarios, translated into local projections.
-              </h1>
-              <p className="mt-6 max-w-2xl text-lg leading-relaxed text-gray-700 md:text-xl">
-                Compare JHEEM-based projections of how funding and policy changes
-                could affect HIV transmission, care outcomes, costs, and
-                population health needs.
-              </p>
-              <p className="mt-4 max-w-2xl text-base leading-relaxed text-gray-600">
-                Each tool is tied to a published, submitted, or in-progress
-                analysis and calibrated to local epidemic data.
-              </p>
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                <a
-                  href="#analyses"
-                  className="inline-flex items-center justify-center gap-2 bg-hopkins-blue px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#123f7d]"
-                >
-                  <span>Browse analyses</span>
-                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 17L17 7M9 7h8v8" />
-                  </svg>
-                </a>
-                <a
-                  href="#evidence"
-                  className="inline-flex items-center justify-center border border-gray-300 bg-white px-4 py-3 text-sm font-semibold text-hopkins-blue transition-colors hover:border-hopkins-blue/50 hover:bg-hopkins-blue/5"
-                >
-                  Published evidence
-                </a>
-              </div>
+        <HeroEvidenceTexture />
 
-              <dl className="mt-10 grid max-w-2xl grid-cols-3 border-y border-gray-200 bg-white/50">
-                {HERO_STATS.map((item) => (
-                  <div key={item.label} className="border-r border-gray-200 px-4 py-4 last:border-r-0 first:pl-0 sm:first:pl-4">
-                    <dt className="font-serif text-3xl leading-none text-gray-950">{item.value}</dt>
-                    <dd className="mt-1 text-xs font-medium uppercase tracking-[0.12em] text-gray-500">
-                      {item.label}
-                    </dd>
-                  </div>
-                ))}
-              </dl>
+        <div className="relative mx-auto max-w-6xl px-5 pb-14 pt-14 sm:px-6 md:pb-16 md:pt-16">
+          <div className="grid items-start gap-12 lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-16">
+            <div className="min-w-0">
+              <p className="mb-5 text-xs font-semibold uppercase tracking-[0.18em] text-hopkins-blue">
+                Johns Hopkins Bloomberg School of Public Health
+              </p>
+              <h1 className="max-w-4xl break-words font-serif text-[2.85rem] font-normal leading-[1.03] text-gray-950 sm:text-5xl md:text-6xl">
+                Joint HIV Epidemiology and Economic Model
+              </h1>
+              <p className="mt-6 max-w-2xl text-xl leading-relaxed text-gray-700">
+                JHEEM provides evidence for HIV policy decisions through calibrated
+                mathematical modeling across US metropolitan areas and states.
+              </p>
+              <p className="mt-5 max-w-2xl text-base leading-relaxed text-gray-600">
+                The model uses mathematical modeling to understand and predict HIV
+                transmission and the impact of interventions across local
+                populations. The simulated population is stratified by age, race,
+                sex, sexual behavior, and drug use, and is calibrated to
+                real-world HIV surveillance data under the Ending the HIV Epidemic
+                initiative &mdash; enabling projections of how policy and funding
+                decisions may shape future transmission.
+              </p>
             </div>
 
-            <HeroEvidencePanel />
+            <RecentFinding />
+          </div>
+
+          <div className="mt-14 max-w-5xl border border-slate-200 bg-white/78 shadow-[0_16px_44px_rgba(15,23,42,0.045)] backdrop-blur-sm">
+            <div className="grid divide-y divide-slate-200 md:grid-cols-3 md:divide-x md:divide-y-0">
+              {MODEL_CHARACTERISTICS.map((item) => (
+                <div key={item.title} className="flex min-w-0 items-start gap-4 p-5">
+                  <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center border border-hopkins-blue/10 bg-hopkins-blue/5 text-hopkins-blue">
+                    {item.icon}
+                  </div>
+                  <div>
+                    <p className="mb-1 font-medium text-gray-950">{item.title}</p>
+                    <p className="text-sm leading-relaxed text-gray-600">
+                      {item.description}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Modeling tools */}
+      {/* Research Applications */}
       <section id="analyses" className="scroll-mt-24 border-b border-gray-200">
         <div className="mx-auto max-w-6xl px-5 py-14 sm:px-6 md:py-16">
-          <div className="mb-10 max-w-3xl">
-            <div>
-              <h2 className="font-serif text-3xl font-normal leading-tight text-gray-950 md:text-4xl">
-                Funding interruptions, testing disruptions, and population change.
-              </h2>
-              <p className="mt-4 max-w-2xl text-base leading-relaxed text-gray-600">
-                Open an analysis to compare modeled outcomes by place, scenario,
-                and time horizon.
-              </p>
-            </div>
+          <div className="mb-9 max-w-2xl">
+            <h2 className="mb-2 font-serif text-3xl font-normal text-gray-950">
+              Research Applications
+            </h2>
           </div>
 
           <div className="grid gap-5 md:grid-cols-2">
             {APPLICATIONS.map((app) => {
               const card = (
                 <article
-                  className={`flex h-full min-w-0 flex-col border border-gray-200 bg-white p-5 transition-all sm:p-6 ${
-                    app.href ? 'hover:-translate-y-0.5 hover:border-hopkins-blue/50 hover:shadow-[0_18px_44px_rgba(15,23,42,0.08)]' : 'bg-slate-50/60'
+                  className={`relative flex h-full min-w-0 flex-col overflow-hidden border border-gray-200 bg-white p-5 transition-all sm:p-6 ${
+                    app.href ? 'hover:-translate-y-0.5 hover:border-hopkins-blue/45 hover:shadow-[0_18px_42px_rgba(15,23,42,0.08)]' : 'bg-slate-50/70'
                   }`}
                 >
-                  <div className="mb-4 flex flex-wrap items-center gap-2">
-                    <span className="text-xs font-medium uppercase tracking-[0.12em] text-gray-400">
-                      {app.geography}
-                    </span>
-                    <span className="text-gray-300" aria-hidden="true">/</span>
-                    <span className="text-xs font-medium uppercase tracking-[0.12em] text-gray-400">
-                      {app.scenario}
+                  <div className="absolute inset-x-0 top-0 h-0.5 bg-hopkins-blue/70 opacity-0 transition-opacity group-hover:opacity-100" />
+                  <div className="mb-3 flex items-center justify-between gap-3">
+                    <span className="text-xs font-medium uppercase tracking-[0.14em] text-gray-400">
+                      {app.scope}
                     </span>
                     {app.badge && (
-                      <span className="ml-auto text-[10px] font-semibold uppercase tracking-wide text-amber-800 bg-amber-100 px-1.5 py-0.5">
+                      <span className="bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-800">
                         {app.badge}
                       </span>
                     )}
                   </div>
                   <h3
-                    className={`font-serif text-2xl leading-tight text-gray-950 transition-colors ${
+                    className={`font-serif text-xl leading-snug text-gray-950 transition-colors ${
                       app.href ? 'group-hover:text-hopkins-blue' : ''
                     }`}
                   >
                     {app.title}
                   </h3>
-                  <p className="mt-3 text-base font-medium leading-snug text-gray-800">
-                    {app.question}
-                  </p>
                   <p className="mt-3 text-sm leading-relaxed text-gray-600">
                     {app.description}
                   </p>
-                  <div className="mt-6 border-y border-gray-100 py-4">
-                    <p className="text-sm leading-snug text-gray-500">
-                      <span className="mr-2 whitespace-nowrap font-serif text-[2rem] leading-none text-gray-950">
-                        {app.metric}
-                      </span>
-                      {app.metricLabel}
-                    </p>
-                  </div>
-                  <div className="mt-auto flex items-center justify-between gap-4 pt-4 text-xs text-gray-500">
+                  <div className="mt-auto flex items-center justify-between gap-4 border-t border-gray-100 pt-4 text-xs text-gray-500">
                     <p>{app.citation}</p>
-                    <span className={`text-sm font-semibold ${app.href ? 'text-hopkins-blue' : 'text-gray-400'}`}>
-                      {app.href ? 'Open' : 'Preview'}
+                    <span className={`inline-flex items-center gap-1.5 text-sm font-medium ${app.href ? 'text-hopkins-blue' : 'text-gray-400'}`}>
+                      <span>{app.href ? 'Open' : 'Preview'}</span>
+                      {app.href && (
+                        <svg className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      )}
                     </span>
                   </div>
                 </article>
@@ -358,23 +317,19 @@ export default function HomePageWrapper({ publications }: HomePageWrapperProps) 
       </section>
 
       {/* Publications */}
-      <section id="evidence" className="scroll-mt-24 bg-white">
+      <section id="evidence" className="scroll-mt-24 bg-slate-50">
         <div className="mx-auto max-w-6xl px-5 py-14 sm:px-6 md:py-16">
           <div className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-baseline sm:justify-between">
             <div>
-              <h2 className="font-serif text-3xl font-normal leading-tight text-gray-950 md:text-4xl">
-                Published analyses and assumptions.
+              <h2 className="font-serif text-3xl font-normal text-gray-950">
+                Recent Publications
               </h2>
-              <p className="mt-3 max-w-2xl text-base leading-relaxed text-gray-600">
-                Portal tools should be read alongside the papers that define each
-                scenario, calibration target, and modeled time horizon.
-              </p>
             </div>
             <a
               href="https://jhu-comp-epi.vercel.app/publications?project=jheem"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-sm font-semibold text-hopkins-blue transition-colors hover:text-hopkins-spirit-blue"
+              className="text-sm text-hopkins-blue transition-colors hover:text-hopkins-spirit-blue"
             >
               View all publications &rarr;
             </a>
@@ -388,27 +343,27 @@ export default function HomePageWrapper({ publications }: HomePageWrapperProps) 
                     href={publication.url || `https://doi.org/${publication.doi}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="block border border-gray-200 bg-white p-5 transition-all hover:border-gray-300 hover:shadow-sm sm:p-6"
+                    className="block rounded-md border border-gray-200 bg-white p-5 transition-all hover:border-gray-300 hover:shadow-sm sm:p-6"
                   >
-                    <div className="flex flex-col sm:flex-row sm:items-start gap-4">
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
                       <div className="flex-shrink-0">
                         <span className="inline-block bg-hopkins-blue px-2 py-1 text-xs font-medium text-white">
                           {publication.year}
                         </span>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-base text-gray-900 group-hover:text-hopkins-blue transition-colors leading-snug mb-2">
+                      <div className="min-w-0 flex-1">
+                        <h3 className="mb-2 text-base leading-snug text-gray-900 transition-colors group-hover:text-hopkins-blue">
                           {publication.title}
                         </h3>
-                        <p className="text-sm text-gray-500 mb-1">
+                        <p className="mb-1 text-sm text-gray-500">
                           {publication.authors.split(',').slice(0, 3).join(', ')}
                           {publication.authors.split(',').length > 3 && ' et al.'}
                         </p>
-                        <p className="text-sm text-hopkins-blue italic">
+                        <p className="text-sm italic text-hopkins-blue">
                           {publication.journal}
                         </p>
                         {publication.keyFindings && (
-                          <p className="text-sm text-gray-600 mt-3 leading-relaxed">
+                          <p className="mt-3 text-sm leading-relaxed text-gray-600">
                             {publication.keyFindings}
                           </p>
                         )}
@@ -424,56 +379,39 @@ export default function HomePageWrapper({ publications }: HomePageWrapperProps) 
         </div>
       </section>
 
-      {/* About and support */}
-      <section className="border-t border-gray-200 bg-slate-50">
+      {/* Funding & support */}
+      <section className="border-t border-gray-200 bg-white">
         <div className="mx-auto max-w-6xl px-5 py-14 sm:px-6">
-          <div className="grid gap-10 lg:grid-cols-[16rem_minmax(0,1fr)]">
+          <div className="grid gap-8 lg:grid-cols-[16rem_minmax(0,1fr)]">
             <div>
+              <p className="mb-3 text-xs font-medium uppercase tracking-[0.18em] text-hopkins-blue">
+                Funding &amp; support
+              </p>
               <h2 className="font-serif text-2xl leading-tight text-gray-950">
-                Scenario estimates, not forecasts.
+                Institutional support
               </h2>
             </div>
-            <div className="grid gap-8 md:grid-cols-3">
-              <div>
-                <h3 className="font-medium text-gray-950">
-                  Interpreting projections
-                </h3>
-                <p className="mt-3 text-sm leading-relaxed text-gray-600">
-                  JHEEM estimates what the model projects under specified
-                  assumptions. Results should be read with the scenario
-                  definitions, calibration data, and time horizons in each
-                  analysis.
-                </p>
-              </div>
-              <div>
-                <h3 className="font-medium text-gray-950">
-                  Name continuity
-                </h3>
-                <p className="mt-3 text-sm leading-relaxed text-gray-600">
-                  JHEEM was previously published as the &ldquo;Johns Hopkins
-                  Epidemiology and Economic Model.&rdquo; The acronym is retained;
-                  the name was revised in 2026 to reflect use beyond a single
-                  institution. Citations to the prior name remain equivalent for
-                  attribution, reproducibility, and continuity.
-                </p>
-              </div>
-              <div>
-                <h3 className="font-medium text-gray-950">
-                  Support
-                </h3>
-                <p className="mt-3 text-sm leading-relaxed text-gray-600">
-                  This research is supported by grants from the National Institute
-                  of Mental Health, the National Institute of Allergy and
-                  Infectious Diseases, and the National Institute on Minority
-                  Health and Health Disparities.
-                </p>
-                <ul className="mt-5 grid grid-cols-2 gap-x-8 gap-y-2 font-mono text-xs text-gray-500 sm:grid-cols-4 md:grid-cols-2 lg:grid-cols-4 [&>li]:whitespace-nowrap">
-                  <li>K08MH118094</li>
-                  <li>K01AI138853</li>
-                  <li>P30-AI094189</li>
-                  <li>R01MD018539</li>
-                </ul>
-              </div>
+            <div>
+              <p className="max-w-2xl text-base leading-relaxed text-gray-600">
+                This research is supported by grants from the National Institute of
+                Mental Health, the National Institute of Allergy and Infectious
+                Diseases, and the National Institute on Minority Health and Health
+                Disparities.
+              </p>
+              <ul className="mt-6 grid max-w-lg grid-cols-2 gap-x-8 gap-y-2 font-mono text-sm text-gray-500 sm:grid-cols-4 [&>li]:whitespace-nowrap">
+                <li>K08MH118094</li>
+                <li>K01AI138853</li>
+                <li>P30-AI094189</li>
+                <li>R01MD018539</li>
+              </ul>
+              <p className="mt-6 max-w-2xl border-t border-gray-100 pt-4 text-xs leading-relaxed text-gray-500">
+                <span className="font-medium text-gray-600">A note on the name:</span>{' '}
+                JHEEM was previously published as the &ldquo;Johns Hopkins
+                Epidemiology and Economic Model.&rdquo; The acronym is retained; the
+                name was revised in 2026 to reflect use beyond a single institution.
+                Citations to the prior name remain equivalent for attribution,
+                reproducibility, and continuity.
+              </p>
             </div>
           </div>
         </div>
