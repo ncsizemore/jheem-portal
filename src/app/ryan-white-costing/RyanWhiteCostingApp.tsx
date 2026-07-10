@@ -27,7 +27,10 @@ import {
   buildDecomposition,
   buildHorizonProfile,
   buildRankedStates,
+  buildStateCrossovers,
   buildTrajectoryData,
+  Crossover,
+  crossoverForPoints,
   DecompositionRow,
   ESTIMAND_LABELS,
   EstimandId,
@@ -47,6 +50,7 @@ import {
   SCENARIO_LABELS,
   SCENARIO_ORDER,
   seriesForLocation,
+  StateCrossover,
   stateName,
 } from './view-model';
 
@@ -141,7 +145,7 @@ function ScatterTip({ active, payload }: TipProps) {
 
 function TrajTip({ active, payload, label }: TipProps) {
   if (!active || !payload?.length) return null;
-  const names: Record<string, string> = { careMedian: 'Care cost', adap: 'ADAP avoided', netMedian: 'Net cost' };
+  const names: Record<string, string> = { careMedian: 'Care cost', adap: 'ADAP avoided' };
   const rows = payload.filter((pl) => pl.dataKey && names[pl.dataKey]);
   return (
     <div className="rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 shadow-md">
@@ -1204,33 +1208,53 @@ function ImpactScatter({
 }
 
 // -----------------------------------------------------------------------------
-// Trajectory
+// Trajectory - care cost racing claimed savings, with crossover + window markers
 // -----------------------------------------------------------------------------
 function Trajectory({
   trajectory,
   selectedName,
   scenario,
   error,
+  crossover,
+  horizon,
+  isNational,
+  onNational,
 }: {
   trajectory: ReturnType<typeof buildTrajectoryData>;
   selectedName: string;
   scenario: CostScenarioId;
   error: string | null;
+  crossover: Crossover | null;
+  horizon: number;
+  isNational: boolean;
+  onNational: () => void;
 }) {
   const reduce = useReducedMotion() ?? false;
   const legend = [
     ['Care cost', NAVY],
     ['ADAP avoided', TEAL],
-    ['Net cost', RUST],
   ] as const;
 
   return (
     <div className="min-w-0 rounded-lg border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-      <h3 className="text-base font-semibold text-slate-900">
-        {selectedName} / {SCENARIO_LABELS[scenario].toLowerCase()}
-      </h3>
+      <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+        <h3 className="text-base font-semibold text-slate-900">
+          {selectedName} / {SCENARIO_LABELS[scenario].toLowerCase()}
+        </h3>
+        {!isNational && (
+          <button
+            type="button"
+            onClick={onNational}
+            className="rounded border border-slate-300 px-2 py-0.5 text-[0.7rem] font-medium text-slate-600 transition-colors hover:border-slate-400 hover:text-slate-900"
+          >
+            National view
+          </button>
+        )}
+      </div>
       <p className="mt-1 text-sm leading-relaxed text-slate-500">
-        Care cost (navy, with simulation band), avoided ADAP (teal), and the resulting net (rust) accumulate to 2035.
+        {crossover
+          ? `Care cost overtakes the avoided spending in ${crossover.year} - and is still pulling away at 2035.`
+          : 'Care cost stays below the avoided spending through 2035 in the median draw.'}
       </p>
       <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs font-medium text-slate-500">
         {legend.map(([label, color]) => (
@@ -1239,6 +1263,7 @@ function Trajectory({
             {label}
           </span>
         ))}
+        <span className="text-slate-400">band = 95% simulation interval · discounted dollars</span>
       </div>
       <div className="mt-4 h-[320px] sm:h-[340px]">
         {error ? (
@@ -1247,20 +1272,161 @@ function Trajectory({
           <div className="flex h-full items-center justify-center text-sm text-slate-400">Loading cost series…</div>
         ) : (
           <ResponsiveContainer width="100%" height="100%">
-            <ComposedChart data={trajectory} margin={{ top: 12, right: 16, bottom: 8, left: 6 }}>
+            <ComposedChart data={trajectory} margin={{ top: 18, right: 16, bottom: 8, left: 6 }}>
               <CartesianGrid stroke="#eef2f6" vertical={false} />
               <XAxis dataKey="year" tickLine={false} axisLine={{ stroke: '#e2e8f0' }} tick={{ fill: MUTED, fontSize: 11 }} />
               <YAxis tickFormatter={formatCompactDollars} tickLine={false} axisLine={false} tick={{ fill: MUTED, fontSize: 11 }} width={64} />
               <Tooltip content={<TrajTip />} cursor={{ stroke: '#94a3b8', strokeDasharray: '3 3' }} />
+              {horizon < HORIZON_MAX && (
+                <ReferenceLine
+                  x={horizon}
+                  stroke={INK}
+                  strokeDasharray="4 4"
+                  label={{ value: 'window', position: 'top', fill: MUTED, fontSize: 11 }}
+                />
+              )}
+              {crossover && (
+                <ReferenceLine
+                  x={crossover.year}
+                  stroke={RUST}
+                  strokeWidth={1.4}
+                  label={{ value: 'crosses', position: 'top', fill: RUST, fontSize: 11 }}
+                />
+              )}
               <Area type="monotone" dataKey="careLower" stackId="care" stroke="none" fill="transparent" isAnimationActive={false} />
               <Area type="monotone" dataKey="careBand" stackId="care" stroke="none" fill={NAVY} fillOpacity={0.13} isAnimationActive={!reduce} animationDuration={650} />
               <Line type="monotone" dataKey="careMedian" stroke={NAVY} strokeWidth={3.25} dot={false} activeDot={{ r: 5, strokeWidth: 2 }} isAnimationActive={!reduce} animationDuration={650} />
               <Line type="monotone" dataKey="adap" stroke={TEAL} strokeWidth={2.75} dot={false} activeDot={{ r: 5, strokeWidth: 2 }} isAnimationActive={!reduce} animationDuration={650} />
-              <Line type="monotone" dataKey="netMedian" stroke={RUST} strokeWidth={2.75} dot={false} activeDot={{ r: 5, strokeWidth: 2 }} isAnimationActive={!reduce} animationDuration={650} />
             </ComposedChart>
           </ResponsiveContainer>
         )}
       </div>
+    </div>
+  );
+}
+
+// -----------------------------------------------------------------------------
+// Crossover timeline - every state's break-even year, ranked along the horizon
+// -----------------------------------------------------------------------------
+function CrossoverTimeline({
+  crossovers,
+  horizon,
+  national,
+  selected,
+  hovered,
+  onSelect,
+  onHover,
+}: {
+  crossovers: StateCrossover[];
+  horizon: number;
+  national: Crossover | null;
+  selected: LocationKey;
+  hovered: string | null;
+  onSelect: (state: string) => void;
+  onHover: (state: string | null) => void;
+}) {
+  const crossedYears = crossovers.filter((c) => c.crossoverYear !== null).map((c) => c.crossoverYear as number);
+  const firstYear = Math.min(HORIZON_MIN, ...(crossedYears.length ? crossedYears : [HORIZON_MIN]));
+  const years = Array.from({ length: HORIZON_MAX - firstYear + 1 }, (_, i) => firstYear + i);
+  const never = crossovers.filter((c) => c.crossoverYear === null);
+  const crossedByHorizon = crossovers.filter((c) => c.crossoverYear !== null && (c.crossoverYear as number) <= horizon).length;
+
+  const chip = (item: StateCrossover, muted: boolean) => {
+    const isSel = item.state === selected;
+    const isHover = item.state === hovered;
+    return (
+      <button
+        key={item.state}
+        type="button"
+        onClick={() => onSelect(item.state)}
+        onMouseEnter={() => onHover(item.state)}
+        onMouseLeave={() => onHover(null)}
+        onFocus={() => onHover(item.state)}
+        onBlur={() => onHover(null)}
+        aria-label={`${item.stateName}: ${
+          item.crossoverYear !== null ? `crosses break-even in ${item.crossoverYear}` : 'does not cross break-even by 2035'
+        }`}
+        className={cx(
+          'rounded border px-1.5 py-0.5 font-mono text-[0.72rem] font-medium transition-all',
+          isSel
+            ? 'border-[#002D72] bg-slate-100 text-slate-900'
+            : isHover
+            ? 'border-slate-500 bg-white text-slate-900'
+            : 'border-slate-200 bg-white text-slate-600 hover:border-slate-400',
+          muted && !isSel && !isHover && 'opacity-45'
+        )}
+      >
+        {item.state}
+      </button>
+    );
+  };
+
+  return (
+    <div className="min-w-0 rounded-lg border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+      <h3 className="text-base font-semibold text-slate-900">Break-even year, all 30 states</h3>
+      <p className="mt-1 text-sm leading-relaxed text-slate-500">
+        {crossovers.length === 0 ? (
+          'Loading annual series…'
+        ) : (
+          <>
+            Within the current window,{' '}
+            <span className="font-semibold text-slate-900">{crossedByHorizon} of 30</span> states cross break-even
+            {national && (
+              <>
+                ; the national ledger crosses in <span className="font-semibold text-slate-900">{national.year}</span>
+              </>
+            )}
+            . States past the window edge are dimmed. Click a state to focus it.
+          </>
+        )}
+      </p>
+      {crossovers.length > 0 && (
+        <div className="mt-4 overflow-x-auto pb-1">
+          <div className="flex min-w-[520px] gap-1.5">
+            {years.map((year) => {
+              const items = crossovers
+                .filter((c) => c.crossoverYear === year)
+                .sort((a, b) => a.state.localeCompare(b.state));
+              const outsideWindow = year > horizon;
+              return (
+                <div key={year} className="min-w-0 flex-1">
+                  <p
+                    className={cx(
+                      'border-b pb-1 text-center font-mono text-[0.7rem] tabular-nums',
+                      outsideWindow ? 'border-slate-100 text-slate-300' : 'border-slate-300 text-slate-600'
+                    )}
+                  >
+                    {String(year).slice(2)}
+                  </p>
+                  <div className="mt-1.5 flex flex-col items-center gap-1">
+                    {items.length === 0 ? (
+                      <span className="text-[0.7rem] text-slate-200">·</span>
+                    ) : (
+                      items.map((item) => chip(item, outsideWindow))
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+            <div className="min-w-0 flex-1 border-l border-dashed border-slate-200 pl-1.5">
+              <p className="border-b border-teal-200 pb-1 text-center text-[0.7rem] font-medium text-teal-700">
+                not by &rsquo;35
+              </p>
+              <div className="mt-1.5 flex flex-col items-center gap-1">
+                {never.length === 0 ? (
+                  <span className="text-[0.7rem] text-slate-200">·</span>
+                ) : (
+                  never.sort((a, b) => a.state.localeCompare(b.state)).map((item) => chip(item, false))
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      <p className="mt-3 text-[0.7rem] leading-relaxed text-slate-400">
+        Break-even = first year median cumulative care cost exceeds cumulative ADAP spending avoided. &ldquo;Not by
+        &rsquo;35&rdquo; states remain net-saving in the median draw within the model horizon.
+      </p>
     </div>
   );
 }
@@ -1313,7 +1479,7 @@ function ModelReview() {
     <section className="border-t border-slate-200 bg-slate-50">
       <div className="mx-auto w-full max-w-full px-5 py-16 sm:max-w-6xl sm:px-6">
         <Reveal>
-          <SectionHead n="04" eyebrow="Methods" title="Accounting frame and model assumptions">
+          <SectionHead n="05" eyebrow="Methods" title="Accounting frame and model assumptions">
             Cost, engagement, scope, and uncertainty conventions for interpreting the figures.
           </SectionHead>
 
@@ -1491,6 +1657,12 @@ export default function RyanWhiteCostingApp() {
   const rankedStates = useMemo(() => buildRankedStates(ryanWhiteCostingSummary.states, scenario), [scenario]);
   const selectedSeries = seriesForLocation(series, location);
   const trajectory = useMemo(() => buildTrajectoryData(selectedSeries, scenario), [selectedSeries, scenario]);
+  const selectedCrossover = useMemo(() => crossoverForPoints(selectedSeries, scenario), [selectedSeries, scenario]);
+  const stateCrossovers = useMemo(() => buildStateCrossovers(series, scenario), [series, scenario]);
+  const nationalCrossover = useMemo(
+    () => crossoverForPoints(series?.national ?? [], scenario),
+    [series, scenario]
+  );
 
   const selectedName = location === 'Total' ? 'National total' : stateName(location);
   const selectedPoint = rankedStates.find((s) => s.state === location) ?? rankedStates[0];
@@ -1520,11 +1692,48 @@ export default function RyanWhiteCostingApp() {
         estimand={primaryEstimand}
       />
 
-      <section className="border-t border-slate-200 bg-slate-50">
+      <section className="border-t border-slate-200 bg-white">
         <div className="mx-auto w-full max-w-full px-5 py-16 sm:max-w-6xl sm:px-6">
           <Reveal>
             <SectionHead
               n="02"
+              eyebrow="Trajectory and crossover"
+              title="When do the costs overtake the savings?"
+            >
+              Cumulative downstream care cost races the ADAP spending a cut would avoid, in discounted dollars. The
+              question is not whether the lines cross, but when - and the answer moves with the drug-price row selected
+              above ({SCENARIO_LABELS[scenario].toLowerCase()}). The budget window from the hero is marked on the chart.
+            </SectionHead>
+            <div className="mt-10 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+              <Trajectory
+                trajectory={trajectory}
+                selectedName={selectedName}
+                scenario={scenario}
+                error={seriesError}
+                crossover={selectedCrossover}
+                horizon={horizon}
+                isNational={location === 'Total'}
+                onNational={() => setLocation('Total')}
+              />
+              <CrossoverTimeline
+                crossovers={stateCrossovers}
+                horizon={horizon}
+                national={nationalCrossover}
+                selected={location}
+                hovered={hovered}
+                onSelect={setLocation}
+                onHover={setHovered}
+              />
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
+      <section className="border-t border-slate-200 bg-slate-50">
+        <div className="mx-auto w-full max-w-full px-5 py-16 sm:max-w-6xl sm:px-6">
+          <Reveal>
+            <SectionHead
+              n="03"
               eyebrow="State breakdown"
               title="Most states land net-costly in most draws; doubt clusters in large ADAP programs"
               right={<SwarmLegend />}
@@ -1558,12 +1767,9 @@ export default function RyanWhiteCostingApp() {
       <section className="bg-white">
         <div className="mx-auto w-full max-w-full px-5 py-16 sm:max-w-6xl sm:px-6">
           <Reveal>
-            <SectionHead n="03" eyebrow="Detail" title="Trajectories and the full state table" />
+            <SectionHead n="04" eyebrow="Detail" title="The full state table" />
           </Reveal>
-          <div className="mt-10 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-            <Reveal>
-              <Trajectory trajectory={trajectory} selectedName={selectedName} scenario={scenario} error={seriesError} />
-            </Reveal>
+          <div className="mt-10 grid gap-6">
             <Reveal className="min-w-0 rounded-lg border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
               <h3 className="text-base font-semibold text-slate-900">All states, sorted by median net cost</h3>
               <div className="mt-4 max-h-[380px] overflow-auto">

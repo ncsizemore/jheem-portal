@@ -325,9 +325,40 @@ export function formatPerDollar(value: number): string {
   return `$${value >= 10 ? value.toFixed(1) : value.toFixed(2)}`;
 }
 
+// First year the median net cost is positive (care cost overtakes claimed
+// savings), with a linearly interpolated fractional position for markers.
+export interface Crossover {
+  year: number;
+  position: number;
+}
+
+function computeCrossover(years: number[], netMedians: number[]): Crossover | null {
+  for (let i = 0; i < netMedians.length; i += 1) {
+    if (netMedians[i] > 0) {
+      return {
+        year: years[i],
+        position: i === 0 ? years[0] : years[i - 1] + -netMedians[i - 1] / (netMedians[i] - netMedians[i - 1]),
+      };
+    }
+  }
+  return null;
+}
+
+function netMediansOf(points: AnnualCostPoint[], estimand: EstimandId): number[] {
+  return points.map(
+    (point) =>
+      (estimand === 'pooled' ? point.pooledCumulativeNetCostVsAdap : scenarioMetric(point.cumulativeNetCostVsAdap, estimand))
+        .median
+  );
+}
+
+export function crossoverForPoints(points: AnnualCostPoint[], estimand: EstimandId): Crossover | null {
+  if (points.length === 0) return null;
+  return computeCrossover(points.map((point) => point.year), netMediansOf(points, estimand));
+}
+
 // Per-dollar trajectory across horizon years, plus the break-even crossing,
-// for the budget-window control and its sparkline. crossoverPosition is the
-// linearly interpolated fractional year where median net cost crosses zero.
+// for the budget-window control and its sparkline.
 export interface HorizonProfile {
   years: number[];
   perDollar: number[];
@@ -346,31 +377,42 @@ export function buildHorizonProfile(points: AnnualCostPoint[], estimand: Estiman
       estimand === 'pooled' ? point.pooledCumulativeCareCost : scenarioMetric(point.cumulativeCareCost, estimand);
     return care.median / point.cumulativeAdapSpendingAvoided;
   });
-  const netMedians = points.map(
-    (point) =>
-      (estimand === 'pooled' ? point.pooledCumulativeNetCostVsAdap : scenarioMetric(point.cumulativeNetCostVsAdap, estimand))
-        .median
-  );
-
-  let crossoverYear: number | null = null;
-  let crossoverPosition: number | null = null;
-  for (let i = 0; i < netMedians.length; i += 1) {
-    if (netMedians[i] > 0) {
-      crossoverYear = years[i];
-      crossoverPosition =
-        i === 0 ? years[0] : years[i - 1] + -netMedians[i - 1] / (netMedians[i] - netMedians[i - 1]);
-      break;
-    }
-  }
+  const crossover = computeCrossover(years, netMediansOf(points, estimand));
 
   return {
     years,
     perDollar,
-    crossoverYear,
-    crossoverPosition,
+    crossoverYear: crossover?.year ?? null,
+    crossoverPosition: crossover?.position ?? null,
     maxPerDollar: Math.max(...perDollar, 1),
     finalPerDollar: perDollar[perDollar.length - 1],
   };
+}
+
+// Crossover year for every state, for the ranked crossover timeline.
+export interface StateCrossover {
+  state: string;
+  stateName: string;
+  crossoverYear: number | null;
+  perDollarFinal: number;
+}
+
+export function buildStateCrossovers(
+  series: RyanWhiteCostingSeries | null,
+  scenario: CostScenarioId
+): StateCrossover[] {
+  if (!series) return [];
+  return Object.entries(series.states).map(([state, points]) => {
+    const crossover = crossoverForPoints(points, scenario);
+    const final = points[points.length - 1];
+    return {
+      state,
+      stateName: stateName(state),
+      crossoverYear: crossover?.year ?? null,
+      perDollarFinal:
+        scenarioMetric(final.cumulativeCareCost, scenario).median / final.cumulativeAdapSpendingAvoided,
+    };
+  });
 }
 
 export function buildTrajectoryData(
