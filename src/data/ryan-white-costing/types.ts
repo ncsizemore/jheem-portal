@@ -38,6 +38,12 @@ export interface ScenarioShares {
   high: number;
 }
 
+export interface MechanismPoint {
+  activeOnArtImmediate: number;
+  activeOnArtReengaged: number;
+  offArtExcess: number;
+}
+
 export interface AnnualCostPoint {
   year: number;
   cumulativeCareCost: ScenarioValues;
@@ -48,6 +54,9 @@ export interface AnnualCostPoint {
   cumulativeExcessNewDiagnoses: QuantileValue;
   cumulativePersonYearsOnArt: QuantileValue;
   negativeExcessNewShare?: number;
+  pooledCumulativeCareCost: QuantileValue;
+  pooledCumulativeNetCostVsAdap: QuantileValue;
+  mechanism: MechanismPoint;
 }
 
 export interface FinalYearSummary extends AnnualCostPoint {
@@ -60,9 +69,35 @@ export interface FinalYearSummary extends AnnualCostPoint {
   rankByNetCostRatioVsAdap?: number;
 }
 
+export interface PooledFinalYearSummary {
+  cumulativeCareCost: QuantileValue;
+  cumulativeCareCostQuantiles: QuantileCurve;
+  cumulativeNetCostVsAdap: QuantileValue;
+  cumulativeNetCostVsAdapQuantiles: QuantileCurve;
+  cumulativeNetCostRatioVsAdap: QuantileValue;
+  shareNetCostPositiveVsAdap: number;
+}
+
+export interface BaselineContext {
+  diagnosedPrevalence: number;
+  suppression: number;
+  viralSuppressionPct: number;
+  adapSuppression: number;
+  propSuppressedOnAdap: number;
+  rwClients: number;
+  adapClients: number;
+  adapClientShare: number;
+  oahsClients: number;
+  testing: number;
+  sexualTransmissionRate: number;
+  baselineNewDiagnoses: number;
+}
+
 export interface StateCostingSummary {
   state: string;
   finalYear: FinalYearSummary;
+  pooledFinalYear: PooledFinalYearSummary;
+  baselineContext: BaselineContext;
 }
 
 export interface RyanWhiteCostingMetadata {
@@ -75,6 +110,11 @@ export interface RyanWhiteCostingMetadata {
   };
   intervalLevel: IntervalLevel;
   defaultCostScenario: CostScenarioId;
+  primaryEstimand: 'pooled' | CostScenarioId;
+  pooledConvention: {
+    description: string;
+    nationalTotal: string;
+  };
   defaultFocusState: string;
   dollarYear: string;
   fundingAdjustment: {
@@ -108,6 +148,7 @@ export interface RyanWhiteCostingMetadata {
 export interface RyanWhiteCostingSummary {
   national: {
     finalYear: FinalYearSummary;
+    pooledFinalYear: PooledFinalYearSummary;
   };
   states: StateCostingSummary[];
   sensitivity: {

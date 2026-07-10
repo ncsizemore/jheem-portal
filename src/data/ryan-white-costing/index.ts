@@ -16,8 +16,11 @@ import type {
 
 export type {
   AnnualCostPoint,
+  BaselineContext,
   CostScenarioId,
   FinalYearSummary,
+  MechanismPoint,
+  PooledFinalYearSummary,
   QuantileCurve,
   QuantileValue,
   RyanWhiteCostingMetadata,

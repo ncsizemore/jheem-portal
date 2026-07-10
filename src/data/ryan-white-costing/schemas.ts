@@ -93,6 +93,32 @@ function assertConsistentQuantiles(
   }
 }
 
+function requirePooledFinalYear(value: unknown, label: string): void {
+  requireRecord(value, label);
+  requireQuantileValue(value.cumulativeCareCost, `${label}.cumulativeCareCost`);
+  requireQuantileCurve(value.cumulativeCareCostQuantiles, `${label}.cumulativeCareCostQuantiles`);
+  requireQuantileValue(value.cumulativeNetCostVsAdap, `${label}.cumulativeNetCostVsAdap`);
+  requireQuantileCurve(value.cumulativeNetCostVsAdapQuantiles, `${label}.cumulativeNetCostVsAdapQuantiles`);
+  requireQuantileValue(value.cumulativeNetCostRatioVsAdap, `${label}.cumulativeNetCostRatioVsAdap`);
+  requireNumber(value.shareNetCostPositiveVsAdap, `${label}.shareNetCostPositiveVsAdap`);
+}
+
+function requireBaselineContext(value: unknown, label: string): void {
+  requireRecord(value, label);
+  for (const key of [
+    'diagnosedPrevalence',
+    'suppression',
+    'viralSuppressionPct',
+    'adapSuppression',
+    'propSuppressedOnAdap',
+    'rwClients',
+    'adapClients',
+    'adapClientShare',
+  ]) {
+    requireNumber(value[key], `${label}.${key}`);
+  }
+}
+
 function requireFinalYearUncertainty(value: unknown, label: string): void {
   requireRecord(value, label);
   requireScenarioQuantileCurves(
@@ -128,10 +154,13 @@ export function validateRyanWhiteCostingSummary(value: unknown): RyanWhiteCostin
   requireRecord(value.national, 'summary.national');
   requireRecord(value.national.finalYear, 'summary.national.finalYear');
   requireFinalYearUncertainty(value.national.finalYear, 'summary.national.finalYear');
+  requirePooledFinalYear(value.national.pooledFinalYear, 'summary.national.pooledFinalYear');
   requireArray(value.states, 'summary.states');
   value.states.forEach((state, index) => {
     requireRecord(state, `summary.states[${index}]`);
     requireFinalYearUncertainty(state.finalYear, `summary.states[${index}].finalYear`);
+    requirePooledFinalYear(state.pooledFinalYear, `summary.states[${index}].pooledFinalYear`);
+    requireBaselineContext(state.baselineContext, `summary.states[${index}].baselineContext`);
   });
   requireRecord(value.sensitivity, 'summary.sensitivity');
   requireArray(value.sensitivity.costScenarios, 'summary.sensitivity.costScenarios');

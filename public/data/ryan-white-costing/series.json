@@ -65,7 +65,22 @@
         "lower": 114.8,
         "upper": 1557.3
       },
-      "negativeExcessNewShare": 0
+      "negativeExcessNewShare": 0,
+      "pooledCumulativeCareCost": {
+        "median": 31058620,
+        "lower": 3679116,
+        "upper": 76509184
+      },
+      "pooledCumulativeNetCostVsAdap": {
+        "median": -706913642,
+        "lower": -734293146,
+        "upper": -661463078
+      },
+      "mechanism": {
+        "activeOnArtImmediate": 975.1,
+        "activeOnArtReengaged": 0,
+        "offArtExcess": 337.8
+      }
     },
     {
       "year": 2027,
@@ -132,7 +147,22 @@
         "lower": 746.9,
         "upper": 10046.9
       },
-      "negativeExcessNewShare": 0
+      "negativeExcessNewShare": 0,
+      "pooledCumulativeCareCost": {
+        "median": 205794851,
+        "lower": 24206342,
+        "upper": 503992148
+      },
+      "pooledCumulativeNetCostVsAdap": {
+        "median": -1248655335,
+        "lower": -1430243844,
+        "upper": -950458038
+      },
+      "mechanism": {
+        "activeOnArtImmediate": 5139.7,
+        "activeOnArtReengaged": 203,
+        "offArtExcess": 1793.7
+      }
     },
     {
       "year": 2028,
@@ -199,7 +229,22 @@
         "lower": 2260,
         "upper": 30057.8
       },
-      "negativeExcessNewShare": 0
+      "negativeExcessNewShare": 0,
+      "pooledCumulativeCareCost": {
+        "median": 629482108,
+        "lower": 74636293,
+        "upper": 1537432627
+      },
+      "pooledCumulativeNetCostVsAdap": {
+        "median": -1520577713,
+        "lower": -2075423528,
+        "upper": -612627194
+      },
+      "mechanism": {
+        "activeOnArtImmediate": 11443.6,
+        "activeOnArtReengaged": 1139.2,
+        "offArtExcess": 3817.6
+      }
     },
     {
       "year": 2029,
@@ -266,7 +311,22 @@
         "lower": 4930.5,
         "upper": 64888
       },
-      "negativeExcessNewShare": 0
+      "negativeExcessNewShare": 0,
+      "pooledCumulativeCareCost": {
+        "median": 1384661552,
+        "lower": 165157960,
+        "upper": 3371261013
+      },
+      "pooledCumulativeNetCostVsAdap": {
+        "median": -1440747429,
+        "lower": -2660251021,
+        "upper": 545852032
+      },
+      "mechanism": {
+        "activeOnArtImmediate": 19121,
+        "activeOnArtReengaged": 2758.7,
+        "offArtExcess": 5605.7
+      }
     },
     {
       "year": 2030,
@@ -333,7 +393,22 @@
         "lower": 8934.3,
         "upper": 116675
       },
-      "negativeExcessNewShare": 0
+      "negativeExcessNewShare": 0,
+      "pooledCumulativeCareCost": {
+        "median": 2538097755,
+        "lower": 303937876,
+        "upper": 6173586112
+      },
+      "pooledCumulativeNetCostVsAdap": {
+        "median": -942990023,
+        "lower": -3177149901,
+        "upper": 2692498334
+      },
+      "mechanism": {
+        "activeOnArtImmediate": 27740.2,
+        "activeOnArtReengaged": 4883.7,
+        "offArtExcess": 7034
+      }
     },
     {
       "year": 2031,
@@ -400,7 +475,22 @@
         "lower": 14291.2,
         "upper": 187049.6
       },
-      "negativeExcessNewShare": 0
+      "negativeExcessNewShare": 0,
+      "pooledCumulativeCareCost": {
+        "median": 4142455047,
+        "lower": 497807548,
+        "upper": 10080665493
+      },
+      "pooledCumulativeNetCostVsAdap": {
+        "median": 24785914,
+        "lower": -3619861585,
+        "upper": 5962996360
+      },
+      "mechanism": {
+        "activeOnArtImmediate": 37061.7,
+        "activeOnArtReengaged": 7356,
+        "offArtExcess": 8189.4
+      }
     },
     {
       "year": 2032,
@@ -467,7 +557,22 @@
         "lower": 21133.5,
         "upper": 276999.4
       },
-      "negativeExcessNewShare": 0
+      "negativeExcessNewShare": 0,
+      "pooledCumulativeCareCost": {
+        "median": 6245820472,
+        "lower": 752549330,
+        "upper": 15185988044
+      },
+      "pooledCumulativeNetCostVsAdap": {
+        "median": 1510111188,
+        "lower": -3983159954,
+        "upper": 10450278760
+      },
+      "mechanism": {
+        "activeOnArtImmediate": 46919.4,
+        "activeOnArtReengaged": 10081.6,
+        "offArtExcess": 9160.1
+      }
     },
     {
       "year": 2033,
@@ -534,7 +639,22 @@
         "lower": 29521.5,
         "upper": 388174
       },
-      "negativeExcessNewShare": 0
+      "negativeExcessNewShare": 0,
+      "pooledCumulativeCareCost": {
+        "median": 8890942442,
+        "lower": 1073216914,
+        "upper": 21639397101
+      },
+      "pooledCumulativeNetCostVsAdap": {
+        "median": 3555194176,
+        "lower": -4262531351,
+        "upper": 16303648836
+      },
+      "mechanism": {
+        "activeOnArtImmediate": 57074.7,
+        "activeOnArtReengaged": 12952.1,
+        "offArtExcess": 10018.7
+      }
     },
     {
       "year": 2034,
@@ -601,7 +721,22 @@
         "lower": 39491.6,
         "upper": 520593.2
       },
-      "negativeExcessNewShare": 0
+      "negativeExcessNewShare": 0,
+      "pooledCumulativeCareCost": {
+        "median": 12121274049,
+        "lower": 1464562311,
+        "upper": 29524283988
+      },
+      "pooledCumulativeNetCostVsAdap": {
+        "median": 6202963665,
+        "lower": -4453748073,
+        "upper": 23605973605
+      },
+      "mechanism": {
+        "activeOnArtImmediate": 67510.4,
+        "activeOnArtReengaged": 15968.8,
+        "offArtExcess": 10799.2
+      }
     },
     {
       "year": 2035,
@@ -668,7 +803,22 @@
         "lower": 51075.4,
         "upper": 675147.1
       },
-      "negativeExcessNewShare": 0
+      "negativeExcessNewShare": 0,
+      "pooledCumulativeCareCost": {
+        "median": 15983489379,
+        "lower": 1925487544,
+        "upper": 38920792850
+      },
+      "pooledCumulativeNetCostVsAdap": {
+        "median": 9499584706,
+        "lower": -4558417130,
+        "upper": 32436888177
+      },
+      "mechanism": {
+        "activeOnArtImmediate": 78144.8,
+        "activeOnArtReengaged": 19086.2,
+        "offArtExcess": 11529.4
+      }
     }
   ],
   "states": {
@@ -738,7 +888,22 @@
           "lower": 4.2,
           "upper": 48.7
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 952209,
+          "lower": 137240,
+          "upper": 2246258
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -9896909,
+          "lower": -10711879,
+          "upper": -8602860
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 30.3,
+          "activeOnArtReengaged": 0,
+          "offArtExcess": 10.3
+        }
       },
       {
         "year": 2027,
@@ -805,7 +970,22 @@
           "lower": 28.7,
           "upper": 317.3
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 6508614,
+          "lower": 953659,
+          "upper": 15120410
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -14873629,
+          "lower": -20428584,
+          "upper": -6261833
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 168.6,
+          "activeOnArtReengaged": 6.2,
+          "offArtExcess": 57.2
+        }
       },
       {
         "year": 2028,
@@ -872,7 +1052,22 @@
           "lower": 88.6,
           "upper": 967.1
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 20398607,
+          "lower": 3006218,
+          "upper": 47158405
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -11209971,
+          "lower": -28602360,
+          "upper": 15549827
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 391.5,
+          "activeOnArtReengaged": 36.2,
+          "offArtExcess": 126.8
+        }
       },
       {
         "year": 2029,
@@ -939,7 +1134,22 @@
           "lower": 197.2,
           "upper": 2119.9
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 45884797,
+          "lower": 6852914,
+          "upper": 105500217
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 4347739,
+          "lower": -34684145,
+          "upper": 63963158
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 675.3,
+          "activeOnArtReengaged": 90.8,
+          "offArtExcess": 194.1
+        }
       },
       {
         "year": 2030,
@@ -1006,7 +1216,22 @@
           "lower": 365,
           "upper": 3858.7
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 85458122,
+          "lower": 12880342,
+          "upper": 196215992
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 34281762,
+          "lower": -38296018,
+          "upper": 145039632
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 1002,
+          "activeOnArtReengaged": 165.7,
+          "offArtExcess": 250.5
+        }
       },
       {
         "year": 2031,
@@ -1073,7 +1298,22 @@
           "lower": 600.5,
           "upper": 6251.7
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 141415931,
+          "lower": 21514641,
+          "upper": 323852535
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 80881026,
+          "lower": -39020264,
+          "upper": 263317630
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 1364.8,
+          "activeOnArtReengaged": 255.3,
+          "offArtExcess": 297.6
+        }
       },
       {
         "year": 2032,
@@ -1140,7 +1380,22 @@
           "lower": 910.1,
           "upper": 9322.4
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 215630827,
+          "lower": 33082456,
+          "upper": 491588222
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 146009956,
+          "lower": -36538415,
+          "upper": 421967352
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 1743.2,
+          "activeOnArtReengaged": 356.1,
+          "offArtExcess": 336.7
+        }
       },
       {
         "year": 2033,
@@ -1207,7 +1462,22 @@
           "lower": 1298.8,
           "upper": 13062.7
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 309432735,
+          "lower": 47867418,
+          "upper": 703243966
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 230990538,
+          "lower": -30574779,
+          "upper": 624801768
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 2136.3,
+          "activeOnArtReengaged": 463.5,
+          "offArtExcess": 369.6
+        }
       },
       {
         "year": 2034,
@@ -1274,7 +1544,22 @@
           "lower": 1770.3,
           "upper": 17526.8
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 424560761,
+          "lower": 65763025,
+          "upper": 965722973
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 337554169,
+          "lower": -21243566,
+          "upper": 878716382
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 2534.2,
+          "activeOnArtReengaged": 576.4,
+          "offArtExcess": 398.7
+        }
       },
       {
         "year": 2035,
@@ -1341,7 +1626,22 @@
           "lower": 2326.7,
           "upper": 22758.8
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 561946253,
+          "lower": 87264799,
+          "upper": 1274636545
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 466624715,
+          "lower": -8056739,
+          "upper": 1179315008
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 2935.8,
+          "activeOnArtReengaged": 692,
+          "offArtExcess": 422.7
+        }
       }
     ],
     "AR": [
@@ -1410,7 +1710,22 @@
           "lower": 0.6,
           "upper": 12.9
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 204473,
+          "lower": 16812,
+          "upper": 599370
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -4493018,
+          "lower": -4680678,
+          "upper": -4098120
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 6.1,
+          "activeOnArtReengaged": 0,
+          "offArtExcess": 3.5
+        }
       },
       {
         "year": 2027,
@@ -1477,7 +1792,22 @@
           "lower": 3.9,
           "upper": 91
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 1478305,
+          "lower": 124618,
+          "upper": 4306554
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -7779855,
+          "lower": -9133542,
+          "upper": -4951606
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 35.3,
+          "activeOnArtReengaged": 2.1,
+          "offArtExcess": 20.4
+        }
       },
       {
         "year": 2028,
@@ -1544,7 +1874,22 @@
           "lower": 12.2,
           "upper": 288
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 4789587,
+          "lower": 409959,
+          "upper": 13778764
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -8896408,
+          "lower": -13276036,
+          "upper": 92769
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 82.9,
+          "activeOnArtReengaged": 12.9,
+          "offArtExcess": 45.5
+        }
       },
       {
         "year": 2029,
@@ -1611,7 +1956,22 @@
           "lower": 27,
           "upper": 639.2
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 10931157,
+          "lower": 941251,
+          "upper": 31340135
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -7053707,
+          "lower": -17043613,
+          "upper": 13355270
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 142.4,
+          "activeOnArtReengaged": 32.5,
+          "offArtExcess": 68.8
+        }
       },
       {
         "year": 2030,
@@ -1678,7 +2038,22 @@
           "lower": 51.6,
           "upper": 1170.6
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 20549987,
+          "lower": 1790028,
+          "upper": 58667734
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -1608537,
+          "lower": -20368495,
+          "upper": 36509210
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 209.6,
+          "activeOnArtReengaged": 58.9,
+          "offArtExcess": 87
+        }
       },
       {
         "year": 2031,
@@ -1745,7 +2120,22 @@
           "lower": 86.9,
           "upper": 1905.5
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 34157009,
+          "lower": 2940706,
+          "upper": 97146746
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 7946389,
+          "lower": -23269914,
+          "upper": 70936126
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 281.3,
+          "activeOnArtReengaged": 89.5,
+          "offArtExcess": 101.7
+        }
       },
       {
         "year": 2032,
@@ -1812,7 +2202,22 @@
           "lower": 132.5,
           "upper": 2851.5
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 51855197,
+          "lower": 4500418,
+          "upper": 147206408
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 21710503,
+          "lower": -25644276,
+          "upper": 117061714
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 353,
+          "activeOnArtReengaged": 122.6,
+          "offArtExcess": 113.9
+        }
       },
       {
         "year": 2033,
@@ -1879,7 +2284,22 @@
           "lower": 188,
           "upper": 4003.6
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 74122160,
+          "lower": 6473377,
+          "upper": 209627461
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 40157977,
+          "lower": -27490807,
+          "upper": 175663277
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 429.2,
+          "activeOnArtReengaged": 158.8,
+          "offArtExcess": 122.4
+        }
       },
       {
         "year": 2034,
@@ -1946,7 +2366,22 @@
           "lower": 254.6,
           "upper": 5358.2
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 101135552,
+          "lower": 8868085,
+          "upper": 283823065
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 63463126,
+          "lower": -28804340,
+          "upper": 246150640
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 503.2,
+          "activeOnArtReengaged": 195.6,
+          "offArtExcess": 129
+        }
       },
       {
         "year": 2035,
@@ -2013,7 +2448,22 @@
           "lower": 332.3,
           "upper": 6890
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 132977246,
+          "lower": 11775602,
+          "upper": 371403268
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 91704585,
+          "lower": -29497059,
+          "upper": 330130608
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 577.1,
+          "activeOnArtReengaged": 233.7,
+          "offArtExcess": 134.2
+        }
       }
     ],
     "AZ": [
@@ -2082,7 +2532,22 @@
           "lower": 1.7,
           "upper": 37.5
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 597566,
+          "lower": 50388,
+          "upper": 1707029
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -12213315,
+          "lower": -12760493,
+          "upper": -11103852
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 18.4,
+          "activeOnArtReengaged": 0,
+          "offArtExcess": 7.7
+        }
       },
       {
         "year": 2027,
@@ -2149,7 +2614,22 @@
           "lower": 10.4,
           "upper": 222.5
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 3759207,
+          "lower": 310903,
+          "upper": 10630447
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -21489422,
+          "lower": -24937726,
+          "upper": -14618182
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 90.2,
+          "activeOnArtReengaged": 4.6,
+          "offArtExcess": 38
+        }
       },
       {
         "year": 2028,
@@ -2216,7 +2696,22 @@
           "lower": 30.2,
           "upper": 635
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 10980762,
+          "lower": 909512,
+          "upper": 30995043
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -26343350,
+          "lower": -36414601,
+          "upper": -6329069
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 187,
+          "activeOnArtReengaged": 24.3,
+          "offArtExcess": 74.2
+        }
       },
       {
         "year": 2029,
@@ -2283,7 +2778,22 @@
           "lower": 63.2,
           "upper": 1318.8
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 23266575,
+          "lower": 1900732,
+          "upper": 65546773
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -25781308,
+          "lower": -47147151,
+          "upper": 16498890
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 296.7,
+          "activeOnArtReengaged": 54.6,
+          "offArtExcess": 101.9
+        }
       },
       {
         "year": 2030,
@@ -2350,7 +2860,22 @@
           "lower": 110.8,
           "upper": 2288.3
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 41288034,
+          "lower": 3349545,
+          "upper": 116487911
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -19142150,
+          "lower": -57080640,
+          "upper": 56057726
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 413.8,
+          "activeOnArtReengaged": 92.2,
+          "offArtExcess": 120.9
+        }
       },
       {
         "year": 2031,
@@ -2417,7 +2942,22 @@
           "lower": 173.5,
           "upper": 3584.9
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 65433851,
+          "lower": 5325582,
+          "upper": 185695555
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -6047112,
+          "lower": -66155380,
+          "upper": 114214593
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 537.9,
+          "activeOnArtReengaged": 133.1,
+          "offArtExcess": 136.1
+        }
       },
       {
         "year": 2032,
@@ -2484,7 +3024,22 @@
           "lower": 249.8,
           "upper": 5226.2
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 96351780,
+          "lower": 7856867,
+          "upper": 274665458
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 14141907,
+          "lower": -74353006,
+          "upper": 192455584
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 665,
+          "activeOnArtReengaged": 177.3,
+          "offArtExcess": 149.3
+        }
       },
       {
         "year": 2033,
@@ -2551,7 +3106,22 @@
           "lower": 343.1,
           "upper": 7226.1
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 135103217,
+          "lower": 10981603,
+          "upper": 384396241
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 42476925,
+          "lower": -81644689,
+          "upper": 291769949
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 796,
+          "activeOnArtReengaged": 222.7,
+          "offArtExcess": 161.3
+        }
       },
       {
         "year": 2034,
@@ -2618,7 +3188,22 @@
           "lower": 450.9,
           "upper": 9615.2
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 181580761,
+          "lower": 14671282,
+          "upper": 517160825
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 78841442,
+          "lower": -88068037,
+          "upper": 414421506
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 928.6,
+          "activeOnArtReengaged": 270,
+          "offArtExcess": 172.8
+        }
       },
       {
         "year": 2035,
@@ -2685,7 +3270,22 @@
           "lower": 574.2,
           "upper": 12371.8
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 236637499,
+          "lower": 19030523,
+          "upper": 673769658
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 124079706,
+          "lower": -93527269,
+          "upper": 561211865
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 1068.1,
+          "activeOnArtReengaged": 319.3,
+          "offArtExcess": 184.8
+        }
       }
     ],
     "CA": [
@@ -2754,7 +3354,22 @@
           "lower": 5.8,
           "upper": 127.2
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 1968147,
+          "lower": 183464,
+          "upper": 5899351
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -102406916,
+          "lower": -104191599,
+          "upper": -98475711
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 61.5,
+          "activeOnArtReengaged": 0,
+          "offArtExcess": 18.6
+        }
       },
       {
         "year": 2027,
@@ -2821,7 +3436,22 @@
           "lower": 38.2,
           "upper": 837.4
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 13521545,
+          "lower": 1256397,
+          "upper": 40573212
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -192188530,
+          "lower": -204453678,
+          "upper": -165136863
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 336.4,
+          "activeOnArtReengaged": 11.2,
+          "offArtExcess": 101.8
+        }
       },
       {
         "year": 2028,
@@ -2888,7 +3518,22 @@
           "lower": 116.2,
           "upper": 2525.7
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 42249064,
+          "lower": 3889089,
+          "upper": 125652010
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -261844518,
+          "lower": -300204494,
+          "upper": -178441572
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 772.5,
+          "activeOnArtReengaged": 64.5,
+          "offArtExcess": 224.3
+        }
       },
       {
         "year": 2029,
@@ -2955,7 +3600,22 @@
           "lower": 253.6,
           "upper": 5561.1
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 94668672,
+          "lower": 8718576,
+          "upper": 281006186
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -304942879,
+          "lower": -390892975,
+          "upper": -118605365
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 1319,
+          "activeOnArtReengaged": 161.1,
+          "offArtExcess": 338.6
+        }
       },
       {
         "year": 2030,
@@ -3022,7 +3682,22 @@
           "lower": 458.9,
           "upper": 10078.7
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 175622795,
+          "lower": 16142201,
+          "upper": 520719437
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -316724647,
+          "lower": -476205241,
+          "upper": 28371995
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 1953.9,
+          "activeOnArtReengaged": 289.1,
+          "offArtExcess": 431.8
+        }
       },
       {
         "year": 2031,
@@ -3089,7 +3764,22 @@
           "lower": 736.6,
           "upper": 16321.3
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 289978569,
+          "lower": 26540969,
+          "upper": 854086756
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -292403719,
+          "lower": -555841319,
+          "upper": 271704467
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 2627.6,
+          "activeOnArtReengaged": 444.5,
+          "offArtExcess": 515.8
+        }
       },
       {
         "year": 2032,
@@ -3156,7 +3846,22 @@
           "lower": 1091.4,
           "upper": 24417.6
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 439883687,
+          "lower": 40190135,
+          "upper": 1291933999
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -229911073,
+          "lower": -629604625,
+          "upper": 622139239
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 3341,
+          "activeOnArtReengaged": 616.8,
+          "offArtExcess": 577.6
+        }
       },
       {
         "year": 2033,
@@ -3223,7 +3928,22 @@
           "lower": 1537.8,
           "upper": 34401.4
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 630036189,
+          "lower": 57299172,
+          "upper": 1845547183
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -124625049,
+          "lower": -697362066,
+          "upper": 1090885946
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 4097.9,
+          "activeOnArtReengaged": 804.3,
+          "offArtExcess": 632
+        }
       },
       {
         "year": 2034,
@@ -3290,7 +4010,22 @@
           "lower": 2071.3,
           "upper": 46452.8
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 861503452,
+          "lower": 78030127,
+          "upper": 2514203410
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 24447576,
+          "lower": -759025749,
+          "upper": 1677147534
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 4858.9,
+          "activeOnArtReengaged": 999,
+          "offArtExcess": 679.9
+        }
       },
       {
         "year": 2035,
@@ -3357,7 +4092,22 @@
           "lower": 2693.2,
           "upper": 60363.7
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 1137283413,
+          "lower": 102515419,
+          "upper": 3334696567
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 220232742,
+          "lower": -814535252,
+          "upper": 2417645897
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 5629.7,
+          "activeOnArtReengaged": 1189.9,
+          "offArtExcess": 721.8
+        }
       }
     ],
     "CO": [
@@ -3426,7 +4176,22 @@
           "lower": 1.3,
           "upper": 27.5
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 429047,
+          "lower": 36150,
+          "upper": 1245476
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -9117719,
+          "lower": -9510616,
+          "upper": -8301290
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 13,
+          "activeOnArtReengaged": 0,
+          "offArtExcess": 5.7
+        }
       },
       {
         "year": 2027,
@@ -3493,7 +4258,22 @@
           "lower": 9.2,
           "upper": 195.9
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 3130500,
+          "lower": 264738,
+          "upper": 9069595
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -15684971,
+          "lower": -18550733,
+          "upper": -9745877
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 76.8,
+          "activeOnArtReengaged": 3.4,
+          "offArtExcess": 33.5
+        }
       },
       {
         "year": 2028,
@@ -3560,7 +4340,22 @@
           "lower": 30.4,
           "upper": 628.3
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 10332296,
+          "lower": 876571,
+          "upper": 29488546
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -17481919,
+          "lower": -26937644,
+          "upper": 1674332
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 190.4,
+          "activeOnArtReengaged": 21.2,
+          "offArtExcess": 78.9
+        }
       },
       {
         "year": 2029,
@@ -3627,7 +4422,22 @@
           "lower": 68.7,
           "upper": 1424.4
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 24127209,
+          "lower": 2021328,
+          "upper": 68665739
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -12423649,
+          "lower": -34529530,
+          "upper": 32114882
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 343.3,
+          "activeOnArtReengaged": 55.8,
+          "offArtExcess": 124.3
+        }
       },
       {
         "year": 2030,
@@ -3694,7 +4504,22 @@
           "lower": 127.1,
           "upper": 2685.7
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 46381532,
+          "lower": 3946883,
+          "upper": 132384911
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 1348496,
+          "lower": -41086153,
+          "upper": 87351875
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 524.5,
+          "activeOnArtReengaged": 104.3,
+          "offArtExcess": 166.8
+        }
       },
       {
         "year": 2031,
@@ -3761,7 +4586,22 @@
           "lower": 210.5,
           "upper": 4487.1
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 78952368,
+          "lower": 6782397,
+          "upper": 226160938
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 25684208,
+          "lower": -46485763,
+          "upper": 172892778
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 729.5,
+          "activeOnArtReengaged": 164.8,
+          "offArtExcess": 205.1
+        }
       },
       {
         "year": 2032,
@@ -3828,7 +4668,22 @@
           "lower": 324.6,
           "upper": 6857.6
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 123297550,
+          "lower": 10581033,
+          "upper": 352710204
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 62034123,
+          "lower": -50682393,
+          "upper": 291446777
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 953.2,
+          "activeOnArtReengaged": 235.4,
+          "offArtExcess": 240.8
+        }
       },
       {
         "year": 2033,
@@ -3895,7 +4750,22 @@
           "lower": 468.2,
           "upper": 9920
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 181300580,
+          "lower": 15451745,
+          "upper": 519419843
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 112274759,
+          "lower": -53574077,
+          "upper": 450394022
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 1189.7,
+          "activeOnArtReengaged": 314.5,
+          "offArtExcess": 272.3
+        }
       },
       {
         "year": 2034,
@@ -3962,7 +4832,22 @@
           "lower": 639.2,
           "upper": 13788
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 253698462,
+          "lower": 21610736,
+          "upper": 731291814
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 177136335,
+          "lower": -54951390,
+          "upper": 654729687
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 1451.3,
+          "activeOnArtReengaged": 400.8,
+          "offArtExcess": 304.2
+        }
       },
       {
         "year": 2035,
@@ -4029,7 +4914,22 @@
           "lower": 836.4,
           "upper": 18384.1
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 342428521,
+          "lower": 29349267,
+          "upper": 992731398
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 258549593,
+          "lower": -54529661,
+          "upper": 908852470
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 1715,
+          "activeOnArtReengaged": 493.1,
+          "offArtExcess": 334
+        }
       }
     ],
     "FL": [
@@ -4098,7 +4998,22 @@
           "lower": 25.5,
           "upper": 269.1
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 5505883,
+          "lower": 792338,
+          "upper": 12831612
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -80072060,
+          "lower": -84785605,
+          "upper": -72746330
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 177.3,
+          "activeOnArtReengaged": 0,
+          "offArtExcess": 58.7
+        }
       },
       {
         "year": 2027,
@@ -4165,7 +5080,22 @@
           "lower": 161,
           "upper": 1681
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 35401666,
+          "lower": 5175310,
+          "upper": 81851876
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -133261657,
+          "lower": -163488014,
+          "upper": -86811448
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 914,
+          "activeOnArtReengaged": 35.3,
+          "offArtExcess": 303.8
+        }
       },
       {
         "year": 2028,
@@ -4232,7 +5162,22 @@
           "lower": 468.2,
           "upper": 4876.2
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 105481130,
+          "lower": 15406148,
+          "upper": 243574732
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -143847613,
+          "lower": -233922594,
+          "upper": -5754010
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 1991.3,
+          "activeOnArtReengaged": 193.1,
+          "offArtExcess": 626.6
+        }
       },
       {
         "year": 2029,
@@ -4299,7 +5244,22 @@
           "lower": 982.7,
           "upper": 10277.3
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 226655129,
+          "lower": 32986822,
+          "upper": 523395876
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -100989554,
+          "lower": -294657861,
+          "upper": 195751193
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 3228.7,
+          "activeOnArtReengaged": 455.9,
+          "offArtExcess": 884.3
+        }
       },
       {
         "year": 2030,
@@ -4366,7 +5326,22 @@
           "lower": 1724.4,
           "upper": 18114.3
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 408092289,
+          "lower": 59016349,
+          "upper": 943622732
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 4412712,
+          "lower": -344663228,
+          "upper": 539943156
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 4569.5,
+          "activeOnArtReengaged": 784.8,
+          "offArtExcess": 1069.6
+        }
       },
       {
         "year": 2031,
@@ -4433,7 +5408,22 @@
           "lower": 2705.3,
           "upper": 28566.2
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 655787870,
+          "lower": 94309660,
+          "upper": 1514800985
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 178288009,
+          "lower": -383190202,
+          "upper": 1037301123
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 5998.9,
+          "activeOnArtReengaged": 1154.8,
+          "offArtExcess": 1217.2
+        }
       },
       {
         "year": 2032,
@@ -4500,7 +5490,22 @@
           "lower": 3932.6,
           "upper": 41722.1
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 975960336,
+          "lower": 139568270,
+          "upper": 2256836812
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 426790295,
+          "lower": -409601771,
+          "upper": 1707666770
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 7466.8,
+          "activeOnArtReengaged": 1551.4,
+          "offArtExcess": 1335.5
+        }
       },
       {
         "year": 2033,
@@ -4567,7 +5572,22 @@
           "lower": 5411.7,
           "upper": 57912.3
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 1371965584,
+          "lower": 195419339,
+          "upper": 3180385733
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 753212844,
+          "lower": -423333401,
+          "upper": 2561632993
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 8968.5,
+          "activeOnArtReengaged": 1962.3,
+          "offArtExcess": 1443.5
+        }
       },
       {
         "year": 2034,
@@ -4634,7 +5654,22 @@
           "lower": 7146.8,
           "upper": 77247.6
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 1851541340,
+          "lower": 263177334,
+          "upper": 4288422510
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 1165232582,
+          "lower": -423131424,
+          "upper": 3602113752
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 10560.8,
+          "activeOnArtReengaged": 2394.4,
+          "offArtExcess": 1546.1
+        }
       },
       {
         "year": 2035,
@@ -4701,7 +5736,22 @@
           "lower": 9141.3,
           "upper": 99433.5
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 2425267910,
+          "lower": 343719698,
+          "upper": 5618566706
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 1673370785,
+          "lower": -408177427,
+          "upper": 4866669581
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 12185.2,
+          "activeOnArtReengaged": 2835.7,
+          "offArtExcess": 1654.6
+        }
       }
     ],
     "GA": [
@@ -4770,7 +5820,22 @@
           "lower": 7.5,
           "upper": 85.6
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 1703388,
+          "lower": 245839,
+          "upper": 4027135
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -39493620,
+          "lower": -40951169,
+          "upper": -37169873
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 53.2,
+          "activeOnArtReengaged": 0,
+          "offArtExcess": 17.4
+        }
       },
       {
         "year": 2027,
@@ -4837,7 +5902,22 @@
           "lower": 50.1,
           "upper": 568
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 11732248,
+          "lower": 1705281,
+          "upper": 27491743
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -69461856,
+          "lower": -79488822,
+          "upper": -53702360
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 299.9,
+          "activeOnArtReengaged": 10.5,
+          "offArtExcess": 98.5
+        }
       },
       {
         "year": 2028,
@@ -4904,7 +5984,22 @@
           "lower": 154.1,
           "upper": 1721.5
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 36659753,
+          "lower": 5345028,
+          "upper": 84910015
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -83366482,
+          "lower": -114681207,
+          "upper": -35116220
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 702.3,
+          "activeOnArtReengaged": 62.3,
+          "offArtExcess": 219.5
+        }
       },
       {
         "year": 2029,
@@ -4971,7 +6066,22 @@
           "lower": 341.1,
           "upper": 3750
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 81695751,
+          "lower": 12192018,
+          "upper": 188016932
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -76031583,
+          "lower": -145535315,
+          "upper": 30289599
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 1214.4,
+          "activeOnArtReengaged": 157,
+          "offArtExcess": 337.5
+        }
       },
       {
         "year": 2030,
@@ -5038,7 +6148,22 @@
           "lower": 628.2,
           "upper": 6765.7
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 151672039,
+          "lower": 22615401,
+          "upper": 346732203
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -42658302,
+          "lower": -171714940,
+          "upper": 152401861
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 1797.4,
+          "activeOnArtReengaged": 288.1,
+          "offArtExcess": 433.3
+        }
       },
       {
         "year": 2031,
@@ -5105,7 +6230,22 @@
           "lower": 1028.2,
           "upper": 10852.6
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 250256962,
+          "lower": 37259608,
+          "upper": 567800665
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 20389719,
+          "lower": -192607635,
+          "upper": 337933422
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 2461.5,
+          "activeOnArtReengaged": 444.2,
+          "offArtExcess": 516.5
+        }
       },
       {
         "year": 2032,
@@ -5172,7 +6312,22 @@
           "lower": 1557.5,
           "upper": 16131.1
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 380199849,
+          "lower": 56886137,
+          "upper": 860535219
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 115830761,
+          "lower": -207482951,
+          "upper": 596166131
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 3159.4,
+          "activeOnArtReengaged": 615.9,
+          "offArtExcess": 585.6
+        }
       },
       {
         "year": 2033,
@@ -5239,7 +6394,22 @@
           "lower": 2229.8,
           "upper": 22672.3
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 546708806,
+          "lower": 82734362,
+          "upper": 1235147689
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 248842780,
+          "lower": -215131664,
+          "upper": 937281663
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 3905.7,
+          "activeOnArtReengaged": 806.9,
+          "offArtExcess": 650
+        }
       },
       {
         "year": 2034,
@@ -5306,7 +6476,22 @@
           "lower": 3050.8,
           "upper": 30440.8
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 748860245,
+          "lower": 115782246,
+          "upper": 1691090213
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 418472921,
+          "lower": -214605079,
+          "upper": 1360702888
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 4657.5,
+          "activeOnArtReengaged": 1002.4,
+          "offArtExcess": 706.4
+        }
       },
       {
         "year": 2035,
@@ -5373,7 +6558,22 @@
           "lower": 4028.3,
           "upper": 39688.1
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 992173150,
+          "lower": 154457838,
+          "upper": 2246044336
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 630211749,
+          "lower": -207503563,
+          "upper": 1884082935
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 5456.7,
+          "activeOnArtReengaged": 1206.4,
+          "offArtExcess": 764.9
+        }
       }
     ],
     "IL": [
@@ -5442,7 +6642,22 @@
           "lower": 3.8,
           "upper": 82.9
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 1315173,
+          "lower": 109864,
+          "upper": 3861806
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -27111049,
+          "lower": -28316358,
+          "upper": -24564416
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 40.2,
+          "activeOnArtReengaged": 0,
+          "offArtExcess": 12.2
+        }
       },
       {
         "year": 2027,
@@ -5509,7 +6724,22 @@
           "lower": 25,
           "upper": 544.7
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 8861760,
+          "lower": 754529,
+          "upper": 25702176
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -47162736,
+          "lower": -55269967,
+          "upper": -30322320
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 221,
+          "activeOnArtReengaged": 7.3,
+          "offArtExcess": 65.9
+        }
       },
       {
         "year": 2028,
@@ -5576,7 +6806,22 @@
           "lower": 75.3,
           "upper": 1633
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 27174710,
+          "lower": 2286546,
+          "upper": 78821081
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -55644226,
+          "lower": -80532390,
+          "upper": -3997855
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 502.6,
+          "activeOnArtReengaged": 41.8,
+          "offArtExcess": 142
+        }
       },
       {
         "year": 2029,
@@ -5643,7 +6888,22 @@
           "lower": 162.9,
           "upper": 3519.6
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 59926125,
+          "lower": 5017575,
+          "upper": 173262751
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -48906832,
+          "lower": -103815381,
+          "upper": 64429795
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 842.9,
+          "activeOnArtReengaged": 101.9,
+          "offArtExcess": 212.5
+        }
       },
       {
         "year": 2030,
@@ -5710,7 +6970,22 @@
           "lower": 293.4,
           "upper": 6345.2
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 110602576,
+          "lower": 9300567,
+          "upper": 316300810
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -23486711,
+          "lower": -124788720,
+          "upper": 182211523
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 1231.5,
+          "activeOnArtReengaged": 183.1,
+          "offArtExcess": 269.5
+        }
       },
       {
         "year": 2031,
@@ -5777,7 +7052,22 @@
           "lower": 474.9,
           "upper": 10177.7
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 181401358,
+          "lower": 15119525,
+          "upper": 520016937
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 22791363,
+          "lower": -143490470,
+          "upper": 361406941
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 1657.7,
+          "activeOnArtReengaged": 279.1,
+          "offArtExcess": 320.1
+        }
       },
       {
         "year": 2032,
@@ -5844,7 +7134,22 @@
           "lower": 698.8,
           "upper": 15055.4
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 273698543,
+          "lower": 22591878,
+          "upper": 785895513
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 91282034,
+          "lower": -159824631,
+          "upper": 603479004
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 2082.9,
+          "activeOnArtReengaged": 384.8,
+          "offArtExcess": 359.7
+        }
       },
       {
         "year": 2033,
@@ -5911,7 +7216,22 @@
           "lower": 971.1,
           "upper": 21038.8
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 391179778,
+          "lower": 31863317,
+          "upper": 1123289626
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 185650149,
+          "lower": -173666311,
+          "upper": 917759997
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 2548.2,
+          "activeOnArtReengaged": 499.2,
+          "offArtExcess": 395.2
+        }
       },
       {
         "year": 2034,
@@ -5978,7 +7298,22 @@
           "lower": 1291.8,
           "upper": 28153.1
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 535574155,
+          "lower": 43022810,
+          "upper": 1535584924
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 307604604,
+          "lower": -184946741,
+          "upper": 1307615373
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 3018,
+          "activeOnArtReengaged": 624.6,
+          "offArtExcess": 426.1
+        }
       },
       {
         "year": 2035,
@@ -6045,7 +7380,22 @@
           "lower": 1659.6,
           "upper": 36379.6
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 707728901,
+          "lower": 56413454,
+          "upper": 2034745885
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 457973018,
+          "lower": -193342430,
+          "upper": 1784990001
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 3508.1,
+          "activeOnArtReengaged": 746.7,
+          "offArtExcess": 450.2
+        }
       }
     ],
     "IN": [
@@ -6114,7 +7464,22 @@
           "lower": 0.6,
           "upper": 16.7
         },
-        "negativeExcessNewShare": 0.003
+        "negativeExcessNewShare": 0.003,
+        "pooledCumulativeCareCost": {
+          "median": 240725,
+          "lower": 18976,
+          "upper": 739490
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -8864287,
+          "lower": -9086036,
+          "upper": -8365522
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 7.3,
+          "activeOnArtReengaged": 0,
+          "offArtExcess": 2.7
+        }
       },
       {
         "year": 2027,
@@ -6181,7 +7546,22 @@
           "lower": 3.7,
           "upper": 109.7
         },
-        "negativeExcessNewShare": 0.001
+        "negativeExcessNewShare": 0.001,
+        "pooledCumulativeCareCost": {
+          "median": 1659866,
+          "lower": 132040,
+          "upper": 5014479
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -16284963,
+          "lower": -17812789,
+          "upper": -12930350
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 40.4,
+          "activeOnArtReengaged": 1.6,
+          "offArtExcess": 15.1
+        }
       },
       {
         "year": 2028,
@@ -6248,7 +7628,22 @@
           "lower": 11.6,
           "upper": 329.3
         },
-        "negativeExcessNewShare": 0.001
+        "negativeExcessNewShare": 0.001,
+        "pooledCumulativeCareCost": {
+          "median": 5228738,
+          "lower": 416361,
+          "upper": 15597351
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -21298438,
+          "lower": -26110815,
+          "upper": -10929825
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 94.1,
+          "activeOnArtReengaged": 9.6,
+          "offArtExcess": 33.3
+        }
       },
       {
         "year": 2029,
@@ -6315,7 +7710,22 @@
           "lower": 26.3,
           "upper": 720.9
         },
-        "negativeExcessNewShare": 0.001
+        "negativeExcessNewShare": 0.001,
+        "pooledCumulativeCareCost": {
+          "median": 11884106,
+          "lower": 931652,
+          "upper": 34987218
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -22975446,
+          "lower": -33927899,
+          "upper": 127666
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 162.7,
+          "activeOnArtReengaged": 23.8,
+          "offArtExcess": 51.1
+        }
       },
       {
         "year": 2030,
@@ -6382,7 +7792,22 @@
           "lower": 49.2,
           "upper": 1323.8
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 22284581,
+          "lower": 1748426,
+          "upper": 65460755
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -20664656,
+          "lower": -41200811,
+          "upper": 22511519
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 243.7,
+          "activeOnArtReengaged": 43.6,
+          "offArtExcess": 66
+        }
       },
       {
         "year": 2031,
@@ -6449,7 +7874,22 @@
           "lower": 81.4,
           "upper": 2155.4
         },
-        "negativeExcessNewShare": 0.001
+        "negativeExcessNewShare": 0.001,
+        "pooledCumulativeCareCost": {
+          "median": 37029235,
+          "lower": 2922221,
+          "upper": 108526281
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -13774065,
+          "lower": -47881079,
+          "upper": 57722981
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 331,
+          "activeOnArtReengaged": 67.8,
+          "offArtExcess": 79.6
+        }
       },
       {
         "year": 2032,
@@ -6516,7 +7956,22 @@
           "lower": 124.1,
           "upper": 3204.3
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 56960478,
+          "lower": 4507684,
+          "upper": 166084541
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -1468126,
+          "lower": -53920920,
+          "upper": 107655937
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 425.6,
+          "activeOnArtReengaged": 94.2,
+          "offArtExcess": 91
+        }
       },
       {
         "year": 2033,
@@ -6583,7 +8038,22 @@
           "lower": 177.7,
           "upper": 4495.6
         },
-        "negativeExcessNewShare": 0.001
+        "negativeExcessNewShare": 0.001,
+        "pooledCumulativeCareCost": {
+          "median": 82418536,
+          "lower": 6553624,
+          "upper": 237763359
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 16586724,
+          "lower": -59278188,
+          "upper": 171931547
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 526.1,
+          "activeOnArtReengaged": 123.2,
+          "offArtExcess": 101.8
+        }
       },
       {
         "year": 2034,
@@ -6650,7 +8120,22 @@
           "lower": 242.9,
           "upper": 6066.7
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 113662302,
+          "lower": 9139117,
+          "upper": 328396280
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 40642910,
+          "lower": -63880275,
+          "upper": 255376887
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 632.5,
+          "activeOnArtReengaged": 155.7,
+          "offArtExcess": 113.1
+        }
       },
       {
         "year": 2035,
@@ -6717,7 +8202,22 @@
           "lower": 320,
           "upper": 7991.9
         },
-        "negativeExcessNewShare": 0.001
+        "negativeExcessNewShare": 0.001,
+        "pooledCumulativeCareCost": {
+          "median": 151572294,
+          "lower": 12303671,
+          "upper": 439354813
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 71574668,
+          "lower": -67693955,
+          "upper": 359357188
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 740.3,
+          "activeOnArtReengaged": 188.7,
+          "offArtExcess": 123.8
+        }
       }
     ],
     "KY": [
@@ -6786,7 +8286,22 @@
           "lower": 0.9,
           "upper": 21.5
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 326042,
+          "lower": 29983,
+          "upper": 1006437
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -5511275,
+          "lower": -5807334,
+          "upper": -4830880
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 10.1,
+          "activeOnArtReengaged": 0,
+          "offArtExcess": 3.3
+        }
       },
       {
         "year": 2027,
@@ -6853,7 +8368,22 @@
           "lower": 6.2,
           "upper": 143
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 2226470,
+          "lower": 205035,
+          "upper": 6739052
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -9278145,
+          "lower": -11299580,
+          "upper": -4765563
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 55.3,
+          "activeOnArtReengaged": 2,
+          "offArtExcess": 18
+        }
       },
       {
         "year": 2028,
@@ -6920,7 +8450,22 @@
           "lower": 19.4,
           "upper": 434.1
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 6961983,
+          "lower": 639688,
+          "upper": 20862308
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -10044863,
+          "lower": -16367158,
+          "upper": 3855462
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 127,
+          "activeOnArtReengaged": 11.4,
+          "offArtExcess": 39.5
+        }
       },
       {
         "year": 2029,
@@ -6987,7 +8532,22 @@
           "lower": 42.6,
           "upper": 948.9
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 15585665,
+          "lower": 1443227,
+          "upper": 46103331
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -6763153,
+          "lower": -20905590,
+          "upper": 23754514
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 218.5,
+          "activeOnArtReengaged": 28.4,
+          "offArtExcess": 59.9
+        }
       },
       {
         "year": 2030,
@@ -7054,7 +8614,22 @@
           "lower": 77.1,
           "upper": 1735.4
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 28945547,
+          "lower": 2690478,
+          "upper": 85096362
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 1410349,
+          "lower": -24844720,
+          "upper": 57561164
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 323.1,
+          "activeOnArtReengaged": 51.3,
+          "offArtExcess": 76.7
+        }
       },
       {
         "year": 2031,
@@ -7121,7 +8696,22 @@
           "lower": 124.8,
           "upper": 2832.1
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 47836823,
+          "lower": 4407212,
+          "upper": 139517535
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 15266304,
+          "lower": -28163307,
+          "upper": 106947016
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 435,
+          "activeOnArtReengaged": 79,
+          "offArtExcess": 90.6
+        }
       },
       {
         "year": 2032,
@@ -7188,7 +8778,22 @@
           "lower": 187.3,
           "upper": 4228.6
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 72485193,
+          "lower": 6734489,
+          "upper": 211249239
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 35026013,
+          "lower": -30724691,
+          "upper": 173790060
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 553.2,
+          "activeOnArtReengaged": 109.3,
+          "offArtExcess": 102.6
+        }
       },
       {
         "year": 2033,
@@ -7255,7 +8860,22 @@
           "lower": 264.7,
           "upper": 5948.1
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 103756392,
+          "lower": 9574363,
+          "upper": 302666955
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 61550940,
+          "lower": -32631089,
+          "upper": 260461502
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 680,
+          "activeOnArtReengaged": 142,
+          "offArtExcess": 112.3
+        }
       },
       {
         "year": 2034,
@@ -7322,7 +8942,22 @@
           "lower": 357.6,
           "upper": 8031.5
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 141822564,
+          "lower": 13116998,
+          "upper": 412995901
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 95009079,
+          "lower": -33696486,
+          "upper": 366182417
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 806.5,
+          "activeOnArtReengaged": 175.5,
+          "offArtExcess": 121.3
+        }
       },
       {
         "year": 2035,
@@ -7389,7 +9024,22 @@
           "lower": 458.6,
           "upper": 10426.6
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 187041898,
+          "lower": 17392910,
+          "upper": 547707926
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 135754597,
+          "lower": -33894392,
+          "upper": 496420625
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 932.7,
+          "activeOnArtReengaged": 211.7,
+          "offArtExcess": 129.6
+        }
       }
     ],
     "LA": [
@@ -7458,7 +9108,22 @@
           "lower": 2.2,
           "upper": 55.3
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 808216,
+          "lower": 71506,
+          "upper": 2493102
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -16050052,
+          "lower": -16786762,
+          "upper": -14365166
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 24.9,
+          "activeOnArtReengaged": 0,
+          "offArtExcess": 6.1
+        }
       },
       {
         "year": 2027,
@@ -7525,7 +9190,22 @@
           "lower": 14.7,
           "upper": 343.9
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 5374296,
+          "lower": 479997,
+          "upper": 16200764
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -27851222,
+          "lower": -32745521,
+          "upper": -17024754
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 134,
+          "activeOnArtReengaged": 3.7,
+          "offArtExcess": 33.5
+        }
       },
       {
         "year": 2028,
@@ -7592,7 +9272,22 @@
           "lower": 45.9,
           "upper": 997.6
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 16282171,
+          "lower": 1451355,
+          "upper": 48015034
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -32833882,
+          "lower": -47664698,
+          "upper": -1101019
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 303.6,
+          "activeOnArtReengaged": 21.2,
+          "offArtExcess": 71.5
+        }
       },
       {
         "year": 2029,
@@ -7659,7 +9354,22 @@
           "lower": 97.2,
           "upper": 2057.9
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 35415091,
+          "lower": 3178089,
+          "upper": 102751360
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -29128665,
+          "lower": -61365667,
+          "upper": 38207604
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 498.5,
+          "activeOnArtReengaged": 51.3,
+          "offArtExcess": 103.5
+        }
       },
       {
         "year": 2030,
@@ -7726,7 +9436,22 @@
           "lower": 179.1,
           "upper": 3628
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 64136655,
+          "lower": 5890755,
+          "upper": 184142200
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -15385454,
+          "lower": -73631354,
+          "upper": 104620092
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 719.7,
+          "activeOnArtReengaged": 90.6,
+          "offArtExcess": 128.5
+        }
       },
       {
         "year": 2031,
@@ -7793,7 +9518,22 @@
           "lower": 292.8,
           "upper": 5661.3
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 103623908,
+          "lower": 9565291,
+          "upper": 292647590
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 9559709,
+          "lower": -84498908,
+          "upper": 198583391
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 947.6,
+          "activeOnArtReengaged": 134.9,
+          "offArtExcess": 144.6
+        }
       },
       {
         "year": 2032,
@@ -7860,7 +9600,22 @@
           "lower": 431.5,
           "upper": 8213.6
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 154055886,
+          "lower": 14265709,
+          "upper": 429795350
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 45873153,
+          "lower": -93917024,
+          "upper": 321612617
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 1186.5,
+          "activeOnArtReengaged": 183.1,
+          "offArtExcess": 158.1
+        }
       },
       {
         "year": 2033,
@@ -7927,7 +9682,22 @@
           "lower": 595.4,
           "upper": 11340.6
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 215786862,
+          "lower": 20328180,
+          "upper": 605895881
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 93896814,
+          "lower": -101561868,
+          "upper": 484005833
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 1421.4,
+          "activeOnArtReengaged": 234,
+          "offArtExcess": 168.6
+        }
       },
       {
         "year": 2034,
@@ -7994,7 +9764,22 @@
           "lower": 783.2,
           "upper": 15040.1
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 289761934,
+          "lower": 27683305,
+          "upper": 813126358
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 154563814,
+          "lower": -107514815,
+          "upper": 677928238
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 1656.9,
+          "activeOnArtReengaged": 282,
+          "offArtExcess": 176
+        }
       },
       {
         "year": 2035,
@@ -8061,7 +9846,22 @@
           "lower": 1005.5,
           "upper": 19323.5
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 376230161,
+          "lower": 36318645,
+          "upper": 1054510171
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 228111582,
+          "lower": -111799934,
+          "upper": 906391593
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 1886.4,
+          "activeOnArtReengaged": 330.2,
+          "offArtExcess": 183
+        }
       }
     ],
     "MA": [
@@ -8130,7 +9930,22 @@
           "lower": 1,
           "upper": 22.5
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 372718,
+          "lower": 32712,
+          "upper": 1068596
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -14467942,
+          "lower": -14807948,
+          "upper": -13772064
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 11.5,
+          "activeOnArtReengaged": 0,
+          "offArtExcess": 4.4
+        }
       },
       {
         "year": 2027,
@@ -8197,7 +10012,22 @@
           "lower": 6.9,
           "upper": 148.1
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 2513017,
+          "lower": 219334,
+          "upper": 7202196
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -26736050,
+          "lower": -29029734,
+          "upper": -22046871
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 61.6,
+          "activeOnArtReengaged": 2.6,
+          "offArtExcess": 23.5
+        }
       },
       {
         "year": 2028,
@@ -8264,7 +10094,22 @@
           "lower": 21,
           "upper": 453.1
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 7812087,
+          "lower": 681415,
+          "upper": 22430463
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -35425725,
+          "lower": -42556398,
+          "upper": -20807349
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 140.9,
+          "activeOnArtReengaged": 14.9,
+          "offArtExcess": 51
+        }
       },
       {
         "year": 2029,
@@ -8331,7 +10176,22 @@
           "lower": 46.1,
           "upper": 997.4
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 17450499,
+          "lower": 1506894,
+          "upper": 49974285
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -39368620,
+          "lower": -55312224,
+          "upper": -6844833
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 240.7,
+          "activeOnArtReengaged": 36.8,
+          "offArtExcess": 76.6
+        }
       },
       {
         "year": 2030,
@@ -8398,7 +10258,22 @@
           "lower": 83.1,
           "upper": 1825.7
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 32387338,
+          "lower": 2775225,
+          "upper": 92792377
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -37617515,
+          "lower": -67229627,
+          "upper": 22787525
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 351.6,
+          "activeOnArtReengaged": 65.9,
+          "offArtExcess": 98.5
+        }
       },
       {
         "year": 2031,
@@ -8465,7 +10340,22 @@
           "lower": 134.7,
           "upper": 2983.4
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 53495970,
+          "lower": 4585064,
+          "upper": 153925232
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -29310567,
+          "lower": -78221472,
+          "upper": 71118696
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 471.8,
+          "activeOnArtReengaged": 101.1,
+          "offArtExcess": 116.8
+        }
       },
       {
         "year": 2032,
@@ -8532,7 +10422,22 @@
           "lower": 201.5,
           "upper": 4502.2
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 81239658,
+          "lower": 7019197,
+          "upper": 233789464
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -13995697,
+          "lower": -88216158,
+          "upper": 138554109
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 604.9,
+          "activeOnArtReengaged": 140.9,
+          "offArtExcess": 132.3
+        }
       },
       {
         "year": 2033,
@@ -8599,7 +10504,22 @@
           "lower": 284.3,
           "upper": 6399.4
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 116608945,
+          "lower": 10174017,
+          "upper": 337758268
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 9306775,
+          "lower": -97128152,
+          "upper": 230456098
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 743.6,
+          "activeOnArtReengaged": 183.4,
+          "offArtExcess": 146.7
+        }
       },
       {
         "year": 2034,
@@ -8666,7 +10586,22 @@
           "lower": 383.8,
           "upper": 8720.5
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 160183115,
+          "lower": 13967298,
+          "upper": 465903224
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 41165592,
+          "lower": -105050226,
+          "upper": 346885701
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 891.1,
+          "activeOnArtReengaged": 227.8,
+          "offArtExcess": 159.7
+        }
       },
       {
         "year": 2035,
@@ -8733,7 +10668,22 @@
           "lower": 500.6,
           "upper": 11437
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 212474905,
+          "lower": 18316671,
+          "upper": 619465153
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 82083252,
+          "lower": -112074982,
+          "upper": 489073499
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 1044,
+          "activeOnArtReengaged": 274.6,
+          "offArtExcess": 172.6
+        }
       }
     ],
     "MD": [
@@ -8802,7 +10752,22 @@
           "lower": 1.4,
           "upper": 34.8
         },
-        "negativeExcessNewShare": 0.003
+        "negativeExcessNewShare": 0.003,
+        "pooledCumulativeCareCost": {
+          "median": 467345,
+          "lower": 40276,
+          "upper": 1506422
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -23194086,
+          "lower": -23621155,
+          "upper": -22155009
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 14.7,
+          "activeOnArtReengaged": 0,
+          "offArtExcess": 3.9
+        }
       },
       {
         "year": 2027,
@@ -8869,7 +10834,22 @@
           "lower": 9,
           "upper": 219.8
         },
-        "negativeExcessNewShare": 0.001
+        "negativeExcessNewShare": 0.001,
+        "pooledCumulativeCareCost": {
+          "median": 3087635,
+          "lower": 266100,
+          "upper": 9780339
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -43546060,
+          "lower": -46367594,
+          "upper": -36853356
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 78.3,
+          "activeOnArtReengaged": 2.3,
+          "offArtExcess": 20.6
+        }
       },
       {
         "year": 2028,
@@ -8936,7 +10916,22 @@
           "lower": 28.5,
           "upper": 646
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 9394079,
+          "lower": 807030,
+          "upper": 29285778
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -59542784,
+          "lower": -68129833,
+          "upper": -39651085
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 176.2,
+          "activeOnArtReengaged": 13.1,
+          "offArtExcess": 44.1
+        }
       },
       {
         "year": 2029,
@@ -9003,7 +10998,22 @@
           "lower": 60.7,
           "upper": 1382.9
         },
-        "negativeExcessNewShare": 0.001
+        "negativeExcessNewShare": 0.001,
+        "pooledCumulativeCareCost": {
+          "median": 20484198,
+          "lower": 1772723,
+          "upper": 63381075
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -70106227,
+          "lower": -88817702,
+          "upper": -27209349
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 294,
+          "activeOnArtReengaged": 31.8,
+          "offArtExcess": 64.3
+        }
       },
       {
         "year": 2030,
@@ -9070,7 +11080,22 @@
           "lower": 107.1,
           "upper": 2471.1
         },
-        "negativeExcessNewShare": 0.001
+        "negativeExcessNewShare": 0.001,
+        "pooledCumulativeCareCost": {
+          "median": 37372963,
+          "lower": 3221758,
+          "upper": 115177233
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -74240337,
+          "lower": -108391541,
+          "upper": 3563933
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 425,
+          "activeOnArtReengaged": 56.2,
+          "offArtExcess": 80.6
+        }
       },
       {
         "year": 2031,
@@ -9137,7 +11162,22 @@
           "lower": 168.7,
           "upper": 3934.9
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 60603036,
+          "lower": 5254928,
+          "upper": 186740654
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -71420822,
+          "lower": -126768931,
+          "upper": 54716796
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 565.9,
+          "activeOnArtReengaged": 84.2,
+          "offArtExcess": 93
+        }
       },
       {
         "year": 2032,
@@ -9204,7 +11244,22 @@
           "lower": 245.7,
           "upper": 5796.5
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 91093809,
+          "lower": 7936939,
+          "upper": 279445160
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -60746125,
+          "lower": -143902996,
+          "upper": 127605226
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 709.7,
+          "activeOnArtReengaged": 115,
+          "offArtExcess": 102.8
+        }
       },
       {
         "year": 2033,
@@ -9271,7 +11326,22 @@
           "lower": 338.4,
           "upper": 8080.2
         },
-        "negativeExcessNewShare": 0.001
+        "negativeExcessNewShare": 0.001,
+        "pooledCumulativeCareCost": {
+          "median": 128817630,
+          "lower": 11316518,
+          "upper": 394974202
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -42261213,
+          "lower": -159762325,
+          "upper": 223895359
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 858.2,
+          "activeOnArtReengaged": 147.4,
+          "offArtExcess": 111.2
+        }
       },
       {
         "year": 2034,
@@ -9338,7 +11408,22 @@
           "lower": 446.4,
           "upper": 10786.1
         },
-        "negativeExcessNewShare": 0.001
+        "negativeExcessNewShare": 0.001,
+        "pooledCumulativeCareCost": {
+          "median": 174577352,
+          "lower": 15197787,
+          "upper": 536341729
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -15180043,
+          "lower": -174559608,
+          "upper": 346584334
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 1008.6,
+          "activeOnArtReengaged": 180.7,
+          "offArtExcess": 118.3
+        }
       },
       {
         "year": 2035,
@@ -9405,7 +11490,22 @@
           "lower": 569.8,
           "upper": 13914.1
         },
-        "negativeExcessNewShare": 0.001
+        "negativeExcessNewShare": 0.001,
+        "pooledCumulativeCareCost": {
+          "median": 228094130,
+          "lower": 19711616,
+          "upper": 703026038
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 20202217,
+          "lower": -188180296,
+          "upper": 495134126
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 1154.5,
+          "activeOnArtReengaged": 213.3,
+          "offArtExcess": 123.8
+        }
       }
     ],
     "MI": [
@@ -9474,7 +11574,22 @@
           "lower": 0.9,
           "upper": 20
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 322496,
+          "lower": 27924,
+          "upper": 925223
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -12902217,
+          "lower": -13196788,
+          "upper": -12299490
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 9.8,
+          "activeOnArtReengaged": 0,
+          "offArtExcess": 1.8
+        }
       },
       {
         "year": 2027,
@@ -9541,7 +11656,22 @@
           "lower": 6.3,
           "upper": 131.4
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 2205799,
+          "lower": 186445,
+          "upper": 6292204
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -23858440,
+          "lower": -25877794,
+          "upper": -19772035
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 55.3,
+          "activeOnArtReengaged": 1.1,
+          "offArtExcess": 10.3
+        }
       },
       {
         "year": 2028,
@@ -9608,7 +11738,22 @@
           "lower": 18.9,
           "upper": 401.6
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 6849259,
+          "lower": 590042,
+          "upper": 19632007
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -31680540,
+          "lower": -37939757,
+          "upper": -18897792
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 130.5,
+          "activeOnArtReengaged": 6.5,
+          "offArtExcess": 23.3
+        }
       },
       {
         "year": 2029,
@@ -9675,7 +11820,22 @@
           "lower": 41,
           "upper": 876
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 15207602,
+          "lower": 1315374,
+          "upper": 43561397
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -35424682,
+          "lower": -49316910,
+          "upper": -7070887
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 226.1,
+          "activeOnArtReengaged": 16.6,
+          "offArtExcess": 35.7
+        }
       },
       {
         "year": 2030,
@@ -9742,7 +11902,22 @@
           "lower": 75,
           "upper": 1594.4
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 28286874,
+          "lower": 2473272,
+          "upper": 80606859
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -34095396,
+          "lower": -59908998,
+          "upper": 18224589
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 335.7,
+          "activeOnArtReengaged": 30.6,
+          "offArtExcess": 46.4
+        }
       },
       {
         "year": 2031,
@@ -9809,7 +11984,22 @@
           "lower": 120.9,
           "upper": 2563.7
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 46611363,
+          "lower": 4158238,
+          "upper": 132762826
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -27178660,
+          "lower": -69631786,
+          "upper": 58972803
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 459.3,
+          "activeOnArtReengaged": 47.1,
+          "offArtExcess": 54.8
+        }
       },
       {
         "year": 2032,
@@ -9876,7 +12066,22 @@
           "lower": 179.3,
           "upper": 3788.2
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 71041505,
+          "lower": 6320182,
+          "upper": 202012349
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -13824007,
+          "lower": -78545330,
+          "upper": 117146838
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 584.7,
+          "activeOnArtReengaged": 65.7,
+          "offArtExcess": 61.9
+        }
       },
       {
         "year": 2033,
@@ -9943,7 +12148,22 @@
           "lower": 258.5,
           "upper": 5332.1
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 101845525,
+          "lower": 8925374,
+          "upper": 288570520
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 6227112,
+          "lower": -86693039,
+          "upper": 192952107
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 717.6,
+          "activeOnArtReengaged": 85.5,
+          "offArtExcess": 68.1
+        }
       },
       {
         "year": 2034,
@@ -10010,7 +12230,22 @@
           "lower": 353.2,
           "upper": 7222.6
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 139549929,
+          "lower": 12310295,
+          "upper": 395271956
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 33491805,
+          "lower": -93747828,
+          "upper": 289213833
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 858.7,
+          "activeOnArtReengaged": 105.8,
+          "offArtExcess": 73.3
+        }
       },
       {
         "year": 2035,
@@ -10077,7 +12312,22 @@
           "lower": 455.4,
           "upper": 9317.6
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 184742078,
+          "lower": 16342845,
+          "upper": 521264469
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 68548314,
+          "lower": -99850919,
+          "upper": 405070705
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 996.1,
+          "activeOnArtReengaged": 127.4,
+          "offArtExcess": 78.1
+        }
       }
     ],
     "MN": [
@@ -10146,7 +12396,22 @@
           "lower": 0.7,
           "upper": 16.2
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 239976,
+          "lower": 19797,
+          "upper": 734919
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -6237420,
+          "lower": -6457598,
+          "upper": -5742476
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 7.5,
+          "activeOnArtReengaged": 0,
+          "offArtExcess": 1.8
+        }
       },
       {
         "year": 2027,
@@ -10213,7 +12478,22 @@
           "lower": 4.6,
           "upper": 111
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 1683828,
+          "lower": 138996,
+          "upper": 5091420
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -11082301,
+          "lower": -12627133,
+          "upper": -7674709
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 42.8,
+          "activeOnArtReengaged": 1.1,
+          "offArtExcess": 10.6
+        }
       },
       {
         "year": 2028,
@@ -10280,7 +12560,22 @@
           "lower": 14.5,
           "upper": 341.7
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 5349546,
+          "lower": 445144,
+          "upper": 16008227
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -13522148,
+          "lower": -18426551,
+          "upper": -2863468
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 101.6,
+          "activeOnArtReengaged": 6.7,
+          "offArtExcess": 24.1
+        }
       },
       {
         "year": 2029,
@@ -10347,7 +12642,22 @@
           "lower": 32.3,
           "upper": 757.8
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 12180859,
+          "lower": 1010775,
+          "upper": 36141019
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -12618570,
+          "lower": -23788655,
+          "upper": 11341590
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 179.6,
+          "activeOnArtReengaged": 17.2,
+          "offArtExcess": 37.9
+        }
       },
       {
         "year": 2030,
@@ -10414,7 +12724,22 @@
           "lower": 59.6,
           "upper": 1412
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 23216869,
+          "lower": 1895355,
+          "upper": 67707095
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -7337642,
+          "lower": -28659156,
+          "upper": 37152584
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 272.8,
+          "activeOnArtReengaged": 31.9,
+          "offArtExcess": 50.6
+        }
       },
       {
         "year": 2031,
@@ -10481,7 +12806,22 @@
           "lower": 100.5,
           "upper": 2308.1
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 38816817,
+          "lower": 3166943,
+          "upper": 113044407
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 2674848,
+          "lower": -32975026,
+          "upper": 76902437
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 380.9,
+          "activeOnArtReengaged": 50.5,
+          "offArtExcess": 61.5
+        }
       },
       {
         "year": 2032,
@@ -10548,7 +12888,22 @@
           "lower": 157.4,
           "upper": 3481.5
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 60001971,
+          "lower": 4909003,
+          "upper": 173963501
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 18435285,
+          "lower": -36657683,
+          "upper": 132396815
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 497.4,
+          "activeOnArtReengaged": 72,
+          "offArtExcess": 71.9
+        }
       },
       {
         "year": 2033,
@@ -10615,7 +12970,22 @@
           "lower": 227.3,
           "upper": 4963.7
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 87684119,
+          "lower": 7199781,
+          "upper": 252274171
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 40850718,
+          "lower": -39633620,
+          "upper": 205440770
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 618.6,
+          "activeOnArtReengaged": 95,
+          "offArtExcess": 81.8
+        }
       },
       {
         "year": 2034,
@@ -10682,7 +13052,22 @@
           "lower": 314.4,
           "upper": 6764.4
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 122070442,
+          "lower": 10260592,
+          "upper": 349954703
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 70123725,
+          "lower": -41686125,
+          "upper": 298007987
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 753.5,
+          "activeOnArtReengaged": 120.2,
+          "offArtExcess": 91.1
+        }
       },
       {
         "year": 2035,
@@ -10749,7 +13134,22 @@
           "lower": 420.2,
           "upper": 8903.5
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 164243688,
+          "lower": 13899475,
+          "upper": 471159315
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 107332587,
+          "lower": -43011626,
+          "upper": 414248214
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 900.6,
+          "activeOnArtReengaged": 148.5,
+          "offArtExcess": 101.1
+        }
       }
     ],
     "MO": [
@@ -10818,7 +13218,22 @@
           "lower": 4.4,
           "upper": 83.6
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 1366477,
+          "lower": 119821,
+          "upper": 3942307
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -8753066,
+          "lower": -9999722,
+          "upper": -6177236
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 41,
+          "activeOnArtReengaged": 0,
+          "offArtExcess": 13
+        }
       },
       {
         "year": 2027,
@@ -10885,7 +13300,22 @@
           "lower": 27.9,
           "upper": 526.5
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 8795934,
+          "lower": 767155,
+          "upper": 25151872
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -11148408,
+          "lower": -19177187,
+          "upper": 5207529
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 210.2,
+          "activeOnArtReengaged": 7.8,
+          "offArtExcess": 66.9
+        }
       },
       {
         "year": 2028,
@@ -10952,7 +13382,22 @@
           "lower": 82.8,
           "upper": 1567.9
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 26631617,
+          "lower": 2301039,
+          "upper": 76373027
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -2851366,
+          "lower": -27181944,
+          "upper": 46890045
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 470.9,
+          "activeOnArtReengaged": 42.6,
+          "offArtExcess": 141.8
+        }
       },
       {
         "year": 2029,
@@ -11019,7 +13464,22 @@
           "lower": 174.7,
           "upper": 3401.7
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 58249336,
+          "lower": 5025767,
+          "upper": 166587902
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 19505539,
+          "lower": -33718031,
+          "upper": 127844104
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 788.7,
+          "activeOnArtReengaged": 102.7,
+          "offArtExcess": 208.1
+        }
       },
       {
         "year": 2030,
@@ -11086,7 +13546,22 @@
           "lower": 312.4,
           "upper": 6132.2
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 106796221,
+          "lower": 9190204,
+          "upper": 304839776
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 59061340,
+          "lower": -38544677,
+          "upper": 257104895
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 1145.8,
+          "activeOnArtReengaged": 181.8,
+          "offArtExcess": 262.7
+        }
       },
       {
         "year": 2031,
@@ -11153,7 +13628,22 @@
           "lower": 500.5,
           "upper": 9845.6
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 174061625,
+          "lower": 15159374,
+          "upper": 496944235
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 117597537,
+          "lower": -41304714,
+          "upper": 440480147
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 1536.2,
+          "activeOnArtReengaged": 273.7,
+          "offArtExcess": 306.7
+        }
       },
       {
         "year": 2032,
@@ -11220,7 +13710,22 @@
           "lower": 741.2,
           "upper": 14645.3
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 262204049,
+          "lower": 22857953,
+          "upper": 748077584
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 197265003,
+          "lower": -42081093,
+          "upper": 683138538
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 1951.9,
+          "activeOnArtReengaged": 376.7,
+          "offArtExcess": 344
+        }
       },
       {
         "year": 2033,
@@ -11287,7 +13792,22 @@
           "lower": 1036.6,
           "upper": 20519.8
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 373582485,
+          "lower": 32427591,
+          "upper": 1063274177
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 300415325,
+          "lower": -40739570,
+          "upper": 990107017
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 2378.4,
+          "activeOnArtReengaged": 484.5,
+          "offArtExcess": 377.6
+        }
       },
       {
         "year": 2034,
@@ -11354,7 +13874,22 @@
           "lower": 1388.5,
           "upper": 27464.5
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 509269507,
+          "lower": 44106898,
+          "upper": 1446388170
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 428113886,
+          "lower": -37048724,
+          "upper": 1365232549
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 2815.9,
+          "activeOnArtReengaged": 598.2,
+          "offArtExcess": 407.1
+        }
       },
       {
         "year": 2035,
@@ -11421,7 +13956,22 @@
           "lower": 1797.9,
           "upper": 35546.2
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 670375628,
+          "lower": 58010776,
+          "upper": 1905241847
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 581464219,
+          "lower": -30900632,
+          "upper": 1816330439
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 3259.3,
+          "activeOnArtReengaged": 715.8,
+          "offArtExcess": 435.9
+        }
       }
     ],
     "MS": [
@@ -11490,7 +14040,22 @@
           "lower": 2.1,
           "upper": 29.5
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 464741,
+          "lower": 60913,
+          "upper": 1314506
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -7308801,
+          "lower": -7712629,
+          "upper": -6459036
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 13.6,
+          "activeOnArtReengaged": 0,
+          "offArtExcess": 4.3
+        }
       },
       {
         "year": 2027,
@@ -11557,7 +14122,22 @@
           "lower": 14.4,
           "upper": 188.6
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 3161456,
+          "lower": 427723,
+          "upper": 8740380
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -12159215,
+          "lower": -14892948,
+          "upper": -6580291
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 75.4,
+          "activeOnArtReengaged": 2.6,
+          "offArtExcess": 24
+        }
       },
       {
         "year": 2028,
@@ -11624,7 +14204,22 @@
           "lower": 46.2,
           "upper": 545.4
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 9717645,
+          "lower": 1396343,
+          "upper": 26099684
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -12930335,
+          "lower": -21251637,
+          "upper": 3451704
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 175.9,
+          "activeOnArtReengaged": 15.2,
+          "offArtExcess": 53.1
+        }
       },
       {
         "year": 2029,
@@ -11691,7 +14286,22 @@
           "lower": 102.2,
           "upper": 1136.1
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 21358579,
+          "lower": 3084876,
+          "upper": 55687696
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -8403293,
+          "lower": -26676997,
+          "upper": 25925823
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 296.9,
+          "activeOnArtReengaged": 38,
+          "offArtExcess": 79.1
+        }
       },
       {
         "year": 2030,
@@ -11758,7 +14368,22 @@
           "lower": 188.8,
           "upper": 1973.6
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 38861135,
+          "lower": 5636762,
+          "upper": 97856230
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 2192570,
+          "lower": -31031803,
+          "upper": 61187666
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 428,
+          "activeOnArtReengaged": 68.1,
+          "offArtExcess": 97.8
+        }
       },
       {
         "year": 2031,
@@ -11825,7 +14450,22 @@
           "lower": 308.7,
           "upper": 3066.9
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 62651746,
+          "lower": 9401994,
+          "upper": 152808096
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 19277656,
+          "lower": -33972096,
+          "upper": 109434006
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 556.7,
+          "activeOnArtReengaged": 102,
+          "offArtExcess": 108.9
+        }
       },
       {
         "year": 2032,
@@ -11892,7 +14532,22 @@
           "lower": 457.5,
           "upper": 4328.5
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 93068312,
+          "lower": 14253391,
+          "upper": 221205135
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 43184002,
+          "lower": -35630919,
+          "upper": 171320825
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 686.4,
+          "activeOnArtReengaged": 137.6,
+          "offArtExcess": 116.6
+        }
       },
       {
         "year": 2033,
@@ -11959,7 +14614,22 @@
           "lower": 634.3,
           "upper": 5846.8
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 129461563,
+          "lower": 20334486,
+          "upper": 306961691
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 73256652,
+          "lower": -35870425,
+          "upper": 250756780
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 813.9,
+          "activeOnArtReengaged": 173.9,
+          "offArtExcess": 121.3
+        }
       },
       {
         "year": 2034,
@@ -12026,7 +14696,22 @@
           "lower": 849.1,
           "upper": 7637.4
         },
-        "negativeExcessNewShare": 0.001
+        "negativeExcessNewShare": 0.001,
+        "pooledCumulativeCareCost": {
+          "median": 172838499,
+          "lower": 27298252,
+          "upper": 403455610
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 110497082,
+          "lower": -35043165,
+          "upper": 341114193
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 933.9,
+          "activeOnArtReengaged": 208.4,
+          "offArtExcess": 125.2
+        }
       },
       {
         "year": 2035,
@@ -12093,7 +14778,22 @@
           "lower": 1097.1,
           "upper": 9613.5
         },
-        "negativeExcessNewShare": 0.001
+        "negativeExcessNewShare": 0.001,
+        "pooledCumulativeCareCost": {
+          "median": 222833266,
+          "lower": 35964671,
+          "upper": 516953305
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 154534075,
+          "lower": -32334519,
+          "upper": 448654115
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 1053.6,
+          "activeOnArtReengaged": 243.3,
+          "offArtExcess": 130.3
+        }
       }
     ],
     "NC": [
@@ -12162,7 +14862,22 @@
           "lower": 3.7,
           "upper": 80.6
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 1320552,
+          "lower": 111872,
+          "upper": 3739484
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -22663783,
+          "lower": -23872462,
+          "upper": -20244850
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 40.4,
+          "activeOnArtReengaged": 0,
+          "offArtExcess": 14.1
+        }
       },
       {
         "year": 2027,
@@ -12229,7 +14944,22 @@
           "lower": 25.6,
           "upper": 539.1
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 9062045,
+          "lower": 775668,
+          "upper": 25655279
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -38208050,
+          "lower": -46494427,
+          "upper": -21614817
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 222.5,
+          "activeOnArtReengaged": 8.5,
+          "offArtExcess": 78.1
+        }
       },
       {
         "year": 2028,
@@ -12296,7 +15026,22 @@
           "lower": 78.9,
           "upper": 1631.1
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 27971456,
+          "lower": 2411466,
+          "upper": 78992005
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -41906174,
+          "lower": -67466165,
+          "upper": 9114375
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 505.2,
+          "activeOnArtReengaged": 49.5,
+          "offArtExcess": 169.2
+        }
       },
       {
         "year": 2029,
@@ -12363,7 +15108,22 @@
           "lower": 173.6,
           "upper": 3526.4
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 62160868,
+          "lower": 5311985,
+          "upper": 174204723
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -29665826,
+          "lower": -86514709,
+          "upper": 82378029
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 848,
+          "activeOnArtReengaged": 121.7,
+          "offArtExcess": 250.5
+        }
       },
       {
         "year": 2030,
@@ -12430,7 +15190,22 @@
           "lower": 315.4,
           "upper": 6330.1
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 114051104,
+          "lower": 9755545,
+          "upper": 318330894
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 914640,
+          "lower": -103380919,
+          "upper": 205194430
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 1229.7,
+          "activeOnArtReengaged": 217.4,
+          "offArtExcess": 312.6
+        }
       },
       {
         "year": 2031,
@@ -12497,7 +15272,22 @@
           "lower": 507.3,
           "upper": 10078.2
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 185778799,
+          "lower": 16044061,
+          "upper": 517278309
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 51953237,
+          "lower": -117781500,
+          "upper": 383452748
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 1633.4,
+          "activeOnArtReengaged": 326.7,
+          "offArtExcess": 359.8
+        }
       },
       {
         "year": 2032,
@@ -12564,7 +15354,22 @@
           "lower": 750,
           "upper": 14793.8
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 278809641,
+          "lower": 24310520,
+          "upper": 772468197
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 124897577,
+          "lower": -129601543,
+          "upper": 618556133
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 2042.3,
+          "activeOnArtReengaged": 445.5,
+          "offArtExcess": 396
+        }
       },
       {
         "year": 2033,
@@ -12631,7 +15436,22 @@
           "lower": 1042.2,
           "upper": 20524.4
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 394756580,
+          "lower": 34629513,
+          "upper": 1090915319
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 221343058,
+          "lower": -138784009,
+          "upper": 917501797
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 2465.7,
+          "activeOnArtReengaged": 570,
+          "offArtExcess": 428.1
+        }
       },
       {
         "year": 2034,
@@ -12698,7 +15518,22 @@
           "lower": 1381.1,
           "upper": 27435.2
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 534822807,
+          "lower": 47146218,
+          "upper": 1475698235
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 342475830,
+          "lower": -145200759,
+          "upper": 1283351258
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 2892.7,
+          "activeOnArtReengaged": 696.2,
+          "offArtExcess": 454.7
+        }
       },
       {
         "year": 2035,
@@ -12765,7 +15600,22 @@
           "lower": 1763.8,
           "upper": 35266.5
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 699121371,
+          "lower": 61993686,
+          "upper": 1928878063
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 488392399,
+          "lower": -148735286,
+          "upper": 1718149091
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 3329.9,
+          "activeOnArtReengaged": 827,
+          "offArtExcess": 484.3
+        }
       }
     ],
     "NJ": [
@@ -12834,7 +15684,22 @@
           "lower": 1.1,
           "upper": 56.8
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 469912,
+          "lower": 31857,
+          "upper": 2326069
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -26484273,
+          "lower": -26922328,
+          "upper": -24628116
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 14.1,
+          "activeOnArtReengaged": 0,
+          "offArtExcess": 9.8
+        }
       },
       {
         "year": 2027,
@@ -12901,7 +15766,22 @@
           "lower": 7.1,
           "upper": 312.4
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 3109049,
+          "lower": 228410,
+          "upper": 13312733
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -50014247,
+          "lower": -52894886,
+          "upper": -39810563
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 72.5,
+          "activeOnArtReengaged": 5.9,
+          "offArtExcess": 50.9
+        }
       },
       {
         "year": 2028,
@@ -12968,7 +15848,22 @@
           "lower": 20.3,
           "upper": 861.4
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 9646286,
+          "lower": 744620,
+          "upper": 38242441
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -68883914,
+          "lower": -77785581,
+          "upper": -40287759
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 159.9,
+          "activeOnArtReengaged": 32.4,
+          "offArtExcess": 105.7
+        }
       },
       {
         "year": 2029,
@@ -13035,7 +15930,22 @@
           "lower": 46.8,
           "upper": 1779.2
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 21479308,
+          "lower": 1686545,
+          "upper": 80104656
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -81717790,
+          "lower": -101510553,
+          "upper": -23092442
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 267.6,
+          "activeOnArtReengaged": 77.2,
+          "offArtExcess": 150.6
+        }
       },
       {
         "year": 2030,
@@ -13102,7 +16012,22 @@
           "lower": 88.3,
           "upper": 3062.6
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 39842510,
+          "lower": 3134514,
+          "upper": 140995181
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -87303031,
+          "lower": -124011028,
+          "upper": 13849639
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 384.4,
+          "activeOnArtReengaged": 133.9,
+          "offArtExcess": 186.3
+        }
       },
       {
         "year": 2031,
@@ -13169,7 +16094,22 @@
           "lower": 143.8,
           "upper": 4737.5
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 65726433,
+          "lower": 5329549,
+          "upper": 223712258
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -84670025,
+          "lower": -145066910,
+          "upper": 73315799
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 501.9,
+          "activeOnArtReengaged": 198.5,
+          "offArtExcess": 213.8
+        }
       },
       {
         "year": 2032,
@@ -13236,7 +16176,22 @@
           "lower": 219.7,
           "upper": 6830.5
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 100092313,
+          "lower": 8229633,
+          "upper": 328416504
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -72877851,
+          "lower": -164740531,
+          "upper": 155446340
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 628.4,
+          "activeOnArtReengaged": 269.8,
+          "offArtExcess": 237.6
+        }
       },
       {
         "year": 2033,
@@ -13303,7 +16258,22 @@
           "lower": 315.5,
           "upper": 9400.1
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 142712514,
+          "lower": 11852412,
+          "upper": 460143802
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -52173868,
+          "lower": -183033970,
+          "upper": 265257420
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 761.5,
+          "activeOnArtReengaged": 343.8,
+          "offArtExcess": 257.8
+        }
       },
       {
         "year": 2034,
@@ -13370,7 +16340,22 @@
           "lower": 432.2,
           "upper": 12422.3
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 195416987,
+          "lower": 16262343,
+          "upper": 618561289
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -20747278,
+          "lower": -199901921,
+          "upper": 402397024
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 900.6,
+          "activeOnArtReengaged": 423.2,
+          "offArtExcess": 277.1
+        }
       },
       {
         "year": 2035,
@@ -13437,7 +16422,22 @@
           "lower": 569.4,
           "upper": 15943
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 258431105,
+          "lower": 21602676,
+          "upper": 810497715
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 21608702,
+          "lower": -215219727,
+          "upper": 573675311
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 1042.8,
+          "activeOnArtReengaged": 500.2,
+          "offArtExcess": 296.2
+        }
       }
     ],
     "NV": [
@@ -13506,7 +16506,22 @@
           "lower": 0.8,
           "upper": 22.4
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 318104,
+          "lower": 27064,
+          "upper": 951300
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -7290527,
+          "lower": -7581566,
+          "upper": -6657331
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 9.7,
+          "activeOnArtReengaged": 0,
+          "offArtExcess": 4.5
+        }
       },
       {
         "year": 2027,
@@ -13573,7 +16588,22 @@
           "lower": 5.6,
           "upper": 140.1
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 2112506,
+          "lower": 181508,
+          "upper": 6183027
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -12883145,
+          "lower": -14814143,
+          "upper": -8812623
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 50.8,
+          "activeOnArtReengaged": 2.7,
+          "offArtExcess": 23.7
+        }
       },
       {
         "year": 2028,
@@ -13640,7 +16670,22 @@
           "lower": 17,
           "upper": 407.7
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 6468716,
+          "lower": 564340,
+          "upper": 18568575
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -15698798,
+          "lower": -21603175,
+          "upper": -3598940
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 111,
+          "activeOnArtReengaged": 15.1,
+          "offArtExcess": 49.2
+        }
       },
       {
         "year": 2029,
@@ -13707,7 +16752,22 @@
           "lower": 37.3,
           "upper": 855.9
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 14131481,
+          "lower": 1258068,
+          "upper": 40450754
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -14999009,
+          "lower": -27872421,
+          "upper": 11320264
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 182.7,
+          "activeOnArtReengaged": 35.9,
+          "offArtExcess": 69.9
+        }
       },
       {
         "year": 2030,
@@ -13774,7 +16834,22 @@
           "lower": 67.3,
           "upper": 1500.6
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 25789036,
+          "lower": 2295848,
+          "upper": 73467467
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -10101623,
+          "lower": -33594811,
+          "upper": 37576808
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 261.6,
+          "activeOnArtReengaged": 62,
+          "offArtExcess": 85.6
+        }
       },
       {
         "year": 2031,
@@ -13841,7 +16916,22 @@
           "lower": 108,
           "upper": 2359.8
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 41772516,
+          "lower": 3682133,
+          "upper": 118833095
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -681415,
+          "lower": -38771798,
+          "upper": 76379164
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 342.6,
+          "activeOnArtReengaged": 91.6,
+          "offArtExcess": 97.9
+        }
       },
       {
         "year": 2032,
@@ -13908,7 +16998,22 @@
           "lower": 160.3,
           "upper": 3444.7
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 62662324,
+          "lower": 5480505,
+          "upper": 176521615
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 13836285,
+          "lower": -43345534,
+          "upper": 127695576
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 428.1,
+          "activeOnArtReengaged": 123.4,
+          "offArtExcess": 108.2
+        }
       },
       {
         "year": 2033,
@@ -13975,7 +17080,22 @@
           "lower": 224.8,
           "upper": 4772.6
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 88830594,
+          "lower": 7823520,
+          "upper": 248825080
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 33818042,
+          "lower": -47189032,
+          "upper": 193812528
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 518.8,
+          "activeOnArtReengaged": 157.7,
+          "offArtExcess": 118.5
+        }
       },
       {
         "year": 2034,
@@ -14042,7 +17162,22 @@
           "lower": 301.9,
           "upper": 6326
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 120584983,
+          "lower": 10576671,
+          "upper": 337316023
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 59566108,
+          "lower": -50442205,
+          "upper": 276297148
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 611.6,
+          "activeOnArtReengaged": 192.8,
+          "offArtExcess": 127.9
+        }
       },
       {
         "year": 2035,
@@ -14109,7 +17244,22 @@
           "lower": 392,
           "upper": 8140.7
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 158743589,
+          "lower": 13829081,
+          "upper": 442828960
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 91893332,
+          "lower": -53021177,
+          "upper": 375978703
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 707.4,
+          "activeOnArtReengaged": 229,
+          "offArtExcess": 137.4
+        }
       }
     ],
     "NY": [
@@ -14178,7 +17328,22 @@
           "lower": 3.7,
           "upper": 96.7
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 1302944,
+          "lower": 109322,
+          "upper": 4184058
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -88330981,
+          "lower": -89524603,
+          "upper": -85449866
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 40.2,
+          "activeOnArtReengaged": 0,
+          "offArtExcess": 15.2
+        }
       },
       {
         "year": 2027,
@@ -14245,7 +17410,22 @@
           "lower": 24.6,
           "upper": 618.2
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 8865529,
+          "lower": 751229,
+          "upper": 27930667
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -167791623,
+          "lower": -175905923,
+          "upper": -148726485
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 217.4,
+          "activeOnArtReengaged": 9.1,
+          "offArtExcess": 82.5
+        }
       },
       {
         "year": 2028,
@@ -14312,7 +17492,22 @@
           "lower": 75,
           "upper": 1866.3
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 27782899,
+          "lower": 2374157,
+          "upper": 86607159
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -233362823,
+          "lower": -258771566,
+          "upper": -174538563
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 499.1,
+          "activeOnArtReengaged": 52.2,
+          "offArtExcess": 180.1
+        }
       },
       {
         "year": 2029,
@@ -14379,7 +17574,22 @@
           "lower": 167.5,
           "upper": 4030.7
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 62969479,
+          "lower": 5383737,
+          "upper": 193003473
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -280203982,
+          "lower": -337789724,
+          "upper": -150169988
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 867.7,
+          "activeOnArtReengaged": 129.5,
+          "offArtExcess": 272.4
+        }
       },
       {
         "year": 2030,
@@ -14446,7 +17656,22 @@
           "lower": 308,
           "upper": 7360.4
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 117579745,
+          "lower": 9983257,
+          "upper": 358853047
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -305232296,
+          "lower": -412828784,
+          "upper": -63958994
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 1295.2,
+          "activeOnArtReengaged": 236,
+          "offArtExcess": 355.3
+        }
       },
       {
         "year": 2031,
@@ -14513,7 +17738,22 @@
           "lower": 510.1,
           "upper": 11929
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 196097740,
+          "lower": 16468424,
+          "upper": 592765164
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -304033312,
+          "lower": -483662628,
+          "upper": 92634112
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 1773.3,
+          "activeOnArtReengaged": 359.1,
+          "offArtExcess": 430.8
+        }
       },
       {
         "year": 2032,
@@ -14580,7 +17820,22 @@
           "lower": 759.6,
           "upper": 17824.5
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 301222692,
+          "lower": 25345037,
+          "upper": 903281009
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -273975361,
+          "lower": -549853015,
+          "upper": 328082957
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 2296.2,
+          "activeOnArtReengaged": 506.3,
+          "offArtExcess": 498.2
+        }
       },
       {
         "year": 2033,
@@ -14647,7 +17902,22 @@
           "lower": 1067.2,
           "upper": 25117.9
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 434724451,
+          "lower": 36837026,
+          "upper": 1293640607
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -213354184,
+          "lower": -611241610,
+          "upper": 645561972
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 2848.3,
+          "activeOnArtReengaged": 668.3,
+          "offArtExcess": 556.4
+        }
       },
       {
         "year": 2034,
@@ -14714,7 +17984,22 @@
           "lower": 1454.5,
           "upper": 33866.4
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 598892906,
+          "lower": 51155766,
+          "upper": 1777704666
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -119943577,
+          "lower": -667680718,
+          "upper": 1058868183
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 3421.3,
+          "activeOnArtReengaged": 841.8,
+          "offArtExcess": 606.1
+        }
       },
       {
         "year": 2035,
@@ -14781,7 +18066,22 @@
           "lower": 1926.9,
           "upper": 44153.7
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 798230952,
+          "lower": 68527517,
+          "upper": 2354442196
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 10697529,
+          "lower": -719005905,
+          "upper": 1566908773
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 3996.9,
+          "activeOnArtReengaged": 1026.1,
+          "offArtExcess": 651.3
+        }
       }
     ],
     "OH": [
@@ -14850,7 +18150,22 @@
           "lower": 1.5,
           "upper": 49.1
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 576942,
+          "lower": 46151,
+          "upper": 2162836
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -16769619,
+          "lower": -17300410,
+          "upper": -15183724
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 18,
+          "activeOnArtReengaged": 0,
+          "offArtExcess": 5.6
+        }
       },
       {
         "year": 2027,
@@ -14917,7 +18232,22 @@
           "lower": 9.5,
           "upper": 294.9
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 3770332,
+          "lower": 309986,
+          "upper": 13447393
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -30417550,
+          "lower": -33877896,
+          "upper": -20740488
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 92.7,
+          "activeOnArtReengaged": 3.4,
+          "offArtExcess": 29.1
+        }
       },
       {
         "year": 2028,
@@ -14984,7 +18314,22 @@
           "lower": 28.7,
           "upper": 857.2
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 11635237,
+          "lower": 963278,
+          "upper": 39705230
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -38903442,
+          "lower": -49575401,
+          "upper": -10833449
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 211.1,
+          "activeOnArtReengaged": 18.5,
+          "offArtExcess": 62.4
+        }
       },
       {
         "year": 2029,
@@ -15051,7 +18396,22 @@
           "lower": 62.6,
           "upper": 1822.7
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 25737761,
+          "lower": 2192273,
+          "upper": 86340272
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -40675478,
+          "lower": -64220966,
+          "upper": 19927032
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 360.8,
+          "activeOnArtReengaged": 45.1,
+          "offArtExcess": 93.9
+        }
       },
       {
         "year": 2030,
@@ -15118,7 +18478,22 @@
           "lower": 113.9,
           "upper": 3222.4
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 47317535,
+          "lower": 4091253,
+          "upper": 156141066
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -34507898,
+          "lower": -77734181,
+          "upper": 74315632
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 534.3,
+          "activeOnArtReengaged": 81,
+          "offArtExcess": 120.1
+        }
       },
       {
         "year": 2031,
@@ -15185,7 +18560,22 @@
           "lower": 186.7,
           "upper": 5085.6
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 78154828,
+          "lower": 6726049,
+          "upper": 252881638
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -18633902,
+          "lower": -90062681,
+          "upper": 156092908
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 718.8,
+          "activeOnArtReengaged": 124.6,
+          "offArtExcess": 142.6
+        }
       },
       {
         "year": 2032,
@@ -15252,7 +18642,22 @@
           "lower": 282.4,
           "upper": 7470.7
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 118855445,
+          "lower": 10316619,
+          "upper": 377343330
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 7539245,
+          "lower": -100999581,
+          "upper": 266027129
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 917.9,
+          "activeOnArtReengaged": 173.1,
+          "offArtExcess": 162.6
+        }
       },
       {
         "year": 2033,
@@ -15319,7 +18724,22 @@
           "lower": 402.7,
           "upper": 10370.1
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 170160680,
+          "lower": 14896223,
+          "upper": 531411503
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 44740138,
+          "lower": -110524319,
+          "upper": 405990962
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 1130.7,
+          "activeOnArtReengaged": 223.6,
+          "offArtExcess": 180.3
+        }
       },
       {
         "year": 2034,
@@ -15386,7 +18806,22 @@
           "lower": 548.3,
           "upper": 13843.8
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 233898762,
+          "lower": 20362670,
+          "upper": 723750065
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 94784685,
+          "lower": -118751407,
+          "upper": 584635988
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 1347,
+          "activeOnArtReengaged": 278.5,
+          "offArtExcess": 194.5
+        }
       },
       {
         "year": 2035,
@@ -15453,7 +18888,22 @@
           "lower": 719.9,
           "upper": 17824.8
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 310726663,
+          "lower": 26889861,
+          "upper": 951714951
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 158317892,
+          "lower": -125518910,
+          "upper": 799306180
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 1578.3,
+          "activeOnArtReengaged": 336.1,
+          "offArtExcess": 209
+        }
       }
     ],
     "OK": [
@@ -15522,7 +18972,22 @@
           "lower": 0.3,
           "upper": 8.1
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 106616,
+          "lower": 9664,
+          "upper": 350094
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -5002557,
+          "lower": -5099509,
+          "upper": -4759079
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 3.4,
+          "activeOnArtReengaged": 0,
+          "offArtExcess": 1.8
+        }
       },
       {
         "year": 2027,
@@ -15589,7 +19054,22 @@
           "lower": 2.1,
           "upper": 58.8
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 808807,
+          "lower": 74857,
+          "upper": 2611914
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -9260729,
+          "lower": -9994679,
+          "upper": -7457622
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 20.6,
+          "activeOnArtReengaged": 1.1,
+          "offArtExcess": 10.8
+        }
       },
       {
         "year": 2028,
@@ -15656,7 +19136,22 @@
           "lower": 6.9,
           "upper": 196.3
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 2768053,
+          "lower": 255579,
+          "upper": 8865535
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -12117369,
+          "lower": -14629844,
+          "upper": -6019887
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 52.1,
+          "activeOnArtReengaged": 6.8,
+          "offArtExcess": 26.5
+        }
       },
       {
         "year": 2029,
@@ -15723,7 +19218,22 @@
           "lower": 16.3,
           "upper": 462.8
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 6694938,
+          "lower": 618047,
+          "upper": 21160514
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -12866101,
+          "lower": -18942993,
+          "upper": 1599475
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 97.4,
+          "activeOnArtReengaged": 18.6,
+          "offArtExcess": 44.5
+        }
       },
       {
         "year": 2030,
@@ -15790,7 +19300,22 @@
           "lower": 31.7,
           "upper": 893
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 13330959,
+          "lower": 1230232,
+          "upper": 41752254
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -10769515,
+          "lower": -22870242,
+          "upper": 17651780
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 156.5,
+          "activeOnArtReengaged": 36.6,
+          "offArtExcess": 62.6
+        }
       },
       {
         "year": 2031,
@@ -15857,7 +19382,22 @@
           "lower": 54.9,
           "upper": 1523.8
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 23373307,
+          "lower": 2152628,
+          "upper": 72786395
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -5134385,
+          "lower": -26355063,
+          "upper": 44278703
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 224.8,
+          "activeOnArtReengaged": 59.9,
+          "offArtExcess": 80.5
+        }
       },
       {
         "year": 2032,
@@ -15924,7 +19464,22 @@
           "lower": 87,
           "upper": 2372
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 37684192,
+          "lower": 3439236,
+          "upper": 115448886
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 4897647,
+          "lower": -29347308,
+          "upper": 82662342
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 302.6,
+          "activeOnArtReengaged": 88.2,
+          "offArtExcess": 97.4
+        }
       },
       {
         "year": 2033,
@@ -15991,7 +19546,22 @@
           "lower": 128.6,
           "upper": 3495
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 56587412,
+          "lower": 5141921,
+          "upper": 173333458
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 19646643,
+          "lower": -31798849,
+          "upper": 136392689
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 391.1,
+          "activeOnArtReengaged": 121.2,
+          "offArtExcess": 114.7
+        }
       },
       {
         "year": 2034,
@@ -16058,7 +19628,22 @@
           "lower": 181.8,
           "upper": 4881.4
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 81073915,
+          "lower": 7346424,
+          "upper": 246565717
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 40099916,
+          "lower": -33627574,
+          "upper": 205591718
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 488.9,
+          "activeOnArtReengaged": 158.3,
+          "offArtExcess": 130.2
+        }
       },
       {
         "year": 2035,
@@ -16125,7 +19710,22 @@
           "lower": 248,
           "upper": 6520.2
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 111836456,
+          "lower": 10194697,
+          "upper": 337833493
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 66946701,
+          "lower": -34695058,
+          "upper": 292943738
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 594.9,
+          "activeOnArtReengaged": 198.6,
+          "offArtExcess": 146.5
+        }
       }
     ],
     "PA": [
@@ -16194,7 +19794,22 @@
           "lower": 1.4,
           "upper": 35.3
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 516488,
+          "lower": 45573,
+          "upper": 1628218
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -25176154,
+          "lower": -25647069,
+          "upper": -24064424
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 15.8,
+          "activeOnArtReengaged": 0,
+          "offArtExcess": 7.2
+        }
       },
       {
         "year": 2027,
@@ -16261,7 +19876,22 @@
           "lower": 8.4,
           "upper": 209.9
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 3182198,
+          "lower": 273559,
+          "upper": 9915753
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -47454757,
+          "lower": -50363397,
+          "upper": -40721202
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 75.2,
+          "activeOnArtReengaged": 4.3,
+          "offArtExcess": 33.9
+        }
       },
       {
         "year": 2028,
@@ -16328,7 +19958,22 @@
           "lower": 24.7,
           "upper": 611.2
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 9497900,
+          "lower": 824455,
+          "upper": 29436564
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -65356835,
+          "lower": -74030280,
+          "upper": -45418172
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 162.5,
+          "activeOnArtReengaged": 21.7,
+          "offArtExcess": 69.3
+        }
       },
       {
         "year": 2029,
@@ -16395,7 +20040,22 @@
           "lower": 53,
           "upper": 1296.6
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 20667768,
+          "lower": 1771862,
+          "upper": 63090656
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -77699375,
+          "lower": -96595281,
+          "upper": -35276486
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 268.8,
+          "activeOnArtReengaged": 50.6,
+          "offArtExcess": 99.7
+        }
       },
       {
         "year": 2030,
@@ -16462,7 +20122,22 @@
           "lower": 95.3,
           "upper": 2317.1
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 37788683,
+          "lower": 3193127,
+          "upper": 113782826
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -83406040,
+          "lower": -118001596,
+          "upper": -7411897
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 390.2,
+          "activeOnArtReengaged": 88.9,
+          "offArtExcess": 124.1
+        }
       },
       {
         "year": 2031,
@@ -16529,7 +20204,22 @@
           "lower": 153,
           "upper": 3693.1
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 61702159,
+          "lower": 5141321,
+          "upper": 185064046
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -81655263,
+          "lower": -138216101,
+          "upper": 41706624
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 521.5,
+          "activeOnArtReengaged": 132.4,
+          "offArtExcess": 144
+        }
       },
       {
         "year": 2032,
@@ -16596,7 +20286,22 @@
           "lower": 224.5,
           "upper": 5510.4
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 93141885,
+          "lower": 7677725,
+          "upper": 279566004
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -71732721,
+          "lower": -157196880,
+          "upper": 114691398
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 659,
+          "activeOnArtReengaged": 180.6,
+          "offArtExcess": 163.4
+        }
       },
       {
         "year": 2033,
@@ -16663,7 +20368,22 @@
           "lower": 311.2,
           "upper": 7702.5
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 133364480,
+          "lower": 10949839,
+          "upper": 399807853
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -52400595,
+          "lower": -174815236,
+          "upper": 214042778
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 806,
+          "activeOnArtReengaged": 230.6,
+          "offArtExcess": 183.1
+        }
       },
       {
         "year": 2034,
@@ -16730,7 +20450,22 @@
           "lower": 413.5,
           "upper": 10508.4
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 182782985,
+          "lower": 15168435,
+          "upper": 549926541
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -23264100,
+          "lower": -190878649,
+          "upper": 343879457
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 958.6,
+          "activeOnArtReengaged": 284,
+          "offArtExcess": 200.2
+        }
       },
       {
         "year": 2035,
@@ -16797,7 +20532,22 @@
           "lower": 531.7,
           "upper": 13783.9
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 241936649,
+          "lower": 20295039,
+          "upper": 729701105
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 16198293,
+          "lower": -205443317,
+          "upper": 503962750
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 1119.1,
+          "activeOnArtReengaged": 341.8,
+          "offArtExcess": 216
+        }
       }
     ],
     "SC": [
@@ -16866,7 +20616,22 @@
           "lower": 3.9,
           "upper": 49
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 962071,
+          "lower": 133841,
+          "upper": 2283695
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -12599864,
+          "lower": -13428094,
+          "upper": -11278240
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 30,
+          "activeOnArtReengaged": 0,
+          "offArtExcess": 8.5
+        }
       },
       {
         "year": 2027,
@@ -16933,7 +20698,22 @@
           "lower": 25.8,
           "upper": 326.7
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 6503239,
+          "lower": 914383,
+          "upper": 15586425
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -20225623,
+          "lower": -25814479,
+          "upper": -11142437
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 165.5,
+          "activeOnArtReengaged": 5.1,
+          "offArtExcess": 46.6
+        }
       },
       {
         "year": 2028,
@@ -17000,7 +20780,22 @@
           "lower": 79.2,
           "upper": 995.9
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 19914780,
+          "lower": 2806373,
+          "upper": 47741705
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -19597506,
+          "lower": -36705913,
+          "upper": 8229419
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 375,
+          "activeOnArtReengaged": 29.6,
+          "offArtExcess": 100.8
+        }
       },
       {
         "year": 2029,
@@ -17067,7 +20862,22 @@
           "lower": 173.6,
           "upper": 2161.5
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 43883128,
+          "lower": 6225105,
+          "upper": 105646092
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -8040249,
+          "lower": -45698273,
+          "upper": 53722714
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 628.9,
+          "activeOnArtReengaged": 72.5,
+          "offArtExcess": 147.5
+        }
       },
       {
         "year": 2030,
@@ -17134,7 +20944,22 @@
           "lower": 315.8,
           "upper": 3887.3
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 80149548,
+          "lower": 11460373,
+          "upper": 193646803
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 16176567,
+          "lower": -52512609,
+          "upper": 129673821
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 913.5,
+          "activeOnArtReengaged": 128.7,
+          "offArtExcess": 183.8
+        }
       },
       {
         "year": 2031,
@@ -17201,7 +21026,22 @@
           "lower": 510.5,
           "upper": 6219.1
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 130097502,
+          "lower": 18671316,
+          "upper": 315149027
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 54425877,
+          "lower": -57000310,
+          "upper": 239477401
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 1210.3,
+          "activeOnArtReengaged": 193.1,
+          "offArtExcess": 212.4
+        }
       },
       {
         "year": 2032,
@@ -17268,7 +21108,22 @@
           "lower": 752.2,
           "upper": 9182.3
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 194936944,
+          "lower": 28052896,
+          "upper": 472983357
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 107907412,
+          "lower": -58976636,
+          "upper": 385953825
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 1519.8,
+          "activeOnArtReengaged": 263,
+          "offArtExcess": 236.7
+        }
       },
       {
         "year": 2033,
@@ -17335,7 +21190,22 @@
           "lower": 1036,
           "upper": 12798.5
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 276806359,
+          "lower": 39964345,
+          "upper": 669678673
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 178749733,
+          "lower": -58092281,
+          "upper": 571622047
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 1838.5,
+          "activeOnArtReengaged": 336.5,
+          "offArtExcess": 258.4
+        }
       },
       {
         "year": 2034,
@@ -17402,7 +21272,22 @@
           "lower": 1376.9,
           "upper": 17082.3
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 375832243,
+          "lower": 54509013,
+          "upper": 909211875
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 267069700,
+          "lower": -54253530,
+          "upper": 800449332
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 2168.6,
+          "activeOnArtReengaged": 414,
+          "offArtExcess": 277.2
+        }
       },
       {
         "year": 2035,
@@ -17469,7 +21354,22 @@
           "lower": 1776.7,
           "upper": 21982.3
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 493837738,
+          "lower": 71958277,
+          "upper": 1191954843
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 374681101,
+          "lower": -47198360,
+          "upper": 1072798206
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 2506.2,
+          "activeOnArtReengaged": 494.2,
+          "offArtExcess": 294.8
+        }
       }
     ],
     "TN": [
@@ -17538,7 +21438,22 @@
           "lower": 8.2,
           "upper": 108.9
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 1940841,
+          "lower": 275286,
+          "upper": 4946592
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -12222509,
+          "lower": -13888065,
+          "upper": -9216759
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 58.3,
+          "activeOnArtReengaged": 0,
+          "offArtExcess": 28.1
+        }
       },
       {
         "year": 2027,
@@ -17605,7 +21520,22 @@
           "lower": 53.2,
           "upper": 659.7
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 12854632,
+          "lower": 1855556,
+          "upper": 31500163
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -15059545,
+          "lower": -26058621,
+          "upper": 3585986
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 309.6,
+          "activeOnArtReengaged": 16.9,
+          "offArtExcess": 149.6
+        }
       },
       {
         "year": 2028,
@@ -17672,7 +21602,22 @@
           "lower": 165.2,
           "upper": 1912.7
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 39252551,
+          "lower": 5772514,
+          "upper": 94941169
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -2011943,
+          "lower": -35491980,
+          "upper": 53676676
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 690.1,
+          "activeOnArtReengaged": 95.1,
+          "offArtExcess": 318.6
+        }
       },
       {
         "year": 2029,
@@ -17739,7 +21684,22 @@
           "lower": 366.7,
           "upper": 4048.5
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 86371230,
+          "lower": 12942586,
+          "upper": 205525539
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 32145264,
+          "lower": -41283380,
+          "upper": 151299573
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 1145.8,
+          "activeOnArtReengaged": 231,
+          "offArtExcess": 462.9
+        }
       },
       {
         "year": 2030,
@@ -17806,7 +21766,22 @@
           "lower": 666.6,
           "upper": 7139.3
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 158676132,
+          "lower": 24024235,
+          "upper": 371168596
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 91866212,
+          "lower": -42785685,
+          "upper": 304358676
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 1665.5,
+          "activeOnArtReengaged": 404.5,
+          "offArtExcess": 578.4
+        }
       },
       {
         "year": 2031,
@@ -17873,7 +21848,22 @@
           "lower": 1077.2,
           "upper": 11385.6
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 258326249,
+          "lower": 39359473,
+          "upper": 603605299
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 179298898,
+          "lower": -39667878,
+          "upper": 524577948
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 2226.3,
+          "activeOnArtReengaged": 607.6,
+          "offArtExcess": 674
+        }
       },
       {
         "year": 2032,
@@ -17940,7 +21930,22 @@
           "lower": 1581.1,
           "upper": 16821.7
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 389912867,
+          "lower": 59978709,
+          "upper": 902136836
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 299023933,
+          "lower": -30910225,
+          "upper": 811247902
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 2818.7,
+          "activeOnArtReengaged": 832.2,
+          "offArtExcess": 756
+        }
       },
       {
         "year": 2033,
@@ -18007,7 +22012,22 @@
           "lower": 2195,
           "upper": 23559.5
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 553020329,
+          "lower": 86151800,
+          "upper": 1276800443
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 450615294,
+          "lower": -16253234,
+          "upper": 1174395409
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 3438.9,
+          "activeOnArtReengaged": 1067.6,
+          "offArtExcess": 830.3
+        }
       },
       {
         "year": 2034,
@@ -18074,7 +22094,22 @@
           "lower": 2946,
           "upper": 31418.5
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 752473502,
+          "lower": 118287846,
+          "upper": 1732665510
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 638887788,
+          "lower": 4702131,
+          "upper": 1619079795
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 4061.1,
+          "activeOnArtReengaged": 1316.1,
+          "offArtExcess": 894
+        }
       },
       {
         "year": 2035,
@@ -18141,7 +22176,22 @@
           "lower": 3848.5,
           "upper": 40675.8
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 988497841,
+          "lower": 156642323,
+          "upper": 2280221561
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 864057098,
+          "lower": 32201579,
+          "upper": 2155780818
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 4691.3,
+          "activeOnArtReengaged": 1578.2,
+          "offArtExcess": 954
+        }
       }
     ],
     "TX": [
@@ -18210,7 +22260,22 @@
           "lower": 19.6,
           "upper": 210.6
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 4046396,
+          "lower": 587883,
+          "upper": 9785244
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -71408424,
+          "lower": -74866936,
+          "upper": -65669576
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 128.3,
+          "activeOnArtReengaged": 0,
+          "offArtExcess": 52.1
+        }
       },
       {
         "year": 2027,
@@ -18277,7 +22342,22 @@
           "lower": 126.2,
           "upper": 1333
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 26546055,
+          "lower": 3853199,
+          "upper": 62958711
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -122165871,
+          "lower": -144858727,
+          "upper": -85753216
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 661.8,
+          "activeOnArtReengaged": 31.3,
+          "offArtExcess": 270.8
+        }
       },
       {
         "year": 2028,
@@ -18344,7 +22424,22 @@
           "lower": 376.8,
           "upper": 3947.6
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 80255926,
+          "lower": 11632420,
+          "upper": 189332670
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -139579405,
+          "lower": -208202911,
+          "upper": -30502661
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 1456.9,
+          "activeOnArtReengaged": 172.1,
+          "offArtExcess": 563.5
+        }
       },
       {
         "year": 2029,
@@ -18411,7 +22506,22 @@
           "lower": 811.4,
           "upper": 8381.8
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 174455907,
+          "lower": 25428224,
+          "upper": 411119672
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -114431273,
+          "lower": -263458956,
+          "upper": 122232492
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 2395.8,
+          "activeOnArtReengaged": 410,
+          "offArtExcess": 816
+        }
       },
       {
         "year": 2030,
@@ -18478,7 +22588,22 @@
           "lower": 1445.6,
           "upper": 14915.4
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 316752762,
+          "lower": 45796361,
+          "upper": 741192407
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -39175049,
+          "lower": -310131449,
+          "upper": 385264597
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 3415.5,
+          "activeOnArtReengaged": 716.5,
+          "offArtExcess": 987
+        }
       },
       {
         "year": 2031,
@@ -18545,7 +22670,22 @@
           "lower": 2300.1,
           "upper": 23668.2
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 510705897,
+          "lower": 73718374,
+          "upper": 1194392174
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 89690097,
+          "lower": -347297426,
+          "upper": 773376373
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 4489.2,
+          "activeOnArtReengaged": 1064.1,
+          "offArtExcess": 1126.7
+        }
       },
       {
         "year": 2032,
@@ -18612,7 +22752,22 @@
           "lower": 3381,
           "upper": 34571
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 763873227,
+          "lower": 110842742,
+          "upper": 1785347676
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 279665203,
+          "lower": -373365282,
+          "upper": 1301139652
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 5563.8,
+          "activeOnArtReengaged": 1422,
+          "offArtExcess": 1215.3
+        }
       },
       {
         "year": 2033,
@@ -18679,7 +22834,22 @@
           "lower": 4660.3,
           "upper": 47907.4
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 1075980351,
+          "lower": 157315433,
+          "upper": 2524501837
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 530420654,
+          "lower": -388244265,
+          "upper": 1978942139
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 6675.3,
+          "activeOnArtReengaged": 1798.4,
+          "offArtExcess": 1293.5
+        }
       },
       {
         "year": 2034,
@@ -18746,7 +22916,22 @@
           "lower": 6114.4,
           "upper": 63731.6
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 1454245571,
+          "lower": 213427544,
+          "upper": 3406348198
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 849121142,
+          "lower": -391696885,
+          "upper": 2801223769
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 7776,
+          "activeOnArtReengaged": 2184,
+          "offArtExcess": 1360.4
+        }
       },
       {
         "year": 2035,
@@ -18813,7 +22998,22 @@
           "lower": 7760.2,
           "upper": 82184.7
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 1901868701,
+          "lower": 279496282,
+          "upper": 4439052844
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 1238914435,
+          "lower": -383457984,
+          "upper": 3776098578
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 8830.3,
+          "activeOnArtReengaged": 2554.9,
+          "offArtExcess": 1418
+        }
       }
     ],
     "VA": [
@@ -18882,7 +23082,22 @@
           "lower": 2.6,
           "upper": 62.5
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 969056,
+          "lower": 79746,
+          "upper": 2774012
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -17244547,
+          "lower": -18133857,
+          "upper": -15439590
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 30.1,
+          "activeOnArtReengaged": 0,
+          "offArtExcess": 8
+        }
       },
       {
         "year": 2027,
@@ -18949,7 +23164,22 @@
           "lower": 16.8,
           "upper": 383.7
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 6197018,
+          "lower": 510195,
+          "upper": 17621173
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -29699694,
+          "lower": -35386516,
+          "upper": -18275538
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 151.3,
+          "activeOnArtReengaged": 4.8,
+          "offArtExcess": 40.7
+        }
       },
       {
         "year": 2028,
@@ -19016,7 +23246,22 @@
           "lower": 48.5,
           "upper": 1088
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 18236932,
+          "lower": 1523537,
+          "upper": 51688735
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -34827846,
+          "lower": -51541242,
+          "upper": -1376044
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 323.9,
+          "activeOnArtReengaged": 25.9,
+          "offArtExcess": 82.7
+        }
       },
       {
         "year": 2029,
@@ -19083,7 +23328,22 @@
           "lower": 101.2,
           "upper": 2285.4
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 38783823,
+          "lower": 3215568,
+          "upper": 109819638
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -30948981,
+          "lower": -66517237,
+          "upper": 40086834
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 524.9,
+          "activeOnArtReengaged": 60.2,
+          "offArtExcess": 114.3
+        }
       },
       {
         "year": 2030,
@@ -19150,7 +23410,22 @@
           "lower": 176.9,
           "upper": 4054
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 69092025,
+          "lower": 5726562,
+          "upper": 197086729
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -16823330,
+          "lower": -80188792,
+          "upper": 111171375
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 741.9,
+          "activeOnArtReengaged": 103,
+          "offArtExcess": 139
+        }
       },
       {
         "year": 2031,
@@ -19217,7 +23492,22 @@
           "lower": 276.8,
           "upper": 6409
         },
-        "negativeExcessNewShare": 0.001
+        "negativeExcessNewShare": 0.001,
+        "pooledCumulativeCareCost": {
+          "median": 110665077,
+          "lower": 9093920,
+          "upper": 316166856
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 9038509,
+          "lower": -92532648,
+          "upper": 214540288
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 978,
+          "activeOnArtReengaged": 150,
+          "offArtExcess": 157.6
+        }
       },
       {
         "year": 2032,
@@ -19284,7 +23574,22 @@
           "lower": 401.6,
           "upper": 9367.9
         },
-        "negativeExcessNewShare": 0.001
+        "negativeExcessNewShare": 0.001,
+        "pooledCumulativeCareCost": {
+          "median": 164287829,
+          "lower": 13400393,
+          "upper": 470957589
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 47407656,
+          "lower": -103479780,
+          "upper": 354077416
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 1221.2,
+          "activeOnArtReengaged": 201.2,
+          "offArtExcess": 173.2
+        }
       },
       {
         "year": 2033,
@@ -19351,7 +23656,22 @@
           "lower": 551.7,
           "upper": 13083.5
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 230695703,
+          "lower": 18729689,
+          "upper": 665992740
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 99006204,
+          "lower": -112959809,
+          "upper": 534303241
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 1462.1,
+          "activeOnArtReengaged": 255.2,
+          "offArtExcess": 189.1
+        }
       },
       {
         "year": 2034,
@@ -19418,7 +23738,22 @@
           "lower": 727.6,
           "upper": 17480.1
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 309652463,
+          "lower": 25244783,
+          "upper": 902562850
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 163584978,
+          "lower": -120822701,
+          "upper": 756495366
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 1710.9,
+          "activeOnArtReengaged": 311.2,
+          "offArtExcess": 201.8
+        }
       },
       {
         "year": 2035,
@@ -19485,7 +23820,22 @@
           "lower": 930.1,
           "upper": 22604.9
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 404357017,
+          "lower": 32942650,
+          "upper": 1188518791
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 244330323,
+          "lower": -127084044,
+          "upper": 1028492097
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 1971.7,
+          "activeOnArtReengaged": 367.4,
+          "offArtExcess": 215.2
+        }
       }
     ],
     "WA": [
@@ -19554,7 +23904,22 @@
           "lower": 0.9,
           "upper": 25.8
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 359242,
+          "lower": 28970,
+          "upper": 1148625
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -9720923,
+          "lower": -10051195,
+          "upper": -8931541
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 11.4,
+          "activeOnArtReengaged": 0,
+          "offArtExcess": 1.8
+        }
       },
       {
         "year": 2027,
@@ -19621,7 +23986,22 @@
           "lower": 6.2,
           "upper": 158.8
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 2350866,
+          "lower": 194436,
+          "upper": 7345677
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -17515867,
+          "lower": -19672298,
+          "upper": -12521056
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 59.6,
+          "activeOnArtReengaged": 1.1,
+          "offArtExcess": 9.7
+        }
       },
       {
         "year": 2028,
@@ -19688,7 +24068,22 @@
           "lower": 19.5,
           "upper": 477.7
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 7333393,
+          "lower": 606461,
+          "upper": 22516480
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -22034862,
+          "lower": -28761795,
+          "upper": -6851776
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 142.3,
+          "activeOnArtReengaged": 6.2,
+          "offArtExcess": 22.2
+        }
       },
       {
         "year": 2029,
@@ -19755,7 +24150,22 @@
           "lower": 42.9,
           "upper": 1062.9
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 16897041,
+          "lower": 1387647,
+          "upper": 50907505
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -21695994,
+          "lower": -37205388,
+          "upper": 12314470
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 257.5,
+          "activeOnArtReengaged": 15.8,
+          "offArtExcess": 35.9
+        }
       },
       {
         "year": 2030,
@@ -19822,7 +24232,22 @@
           "lower": 80.8,
           "upper": 1977.4
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 32214046,
+          "lower": 2623724,
+          "upper": 96479267
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -15335085,
+          "lower": -44925407,
+          "upper": 48930136
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 402.5,
+          "activeOnArtReengaged": 30.1,
+          "offArtExcess": 49.8
+        }
       },
       {
         "year": 2031,
@@ -19889,7 +24314,22 @@
           "lower": 136,
           "upper": 3274.6
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 54717129,
+          "lower": 4433382,
+          "upper": 163252320
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -1527241,
+          "lower": -51810988,
+          "upper": 107007950
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 575.5,
+          "activeOnArtReengaged": 48.5,
+          "offArtExcess": 63.4
+        }
       },
       {
         "year": 2032,
@@ -19956,7 +24396,22 @@
           "lower": 211.4,
           "upper": 5020.7
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 85581461,
+          "lower": 7072912,
+          "upper": 255495344
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 20895112,
+          "lower": -57613438,
+          "upper": 190808994
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 777.5,
+          "activeOnArtReengaged": 70.9,
+          "offArtExcess": 77.4
+        }
       },
       {
         "year": 2033,
@@ -20023,7 +24478,22 @@
           "lower": 310,
           "upper": 7287.5
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 126922065,
+          "lower": 10633385,
+          "upper": 378117606
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 54039619,
+          "lower": -62249062,
+          "upper": 305235160
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 997.6,
+          "activeOnArtReengaged": 96.6,
+          "offArtExcess": 90.3
+        }
       },
       {
         "year": 2034,
@@ -20090,7 +24560,22 @@
           "lower": 434.7,
           "upper": 10094.7
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 179597597,
+          "lower": 15161440,
+          "upper": 533954063
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 98757775,
+          "lower": -65678382,
+          "upper": 453114242
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 1238.3,
+          "activeOnArtReengaged": 125.9,
+          "offArtExcess": 103.6
+        }
       },
       {
         "year": 2035,
@@ -20157,7 +24642,22 @@
           "lower": 588.2,
           "upper": 13507.3
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 245661768,
+          "lower": 20612314,
+          "upper": 728684020
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 157096339,
+          "lower": -67953115,
+          "upper": 640118591
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 1506.7,
+          "activeOnArtReengaged": 158.9,
+          "offArtExcess": 117.3
+        }
       }
     ],
     "WI": [
@@ -20226,7 +24726,22 @@
           "lower": 1.3,
           "upper": 12.9
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 256996,
+          "lower": 38590,
+          "upper": 605447
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -4533570,
+          "lower": -4751976,
+          "upper": -4185119
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 8.3,
+          "activeOnArtReengaged": 0,
+          "offArtExcess": 1.5
+        }
       },
       {
         "year": 2027,
@@ -20293,7 +24808,22 @@
           "lower": 9.4,
           "upper": 89.1
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 1838766,
+          "lower": 277857,
+          "upper": 4325943
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -7602834,
+          "lower": -9163744,
+          "upper": -5115658
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 49.5,
+          "activeOnArtReengaged": 0.9,
+          "offArtExcess": 9.1
+        }
       },
       {
         "year": 2028,
@@ -20360,7 +24890,22 @@
           "lower": 29.9,
           "upper": 280.8
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 5933585,
+          "lower": 914347,
+          "upper": 13885906
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -8023583,
+          "lower": -13042822,
+          "upper": -71262
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 121.9,
+          "activeOnArtReengaged": 5.8,
+          "offArtExcess": 21.5
+        }
       },
       {
         "year": 2029,
@@ -20427,7 +24972,22 @@
           "lower": 68.3,
           "upper": 633.2
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 13653435,
+          "lower": 2129523,
+          "upper": 31844103
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -4687779,
+          "lower": -16211691,
+          "upper": 13502888
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 220,
+          "activeOnArtReengaged": 15.2,
+          "offArtExcess": 34.9
+        }
       },
       {
         "year": 2030,
@@ -20494,7 +25054,22 @@
           "lower": 129.4,
           "upper": 1185
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 26136765,
+          "lower": 4098885,
+          "upper": 60971927
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 3539194,
+          "lower": -18498685,
+          "upper": 38374356
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 338.5,
+          "activeOnArtReengaged": 29,
+          "offArtExcess": 47.5
+        }
       },
       {
         "year": 2031,
@@ -20561,7 +25136,22 @@
           "lower": 216.7,
           "upper": 1972.4
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 44428544,
+          "lower": 7060139,
+          "upper": 103551512
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 17698589,
+          "lower": -19669815,
+          "upper": 76821557
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 473.4,
+          "activeOnArtReengaged": 46.4,
+          "offArtExcess": 58.6
+        }
       },
       {
         "year": 2032,
@@ -20628,7 +25218,22 @@
           "lower": 334.9,
           "upper": 3020.5
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 69316222,
+          "lower": 10983672,
+          "upper": 161696195
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 38574244,
+          "lower": -19758306,
+          "upper": 130954217
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 618.1,
+          "activeOnArtReengaged": 67,
+          "offArtExcess": 68.4
+        }
       },
       {
         "year": 2033,
@@ -20695,7 +25300,22 @@
           "lower": 486.1,
           "upper": 4370.7
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 101687495,
+          "lower": 15900298,
+          "upper": 237105844
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 67050349,
+          "lower": -18736848,
+          "upper": 202468698
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 771.6,
+          "activeOnArtReengaged": 89.6,
+          "offArtExcess": 77.3
+        }
       },
       {
         "year": 2034,
@@ -20762,7 +25382,22 @@
           "lower": 672.7,
           "upper": 6019.3
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 142341366,
+          "lower": 22278072,
+          "upper": 332798840
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 103922504,
+          "lower": -16140791,
+          "upper": 294379977
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 940.5,
+          "activeOnArtReengaged": 113.5,
+          "offArtExcess": 85.3
+        }
       },
       {
         "year": 2035,
@@ -20829,7 +25464,22 @@
           "lower": 898.2,
           "upper": 7998.9
         },
-        "negativeExcessNewShare": 0
+        "negativeExcessNewShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 192434084,
+          "lower": 30083337,
+          "upper": 452643523
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": 150343652,
+          "lower": -12007096,
+          "upper": 410553090
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 1111.5,
+          "activeOnArtReengaged": 139.8,
+          "offArtExcess": 93.9
+        }
       }
     ]
   }

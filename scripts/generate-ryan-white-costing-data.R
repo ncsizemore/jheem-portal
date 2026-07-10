@@ -33,7 +33,7 @@ get_arg <- function(flag, default) {
 repo_root <- normalizePath(get_arg("--repo-root", getwd()), mustWork = TRUE)
 rdata_path <- get_arg(
   "--rdata",
-  "/Users/cristina/Downloads/ryan_white_results_state_costing_ADAP2026_2026-04-03.Rdata"
+  "/Volumes/WD_Black/wiley/Documents/jheem/code/jheem_analyses/applications/ryan_white/Ryan_white_costing/ryan_white_results_state_costing_ADAP2026_2026-04-03.Rdata"
 )
 funding_csv_path <- get_arg(
   "--funding-csv",
@@ -158,6 +158,9 @@ f_cum <- function(t) pi_reengage * (1 - exp(-lambda_reengage * t))
 year_offset <- 0:horizon_years
 f_cumulative <- f_cum(year_offset)
 incr_return <- f_cumulative - c(0, head(f_cumulative, -1))
+# Fraction of a non-starter cohort still off ART during offset year o,
+# matching the draft script's still_offart = 1 - lag(F_cum, default = 0).
+still_offart <- 1 - c(0, head(f_cumulative, -1))
 
 cpi_2023 <- 549.084
 cpi_2026 <- 591.677
@@ -226,6 +229,54 @@ care_fraction_2025 <- suppression_2025 / diagnosed_2025
 
 negative_excess_count <- sum(excess_new < 0, na.rm = TRUE)
 negative_excess_share <- negative_excess_count / length(excess_new)
+
+# Baseline (2025, no-intervention) program-dependence and epidemic-context
+# measures for the heterogeneity explorer. Medians across simulations;
+# per-sim ratios are collapsed after division, matching the care-fraction
+# convention above. States only: rate-like outcomes are not meaningfully
+# aggregable at the Total location.
+context_outcomes <- c(
+  "diagnosed.prevalence", "suppression", "adap.suppression", "rw.clients",
+  "adap.clients", "oahs.clients", "testing", "sexual.transmission.rates", "new"
+)
+missing_context_outcomes <- setdiff(context_outcomes, dim_names$outcome)
+if (length(missing_context_outcomes) > 0) {
+  stop(sprintf(
+    "Missing baseline-context outcomes in total.results: %s",
+    paste(missing_context_outcomes, collapse = ", ")
+  ))
+}
+
+median_of <- function(values, digits) {
+  values <- values[is.finite(values)]
+  if (length(values) == 0) {
+    return(NA_real_)
+  }
+  round(as.numeric(stats::median(values)), digits)
+}
+
+baseline_context_for <- function(location) {
+  v <- function(outcome) total_results["2025", , outcome, location, "noint", drop = TRUE]
+  diagnosed <- v("diagnosed.prevalence")
+  suppression <- v("suppression")
+  adap_suppression <- v("adap.suppression")
+  rw_clients <- v("rw.clients")
+  adap_clients <- v("adap.clients")
+  list(
+    diagnosedPrevalence = median_of(diagnosed, 1),
+    suppression = median_of(suppression, 1),
+    viralSuppressionPct = median_of(suppression / diagnosed, 6),
+    adapSuppression = median_of(adap_suppression, 1),
+    propSuppressedOnAdap = median_of(adap_suppression / suppression, 6),
+    rwClients = median_of(rw_clients, 1),
+    adapClients = median_of(adap_clients, 1),
+    adapClientShare = median_of(adap_clients / rw_clients, 6),
+    oahsClients = median_of(v("oahs.clients"), 1),
+    testing = median_of(v("testing"), 6),
+    sexualTransmissionRate = median_of(v("sexual.transmission.rates"), 8),
+    baselineNewDiagnoses = median_of(v("new"), 1)
+  )
+}
 
 q_value <- function(values, digits = 0) {
   values <- values[is.finite(values)]
@@ -315,6 +366,23 @@ compute_location <- function(location) {
   cumulative_person_years_on_art <- apply(active_excess_on_art, 2, cumsum)
   cumulative_excess_new <- apply(excess, 2, cumsum)
 
+  # Mechanism decomposition: excess diagnoses to date are either active on ART
+  # (having started immediately or after re-engagement) or still off ART.
+  active_from_immediate <- apply(immediate_starts, 2, cumsum)
+  active_from_delayed <- apply(delayed_starts, 2, cumsum)
+
+  offart_stock <- matrix(0, nrow = length(years), ncol = length(dim_names$sim))
+  for (index_i in seq_along(years)) {
+    for (offset_i in seq_along(year_offset)) {
+      offset <- year_offset[[offset_i]]
+      target_i <- index_i + offset
+      if (target_i <= length(years)) {
+        offart_stock[target_i, ] <- offart_stock[target_i, ] +
+          not_starting_now[index_i, ] * still_offart[[offset_i]]
+      }
+    }
+  }
+
   cumulative_costs <- setNames(vector("list", length(cost_drug)), names(cost_drug))
   for (scenario in names(cost_drug)) {
     total_on_art_cost_pp <- (cost_drug[[scenario]] * inflation_factor_drug) +
@@ -343,6 +411,9 @@ compute_location <- function(location) {
       high = care_values$high - funding$cumulativeTotalRwhap[[year_i]]
     )
 
+    pooled_care <- c(care_values$low, care_values$median, care_values$high)
+    pooled_net_vs_adap <- pooled_care - funding$cumulativeAdap[[year_i]]
+
     point <- list(
       year = years[[year_i]],
       cumulativeCareCost = scenario_values(care_values, digits = 0),
@@ -352,7 +423,14 @@ compute_location <- function(location) {
       cumulativeNetCostVsTotalRwhap = scenario_values(net_vs_total_rwhap, digits = 0),
       cumulativeExcessNewDiagnoses = q_value(cumulative_excess_new[year_i, ], digits = 1),
       cumulativePersonYearsOnArt = q_value(cumulative_person_years_on_art[year_i, ], digits = 1),
-      negativeExcessNewShare = round(mean(excess[year_i, ] < 0, na.rm = TRUE), 6)
+      negativeExcessNewShare = round(mean(excess[year_i, ] < 0, na.rm = TRUE), 6),
+      pooledCumulativeCareCost = q_value(pooled_care, digits = 0),
+      pooledCumulativeNetCostVsAdap = q_value(pooled_net_vs_adap, digits = 0),
+      mechanism = list(
+        activeOnArtImmediate = median_of(active_from_immediate[year_i, ], 1),
+        activeOnArtReengaged = median_of(active_from_delayed[year_i, ], 1),
+        offArtExcess = median_of(offart_stock[year_i, ], 1)
+      )
     )
 
     if (include_ratios) {
@@ -379,7 +457,29 @@ compute_location <- function(location) {
   series <- lapply(seq_along(years), build_point, include_ratios = FALSE)
   final_year <- build_point(length(years), include_ratios = TRUE)
 
-  list(series = series, finalYear = final_year)
+  # Pooled final-year summary matching ADAP_supplemental_tables.R: all three
+  # drug-cost scenarios pooled with all simulation draws into one distribution;
+  # median and interval both come from the pooled distribution.
+  final_i <- length(years)
+  pooled_care_final <- c(
+    cumulative_costs$low[final_i, ],
+    cumulative_costs$median[final_i, ],
+    cumulative_costs$high[final_i, ]
+  )
+  pooled_net_final <- pooled_care_final - funding$cumulativeAdap[[final_i]]
+  pooled_final_year <- list(
+    cumulativeCareCost = q_value(pooled_care_final, digits = 0),
+    cumulativeCareCostQuantiles = q_curve(pooled_care_final, digits = 0),
+    cumulativeNetCostVsAdap = q_value(pooled_net_final, digits = 0),
+    cumulativeNetCostVsAdapQuantiles = q_curve(pooled_net_final, digits = 0),
+    cumulativeNetCostRatioVsAdap = q_value(
+      pooled_net_final / funding$cumulativeAdap[[final_i]],
+      digits = 3
+    ),
+    shareNetCostPositiveVsAdap = round(mean(pooled_net_final > 0), 6)
+  )
+
+  list(series = series, finalYear = final_year, pooledFinalYear = pooled_final_year)
 }
 
 cat("Computing per-simulation paths and summaries...\n")
@@ -402,7 +502,12 @@ state_summaries <- lapply(modeled_states, function(state) {
   final_year <- location_results[[state]]$finalYear
   final_year$rankByNetCostVsAdap <- as.integer(net_ranks[[state]])
   final_year$rankByNetCostRatioVsAdap <- as.integer(ratio_ranks[[state]])
-  list(state = state, finalYear = final_year)
+  list(
+    state = state,
+    finalYear = final_year,
+    pooledFinalYear = location_results[[state]]$pooledFinalYear,
+    baselineContext = baseline_context_for(state)
+  )
 })
 
 metadata <- list(
@@ -412,6 +517,23 @@ metadata <- list(
   horizon = list(startYear = 2026, endYear = 2035),
   intervalLevel = "p025_p975",
   defaultCostScenario = "median",
+  # Which estimand the UI treats as the headline: "pooled" or a scenario id.
+  # Stays "median" until Ryan confirms the pooled convention as primary;
+  # flipping it is a one-line regeneration, not a rework.
+  primaryEstimand = "median",
+  pooledConvention = list(
+    description = paste(
+      "Pooled values combine all three ART drug-cost scenarios with all",
+      "simulation draws into one distribution, matching ADAP_supplemental_tables.R;",
+      "the drug-cost scenario is treated as an additional source of uncertainty."
+    ),
+    nationalTotal = paste(
+      "National pooled and per-scenario summaries use the RData Total location",
+      "(within-simulation sum across states). The supplemental table instead",
+      "bootstraps states independently; pending Ryan's answer, the web",
+      "convention is within-simulation summation."
+    )
+  ),
   defaultFocusState = "FL",
   dollarYear = "2026 USD",
   fundingAdjustment = list(
@@ -430,7 +552,10 @@ metadata <- list(
     "The 2035 fixed horizon truncates downstream costs for infections occurring late in the horizon.",
     "Negative per-simulation excess infections are preserved and reported as diagnostics, not floored.",
     "Funding comparators are deterministic under the current CSV inputs.",
-    "Net-cost uncertainty is driven by modeled care-cost uncertainty, with deterministic funding offsets."
+    "Net-cost uncertainty is driven by modeled care-cost uncertainty, with deterministic funding offsets.",
+    "Pooled cost summaries treat the drug-cost scenario as an additional source of uncertainty (all scenarios x simulations in one distribution).",
+    "Baseline context variables are medians across simulations of 2025 no-intervention values; per-simulation ratios are collapsed after division.",
+    "Mechanism series report medians across simulations per component; component medians need not sum exactly to the median total."
   )),
   deterministicFields = json_array(c(
     "cumulativeAdapSpendingAvoided",
@@ -461,12 +586,19 @@ metadata <- list(
     "Should the primary comparison be ADAP only, total RWHAP, or both?",
     "What payer perspective should govern the net calculation?",
     "In the counterfactual, would downstream care for excess infections be ADAP/RWHAP-eligible?",
-    "Should negative per-simulation excess infections be preserved, floored at zero, or shown as a sensitivity?"
+    "Should negative per-simulation excess infections be preserved, floored at zero, or shown as a sensitivity?",
+    "Should the national Total row use the within-simulation state sum (RData Total location) or the supplemental table's independent bootstrap across states?",
+    "Funding inflation: the exporter applies the 2025-to-2026 medical-care CPI deflator; the draft script's second CSV read overwrites the inflated values. Which convention should the paper use?",
+    "Routine-care deflation: the draft script computes cost_on_art_wtd_2026 (2023-to-2026 CPI) but uses the un-deflated 2023 value in the cost grid; the exporter uses the deflated value (about +0.9 percent on median care cost). Which is intended?",
+    "Is excess infections per $1M of ADAP funding cut acceptable as a derived, policy-portable metric?"
   ))
 )
 
 summary_data <- list(
-  national = list(finalYear = location_results[["Total"]]$finalYear),
+  national = list(
+    finalYear = location_results[["Total"]]$finalYear,
+    pooledFinalYear = location_results[["Total"]]$pooledFinalYear
+  ),
   states = state_summaries,
   sensitivity = list(
     costScenarios = json_array(names(cost_drug)),
