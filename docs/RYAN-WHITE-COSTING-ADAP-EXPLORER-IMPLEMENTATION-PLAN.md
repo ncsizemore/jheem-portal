@@ -526,6 +526,8 @@ Additional internal review items for Ryan's pile (script bugs, not app decisions
 
 Exporter work comes before any UI rebuild so the component is built once against the final data contract, not twice.
 
+**Status (2026-07-10): Phases 1-7 complete** (commits `0cf3437` exporter, `b412ede` shell/hero, `c45f676` budget-window control, `93a55e9` crossover, `fd5af5b` drivers/mechanism, `a35f128` heterogeneity, `4147ae5` methods). Cross-check passes on final artifacts (30/30 states + national within rounding). Workbench parked on `scrap/costing-frame-workbench`. Phase 8 outstanding items: in-browser visual pass (mobile rendering, tooltip readability, no horizontal overflow) - the automated checks (build, SSR render markers, numeric verification) are done.
+
 ### Phase 1: Working Tree Disposition
 
 The uncommitted diff on `src/app/ryan-white-costing/RyanWhiteCostingApp.tsx` is the accounting-frame workbench (`FrameId = 'adap' | 'totalRwhap'` toggle, "Frame Test" task). It exists **only** in the working tree — a plain revert destroys it permanently.
