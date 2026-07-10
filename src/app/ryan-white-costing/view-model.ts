@@ -504,6 +504,85 @@ export function buildMechanismSeries(points: AnnualCostPoint[]): MechanismSeries
   }));
 }
 
+// Heterogeneity explorer: net/ADAP ratio against a selectable baseline-context
+// variable. Descriptive associations only - no fitted lines, no adjustment.
+export type ContextAxisId =
+  | 'sexualTransmissionRate'
+  | 'viralSuppressionPct'
+  | 'propSuppressedOnAdap'
+  | 'adapClientShare';
+
+export interface ContextAxis {
+  id: ContextAxisId;
+  label: string;
+  shortLabel: string;
+  description: string;
+  format: (value: number) => string;
+}
+
+export const CONTEXT_AXES: ContextAxis[] = [
+  {
+    id: 'sexualTransmissionRate',
+    label: 'Baseline transmission rate',
+    shortLabel: 'Transmission',
+    description: 'Higher transmission contexts turn a coverage loss into more infections.',
+    format: (value) => value.toFixed(3),
+  },
+  {
+    id: 'viralSuppressionPct',
+    label: 'Viral suppression (% of diagnosed)',
+    shortLabel: 'Suppression',
+    description: 'How much of the diagnosed population is suppressed at baseline.',
+    format: formatPercent,
+  },
+  {
+    id: 'propSuppressedOnAdap',
+    label: 'Suppressed PWH on ADAP (%)',
+    shortLabel: 'On ADAP',
+    description: 'Program dependence: how much of the suppressed population runs through ADAP.',
+    format: formatPercent,
+  },
+  {
+    id: 'adapClientShare',
+    label: 'ADAP share of Ryan White clients (%)',
+    shortLabel: 'Client share',
+    description: 'ADAP clients as a share of all Ryan White clients.',
+    format: formatPercent,
+  },
+];
+
+export interface HeterogeneityPoint {
+  state: string;
+  stateName: string;
+  x: number;
+  ratio: number;
+  adap: number;
+  share2035: number;
+}
+
+export function buildHeterogeneityPoints(
+  rows: DriverRow[],
+  states: StateCostingSummary[],
+  axis: ContextAxisId
+): HeterogeneityPoint[] {
+  const contextByState = new Map(states.map((item) => [item.state, item.baselineContext]));
+
+  return rows
+    .map((row) => {
+      const context = contextByState.get(row.state);
+      if (!context) return null;
+      return {
+        state: row.state,
+        stateName: row.stateName,
+        x: context[axis],
+        ratio: row.ratio,
+        adap: row.adap,
+        share2035: row.shareNetPositive2035,
+      };
+    })
+    .filter((point): point is HeterogeneityPoint => point !== null && Number.isFinite(point.x));
+}
+
 // Crossover year for every state, for the ranked crossover timeline.
 export interface StateCrossover {
   state: string;

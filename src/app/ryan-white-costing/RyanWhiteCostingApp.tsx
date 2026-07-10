@@ -9,6 +9,8 @@ import {
   Line,
   ReferenceLine,
   ResponsiveContainer,
+  Scatter,
+  ScatterChart,
   Tooltip,
   XAxis,
   YAxis,
@@ -24,17 +26,21 @@ import {
 import {
   buildDecomposition,
   buildDriverRows,
+  buildHeterogeneityPoints,
   buildHorizonProfile,
   buildMechanismSeries,
   buildNationalDriverRow,
   buildRankedStates,
   buildStateCrossovers,
   buildTrajectoryData,
+  CONTEXT_AXES,
+  ContextAxisId,
   Crossover,
   crossoverForPoints,
   DecompositionRow,
   DriverRow,
   DriverSortKey,
+  HeterogeneityPoint,
   ESTIMAND_LABELS,
   EstimandId,
   formatCompactDollars,
@@ -1358,6 +1364,180 @@ function MechanismChart({
 }
 
 // -----------------------------------------------------------------------------
+// Heterogeneity explorer - why states differ, against baseline context
+// -----------------------------------------------------------------------------
+function HeterogeneityExplorer({
+  rows,
+  horizonYear,
+  selected,
+  hovered,
+  onSelect,
+  onHover,
+}: {
+  rows: DriverRow[];
+  horizonYear: number;
+  selected: LocationKey;
+  hovered: string | null;
+  onSelect: (state: string) => void;
+  onHover: (state: string | null) => void;
+}) {
+  const [axisId, setAxisId] = useState<ContextAxisId>('sexualTransmissionRate');
+  const axis = CONTEXT_AXES.find((item) => item.id === axisId) ?? CONTEXT_AXES[0];
+  const points = useMemo(
+    () => buildHeterogeneityPoints(rows, ryanWhiteCostingSummary.states, axisId),
+    [rows, axisId]
+  );
+  const reduce = useReducedMotion() ?? false;
+  const maxAdap = Math.max(1, ...points.map((point) => point.adap));
+  const minX = Math.min(...points.map((point) => point.x));
+  const maxX = Math.max(...points.map((point) => point.x));
+  const padX = (maxX - minX) * 0.08 || 0.01;
+  const minRatio = Math.min(0, ...points.map((point) => point.ratio));
+  const maxRatio = Math.max(0, ...points.map((point) => point.ratio));
+  const padY = (maxRatio - minRatio) * 0.1 || 0.1;
+  const alwaysLabel = new Set(['FL', 'TX', 'CA', 'NY']);
+  const active = hovered ?? (selected !== 'Total' ? selected : null);
+
+  const renderDot = (props: unknown) => {
+    const { cx: x, cy: y, payload } = props as { cx?: number; cy?: number; payload?: HeterogeneityPoint };
+    if (typeof x !== 'number' || typeof y !== 'number' || !payload) return <g />;
+    const r = 5 + Math.sqrt(payload.adap / maxAdap) * 12;
+    const isSel = payload.state === selected;
+    const isActive = payload.state === active;
+    const color = confColor(payload.share2035);
+    return (
+      <g
+        className="cursor-pointer"
+        role="button"
+        tabIndex={0}
+        aria-label={`${payload.stateName}: ratio ${payload.ratio.toFixed(2)}, ${axis.label} ${axis.format(payload.x)}`}
+        onClick={() => onSelect(payload.state)}
+        onMouseEnter={() => onHover(payload.state)}
+        onMouseLeave={() => onHover(null)}
+        onFocus={() => onHover(payload.state)}
+        onBlur={() => onHover(null)}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            onSelect(payload.state);
+          }
+        }}
+      >
+        <circle cx={x} cy={y} r={r + 4} fill={color} fillOpacity={isSel || isActive ? 0.18 : 0.08} />
+        {(isSel || isActive) && (
+          <circle cx={x} cy={y} r={r + 4} fill="none" stroke={isSel ? NAVY : INK} strokeOpacity={0.5} strokeWidth={1.4} />
+        )}
+        <motion.circle
+          cx={x}
+          cy={y}
+          initial={false}
+          animate={{ r: isSel || isActive ? r + 2 : r }}
+          transition={{ duration: reduce ? 0 : 0.4, ease: EASE }}
+          fill={color}
+          fillOpacity={isSel || isActive ? 1 : 0.9}
+          stroke={isSel ? NAVY : isActive ? INK : '#ffffff'}
+          strokeWidth={isSel ? 2.5 : isActive ? 1.8 : 1.4}
+        />
+        {(alwaysLabel.has(payload.state) || isSel || isActive) && (
+          <text x={x + r + 3} y={y + 4} fontSize={11} fill="#475569" fontWeight={isSel || isActive ? 700 : 500}>
+            {payload.state}
+          </text>
+        )}
+      </g>
+    );
+  };
+
+  const HetTip = ({ active: tipActive, payload }: TipProps) => {
+    if (!tipActive || !payload?.length || !payload[0].payload) return null;
+    const p = payload[0].payload as unknown as HeterogeneityPoint;
+    return (
+      <div className="rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 shadow-md">
+        <p className="text-sm font-semibold text-slate-900">{p.stateName}</p>
+        <p className="mt-1 font-mono text-xs tabular-nums text-slate-500">
+          {axis.shortLabel} {axis.format(p.x)} · ratio {p.ratio.toFixed(2)}
+        </p>
+        <p className="font-mono text-xs tabular-nums text-slate-500">ADAP avoided {formatCompactDollars(p.adap)}</p>
+      </div>
+    );
+  };
+
+  return (
+    <div className="min-w-0">
+      <div className="flex flex-wrap items-center gap-2">
+        {CONTEXT_AXES.map((item) => (
+          <button
+            key={item.id}
+            type="button"
+            onClick={() => setAxisId(item.id)}
+            aria-pressed={item.id === axisId}
+            className={cx(
+              'rounded-full border px-3 py-1 text-xs font-medium transition-colors',
+              item.id === axisId
+                ? 'border-slate-900 bg-slate-900 text-white'
+                : 'border-slate-300 bg-white text-slate-600 hover:border-slate-400 hover:text-slate-900'
+            )}
+          >
+            {item.shortLabel}
+          </button>
+        ))}
+        <span className="ml-1 text-xs text-slate-400">{axis.description}</span>
+      </div>
+
+      <div className="mt-5 rounded-lg border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <h3 className="text-base font-semibold text-slate-900">
+            Net cost / ADAP ratio vs {axis.label.toLowerCase()}
+          </h3>
+          <span className="font-mono text-[0.62rem] uppercase tracking-[0.18em] text-slate-400">
+            through {horizonYear} · dot size = ADAP avoided
+          </span>
+        </div>
+        <div className="mt-4 h-[340px] sm:h-[400px]">
+          <ResponsiveContainer width="100%" height="100%">
+            <ScatterChart margin={{ top: 12, right: 24, bottom: 22, left: 4 }}>
+              <CartesianGrid stroke="#eef2f6" />
+              <XAxis
+                type="number"
+                dataKey="x"
+                domain={[minX - padX, maxX + padX]}
+                tickFormatter={axis.format}
+                tickLine={false}
+                axisLine={{ stroke: '#e2e8f0' }}
+                tick={{ fill: MUTED, fontSize: 11 }}
+                label={{ value: axis.label, position: 'insideBottom', offset: -12, fill: MUTED, fontSize: 12 }}
+              />
+              <YAxis
+                type="number"
+                dataKey="ratio"
+                domain={[minRatio - padY, maxRatio + padY]}
+                tickFormatter={(value: number) => value.toFixed(1)}
+                tickLine={false}
+                axisLine={false}
+                tick={{ fill: MUTED, fontSize: 11 }}
+                width={48}
+                label={{ value: 'Net cost / ADAP', angle: -90, position: 'insideLeft', fill: MUTED, fontSize: 12 }}
+              />
+              <ReferenceLine
+                y={0}
+                stroke="#94a3b8"
+                strokeDasharray="5 5"
+                label={{ value: 'break-even', position: 'insideTopRight', fill: MUTED, fontSize: 11 }}
+              />
+              <Tooltip content={<HetTip />} cursor={{ strokeDasharray: '3 3', stroke: '#cbd5e1' }} />
+              <Scatter data={points} shape={renderDot} isAnimationActive={false} />
+            </ScatterChart>
+          </ResponsiveContainer>
+        </div>
+        <p className="mt-3 text-[0.7rem] leading-relaxed text-slate-400">
+          Descriptive associations across 30 states - no fitted line, no adjustment. Color is the share of draws
+          net-costly at 2035; the ratio is evaluated at the selected budget window.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// -----------------------------------------------------------------------------
 // Trajectory - care cost racing claimed savings, with crossover + window markers
 // -----------------------------------------------------------------------------
 function Trajectory({
@@ -1629,7 +1809,7 @@ function ModelReview() {
     <section className="border-t border-slate-200 bg-slate-50">
       <div className="mx-auto w-full max-w-full px-5 py-16 sm:max-w-6xl sm:px-6">
         <Reveal>
-          <SectionHead n="04" eyebrow="Methods" title="Accounting frame and model assumptions">
+          <SectionHead n="05" eyebrow="Methods" title="Accounting frame and model assumptions">
             Cost, engagement, scope, and uncertainty conventions for interpreting the figures.
           </SectionHead>
 
@@ -1943,6 +2123,32 @@ export default function RyanWhiteCostingApp() {
                 selectedName={selectedName}
                 horizon={horizon}
                 error={seriesError}
+              />
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
+      <section className="border-t border-slate-200 bg-white">
+        <div className="mx-auto w-full max-w-full px-5 py-16 sm:max-w-6xl sm:px-6">
+          <Reveal>
+            <SectionHead
+              n="04"
+              eyebrow="Why states differ"
+              title="What separates the high-cost states from the rest?"
+            >
+              States don&apos;t differ because their models differ - they differ in program dependence and epidemic
+              context. Pick a baseline variable from the model&apos;s 2025 no-intervention state and see how it lines up
+              with the net cost / ADAP ratio. Selecting a state syncs every other view.
+            </SectionHead>
+            <div className="mt-10">
+              <HeterogeneityExplorer
+                rows={driverRows}
+                horizonYear={nationalPoint.year}
+                selected={location}
+                hovered={hovered}
+                onSelect={setLocation}
+                onHover={setHovered}
               />
             </div>
           </Reveal>
