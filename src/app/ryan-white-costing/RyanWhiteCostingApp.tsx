@@ -1803,6 +1803,15 @@ function ModelReview() {
       ],
       note: 'DC funding is excluded because no DC epidemiologic output is present. Intervals reflect modeled epidemiologic and care-cost uncertainty, not funding uncertainty.',
     },
+    {
+      title: 'Provenance',
+      items: [
+        { label: 'Generated', value: ryanWhiteCostingMetadata.generatedAt.slice(0, 10) },
+        { label: 'Model output', value: ryanWhiteCostingMetadata.sourceRData.split('/').pop() ?? '' },
+        { label: 'Funding input', value: ryanWhiteCostingMetadata.sourceFundingCsv.split('/').pop() ?? '' },
+      ],
+      note: `${ryanWhiteCostingMetadata.fundingAdjustment.description} National summaries use the within-simulation state sum (RData Total location); the paper's supplemental table bootstraps states independently - convention pending confirmation. Exporter output is numerically cross-checked against the draft analysis pipeline (scripts/cross-check-ryan-white-costing.R).`,
+    },
   ];
 
   return (
@@ -1824,7 +1833,7 @@ function ModelReview() {
                   {section.items.map((item) => (
                     <div key={item.label} className="min-w-0">
                       <dt className="text-[0.68rem] font-semibold uppercase tracking-wide text-slate-400">{item.label}</dt>
-                      <dd className="mt-1 font-mono text-sm font-medium tabular-nums text-slate-900">{item.value}</dd>
+                      <dd className="mt-1 break-all font-mono text-sm font-medium tabular-nums text-slate-900">{item.value}</dd>
                     </div>
                   ))}
                 </dl>
@@ -1838,52 +1847,26 @@ function ModelReview() {
 }
 
 function QuestionsToResolve() {
-  const groups = [
-    {
-      label: 'Funding scope',
-      items: [
-        'Should DC be excluded, included as separate funding context, or modeled separately?',
-        'Does Part B include ADAP funding in this CSV, or is it Part B excluding ADAP?',
-        'Are the CSV dollar values 2025 nominal dollars, 2026 dollars, or another fiscal-year convention?',
-      ],
-    },
-    {
-      label: 'Perspective',
-      items: [
-        'Should the primary comparator be ADAP only, total RWHAP, or both?',
-        'Which payer perspective should govern the net calculation?',
-        'In the no-ADAP funding comparison, would downstream care for excess infections be ADAP/RWHAP-eligible?',
-      ],
-    },
-    {
-      label: 'Model choices',
-      items: [
-        'Should low, median, and high drug-cost assumptions be shown separately, pooled, or both?',
-        'Should negative per-simulation excess infections be preserved, floored at zero, or shown as a sensitivity?',
-      ],
-    },
-  ];
+  const questions = ryanWhiteCostingMetadata.reviewQuestions;
 
   return (
     <section className="bg-white">
       <div className="mx-auto w-full max-w-full px-5 pb-4 sm:max-w-6xl sm:px-6">
         <div className="rounded-lg border border-amber-200 bg-amber-50/45 p-5">
-          <h2 className="text-sm font-semibold text-slate-900">Questions to resolve</h2>
-          <div className="mt-4 grid gap-5 lg:grid-cols-3">
-            {groups.map((group) => (
-              <div key={group.label}>
-                <p className="text-[0.68rem] font-semibold uppercase tracking-wide text-amber-700/80">{group.label}</p>
-                <ul className="mt-2 space-y-2">
-                  {group.items.map((item) => (
-                    <li key={item} className="flex gap-2 text-sm leading-relaxed text-slate-700">
-                      <span className="mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-amber-500/70" />
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <h2 className="text-sm font-semibold text-slate-900">Questions to resolve</h2>
+            <p className="text-[0.7rem] text-amber-700/80">
+              Kept out of the interface on purpose: unresolved methodology is review context, not a user control.
+            </p>
           </div>
+          <ul className="mt-4 grid gap-x-8 gap-y-2 lg:grid-cols-2">
+            {questions.map((item) => (
+              <li key={item} className="flex gap-2 text-sm leading-relaxed text-slate-700">
+                <span className="mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-amber-500/70" />
+                <span>{item}</span>
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
     </section>

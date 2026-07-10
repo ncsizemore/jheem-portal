@@ -13,8 +13,9 @@ const serif = Newsreader({
 });
 
 export const metadata: Metadata = {
-  title: 'Ryan White ADAP Costing Preview | JHEEM Portal',
-  description: 'Economic review workspace for the Ryan White ADAP elimination costing analysis.',
+  title: 'Ryan White ADAP Costing Explorer | JHEEM Portal',
+  description:
+    'ADAP elimination cost-consequence explorer: excess infections, downstream HIV care costs, and the ADAP spending a cut would avoid, across 30 states.',
 };
 
 export default function RyanWhiteCostingPage() {
