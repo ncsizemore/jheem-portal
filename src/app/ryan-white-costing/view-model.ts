@@ -3,6 +3,7 @@ import type {
   CostScenarioId,
   FinalYearSummary,
   QuantileCurve,
+  QuantileValue,
   RyanWhiteCostingSeries,
   RyanWhiteCostingSummary,
   ScenarioQuantileCurves,
@@ -13,6 +14,11 @@ import type {
 import { STATE_CODE_TO_NAME } from '@/data/states';
 
 export type LocationKey = 'Total' | string;
+
+export type EstimandId = 'pooled' | CostScenarioId;
+
+export const HORIZON_MIN = 2027;
+export const HORIZON_MAX = 2035;
 
 export interface CostTrajectoryPoint {
   year: number;
@@ -227,6 +233,96 @@ export function seriesForLocation(
   if (!series) return [];
   if (location === 'Total') return series.national;
   return series.states[location] ?? [];
+}
+
+export function pointForYear(points: AnnualCostPoint[], year: number): AnnualCostPoint | null {
+  return points.find((point) => point.year === year) ?? null;
+}
+
+// Headline values for one location at one horizon year, under either estimand.
+// perDollar is care cost per dollar of ADAP spending avoided (= paper ratio + 1);
+// the denominator is deterministic, so the interval is exact.
+export interface HeadlineValues {
+  year: number;
+  care: QuantileValue;
+  net: QuantileValue;
+  adap: number;
+  perDollar: QuantileValue;
+  excessDiagnoses: number;
+  personYears: number;
+}
+
+export function headlineAt(point: AnnualCostPoint, estimand: EstimandId): HeadlineValues {
+  const care = estimand === 'pooled' ? point.pooledCumulativeCareCost : scenarioMetric(point.cumulativeCareCost, estimand);
+  const net = estimand === 'pooled' ? point.pooledCumulativeNetCostVsAdap : scenarioMetric(point.cumulativeNetCostVsAdap, estimand);
+  const adap = point.cumulativeAdapSpendingAvoided;
+
+  return {
+    year: point.year,
+    care,
+    net,
+    adap,
+    perDollar: {
+      median: care.median / adap,
+      lower: care.lower / adap,
+      upper: care.upper / adap,
+    },
+    excessDiagnoses: point.cumulativeExcessNewDiagnoses.median,
+    personYears: point.cumulativePersonYearsOnArt.median,
+  };
+}
+
+export const ESTIMAND_LABELS: Record<EstimandId, string> = {
+  pooled: 'Pooled across drug-cost scenarios',
+  low: 'Low drug-cost scenario',
+  median: 'Median drug-cost scenario',
+  high: 'High drug-cost scenario',
+};
+
+// One row of the uncertainty decomposition: the pooled distribution mixes
+// drug-price and epidemic uncertainty; the three scenario rows isolate the
+// epidemic component at a fixed price.
+export interface DecompositionRow {
+  id: EstimandId;
+  label: string;
+  detail: string;
+  net: QuantileValue;
+  perDollar: number;
+  sharePositive: number | null;
+  isPooled: boolean;
+}
+
+export function buildDecomposition(
+  point: AnnualCostPoint,
+  finalShares: { pooled: number; scenarios: ScenarioShares } | null
+): DecompositionRow[] {
+  const adap = point.cumulativeAdapSpendingAvoided;
+
+  const pooledRow: DecompositionRow = {
+    id: 'pooled',
+    label: 'Pooled',
+    detail: 'drug price + epidemic',
+    net: point.pooledCumulativeNetCostVsAdap,
+    perDollar: point.pooledCumulativeCareCost.median / adap,
+    sharePositive: finalShares?.pooled ?? null,
+    isPooled: true,
+  };
+
+  const scenarioRows = SCENARIO_ORDER.map((scenario): DecompositionRow => ({
+    id: scenario,
+    label: SCENARIO_SHORT_LABELS[scenario],
+    detail: 'epidemic only, price fixed',
+    net: scenarioMetric(point.cumulativeNetCostVsAdap, scenario),
+    perDollar: scenarioMetric(point.cumulativeCareCost, scenario).median / adap,
+    sharePositive: finalShares?.scenarios[scenario] ?? null,
+    isPooled: false,
+  }));
+
+  return [pooledRow, ...scenarioRows];
+}
+
+export function formatPerDollar(value: number): string {
+  return `$${value >= 10 ? value.toFixed(1) : value.toFixed(2)}`;
 }
 
 export function buildTrajectoryData(

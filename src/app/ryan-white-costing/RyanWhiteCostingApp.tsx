@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import {
   Area,
@@ -24,20 +24,26 @@ import {
   type RyanWhiteCostingSeries,
 } from '@/data/ryan-white-costing';
 import {
+  buildDecomposition,
   buildRankedStates,
-  buildScenarioEvidence,
   buildTrajectoryData,
+  DecompositionRow,
+  ESTIMAND_LABELS,
+  EstimandId,
   formatCompactDollars,
   formatNumber,
   formatPercent,
+  formatPerDollar,
+  HeadlineValues,
+  headlineAt,
+  HORIZON_MAX,
+  HORIZON_MIN,
   LocationKey,
+  pointForYear,
   RankedStatePoint,
   ReviewCard,
-  ScenarioEvidencePoint,
-  scenarioMetric,
   SCENARIO_LABELS,
   SCENARIO_ORDER,
-  SCENARIO_SHORT_LABELS,
   seriesForLocation,
   stateName,
 } from './view-model';
@@ -154,144 +160,229 @@ function TrajTip({ active, payload, label }: TipProps) {
 }
 
 // -----------------------------------------------------------------------------
-// Scenario tabs
+// Global horizon control - the app's one computation-bearing input
 // -----------------------------------------------------------------------------
-function ScenarioTabs({ scenario, onChange }: { scenario: CostScenarioId; onChange: (s: CostScenarioId) => void }) {
+function HorizonBar({
+  horizon,
+  onHorizon,
+  ready,
+}: {
+  horizon: number;
+  onHorizon: (year: number) => void;
+  ready: boolean;
+}) {
   return (
-    <div className="flex w-full flex-wrap items-center gap-x-4 gap-y-2 border-b border-slate-200 sm:inline-flex sm:w-auto sm:gap-6">
-      {SCENARIO_ORDER.map((item) => (
-        <button
-          key={item}
-          type="button"
-          onClick={() => onChange(item)}
-          className={cx(
-            '-mb-px border-b-2 pb-2 text-sm font-medium transition-colors',
-            scenario === item ? 'border-slate-900 text-slate-900' : 'border-transparent text-slate-400 hover:text-slate-600'
+    <div className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur">
+      <div className="mx-auto flex w-full max-w-full flex-wrap items-center gap-x-6 gap-y-2 px-5 py-3 sm:max-w-6xl sm:px-6">
+        <div className="flex items-baseline gap-2.5">
+          <Eyebrow>Ledger through</Eyebrow>
+          <span className="font-mono text-xl font-semibold tabular-nums text-slate-900">{horizon}</span>
+        </div>
+        <div className="flex min-w-[200px] flex-1 items-center gap-3">
+          <span className="font-mono text-[0.68rem] tabular-nums text-slate-400">{HORIZON_MIN}</span>
+          <input
+            type="range"
+            min={HORIZON_MIN}
+            max={HORIZON_MAX}
+            step={1}
+            value={horizon}
+            disabled={!ready}
+            onChange={(event) => onHorizon(Number(event.target.value))}
+            aria-label="Evaluate the ledger through year"
+            aria-valuetext={`through ${horizon}`}
+            className="h-1.5 w-full min-w-0 cursor-pointer accent-slate-900 disabled:cursor-wait disabled:opacity-40"
+          />
+          <span className="font-mono text-[0.68rem] tabular-nums text-slate-400">{HORIZON_MAX}</span>
+        </div>
+        <div className="flex items-center gap-3">
+          {horizon !== HORIZON_MAX && (
+            <button
+              type="button"
+              onClick={() => onHorizon(HORIZON_MAX)}
+              className="rounded border border-slate-300 px-2 py-0.5 text-[0.7rem] font-medium text-slate-600 transition-colors hover:border-slate-400 hover:text-slate-900"
+            >
+              Full horizon
+            </button>
           )}
-        >
-          {SCENARIO_SHORT_LABELS[item]}
-          <span className="ml-1.5 text-[0.7rem] text-slate-400">drug cost</span>
-        </button>
-      ))}
+          <p className="hidden text-[0.68rem] leading-tight text-slate-400 md:block">
+            {ready
+              ? 'Costs are still accruing at 2035 - the model horizon. No extrapolation.'
+              : 'Loading annual series…'}
+          </p>
+        </div>
+      </div>
     </div>
   );
 }
 
 // -----------------------------------------------------------------------------
-// Hero
+// Cascade hero - the causal chain is the headline
 // -----------------------------------------------------------------------------
-function Hero({
-  scenario,
-  onScenario,
-  net,
+function CascadeHero({
+  headline,
+  estimand,
+  horizon,
   share,
-  care,
-  adap,
 }: {
-  scenario: CostScenarioId;
-  onScenario: (s: CostScenarioId) => void;
-  net: { median: number; lower: number; upper: number };
-  share: number;
-  care: number;
-  adap: number;
+  headline: HeadlineValues;
+  estimand: EstimandId;
+  horizon: number;
+  share: number | null;
 }) {
+  const paperRatio = headline.perDollar.median - 1;
   return (
     <header className="border-b border-slate-200">
-      <div className="mx-auto grid w-full max-w-full gap-x-14 gap-y-10 px-5 py-14 sm:max-w-6xl sm:px-6 sm:py-16 lg:grid-cols-[1.15fr_0.85fr] lg:items-end lg:py-20">
-        <div className="min-w-0">
-          <Eyebrow>
-            Ryan White ADAP / Cost-consequence analysis / {ryanWhiteCostingMetadata.horizon.startYear}-
-            {ryanWhiteCostingMetadata.horizon.endYear}
-          </Eyebrow>
-          <h1
-            className={cx(
-              SERIF,
-              'mt-6 max-w-2xl text-[2.35rem] font-medium leading-[1.08] text-slate-900 sm:text-[3.3rem]'
-            )}
-          >
-            ADAP cuts may cost more than they save.
-          </h1>
-          <p className="mt-6 max-w-lg text-lg leading-relaxed text-slate-600">
-            Under the {SCENARIO_LABELS[scenario].toLowerCase()} scenario, the model projects a median{' '}
-            <span className="font-semibold text-slate-900">{formatCompactDollars(net.median)}</span> net cost across 30
-            states through 2035, downstream HIV care that outweighs the ADAP spending avoided in{' '}
-            <span className="font-semibold text-slate-900">{formatPercent(share)}</span> of simulations.
-          </p>
+      <div className="mx-auto w-full max-w-full px-5 py-14 sm:max-w-6xl sm:px-6 sm:py-16">
+        <div className="grid gap-x-14 gap-y-10 lg:grid-cols-[1.15fr_0.85fr] lg:items-end">
+          <div className="min-w-0">
+            <Eyebrow>
+              Ryan White ADAP / Cost-consequence analysis / {ryanWhiteCostingMetadata.horizon.startYear}-{horizon}
+            </Eyebrow>
+            <h1
+              className={cx(
+                SERIF,
+                'mt-6 max-w-2xl text-[2.35rem] font-medium leading-[1.08] text-slate-900 sm:text-[3.3rem]'
+              )}
+            >
+              Cutting ADAP doesn&apos;t save what it appears to save.
+            </h1>
+            <p className="mt-6 max-w-lg text-lg leading-relaxed text-slate-600">
+              Eliminating ADAP in 30 states avoids{' '}
+              <span className="font-semibold text-slate-900">{formatCompactDollars(headline.adap)}</span> in spending
+              through {horizon} - but the infections the cut causes generate{' '}
+              <span className="font-semibold text-slate-900">{formatCompactDollars(headline.care.median)}</span> in
+              downstream HIV care costs
+              {share !== null ? (
+                <>
+                  , exceeding the avoided spending in{' '}
+                  <span className="font-semibold text-slate-900">{formatPercent(share)}</span> of simulations
+                </>
+              ) : null}
+              .
+            </p>
 
-          <div className="mt-8 max-w-lg border-l-2 pl-4" style={{ borderColor: RUST }}>
-            <p className="text-sm font-semibold text-slate-800">Interpretation depends on payer perspective.</p>
-            <p className="mt-1 text-sm leading-relaxed text-slate-500">
-              This frame compares avoided ADAP spending with downstream HIV care costs; those care costs may themselves
-              be ADAP/RWHAP-eligible under alternative counterfactuals.
+            <div className="mt-8 max-w-lg border-l-2 pl-4" style={{ borderColor: NAVY }}>
+              <p className="text-sm font-semibold text-slate-800">This estimate is deliberately conservative.</p>
+              <ul className="mt-1.5 space-y-1 text-sm leading-relaxed text-slate-500">
+                <li>Counts only care costs of excess new infections - nothing for existing clients losing coverage.</li>
+                <li>Stops at 2035 while costs are still accruing; avoided spending is credited in full.</li>
+                <li>Delays cost accrual behind a re-engagement model.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="min-w-0 lg:justify-self-end lg:text-right">
+            <Eyebrow>Care cost per $1 of ADAP cut</Eyebrow>
+            <p className="mt-3 font-mono text-6xl font-semibold tabular-nums tracking-tight text-slate-900 sm:text-7xl">
+              {formatPerDollar(headline.perDollar.median)}
+            </p>
+            <p className="mt-3 font-mono text-sm tabular-nums text-slate-500">
+              {formatPerDollar(headline.perDollar.lower)} to {formatPerDollar(headline.perDollar.upper)} / 95% interval
+            </p>
+            <p className="mt-2 text-xs leading-relaxed text-slate-400">
+              {ESTIMAND_LABELS[estimand]} · paper metric: net cost / ADAP = {paperRatio.toFixed(2)}
             </p>
           </div>
         </div>
 
-        <div className="min-w-0 lg:justify-self-end">
-          <div className="flex min-w-0 flex-col gap-6">
-            <div>
-              <Eyebrow>Median net cost vs ADAP</Eyebrow>
-              <p className="mt-3 font-mono text-6xl font-semibold tabular-nums tracking-tight text-slate-900 sm:text-7xl">
-                {formatCompactDollars(net.median)}
-              </p>
-              <p className="mt-3 font-mono text-sm tabular-nums text-slate-500">
-                {formatCompactDollars(net.lower)} to {formatCompactDollars(net.upper)} / 95% interval
-              </p>
-            </div>
-            <div className="grid grid-cols-2 gap-5 border-t border-slate-200 pt-5 sm:grid-cols-3">
-              <Figure label="Draws net-costly" value={formatPercent(share)} tint={RUST} />
-              <Figure label="Care cost" value={formatCompactDollars(care)} />
-              <Figure label="ADAP avoided" value={formatCompactDollars(adap)} tint={TEAL} />
-            </div>
-            <div className="pt-1">
-              <ScenarioTabs scenario={scenario} onChange={onScenario} />
-            </div>
-          </div>
-        </div>
+        <CascadeChain headline={headline} horizon={horizon} />
       </div>
     </header>
   );
 }
 
-function Figure({ label, value, tint }: { label: string; value: string; tint?: string }) {
+function CascadeChain({ headline, horizon }: { headline: HeadlineValues; horizon: number }) {
+  const links: Array<{ label: string; value: string; sub: string; mark?: string }> = [
+    {
+      label: 'Excess infections',
+      value: formatNumber(headline.excessDiagnoses),
+      sub: 'caused by the cut',
+    },
+    {
+      label: 'Person-years on ART',
+      value: formatNumber(headline.personYears),
+      sub: 'immediate + re-engaged starts',
+    },
+    {
+      label: 'Downstream care cost',
+      value: formatCompactDollars(headline.care.median),
+      sub: `${formatCompactDollars(headline.care.lower)} to ${formatCompactDollars(headline.care.upper)}`,
+      mark: NAVY,
+    },
+    {
+      label: 'ADAP spending avoided',
+      value: formatCompactDollars(headline.adap),
+      sub: 'deterministic comparator',
+      mark: TEAL,
+    },
+    {
+      label: 'Net cost',
+      value: formatCompactDollars(headline.net.median),
+      sub: `${formatCompactDollars(headline.net.lower)} to ${formatCompactDollars(headline.net.upper)}`,
+      mark: headline.net.median > 0 ? RUST : TEAL,
+    },
+  ];
+
   return (
-    <div className="min-w-0">
-      <p className="text-[0.68rem] font-medium uppercase tracking-wide text-slate-400">{label}</p>
-      <p className="mt-1 font-mono text-lg font-semibold tabular-nums" style={{ color: tint ?? INK }}>
-        {value}
+    <div className="mt-12 border-t border-slate-200 pt-6">
+      <p className="font-mono text-[0.62rem] uppercase tracking-[0.22em] text-slate-500">
+        The model&apos;s logic / cumulative 2026-{horizon}, medians across 1,000 simulations
       </p>
+      <div className="mt-4 flex flex-wrap items-stretch gap-y-4">
+        {links.map((link, index) => (
+          <div key={link.label} className="flex min-w-0 items-center">
+            {index > 0 && (
+              <span aria-hidden className="mx-3 text-lg text-slate-300 sm:mx-4">
+                {index === 3 ? 'vs' : '→'}
+              </span>
+            )}
+            <div className="min-w-0">
+              <p className="flex items-center gap-1.5 text-[0.68rem] font-medium uppercase tracking-wide text-slate-400">
+                {link.mark && <span className="h-2 w-2 flex-shrink-0 rounded-sm" style={{ background: link.mark }} />}
+                {link.label}
+              </p>
+              <p className="mt-1 font-mono text-xl font-semibold tabular-nums text-slate-900 sm:text-2xl">{link.value}</p>
+              <p className="mt-0.5 font-mono text-[0.68rem] tabular-nums text-slate-400">{link.sub}</p>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
 
 // -----------------------------------------------------------------------------
-// Scenario evidence strip
+// Uncertainty decomposition - pooled mixes drug price + epidemic; scenario rows
+// isolate the epidemic component at a fixed price
 // -----------------------------------------------------------------------------
-function ScenarioStrip({
-  points,
-  selected,
-  onSelect,
+function UncertaintyDecomposition({
+  rows,
+  scenario,
+  onScenario,
+  horizon,
+  estimand,
 }: {
-  points: ScenarioEvidencePoint[];
-  selected: CostScenarioId;
-  onSelect: (s: CostScenarioId) => void;
+  rows: DecompositionRow[];
+  scenario: CostScenarioId;
+  onScenario: (s: CostScenarioId) => void;
+  horizon: number;
+  estimand: EstimandId;
 }) {
-  const [hoveredScenario, setHoveredScenario] = useState<CostScenarioId | null>(null);
-  const min = Math.min(0, ...points.map((p) => p.curve.p025));
-  const max = Math.max(0, ...points.map((p) => p.curve.p975));
+  const [hoveredRow, setHoveredRow] = useState<EstimandId | null>(null);
+  const min = Math.min(0, ...rows.map((row) => row.net.lower));
+  const max = Math.max(0, ...rows.map((row) => row.net.upper));
   const domainMin = Math.floor(min / 1e9) * 1e9;
   const domainMax = Math.ceil(max / 1e9) * 1e9;
   const at = (v: number) => ((v - domainMin) / (domainMax - domainMin)) * 100;
   const zero = at(0);
-  const activeScenario = hoveredScenario ?? selected;
 
   return (
     <section className="mx-auto w-full max-w-full px-5 py-16 sm:max-w-6xl sm:px-6">
       <Reveal>
         <SectionHead
           n="01"
-          eyebrow="Scenario evidence"
-          title="Each drug-cost scenario leans net-costly, with a real tail toward savings"
+          eyebrow="Uncertainty decomposition"
+          title="Is the uncertainty drug prices, or the epidemic?"
           right={
             <div className="flex items-center gap-5 text-xs font-medium text-slate-500">
               <span className="inline-flex items-center gap-2">
@@ -303,54 +394,85 @@ function ScenarioStrip({
             </div>
           }
         >
-          Rows are drug-cost assumptions; each band is the spread across 1,000 simulation draws. Left of the line is a
-          net offset, right is a net cost.
+          The pooled row treats the drug-price assumption as a source of uncertainty, mixed with 1,000 epidemic draws.
+          The scenario rows hold price fixed: spread within a row is epidemic uncertainty, spread across rows is the
+          price assumption. Bands are 95% intervals of net cost through {horizon}; click a scenario row to focus the
+          state views on it.
         </SectionHead>
 
         <div className="mt-10 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
-          {points.map((point) => {
-            const isSel = point.scenario === selected;
-            const isActive = point.scenario === activeScenario;
-            return (
-              <button
-                key={point.scenario}
-                type="button"
-                onClick={() => onSelect(point.scenario)}
-                onMouseEnter={() => setHoveredScenario(point.scenario)}
-                onMouseLeave={() => setHoveredScenario(null)}
-                onFocus={() => setHoveredScenario(point.scenario)}
-                onBlur={() => setHoveredScenario(null)}
-                aria-pressed={isSel}
-                className={cx(
-                  'group flex w-full flex-col gap-4 border-b border-slate-200 px-4 py-5 text-left transition-all last:border-b-0 sm:grid sm:grid-cols-[132px_minmax(0,1fr)_150px] sm:items-center sm:gap-6 sm:px-5',
-                  isSel ? 'bg-slate-50' : 'hover:bg-slate-50/60',
-                  isActive ? 'opacity-100' : 'opacity-60'
-                )}
-              >
+          {rows.map((row) => {
+            const isSel = !row.isPooled && row.id === scenario;
+            const isPrimary = row.id === estimand;
+            const isActive = hoveredRow ? hoveredRow === row.id : isSel || row.isPooled;
+            const rowInner = (
+              <>
                 <div className="flex items-baseline justify-between sm:block sm:pl-1">
-                  <p className={cx('text-sm font-semibold', isSel ? 'text-slate-900' : 'text-slate-600')}>{point.label}</p>
+                  <p className={cx('text-sm font-semibold', isSel || row.isPooled ? 'text-slate-900' : 'text-slate-600')}>
+                    {row.label}
+                    {isPrimary && (
+                      <span className="ml-2 rounded-sm bg-slate-100 px-1.5 py-0.5 align-middle text-[0.6rem] font-semibold uppercase tracking-wide text-slate-500">
+                        headline
+                      </span>
+                    )}
+                  </p>
+                  <p className="mt-0.5 text-[0.7rem] text-slate-400">{row.detail}</p>
                   <p className="mt-1 font-mono text-xs tabular-nums text-slate-400">
-                    {formatCompactDollars(point.netMedian)} median
+                    {formatCompactDollars(row.net.median)} median
                   </p>
                 </div>
                 <div className="relative h-12 min-w-0 overflow-hidden rounded-md">
                   <span className="absolute inset-y-0 left-0 bg-teal-50/60" style={{ width: `${zero}%` }} />
                   <span className="absolute inset-y-0 right-0 bg-amber-50/60" style={{ width: `${100 - zero}%` }} />
                   <span className="absolute inset-y-0 w-px bg-slate-400" style={{ left: `${zero}%` }} />
-                  <SplitBand at={at} lo={point.curve.p025} hi={point.curve.p975} thickness={4} opacity={isActive ? 0.24 : 0.16} />
-                  <SplitBand at={at} lo={point.curve.p10} hi={point.curve.p90} thickness={8} opacity={isActive ? 0.46 : 0.28} />
-                  <SplitBand at={at} lo={point.curve.p25} hi={point.curve.p75} thickness={isActive ? 16 : 12} opacity={isActive ? 0.9 : 0.55} />
+                  <SplitBand at={at} lo={row.net.lower} hi={row.net.upper} thickness={isActive ? 14 : 10} opacity={isActive ? 0.75 : 0.45} />
                   <span
                     className="absolute top-1/2 w-[3px] -translate-y-1/2 rounded-full transition-all"
-                    style={{ left: `${at(point.curve.p50)}%`, height: isActive ? 36 : 28, background: INK }}
+                    style={{ left: `${at(row.net.median)}%`, height: isActive ? 36 : 28, background: INK }}
                   />
                 </div>
                 <div className="flex items-baseline justify-between sm:block sm:text-right">
-                  <p className="font-mono text-xl font-semibold tabular-nums" style={{ color: confColor(point.shareNetPositive) }}>
-                    {formatPercent(point.shareNetPositive)}
+                  <p className="font-mono text-xl font-semibold tabular-nums text-slate-900">
+                    {formatPerDollar(row.perDollar)}
                   </p>
-                  <p className="text-[0.68rem] uppercase tracking-wide text-slate-400 sm:mt-0.5">draws net-costly</p>
+                  <p className="text-[0.68rem] uppercase tracking-wide text-slate-400 sm:mt-0.5">
+                    per $1 cut
+                    {row.sharePositive !== null && (
+                      <span className="normal-case"> · {formatPercent(row.sharePositive)} net-costly</span>
+                    )}
+                  </p>
                 </div>
+              </>
+            );
+            const rowClass = cx(
+              'flex w-full flex-col gap-4 border-b border-slate-200 px-4 py-5 text-left transition-all last:border-b-0 sm:grid sm:grid-cols-[168px_minmax(0,1fr)_190px] sm:items-center sm:gap-6 sm:px-5',
+              row.isPooled && 'border-b-2 bg-slate-50/40',
+              isSel && 'bg-slate-50',
+              !row.isPooled && !isSel && 'hover:bg-slate-50/60',
+              isActive ? 'opacity-100' : 'opacity-70'
+            );
+
+            if (row.isPooled) {
+              return (
+                <div key={row.id} className={rowClass} onMouseEnter={() => setHoveredRow(row.id)} onMouseLeave={() => setHoveredRow(null)}>
+                  {rowInner}
+                </div>
+              );
+            }
+
+            return (
+              <button
+                key={row.id}
+                type="button"
+                onClick={() => onScenario(row.id as CostScenarioId)}
+                onMouseEnter={() => setHoveredRow(row.id)}
+                onMouseLeave={() => setHoveredRow(null)}
+                onFocus={() => setHoveredRow(row.id)}
+                onBlur={() => setHoveredRow(null)}
+                aria-pressed={isSel}
+                className={rowClass}
+              >
+                {rowInner}
               </button>
             );
           })}
@@ -360,6 +482,11 @@ function ScenarioStrip({
           <span className="hidden sm:inline">net offset / $0 / net cost</span>
           <span>{formatCompactDollars(domainMax)}</span>
         </div>
+        {rows[0]?.sharePositive === null && (
+          <p className="mt-2 text-[0.7rem] text-slate-400">
+            Shares of draws net-costly are reported at the full 2035 horizon only.
+          </p>
+        )}
       </Reveal>
     </section>
   );
@@ -1065,9 +1192,39 @@ function QuestionsToResolve() {
 export default function RyanWhiteCostingApp() {
   const [scenario, setScenario] = useState<CostScenarioId>(ryanWhiteCostingSummary.sensitivity.primaryScenario);
   const [location, setLocation] = useState<LocationKey>(ryanWhiteCostingMetadata.defaultFocusState);
+  const [horizon, setHorizon] = useState<number>(HORIZON_MAX);
   const [hovered, setHovered] = useState<string | null>(null);
   const [series, setSeries] = useState<RyanWhiteCostingSeries | null>(null);
   const [seriesError, setSeriesError] = useState<string | null>(null);
+  const urlHydrated = useRef(false);
+
+  const primaryEstimand = ryanWhiteCostingMetadata.primaryEstimand;
+  const defaultScenario = ryanWhiteCostingSummary.sensitivity.primaryScenario;
+  const defaultState = ryanWhiteCostingMetadata.defaultFocusState;
+  const modeledStates = useMemo(() => new Set(ryanWhiteCostingSummary.states.map((item) => item.state)), []);
+
+  // Shareable app state: read ?through/&state/&scenario once on mount, then
+  // mirror changes back with replaceState (no history spam, no server round trip).
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const through = Number(params.get('through'));
+    if (Number.isInteger(through) && through >= HORIZON_MIN && through <= HORIZON_MAX) setHorizon(through);
+    const state = params.get('state');
+    if (state && (state === 'Total' || modeledStates.has(state))) setLocation(state);
+    const urlScenario = params.get('scenario');
+    if (urlScenario && (SCENARIO_ORDER as string[]).includes(urlScenario)) setScenario(urlScenario as CostScenarioId);
+    urlHydrated.current = true;
+  }, [modeledStates]);
+
+  useEffect(() => {
+    if (!urlHydrated.current) return;
+    const params = new URLSearchParams();
+    if (horizon !== HORIZON_MAX) params.set('through', String(horizon));
+    if (location !== defaultState) params.set('state', location);
+    if (scenario !== defaultScenario) params.set('scenario', scenario);
+    const query = params.toString();
+    window.history.replaceState(null, '', query ? `?${query}` : window.location.pathname);
+  }, [horizon, location, scenario, defaultState, defaultScenario]);
 
   useEffect(() => {
     let cancelled = false;
@@ -1080,14 +1237,34 @@ export default function RyanWhiteCostingApp() {
   }, []);
 
   const nationalFinal = ryanWhiteCostingSummary.national.finalYear;
-  const scenarioEvidence = useMemo(() => buildScenarioEvidence(nationalFinal), [nationalFinal]);
+  // The horizon control recomputes everything from the annual series; until it
+  // loads (or if the URL preset a horizon), fall back to the 2035 summary.
+  const nationalPoint = pointForYear(series?.national ?? [], horizon) ?? nationalFinal;
+  const atFullHorizon = nationalPoint.year === HORIZON_MAX;
+  const headline = useMemo(() => headlineAt(nationalPoint, primaryEstimand), [nationalPoint, primaryEstimand]);
+  const share = atFullHorizon
+    ? primaryEstimand === 'pooled'
+      ? ryanWhiteCostingSummary.national.pooledFinalYear.shareNetCostPositiveVsAdap
+      : nationalFinal.shareNetCostPositiveVsAdap[primaryEstimand]
+    : null;
+  const decompositionRows = useMemo(
+    () =>
+      buildDecomposition(
+        nationalPoint,
+        atFullHorizon
+          ? {
+              pooled: ryanWhiteCostingSummary.national.pooledFinalYear.shareNetCostPositiveVsAdap,
+              scenarios: nationalFinal.shareNetCostPositiveVsAdap,
+            }
+          : null
+      ),
+    [nationalPoint, atFullHorizon, nationalFinal]
+  );
+
   const rankedStates = useMemo(() => buildRankedStates(ryanWhiteCostingSummary.states, scenario), [scenario]);
   const selectedSeries = seriesForLocation(series, location);
   const trajectory = useMemo(() => buildTrajectoryData(selectedSeries, scenario), [selectedSeries, scenario]);
 
-  const net = scenarioMetric(nationalFinal.cumulativeNetCostVsAdap, scenario);
-  const care = scenarioMetric(nationalFinal.cumulativeCareCost, scenario);
-  const share = nationalFinal.shareNetCostPositiveVsAdap[scenario];
   const selectedName = location === 'Total' ? 'National total' : stateName(location);
   const selectedPoint = rankedStates.find((s) => s.state === location) ?? rankedStates[0];
   const tossUps = rankedStates.filter((s) => s.shareNetPositive < 0.66);
@@ -1095,16 +1272,17 @@ export default function RyanWhiteCostingApp() {
 
   return (
     <div className="min-h-screen w-full min-w-0 max-w-full overflow-x-hidden overflow-y-auto bg-white text-slate-900">
-      <Hero
+      <HorizonBar horizon={horizon} onHorizon={setHorizon} ready={series !== null} />
+
+      <CascadeHero headline={headline} estimand={primaryEstimand} horizon={nationalPoint.year} share={share} />
+
+      <UncertaintyDecomposition
+        rows={decompositionRows}
         scenario={scenario}
         onScenario={setScenario}
-        net={net}
-        share={share}
-        care={care.median}
-        adap={nationalFinal.cumulativeAdapSpendingAvoided}
+        horizon={nationalPoint.year}
+        estimand={primaryEstimand}
       />
-
-      <ScenarioStrip points={scenarioEvidence} selected={scenario} onSelect={setScenario} />
 
       <section className="border-t border-slate-200 bg-slate-50">
         <div className="mx-auto w-full max-w-full px-5 py-16 sm:max-w-6xl sm:px-6">
@@ -1117,7 +1295,8 @@ export default function RyanWhiteCostingApp() {
             >
               {likely} of 30 states show a net cost in at least 85% of simulations. Only {tossUps.length}:{' '}
               {tossUps.map((s) => s.state).join(', ')}, all large ADAP programs, sit near a coin flip, where the markers
-              pulse. State abbreviations are labeled; hover or focus any dot for detail.
+              pulse. State abbreviations are labeled; hover or focus any dot for detail. Shown at the full 2035
+              horizon.
             </SectionHead>
 
             <div className="mt-8 overflow-hidden rounded-lg border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
