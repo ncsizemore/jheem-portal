@@ -325,6 +325,54 @@ export function formatPerDollar(value: number): string {
   return `$${value >= 10 ? value.toFixed(1) : value.toFixed(2)}`;
 }
 
+// Per-dollar trajectory across horizon years, plus the break-even crossing,
+// for the budget-window control and its sparkline. crossoverPosition is the
+// linearly interpolated fractional year where median net cost crosses zero.
+export interface HorizonProfile {
+  years: number[];
+  perDollar: number[];
+  crossoverYear: number | null;
+  crossoverPosition: number | null;
+  maxPerDollar: number;
+  finalPerDollar: number;
+}
+
+export function buildHorizonProfile(points: AnnualCostPoint[], estimand: EstimandId): HorizonProfile | null {
+  if (points.length === 0) return null;
+
+  const years = points.map((point) => point.year);
+  const perDollar = points.map((point) => {
+    const care =
+      estimand === 'pooled' ? point.pooledCumulativeCareCost : scenarioMetric(point.cumulativeCareCost, estimand);
+    return care.median / point.cumulativeAdapSpendingAvoided;
+  });
+  const netMedians = points.map(
+    (point) =>
+      (estimand === 'pooled' ? point.pooledCumulativeNetCostVsAdap : scenarioMetric(point.cumulativeNetCostVsAdap, estimand))
+        .median
+  );
+
+  let crossoverYear: number | null = null;
+  let crossoverPosition: number | null = null;
+  for (let i = 0; i < netMedians.length; i += 1) {
+    if (netMedians[i] > 0) {
+      crossoverYear = years[i];
+      crossoverPosition =
+        i === 0 ? years[0] : years[i - 1] + -netMedians[i - 1] / (netMedians[i] - netMedians[i - 1]);
+      break;
+    }
+  }
+
+  return {
+    years,
+    perDollar,
+    crossoverYear,
+    crossoverPosition,
+    maxPerDollar: Math.max(...perDollar, 1),
+    finalPerDollar: perDollar[perDollar.length - 1],
+  };
+}
+
 export function buildTrajectoryData(
   points: AnnualCostPoint[],
   scenario: CostScenarioId

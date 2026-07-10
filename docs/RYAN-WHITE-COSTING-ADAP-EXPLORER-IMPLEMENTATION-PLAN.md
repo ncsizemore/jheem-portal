@@ -324,6 +324,12 @@ Implementation notes:
 - if pooled becomes the primary estimand, the exporter must add pooled annual values (see exporter plan)
 - ratio and crossover are derived client-side (net / ADAP per year)
 
+Design rules learned in Phase 3 (binding for future passes):
+
+- **The control lives in the hero, not in chrome.** A thin top-bar slider reads as browser furniture and gets missed; the primary control is a labeled "budget window" block inside the hero, with the sticky bar demoted to a condensed echo that appears only after the hero control scrolls away.
+- **The track is data-bearing**: year ticks, a break-even marker at the interpolated crossover, and appears-to-save / net-costly region shading. A control that displays data reads as part of the analysis and teaches the crossover before it is touched.
+- **Sub-crossover states must narrate the truncation mechanism.** Early-horizon views legitimately show the cut "saving" — that is the paper's short-term-illusion argument, so keep the full range, but never render an early-year savings number without its direction of travel (break-even year + the 2035 per-dollar value alongside). A screenshot of any horizon state should argue for the paper, not against it. Flag this presentation choice to Ryan.
+
 ### Craft Bar
 
 What separates "figures with a dropdown" from an instrument:

@@ -25,6 +25,7 @@ import {
 } from '@/data/ryan-white-costing';
 import {
   buildDecomposition,
+  buildHorizonProfile,
   buildRankedStates,
   buildTrajectoryData,
   DecompositionRow,
@@ -36,6 +37,7 @@ import {
   formatPerDollar,
   HeadlineValues,
   headlineAt,
+  HorizonProfile,
   HORIZON_MAX,
   HORIZON_MIN,
   LocationKey,
@@ -160,26 +162,190 @@ function TrajTip({ active, payload, label }: TipProps) {
 }
 
 // -----------------------------------------------------------------------------
-// Global horizon control - the app's one computation-bearing input
+// Budget-window control - the app's one computation-bearing input. Lives in
+// the hero (a top-bar slider reads as chrome and gets missed); the sticky bar
+// below is only a condensed echo once the hero control scrolls away.
 // -----------------------------------------------------------------------------
-function HorizonBar({
+const THUMB_PX = 20;
+
+const RANGE_THUMB_CLASSES =
+  '[&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:appearance-none ' +
+  '[&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-slate-900 ' +
+  '[&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:shadow-md ' +
+  '[&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:rounded-full ' +
+  '[&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-slate-900 [&::-moz-range-thumb]:bg-white ' +
+  '[&::-moz-range-track]:bg-transparent';
+
+function horizonPct(year: number): number {
+  return ((year - HORIZON_MIN) / (HORIZON_MAX - HORIZON_MIN)) * 100;
+}
+
+function BudgetWindowControl({
   horizon,
   onHorizon,
+  profile,
+  ready,
+  controlRef,
+}: {
+  horizon: number;
+  onHorizon: (year: number) => void;
+  profile: HorizonProfile | null;
+  ready: boolean;
+  controlRef: React.RefObject<HTMLDivElement | null>;
+}) {
+  const crossPct =
+    profile?.crossoverPosition != null
+      ? Math.max(0, Math.min(100, horizonPct(profile.crossoverPosition)))
+      : null;
+  const tickYears = Array.from({ length: HORIZON_MAX - HORIZON_MIN + 1 }, (_, i) => HORIZON_MIN + i);
+
+  return (
+    <div ref={controlRef} className="mt-10 rounded-lg border border-slate-200 bg-slate-50/60 p-5 sm:p-6">
+      <div className="flex flex-wrap items-start justify-between gap-x-10 gap-y-4">
+        <div className="min-w-0 max-w-md">
+          <Eyebrow>Budget window</Eyebrow>
+          <p className="mt-2 text-sm leading-relaxed text-slate-600">
+            Savings arrive early; costs arrive late. Drag to evaluate the ledger over a shorter window
+            {profile?.crossoverYear != null && (
+              <>
+                {' '}
+                - nationally it crosses break-even around{' '}
+                <span className="font-semibold text-slate-900">{profile.crossoverYear}</span>
+              </>
+            )}
+            . 2035 is the model horizon; nothing is extrapolated past it.
+          </p>
+        </div>
+        {profile && <PerDollarSparkline profile={profile} horizon={horizon} />}
+      </div>
+
+      <div className="relative mt-6 h-12">
+        {/* Track layers, inset by half the thumb so tick positions align with thumb centers */}
+        <div
+          className="pointer-events-none absolute top-[15px]"
+          style={{ left: THUMB_PX / 2, right: THUMB_PX / 2 }}
+        >
+          <div className="relative h-2 overflow-hidden rounded-full bg-teal-100">
+            {crossPct !== null && (
+              <span className="absolute inset-y-0 right-0 bg-amber-100" style={{ left: `${crossPct}%` }} />
+            )}
+          </div>
+          {tickYears.map((year) => (
+            <span
+              key={year}
+              className="absolute top-[-3px] h-[14px] w-px -translate-x-1/2 bg-slate-300"
+              style={{ left: `${horizonPct(year)}%` }}
+            />
+          ))}
+          {crossPct !== null && (
+            <span
+              className="absolute top-[-6px] h-[20px] w-[2px] -translate-x-1/2 rounded-full bg-slate-700"
+              style={{ left: `${crossPct}%` }}
+            />
+          )}
+        </div>
+        <input
+          type="range"
+          min={HORIZON_MIN}
+          max={HORIZON_MAX}
+          step={1}
+          value={horizon}
+          disabled={!ready}
+          onChange={(event) => onHorizon(Number(event.target.value))}
+          aria-label="Budget window end year"
+          aria-valuetext={`2026 through ${horizon}`}
+          className={cx(
+            'absolute inset-x-0 top-[5px] h-7 w-full min-w-0 cursor-grab appearance-none bg-transparent',
+            'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-slate-400',
+            'disabled:cursor-wait disabled:opacity-40',
+            RANGE_THUMB_CLASSES
+          )}
+        />
+        <div
+          className="pointer-events-none absolute bottom-0 font-mono text-[0.68rem] tabular-nums text-slate-400"
+          style={{ left: THUMB_PX / 2, right: THUMB_PX / 2 }}
+        >
+          <span className="absolute left-0 -translate-x-1/2">{HORIZON_MIN}</span>
+          {crossPct !== null && crossPct > 12 && crossPct < 88 && (
+            <span className="absolute -translate-x-1/2 font-medium text-slate-600" style={{ left: `${crossPct}%` }}>
+              break-even
+            </span>
+          )}
+          <span className="absolute right-0 translate-x-1/2">{HORIZON_MAX}</span>
+        </div>
+      </div>
+      {!ready && <p className="mt-2 text-[0.7rem] text-slate-400">Loading annual series…</p>}
+    </div>
+  );
+}
+
+function PerDollarSparkline({ profile, horizon }: { profile: HorizonProfile; horizon: number }) {
+  const W = 230;
+  const H = 68;
+  const padL = 6;
+  const padR = 36;
+  const padT = 10;
+  const padB = 8;
+  const first = profile.years[0];
+  const last = profile.years[profile.years.length - 1];
+  const x = (year: number) => padL + ((year - first) / (last - first)) * (W - padL - padR);
+  const yMax = profile.maxPerDollar * 1.08;
+  const y = (v: number) => H - padB - (v / yMax) * (H - padT - padB);
+  const path = profile.years.map((year, i) => `${i === 0 ? 'M' : 'L'}${x(year).toFixed(1)},${y(profile.perDollar[i]).toFixed(1)}`).join(' ');
+  const horizonIdx = profile.years.indexOf(horizon);
+
+  return (
+    <div className="min-w-0">
+      <p className="text-[0.62rem] font-medium uppercase tracking-wide text-slate-400">Care cost per $1, by window end</p>
+      <svg
+        viewBox={`0 0 ${W} ${H}`}
+        width={W}
+        height={H}
+        className="mt-1 max-w-full"
+        role="img"
+        aria-label={`Care cost per dollar of ADAP cut rises from ${formatPerDollar(profile.perDollar[0])} to ${formatPerDollar(profile.finalPerDollar)} as the window extends to ${last}`}
+      >
+        <line x1={padL} x2={W - padR} y1={y(1)} y2={y(1)} stroke={GRID} strokeDasharray="3 3" />
+        <text x={W - padR + 4} y={y(1) + 3.5} fontSize="10" fill={MUTED} className="font-mono">
+          $1
+        </text>
+        <path d={path} fill="none" stroke={INK} strokeWidth={2} strokeLinejoin="round" />
+        {horizonIdx >= 0 && (
+          <circle cx={x(horizon)} cy={y(profile.perDollar[horizonIdx])} r={3.5} fill={INK} stroke="#ffffff" strokeWidth={1.5} />
+        )}
+        <text x={W - padR + 4} y={y(profile.finalPerDollar) + 3.5} fontSize="10" fill={INK} fontWeight={600} className="font-mono">
+          {formatPerDollar(profile.finalPerDollar)}
+        </text>
+      </svg>
+    </div>
+  );
+}
+
+function HorizonEcho({
+  horizon,
+  onHorizon,
+  visible,
   ready,
 }: {
   horizon: number;
   onHorizon: (year: number) => void;
+  visible: boolean;
   ready: boolean;
 }) {
   return (
-    <div className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur">
-      <div className="mx-auto flex w-full max-w-full flex-wrap items-center gap-x-6 gap-y-2 px-5 py-3 sm:max-w-6xl sm:px-6">
-        <div className="flex items-baseline gap-2.5">
-          <Eyebrow>Ledger through</Eyebrow>
-          <span className="font-mono text-xl font-semibold tabular-nums text-slate-900">{horizon}</span>
-        </div>
-        <div className="flex min-w-[200px] flex-1 items-center gap-3">
-          <span className="font-mono text-[0.68rem] tabular-nums text-slate-400">{HORIZON_MIN}</span>
+    <div className="sticky top-0 z-30 h-0">
+      <div
+        aria-hidden={!visible}
+        className={cx(
+          'border-b border-slate-200 bg-white/95 shadow-sm backdrop-blur transition-all duration-200',
+          visible ? 'translate-y-0 opacity-100' : 'pointer-events-none -translate-y-2 opacity-0'
+        )}
+      >
+        <div className="mx-auto flex w-full max-w-full flex-wrap items-center gap-x-5 gap-y-2 px-5 py-2.5 sm:max-w-6xl sm:px-6">
+          <div className="flex items-baseline gap-2">
+            <span className="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-slate-500">Budget window</span>
+            <span className="font-mono text-base font-semibold tabular-nums text-slate-900">2026-{horizon}</span>
+          </div>
           <input
             type="range"
             min={HORIZON_MIN}
@@ -187,28 +353,22 @@ function HorizonBar({
             step={1}
             value={horizon}
             disabled={!ready}
+            tabIndex={visible ? 0 : -1}
             onChange={(event) => onHorizon(Number(event.target.value))}
-            aria-label="Evaluate the ledger through year"
-            aria-valuetext={`through ${horizon}`}
-            className="h-1.5 w-full min-w-0 cursor-pointer accent-slate-900 disabled:cursor-wait disabled:opacity-40"
+            aria-label="Budget window end year"
+            aria-valuetext={`2026 through ${horizon}`}
+            className="h-1.5 w-full max-w-[260px] min-w-[120px] flex-1 cursor-pointer accent-slate-900 disabled:opacity-40"
           />
-          <span className="font-mono text-[0.68rem] tabular-nums text-slate-400">{HORIZON_MAX}</span>
-        </div>
-        <div className="flex items-center gap-3">
           {horizon !== HORIZON_MAX && (
             <button
               type="button"
+              tabIndex={visible ? 0 : -1}
               onClick={() => onHorizon(HORIZON_MAX)}
               className="rounded border border-slate-300 px-2 py-0.5 text-[0.7rem] font-medium text-slate-600 transition-colors hover:border-slate-400 hover:text-slate-900"
             >
               Full horizon
             </button>
           )}
-          <p className="hidden text-[0.68rem] leading-tight text-slate-400 md:block">
-            {ready
-              ? 'Costs are still accruing at 2035 - the model horizon. No extrapolation.'
-              : 'Loading annual series…'}
-          </p>
         </div>
       </div>
     </div>
@@ -223,13 +383,58 @@ function CascadeHero({
   estimand,
   horizon,
   share,
+  profile,
+  onHorizon,
+  ready,
+  controlRef,
 }: {
   headline: HeadlineValues;
   estimand: EstimandId;
   horizon: number;
   share: number | null;
+  profile: HorizonProfile | null;
+  onHorizon: (year: number) => void;
+  ready: boolean;
+  controlRef: React.RefObject<HTMLDivElement | null>;
 }) {
   const paperRatio = headline.perDollar.median - 1;
+  const truncated = horizon < HORIZON_MAX;
+  const appearsToSave = headline.net.median <= 0;
+  const bold = (text: string) => <span className="font-semibold text-slate-900">{text}</span>;
+
+  // A truncated view must carry its own rebuttal: name the mechanism (costs
+  // haven't landed yet) and the direction of travel, never a bare number.
+  const narrative = !truncated ? (
+    <>
+      Eliminating ADAP in 30 states avoids {bold(formatCompactDollars(headline.adap))} in spending through {horizon} -
+      but the infections the cut causes generate {bold(formatCompactDollars(headline.care.median))} in downstream HIV
+      care costs
+      {share !== null ? <>, exceeding the avoided spending in {bold(formatPercent(share))} of simulations</> : null}.
+    </>
+  ) : appearsToSave ? (
+    <>
+      Through {horizon}, the cut still <em>appears</em> to save: {bold(formatCompactDollars(headline.adap))} avoided
+      against {bold(formatCompactDollars(headline.care.median))} in care costs landed so far. The infections behind
+      those costs have already happened
+      {profile?.crossoverYear != null ? (
+        <>
+          ; the ledger crosses break-even around {bold(String(profile.crossoverYear))} and reaches{' '}
+          {bold(`${formatPerDollar(profile.finalPerDollar)} per $1`)} by 2035
+        </>
+      ) : (
+        <> - their costs simply haven&apos;t landed inside this window yet</>
+      )}
+      .
+    </>
+  ) : (
+    <>
+      By {horizon}, downstream care costs have already overtaken the avoided spending -{' '}
+      {bold(formatCompactDollars(headline.care.median))} against {bold(formatCompactDollars(headline.adap))} - and the
+      gap keeps widening
+      {profile ? <> to {bold(`${formatPerDollar(profile.finalPerDollar)} per $1`)} by 2035</> : null}.
+    </>
+  );
+
   return (
     <header className="border-b border-slate-200">
       <div className="mx-auto w-full max-w-full px-5 py-14 sm:max-w-6xl sm:px-6 sm:py-16">
@@ -246,20 +451,7 @@ function CascadeHero({
             >
               Cutting ADAP doesn&apos;t save what it appears to save.
             </h1>
-            <p className="mt-6 max-w-lg text-lg leading-relaxed text-slate-600">
-              Eliminating ADAP in 30 states avoids{' '}
-              <span className="font-semibold text-slate-900">{formatCompactDollars(headline.adap)}</span> in spending
-              through {horizon} - but the infections the cut causes generate{' '}
-              <span className="font-semibold text-slate-900">{formatCompactDollars(headline.care.median)}</span> in
-              downstream HIV care costs
-              {share !== null ? (
-                <>
-                  , exceeding the avoided spending in{' '}
-                  <span className="font-semibold text-slate-900">{formatPercent(share)}</span> of simulations
-                </>
-              ) : null}
-              .
-            </p>
+            <p className="mt-6 max-w-lg text-lg leading-relaxed text-slate-600">{narrative}</p>
 
             <div className="mt-8 max-w-lg border-l-2 pl-4" style={{ borderColor: NAVY }}>
               <p className="text-sm font-semibold text-slate-800">This estimate is deliberately conservative.</p>
@@ -279,11 +471,27 @@ function CascadeHero({
             <p className="mt-3 font-mono text-sm tabular-nums text-slate-500">
               {formatPerDollar(headline.perDollar.lower)} to {formatPerDollar(headline.perDollar.upper)} / 95% interval
             </p>
+            {truncated && profile && (
+              <p className="mt-2 font-mono text-sm tabular-nums text-slate-600">
+                <span aria-hidden style={{ color: RUST }}>
+                  ↗
+                </span>{' '}
+                {formatPerDollar(profile.finalPerDollar)} per $1 by 2035
+              </p>
+            )}
             <p className="mt-2 text-xs leading-relaxed text-slate-400">
               {ESTIMAND_LABELS[estimand]} · paper metric: net cost / ADAP = {paperRatio.toFixed(2)}
             </p>
           </div>
         </div>
+
+        <BudgetWindowControl
+          horizon={horizon}
+          onHorizon={onHorizon}
+          profile={profile}
+          ready={ready}
+          controlRef={controlRef}
+        />
 
         <CascadeChain headline={headline} horizon={horizon} />
       </div>
@@ -1197,6 +1405,8 @@ export default function RyanWhiteCostingApp() {
   const [series, setSeries] = useState<RyanWhiteCostingSeries | null>(null);
   const [seriesError, setSeriesError] = useState<string | null>(null);
   const urlHydrated = useRef(false);
+  const heroControlRef = useRef<HTMLDivElement | null>(null);
+  const [echoVisible, setEchoVisible] = useState(false);
 
   const primaryEstimand = ryanWhiteCostingMetadata.primaryEstimand;
   const defaultScenario = ryanWhiteCostingSummary.sensitivity.primaryScenario;
@@ -1236,12 +1446,29 @@ export default function RyanWhiteCostingApp() {
     };
   }, []);
 
+  // The sticky bar is only an echo of the hero control - show it once the
+  // hero control has scrolled above the viewport.
+  useEffect(() => {
+    const el = heroControlRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setEchoVisible(!entry.isIntersecting && entry.boundingClientRect.top < 0),
+      { threshold: 0 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
   const nationalFinal = ryanWhiteCostingSummary.national.finalYear;
   // The horizon control recomputes everything from the annual series; until it
   // loads (or if the URL preset a horizon), fall back to the 2035 summary.
   const nationalPoint = pointForYear(series?.national ?? [], horizon) ?? nationalFinal;
   const atFullHorizon = nationalPoint.year === HORIZON_MAX;
   const headline = useMemo(() => headlineAt(nationalPoint, primaryEstimand), [nationalPoint, primaryEstimand]);
+  const horizonProfile = useMemo(
+    () => buildHorizonProfile(series?.national ?? [], primaryEstimand),
+    [series, primaryEstimand]
+  );
   const share = atFullHorizon
     ? primaryEstimand === 'pooled'
       ? ryanWhiteCostingSummary.national.pooledFinalYear.shareNetCostPositiveVsAdap
@@ -1272,9 +1499,18 @@ export default function RyanWhiteCostingApp() {
 
   return (
     <div className="min-h-screen w-full min-w-0 max-w-full overflow-x-hidden overflow-y-auto bg-white text-slate-900">
-      <HorizonBar horizon={horizon} onHorizon={setHorizon} ready={series !== null} />
+      <HorizonEcho horizon={horizon} onHorizon={setHorizon} visible={echoVisible} ready={series !== null} />
 
-      <CascadeHero headline={headline} estimand={primaryEstimand} horizon={nationalPoint.year} share={share} />
+      <CascadeHero
+        headline={headline}
+        estimand={primaryEstimand}
+        horizon={nationalPoint.year}
+        share={share}
+        profile={horizonProfile}
+        onHorizon={setHorizon}
+        ready={series !== null}
+        controlRef={heroControlRef}
+      />
 
       <UncertaintyDecomposition
         rows={decompositionRows}
