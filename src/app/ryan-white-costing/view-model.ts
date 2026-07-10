@@ -389,6 +389,121 @@ export function buildHorizonProfile(points: AnnualCostPoint[], estimand: Estiman
   };
 }
 
+// Driver-table rows: the supplemental table's columns (excess diagnoses,
+// person-years, care cost, ADAP avoided, net, ratio), evaluated at the
+// selected budget window from the annual series. Falls back to the 2035
+// summary while the series loads. shareNetPositive is a 2035 quantity.
+export interface DriverRow {
+  state: string;
+  stateName: string;
+  year: number;
+  excessDiagnoses: number;
+  personYears: number;
+  careCost: QuantileValue;
+  adap: number;
+  net: QuantileValue;
+  ratio: number;
+  perDollar: number;
+  crossoverYear: number | null;
+  shareNetPositive2035: number;
+}
+
+export type DriverSortKey = 'net' | 'careCost' | 'adap' | 'ratio' | 'excessDiagnoses' | 'personYears';
+
+function driverRowFrom(
+  state: string,
+  displayName: string,
+  point: AnnualCostPoint,
+  scenario: CostScenarioId,
+  crossoverYear: number | null,
+  shareNetPositive2035: number
+): DriverRow {
+  const care = scenarioMetric(point.cumulativeCareCost, scenario);
+  const net = scenarioMetric(point.cumulativeNetCostVsAdap, scenario);
+  const adap = point.cumulativeAdapSpendingAvoided;
+
+  return {
+    state,
+    stateName: displayName,
+    year: point.year,
+    excessDiagnoses: point.cumulativeExcessNewDiagnoses.median,
+    personYears: point.cumulativePersonYearsOnArt.median,
+    careCost: care,
+    adap,
+    net,
+    ratio: net.median / adap,
+    perDollar: care.median / adap,
+    crossoverYear,
+    shareNetPositive2035,
+  };
+}
+
+export function buildDriverRows(
+  series: RyanWhiteCostingSeries | null,
+  states: StateCostingSummary[],
+  scenario: CostScenarioId,
+  horizon: number,
+  crossovers: StateCrossover[]
+): DriverRow[] {
+  const crossoverByState = new Map(crossovers.map((item) => [item.state, item.crossoverYear]));
+
+  return states.map((item) => {
+    const point = pointForYear(series?.states[item.state] ?? [], horizon) ?? item.finalYear;
+    return driverRowFrom(
+      item.state,
+      stateName(item.state),
+      point,
+      scenario,
+      crossoverByState.get(item.state) ?? null,
+      item.finalYear.shareNetCostPositiveVsAdap[scenario]
+    );
+  });
+}
+
+export function buildNationalDriverRow(
+  series: RyanWhiteCostingSeries | null,
+  summary: RyanWhiteCostingSummary,
+  scenario: CostScenarioId,
+  horizon: number
+): DriverRow {
+  const point = pointForYear(series?.national ?? [], horizon) ?? summary.national.finalYear;
+  const crossover = crossoverForPoints(series?.national ?? [], scenario);
+  return driverRowFrom(
+    'Total',
+    'National total',
+    point,
+    scenario,
+    crossover?.year ?? null,
+    summary.national.finalYear.shareNetCostPositiveVsAdap[scenario]
+  );
+}
+
+export function sortDriverRows(rows: DriverRow[], key: DriverSortKey): DriverRow[] {
+  const value = (row: DriverRow): number => {
+    if (key === 'net') return row.net.median;
+    if (key === 'careCost') return row.careCost.median;
+    return row[key];
+  };
+  return [...rows].sort((a, b) => value(b) - value(a));
+}
+
+// Mechanism decomposition series for the drilldown: who is accruing cost.
+export interface MechanismSeriesPoint {
+  year: number;
+  immediate: number;
+  reengaged: number;
+  offArt: number;
+}
+
+export function buildMechanismSeries(points: AnnualCostPoint[]): MechanismSeriesPoint[] {
+  return points.map((point) => ({
+    year: point.year,
+    immediate: point.mechanism.activeOnArtImmediate,
+    reengaged: point.mechanism.activeOnArtReengaged,
+    offArt: point.mechanism.offArtExcess,
+  }));
+}
+
 // Crossover year for every state, for the ranked crossover timeline.
 export interface StateCrossover {
   state: string;

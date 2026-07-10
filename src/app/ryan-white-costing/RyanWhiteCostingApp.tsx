@@ -6,12 +6,9 @@ import {
   Area,
   CartesianGrid,
   ComposedChart,
-  ErrorBar,
   Line,
   ReferenceLine,
   ResponsiveContainer,
-  Scatter,
-  ScatterChart,
   Tooltip,
   XAxis,
   YAxis,
@@ -20,18 +17,24 @@ import {
   fetchRyanWhiteCostingSeries,
   ryanWhiteCostingMetadata,
   ryanWhiteCostingSummary,
+  type BaselineContext,
   type CostScenarioId,
   type RyanWhiteCostingSeries,
 } from '@/data/ryan-white-costing';
 import {
   buildDecomposition,
+  buildDriverRows,
   buildHorizonProfile,
+  buildMechanismSeries,
+  buildNationalDriverRow,
   buildRankedStates,
   buildStateCrossovers,
   buildTrajectoryData,
   Crossover,
   crossoverForPoints,
   DecompositionRow,
+  DriverRow,
+  DriverSortKey,
   ESTIMAND_LABELS,
   EstimandId,
   formatCompactDollars,
@@ -44,12 +47,14 @@ import {
   HORIZON_MAX,
   HORIZON_MIN,
   LocationKey,
+  MechanismSeriesPoint,
   pointForYear,
   RankedStatePoint,
   ReviewCard,
   SCENARIO_LABELS,
   SCENARIO_ORDER,
   seriesForLocation,
+  sortDriverRows,
   StateCrossover,
   stateName,
 } from './view-model';
@@ -125,22 +130,6 @@ interface TipProps {
   active?: boolean;
   label?: string | number;
   payload?: Array<{ dataKey?: string; value?: number; stroke?: string; payload?: RankedStatePoint }>;
-}
-
-function ScatterTip({ active, payload }: TipProps) {
-  if (!active || !payload?.length || !payload[0].payload) return null;
-  const p = payload[0].payload;
-  return (
-    <div className="rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 shadow-md">
-      <p className="text-sm font-semibold text-slate-900">{p.stateName}</p>
-      <p className="mt-1 font-mono text-xs tabular-nums text-slate-500">
-        Care {formatCompactDollars(p.careCost)} / ADAP {formatCompactDollars(p.adapBenchmark)}
-      </p>
-      <p className="font-mono text-xs tabular-nums" style={{ color: confColor(p.shareNetPositive) }}>
-        {formatPercent(p.shareNetPositive)} of draws net-costly
-      </p>
-    </div>
-  );
 }
 
 function TrajTip({ active, payload, label }: TipProps) {
@@ -1036,31 +1025,178 @@ function SwarmLegend() {
 }
 
 // -----------------------------------------------------------------------------
-// Selected-state detail
+// State drivers: ranked table (supplemental-table columns, at the window) and
+// the selected-location drilldown
 // -----------------------------------------------------------------------------
-function SelectedState({ point }: { point: RankedStatePoint }) {
-  const verdict = point.boundedPositive
-    ? 'Interval stays above zero'
-    : point.shareNetPositive >= 0.85
-    ? 'High share net-costly'
-    : point.shareNetPositive >= 0.66
-    ? 'Mostly net-costly draws'
-    : 'Near a coin flip';
+const DRIVER_COLUMNS: Array<{ key: DriverSortKey; label: string }> = [
+  { key: 'excessDiagnoses', label: 'Excess dx' },
+  { key: 'personYears', label: 'ART p-y' },
+  { key: 'careCost', label: 'Care cost' },
+  { key: 'adap', label: 'ADAP avoided' },
+  { key: 'net', label: 'Net cost' },
+  { key: 'ratio', label: 'Net / ADAP' },
+];
+
+function DriverTable({
+  rows,
+  horizonYear,
+  selected,
+  hovered,
+  onSelect,
+  onHover,
+}: {
+  rows: DriverRow[];
+  horizonYear: number;
+  selected: LocationKey;
+  hovered: string | null;
+  onSelect: (state: string) => void;
+  onHover: (state: string | null) => void;
+}) {
+  const [sortKey, setSortKey] = useState<DriverSortKey>('net');
+  const sorted = useMemo(() => sortDriverRows(rows, sortKey), [rows, sortKey]);
+  const maxNetAbs = Math.max(1, ...rows.map((row) => Math.abs(row.net.median)));
+
+  return (
+    <div className="min-w-0 rounded-lg border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <h3 className="text-base font-semibold text-slate-900">Ranked drivers through {horizonYear}</h3>
+        <span className="font-mono text-[0.62rem] uppercase tracking-[0.18em] text-slate-400">
+          click a column to re-rank
+        </span>
+      </div>
+      <div className="mt-4 max-h-[480px] overflow-auto">
+        <table className="w-full min-w-[680px] text-left text-sm">
+          <thead className="sticky top-0 z-10 bg-white text-[0.66rem] uppercase tracking-wide text-slate-400">
+            <tr className="border-b border-slate-200">
+              <th className="py-2 pr-3 font-medium">State</th>
+              {DRIVER_COLUMNS.map((column) => (
+                <th
+                  key={column.key}
+                  aria-sort={sortKey === column.key ? 'descending' : 'none'}
+                  className="py-2 px-2 text-right font-medium"
+                >
+                  <button
+                    type="button"
+                    onClick={() => setSortKey(column.key)}
+                    className={cx(
+                      'inline-flex items-center gap-1 uppercase tracking-wide transition-colors hover:text-slate-700',
+                      sortKey === column.key ? 'font-semibold text-slate-800' : 'text-slate-400'
+                    )}
+                  >
+                    {column.label}
+                    {sortKey === column.key && <span aria-hidden>↓</span>}
+                  </button>
+                </th>
+              ))}
+              <th className="py-2 pl-2 text-right font-medium" title="Share of draws net-costly at the 2035 horizon">
+                Draws&gt;0 &rsquo;35
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {sorted.map((row) => {
+              const barWidth = (Math.abs(row.net.median) / maxNetAbs) * 100;
+              return (
+                <tr
+                  key={row.state}
+                  onClick={() => onSelect(row.state)}
+                  onMouseEnter={() => onHover(row.state)}
+                  onMouseLeave={() => onHover(null)}
+                  tabIndex={0}
+                  onFocus={() => onHover(row.state)}
+                  onBlur={() => onHover(null)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault();
+                      onSelect(row.state);
+                    }
+                  }}
+                  className={cx(
+                    'cursor-pointer border-b border-slate-100 transition-colors focus:outline-none focus:ring-2 focus:ring-inset focus:ring-slate-300',
+                    row.state === selected ? 'bg-slate-100' : hovered === row.state ? 'bg-slate-50' : 'hover:bg-slate-50'
+                  )}
+                >
+                  <td className="py-2 pr-3 font-medium text-slate-900">
+                    {row.stateName} <span className="text-slate-400">{row.state}</span>
+                  </td>
+                  <td className="py-2 px-2 text-right font-mono tabular-nums text-slate-500">
+                    {formatNumber(row.excessDiagnoses)}
+                  </td>
+                  <td className="py-2 px-2 text-right font-mono tabular-nums text-slate-500">
+                    {formatNumber(row.personYears)}
+                  </td>
+                  <td className="py-2 px-2 text-right font-mono tabular-nums text-slate-500">
+                    {formatCompactDollars(row.careCost.median)}
+                  </td>
+                  <td className="py-2 px-2 text-right font-mono tabular-nums text-slate-500">
+                    {formatCompactDollars(row.adap)}
+                  </td>
+                  <td className="py-2 px-2 text-right">
+                    <span className="font-mono font-medium tabular-nums text-slate-900">
+                      {formatCompactDollars(row.net.median)}
+                    </span>
+                    <span className="mt-0.5 block h-[3px] w-full overflow-hidden rounded-full bg-slate-100">
+                      <span
+                        className="ml-auto block h-full rounded-full"
+                        style={{
+                          width: `${barWidth}%`,
+                          background: row.net.median > 0 ? RUST : TEAL,
+                          opacity: 0.75,
+                        }}
+                      />
+                    </span>
+                  </td>
+                  <td className="py-2 px-2 text-right font-mono tabular-nums text-slate-900">{row.ratio.toFixed(2)}</td>
+                  <td
+                    className="py-2 pl-2 text-right font-mono tabular-nums font-medium"
+                    style={{ color: confColor(row.shareNetPositive2035) }}
+                  >
+                    {formatPercent(row.shareNetPositive2035)}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+      <p className="mt-3 text-[0.7rem] leading-relaxed text-slate-400">
+        Columns follow the paper&apos;s supplemental table; ratio = (care cost &minus; ADAP avoided) / ADAP avoided.
+        Values are medians at the selected budget window; the draws-net-costly share is a 2035 quantity.
+      </p>
+    </div>
+  );
+}
+
+function StateDetailCard({ row, crossoverKnown }: { row: DriverRow; crossoverKnown: boolean }) {
   return (
     <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-      <Eyebrow>Selected state</Eyebrow>
-      <h3 className={cx(SERIF, 'mt-2 text-3xl font-medium text-slate-900')}>{point.stateName}</h3>
-      <p className="mt-1 text-sm font-medium" style={{ color: confColor(point.shareNetPositive) }}>
-        {verdict} / {formatPercent(point.shareNetPositive)} of draws net-costly
+      <Eyebrow>Selected {row.state === 'Total' ? 'view' : 'state'}</Eyebrow>
+      <h3 className={cx(SERIF, 'mt-2 text-3xl font-medium text-slate-900')}>{row.stateName}</h3>
+      <p className="mt-1 text-sm font-medium text-slate-500">
+        {!crossoverKnown ? (
+          'Break-even: …'
+        ) : row.crossoverYear !== null ? (
+          <>
+            Crosses break-even in <span className="font-semibold text-slate-800">{row.crossoverYear}</span>
+          </>
+        ) : (
+          'Does not cross break-even by 2035'
+        )}{' '}
+        ·{' '}
+        <span style={{ color: confColor(row.shareNetPositive2035) }}>
+          {formatPercent(row.shareNetPositive2035)} net-costly at &rsquo;35
+        </span>
       </p>
       <dl className="mt-6 grid grid-cols-2 gap-x-6 gap-y-4">
         {[
-          ['Net cost vs ADAP', formatCompactDollars(point.netCost)],
-          ['95% interval', `${formatCompactDollars(point.netLower)} to ${formatCompactDollars(point.netUpper)}`],
-          ['Downstream care', formatCompactDollars(point.careCost)],
-          ['ADAP avoided', formatCompactDollars(point.adapBenchmark)],
-          ['Excess diagnoses', formatNumber(point.excessDiagnoses)],
-          ['ART person-years', formatNumber(point.artPersonYears)],
+          ['Net cost vs ADAP', formatCompactDollars(row.net.median)],
+          ['95% interval', `${formatCompactDollars(row.net.lower)} to ${formatCompactDollars(row.net.upper)}`],
+          ['Downstream care', formatCompactDollars(row.careCost.median)],
+          ['ADAP avoided', formatCompactDollars(row.adap)],
+          ['Per $1 cut', formatPerDollar(row.perDollar)],
+          ['Excess diagnoses', formatNumber(row.excessDiagnoses)],
+          ['ART person-years', formatNumber(row.personYears)],
+          ['Window', `2026-${row.year}`],
         ].map(([label, value]) => (
           <div key={label} className="min-w-0">
             <dt className="text-[0.68rem] font-medium uppercase tracking-wide text-slate-400">{label}</dt>
@@ -1072,137 +1208,151 @@ function SelectedState({ point }: { point: RankedStatePoint }) {
   );
 }
 
-// -----------------------------------------------------------------------------
-// Impact scatter - sqrt axes de-cluster small states
-// -----------------------------------------------------------------------------
-function ImpactScatter({
-  states,
-  selected,
-  hovered,
-  onSelect,
-  onHover,
-}: {
-  states: RankedStatePoint[];
-  selected: LocationKey;
-  hovered: string | null;
-  onSelect: (state: string) => void;
-  onHover: (state: string | null) => void;
-}) {
-  const data = states.map((s) => ({
-    ...s,
-    careError: [Math.max(0, s.careCost - s.careQuantiles.p10), Math.max(0, s.careQuantiles.p90 - s.careCost)],
-  }));
-  const maxAxis = Math.max(...states.map((s) => Math.max(s.adapBenchmark, s.careQuantiles.p90))) * 1.08;
-  const maxDx = Math.max(...states.map((s) => s.excessDiagnoses));
-  const label = new Set(['FL', 'TX', 'CA', 'NY']);
-  const active = hovered ?? (selected !== 'Total' ? selected : null);
-  const reduce = useReducedMotion() ?? false;
-
-  const renderDot = (props: unknown) => {
-    const { cx: x, cy: y, payload } = props as { cx?: number; cy?: number; payload?: RankedStatePoint };
-    if (typeof x !== 'number' || typeof y !== 'number' || !payload) return <g />;
-    const r = 5 + (Math.sqrt(payload.excessDiagnoses) / Math.sqrt(maxDx)) * 11;
-    const isSel = payload.state === selected;
-    const isActive = payload.state === active;
-    const color = confColor(payload.shareNetPositive);
+function BaselineContextCard({ context, stateLabel }: { context: BaselineContext | null; stateLabel: string }) {
+  if (!context) {
     return (
-      <g
-        className="cursor-pointer"
-        role="button"
-        tabIndex={0}
-        aria-label={`${payload.stateName}: ${formatCompactDollars(payload.careCost)} care cost`}
-        onClick={() => onSelect(payload.state)}
-        onMouseEnter={() => onHover(payload.state)}
-        onMouseLeave={() => onHover(null)}
-        onFocus={() => onHover(payload.state)}
-        onBlur={() => onHover(null)}
-        onKeyDown={(event) => {
-          if (event.key === 'Enter' || event.key === ' ') {
-            event.preventDefault();
-            onSelect(payload.state);
-          }
-        }}
-      >
-        <circle cx={x} cy={y} r={isSel || isActive ? r + 7 : r + 4} fill={color} fillOpacity={isSel || isActive ? 0.18 : 0.1} />
-        {(isSel || isActive) && <circle cx={x} cy={y} r={r + 4} fill="none" stroke={isSel ? NAVY : INK} strokeOpacity={0.5} strokeWidth={1.4} />}
-        <motion.circle
-          cx={x}
-          cy={y}
-          initial={false}
-          animate={{ r: isSel || isActive ? r + 2 : r }}
-          transition={{ duration: reduce ? 0 : 0.45, ease: EASE }}
-          fill={color}
-          fillOpacity={isSel || isActive ? 1 : 0.92}
-          stroke={isSel ? NAVY : isActive ? INK : '#ffffff'}
-          strokeWidth={isSel ? 3 : isActive ? 2 : 1.8}
-        />
-        {(label.has(payload.state) || isSel || isActive) && (
-          <text x={x + r + 3} y={y + 4} fontSize={11} fill="#475569" fontWeight={isSel || isActive ? 700 : 500}>
-            {payload.state}
-          </text>
-        )}
-      </g>
+      <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+        <Eyebrow>Baseline context</Eyebrow>
+        <p className="mt-3 text-sm leading-relaxed text-slate-500">
+          Program-dependence and epidemic context are state-level measures; select a state to see them.
+        </p>
+      </div>
     );
-  };
+  }
+
+  const items: Array<[string, string]> = [
+    ['Viral suppression', formatPercent(context.viralSuppressionPct)],
+    ['Suppressed on ADAP', formatPercent(context.propSuppressedOnAdap)],
+    ['ADAP client share', formatPercent(context.adapClientShare)],
+    ['ADAP clients', formatNumber(context.adapClients)],
+    ['Ryan White clients', formatNumber(context.rwClients)],
+    ['Diagnosed PWH', formatNumber(context.diagnosedPrevalence)],
+    ['New diagnoses', formatNumber(context.baselineNewDiagnoses)],
+    ['Transmission rate', context.sexualTransmissionRate.toFixed(3)],
+  ];
+
+  return (
+    <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+      <Eyebrow>Baseline context / {stateLabel}</Eyebrow>
+      <dl className="mt-4 grid grid-cols-2 gap-x-6 gap-y-4">
+        {items.map(([label, value]) => (
+          <div key={label} className="min-w-0">
+            <dt className="text-[0.68rem] font-medium uppercase tracking-wide text-slate-400">{label}</dt>
+            <dd className="mt-1 font-mono text-base font-semibold tabular-nums text-slate-900">{value}</dd>
+          </div>
+        ))}
+      </dl>
+      <p className="mt-4 text-[0.7rem] leading-relaxed text-slate-400">
+        2025 values under no intervention; medians across 1,000 simulations. These are the variables the heterogeneity
+        view uses to explain why states differ.
+      </p>
+    </div>
+  );
+}
+
+// -----------------------------------------------------------------------------
+// Mechanism decomposition - who is accruing cost after the cut
+// -----------------------------------------------------------------------------
+const MECH_IMMEDIATE = '#2563eb';
+const MECH_REENGAGED = '#0d9488';
+const MECH_OFFART = '#d97706';
+
+const MECH_LABELS: Record<string, string> = {
+  immediate: 'On ART - started immediately',
+  reengaged: 'On ART - re-engaged after delay',
+  offArt: 'Still off ART',
+};
+
+function MechTip({ active, payload, label }: TipProps) {
+  if (!active || !payload?.length) return null;
+  const rows = payload.filter((pl) => pl.dataKey && MECH_LABELS[pl.dataKey]);
+  const total = rows.reduce((sum, pl) => sum + Number(pl.value ?? 0), 0);
+  return (
+    <div className="rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 shadow-md">
+      <p className="font-mono text-[0.7rem] uppercase tracking-wide text-slate-400">Year {label}</p>
+      <div className="mt-1.5 space-y-1">
+        {rows.map((pl) => (
+          <p key={pl.dataKey} className="flex items-center justify-between gap-6 text-xs">
+            <span className="flex items-center gap-1.5 text-slate-500">
+              <span className="h-2 w-2 rounded-full" style={{ background: pl.stroke }} />
+              {MECH_LABELS[pl.dataKey as string]}
+            </span>
+            <span className="font-mono tabular-nums text-slate-900">{formatNumber(Number(pl.value))}</span>
+          </p>
+        ))}
+        <p className="flex items-center justify-between gap-6 border-t border-slate-100 pt-1 text-xs">
+          <span className="text-slate-500">Excess diagnosed to date</span>
+          <span className="font-mono tabular-nums text-slate-900">{formatNumber(total)}</span>
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function MechanismChart({
+  series,
+  selectedName,
+  horizon,
+  error,
+}: {
+  series: MechanismSeriesPoint[];
+  selectedName: string;
+  horizon: number;
+  error: string | null;
+}) {
+  const reduce = useReducedMotion() ?? false;
+  const legend = [
+    [MECH_LABELS.immediate, MECH_IMMEDIATE],
+    [MECH_LABELS.reengaged, MECH_REENGAGED],
+    [MECH_LABELS.offArt, MECH_OFFART],
+  ] as const;
 
   return (
     <div className="min-w-0 rounded-lg border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-      <h3 className="text-base font-semibold text-slate-900">Where downstream care meets avoided ADAP</h3>
+      <h3 className="text-base font-semibold text-slate-900">Who is accruing cost / {selectedName}</h3>
       <p className="mt-1 text-sm leading-relaxed text-slate-500">
-        Above the dashed break-even line, care cost exceeds avoided ADAP. Axes are square-root scaled to separate the
-        many smaller states; whiskers span the 10th–90th percentile of care cost.
+        Everyone diagnosed because of the cut is either on ART (immediately, or re-engaged after a delay) or still off
+        ART. The on-ART stock is what drives care costs; this is the paper&apos;s re-engagement model made inspectable.
       </p>
-      <div className="mt-4 h-[320px] sm:h-[380px]">
-        <ResponsiveContainer width="100%" height="100%">
-          <ScatterChart margin={{ top: 12, right: 20, bottom: 22, left: 4 }}>
-            <XAxis
-              type="number"
-              dataKey="adapBenchmark"
-              scale="sqrt"
-              domain={[0, maxAxis]}
-              tickFormatter={formatCompactDollars}
-              tickLine={false}
-              axisLine={{ stroke: '#e2e8f0' }}
-              tick={{ fill: MUTED, fontSize: 11 }}
-              label={{ value: 'ADAP spending avoided', position: 'insideBottom', offset: -12, fill: MUTED, fontSize: 12 }}
-            />
-            <YAxis
-              type="number"
-              dataKey="careCost"
-              scale="sqrt"
-              domain={[0, maxAxis]}
-              tickFormatter={formatCompactDollars}
-              tickLine={false}
-              axisLine={{ stroke: '#e2e8f0' }}
-              tick={{ fill: MUTED, fontSize: 11 }}
-              width={64}
-              label={{ value: 'Downstream care cost', angle: -90, position: 'insideLeft', fill: MUTED, fontSize: 12 }}
-            />
-            <ReferenceLine
-              segment={[
-                { x: 0, y: 0 },
-                { x: maxAxis, y: maxAxis },
-              ]}
-              stroke="#94a3b8"
-              strokeDasharray="5 5"
-              strokeWidth={1.4}
-            />
-            <Tooltip content={<ScatterTip />} cursor={{ strokeDasharray: '3 3', stroke: '#cbd5e1' }} />
-            <Scatter
-              data={data}
-              shape={renderDot}
-              isAnimationActive={!reduce}
-              animationDuration={650}
-              onClick={(point: unknown) => {
-                const payload = (point as { payload?: RankedStatePoint }).payload;
-                if (payload?.state) onSelect(payload.state);
-              }}
-            >
-              <ErrorBar dataKey="careError" direction="y" stroke="#cbd5e1" strokeOpacity={0.9} width={4} />
-            </Scatter>
-          </ScatterChart>
-        </ResponsiveContainer>
+      <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs font-medium text-slate-500">
+        {legend.map(([label, color]) => (
+          <span key={label} className="inline-flex items-center gap-2">
+            <span className="h-2.5 w-2.5 rounded-full" style={{ background: color }} />
+            {label}
+          </span>
+        ))}
       </div>
+      <div className="mt-4 h-[280px] sm:h-[300px]">
+        {error ? (
+          <div className="flex h-full items-center justify-center border border-red-200 bg-red-50 text-sm text-red-700">{error}</div>
+        ) : series.length === 0 ? (
+          <div className="flex h-full items-center justify-center text-sm text-slate-400">Loading cost series…</div>
+        ) : (
+          <ResponsiveContainer width="100%" height="100%">
+            <ComposedChart data={series} margin={{ top: 18, right: 16, bottom: 8, left: 6 }}>
+              <CartesianGrid stroke="#eef2f6" vertical={false} />
+              <XAxis dataKey="year" tickLine={false} axisLine={{ stroke: '#e2e8f0' }} tick={{ fill: MUTED, fontSize: 11 }} />
+              <YAxis tickFormatter={formatNumber} tickLine={false} axisLine={false} tick={{ fill: MUTED, fontSize: 11 }} width={56} />
+              <Tooltip content={<MechTip />} cursor={{ stroke: '#94a3b8', strokeDasharray: '3 3' }} />
+              {horizon < HORIZON_MAX && (
+                <ReferenceLine
+                  x={horizon}
+                  stroke={INK}
+                  strokeDasharray="4 4"
+                  label={{ value: 'window', position: 'top', fill: MUTED, fontSize: 11 }}
+                />
+              )}
+              <Area type="monotone" dataKey="immediate" stackId="mech" stroke={MECH_IMMEDIATE} strokeWidth={1.5} fill={MECH_IMMEDIATE} fillOpacity={0.45} isAnimationActive={!reduce} animationDuration={650} />
+              <Area type="monotone" dataKey="reengaged" stackId="mech" stroke={MECH_REENGAGED} strokeWidth={1.5} fill={MECH_REENGAGED} fillOpacity={0.45} isAnimationActive={!reduce} animationDuration={650} />
+              <Area type="monotone" dataKey="offArt" stackId="mech" stroke={MECH_OFFART} strokeWidth={1.5} fill={MECH_OFFART} fillOpacity={0.45} isAnimationActive={!reduce} animationDuration={650} />
+            </ComposedChart>
+          </ResponsiveContainer>
+        )}
+      </div>
+      <p className="mt-3 text-[0.7rem] leading-relaxed text-slate-400">
+        Stocks are per-component medians across simulations, so layers need not sum exactly to the median total. The
+        never-returning share of the re-engagement model (14%) accumulates in the off-ART layer.
+      </p>
     </div>
   );
 }
@@ -1479,7 +1629,7 @@ function ModelReview() {
     <section className="border-t border-slate-200 bg-slate-50">
       <div className="mx-auto w-full max-w-full px-5 py-16 sm:max-w-6xl sm:px-6">
         <Reveal>
-          <SectionHead n="05" eyebrow="Methods" title="Accounting frame and model assumptions">
+          <SectionHead n="04" eyebrow="Methods" title="Accounting frame and model assumptions">
             Cost, engagement, scope, and uncertainty conventions for interpreting the figures.
           </SectionHead>
 
@@ -1664,8 +1814,23 @@ export default function RyanWhiteCostingApp() {
     [series, scenario]
   );
 
+  const driverRows = useMemo(
+    () => buildDriverRows(series, ryanWhiteCostingSummary.states, scenario, horizon, stateCrossovers),
+    [series, scenario, horizon, stateCrossovers]
+  );
+  const nationalDriverRow = useMemo(
+    () => buildNationalDriverRow(series, ryanWhiteCostingSummary, scenario, horizon),
+    [series, scenario, horizon]
+  );
+  const selectedDriver =
+    location === 'Total' ? nationalDriverRow : driverRows.find((row) => row.state === location) ?? nationalDriverRow;
+  const selectedContext =
+    location === 'Total'
+      ? null
+      : ryanWhiteCostingSummary.states.find((item) => item.state === location)?.baselineContext ?? null;
+  const mechanismSeries = useMemo(() => buildMechanismSeries(selectedSeries), [selectedSeries]);
+
   const selectedName = location === 'Total' ? 'National total' : stateName(location);
-  const selectedPoint = rankedStates.find((s) => s.state === location) ?? rankedStates[0];
   const tossUps = rankedStates.filter((s) => s.shareNetPositive < 0.66);
   const likely = rankedStates.filter((s) => s.shareNetPositive >= 0.85).length;
 
@@ -1734,20 +1899,21 @@ export default function RyanWhiteCostingApp() {
           <Reveal>
             <SectionHead
               n="03"
-              eyebrow="State breakdown"
-              title="Most states land net-costly in most draws; doubt clusters in large ADAP programs"
+              eyebrow="State drivers"
+              title="Which states drive the national result?"
               right={<SwarmLegend />}
             >
-              {likely} of 30 states show a net cost in at least 85% of simulations. Only {tossUps.length}:{' '}
-              {tossUps.map((s) => s.state).join(', ')}, all large ADAP programs, sit near a coin flip, where the markers
-              pulse. State abbreviations are labeled; hover or focus any dot for detail. Shown at the full 2035
-              horizon.
+              The table carries the paper&apos;s supplemental-table columns, recomputed at the selected budget window;
+              re-rank it by any column. The field above it shows how certain each state&apos;s verdict is at 2035:{' '}
+              {likely} of 30 states are net-costly in at least 85% of simulations, and the {tossUps.length} near a coin
+              flip ({tossUps.map((s) => s.state).join(', ')}) are all large ADAP programs. Selecting a state updates the
+              trajectory, the drilldown, and the mechanism view.
             </SectionHead>
 
             <div className="mt-8 overflow-hidden rounded-lg border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
               <div className="mb-1 flex flex-wrap items-center justify-between gap-2">
                 <span className="font-mono text-[0.62rem] uppercase tracking-[0.22em] text-slate-500">
-                  Uncertainty field / share of draws net-costly
+                  Uncertainty field / share of draws net-costly at 2035
                 </span>
                 <span className="font-mono text-[0.62rem] text-slate-400">
                   30 modeled states
@@ -1756,68 +1922,30 @@ export default function RyanWhiteCostingApp() {
               <StateSwarm states={rankedStates} selected={location} hovered={hovered} onSelect={setLocation} onHover={setHovered} />
             </div>
 
-            <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
-              <ImpactScatter states={rankedStates} selected={location} hovered={hovered} onSelect={setLocation} onHover={setHovered} />
-              <SelectedState point={selectedPoint} />
+            <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1.55fr)_minmax(0,1fr)]">
+              <DriverTable
+                rows={driverRows}
+                horizonYear={nationalPoint.year}
+                selected={location}
+                hovered={hovered}
+                onSelect={setLocation}
+                onHover={setHovered}
+              />
+              <div className="flex min-w-0 flex-col gap-6">
+                <StateDetailCard row={selectedDriver} crossoverKnown={series !== null} />
+                <BaselineContextCard context={selectedContext} stateLabel={selectedName} />
+              </div>
+            </div>
+
+            <div className="mt-6">
+              <MechanismChart
+                series={mechanismSeries}
+                selectedName={selectedName}
+                horizon={horizon}
+                error={seriesError}
+              />
             </div>
           </Reveal>
-        </div>
-      </section>
-
-      <section className="bg-white">
-        <div className="mx-auto w-full max-w-full px-5 py-16 sm:max-w-6xl sm:px-6">
-          <Reveal>
-            <SectionHead n="04" eyebrow="Detail" title="The full state table" />
-          </Reveal>
-          <div className="mt-10 grid gap-6">
-            <Reveal className="min-w-0 rounded-lg border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-              <h3 className="text-base font-semibold text-slate-900">All states, sorted by median net cost</h3>
-              <div className="mt-4 max-h-[380px] overflow-auto">
-                <table className="w-full text-left text-sm">
-                  <thead className="sticky top-0 bg-white text-[0.68rem] uppercase tracking-wide text-slate-400">
-                    <tr className="border-b border-slate-200">
-                      <th className="py-2 pr-3 font-medium">State</th>
-                      <th className="py-2 px-3 text-right font-medium">Net</th>
-                      <th className="py-2 px-3 text-right font-medium">Draws &gt; 0</th>
-                      <th className="py-2 pl-3 text-right font-medium">Care</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {rankedStates.map((item) => (
-                      <tr
-                        key={item.state}
-                        onClick={() => setLocation(item.state)}
-                        onMouseEnter={() => setHovered(item.state)}
-                        onMouseLeave={() => setHovered(null)}
-                        tabIndex={0}
-                        onFocus={() => setHovered(item.state)}
-                        onBlur={() => setHovered(null)}
-                        onKeyDown={(event) => {
-                          if (event.key === 'Enter' || event.key === ' ') {
-                            event.preventDefault();
-                            setLocation(item.state);
-                          }
-                        }}
-                        className={cx(
-                          'cursor-pointer border-b border-slate-100 transition-colors focus:outline-none focus:ring-2 focus:ring-inset focus:ring-slate-300',
-                          item.state === location ? 'bg-slate-100' : hovered === item.state ? 'bg-slate-50' : 'hover:bg-slate-50'
-                        )}
-                      >
-                        <td className="py-2 pr-3 font-medium text-slate-900">
-                          {item.stateName} <span className="text-slate-400">{item.state}</span>
-                        </td>
-                        <td className="py-2 px-3 text-right font-mono tabular-nums text-slate-900">{formatCompactDollars(item.netCost)}</td>
-                        <td className="py-2 px-3 text-right font-mono tabular-nums font-medium" style={{ color: confColor(item.shareNetPositive) }}>
-                          {formatPercent(item.shareNetPositive)}
-                        </td>
-                        <td className="py-2 pl-3 text-right font-mono tabular-nums text-slate-500">{formatCompactDollars(item.careCost)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </Reveal>
-          </div>
         </div>
       </section>
 
