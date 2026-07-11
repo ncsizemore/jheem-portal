@@ -204,12 +204,12 @@ function BudgetWindowControl({
         <div className="min-w-0 max-w-md">
           <Eyebrow>Budget window</Eyebrow>
           <p className="mt-2 text-sm leading-relaxed text-slate-600">
-            Savings arrive early; costs arrive late. Drag to shorten the window
+            Avoided spending accrues immediately; care costs accrue late. Evaluate the ledger over a shorter window
             {profile?.crossoverYear != null && (
               <>
                 {' '}
-                - nationally, break-even lands around{' '}
-                <span className="font-semibold text-slate-900">{profile.crossoverYear}</span>
+                - break-even is projected around{' '}
+                <span className="font-semibold text-slate-900">{profile.crossoverYear}</span> nationally
               </>
             )}
             ; nothing is extrapolated past 2035.
@@ -457,25 +457,22 @@ function CascadeHero({
     </>
   ) : appearsToSave ? (
     <>
-      Through {horizon}, the cut still <em>appears</em> to save: {bold(formatCompactDollars(headline.adap))} avoided
-      against {bold(formatCompactDollars(headline.care.median))} in care costs landed so far. The infections behind
-      those costs have already happened
+      Through {horizon}, avoided spending exceeds accrued care costs: {bold(formatCompactDollars(headline.adap))}{' '}
+      against {bold(formatCompactDollars(headline.care.median))}. Infections already caused by the cut continue to
+      accrue costs beyond this window
       {profile?.crossoverYear != null ? (
         <>
-          ; the ledger crosses break-even around {bold(String(profile.crossoverYear))} and reaches{' '}
+          ; break-even is projected around {bold(String(profile.crossoverYear))}, and{' '}
           {bold(`${formatPerDollar(profile.finalPerDollar)} per $1`)} by 2035
         </>
-      ) : (
-        <> - their costs simply haven&apos;t landed inside this window yet</>
-      )}
+      ) : null}
       .
     </>
   ) : (
     <>
-      By {horizon}, downstream care costs have already overtaken the avoided spending -{' '}
-      {bold(formatCompactDollars(headline.care.median))} against {bold(formatCompactDollars(headline.adap))} - and the
-      gap keeps widening
-      {profile ? <> to {bold(`${formatPerDollar(profile.finalPerDollar)} per $1`)} by 2035</> : null}.
+      By {horizon}, care costs exceed the avoided spending: {bold(formatCompactDollars(headline.care.median))} against{' '}
+      {bold(formatCompactDollars(headline.adap))}
+      {profile ? <>, reaching {bold(`${formatPerDollar(profile.finalPerDollar)} per $1`)} by 2035</> : null}.
     </>
   );
 
@@ -493,17 +490,18 @@ function CascadeHero({
                 'mt-6 max-w-2xl text-[2.35rem] font-medium leading-[1.08] text-slate-900 sm:text-[3.3rem]'
               )}
             >
-              Cutting ADAP doesn&apos;t save what it appears to save.
+              Eliminating ADAP is projected to cost more than it saves.
             </h1>
             <p className="mt-6 max-w-lg text-lg leading-relaxed text-slate-600">{narrative}</p>
 
             <div className="mt-8 max-w-lg border-l-2 pl-4" style={{ borderColor: NAVY }}>
-              <p className="text-sm font-semibold text-slate-800">This estimate is deliberately conservative.</p>
+              <p className="text-sm font-semibold text-slate-800">Excluded from this estimate</p>
               <ul className="mt-1.5 space-y-1 text-sm leading-relaxed text-slate-500">
-                <li>Counts only care costs of excess new infections - nothing for existing clients losing coverage.</li>
-                <li>Stops at 2035 while costs are still accruing; avoided spending is credited in full.</li>
-                <li>Delays cost accrual behind a re-engagement model.</li>
+                <li>Care costs for existing clients who lose coverage.</li>
+                <li>All costs after 2035; avoided spending is credited in full.</li>
+                <li>Costs during the delay before re-engagement in care.</li>
               </ul>
+              <p className="mt-1.5 text-sm text-slate-500">Each exclusion lowers the estimate.</p>
             </div>
           </div>
 
@@ -578,7 +576,7 @@ function CascadeChain({ headline, horizon }: { headline: HeadlineValues; horizon
   return (
     <div className="mt-12 border-t border-slate-200 pt-6">
       <p className="font-mono text-[0.62rem] uppercase tracking-[0.22em] text-slate-500">
-        The model&apos;s logic / cumulative 2026-{horizon}, medians across 1,000 simulations
+        Cumulative 2026-{horizon} · medians across 1,000 simulations
       </p>
       <div className="mt-4 flex flex-wrap items-stretch gap-y-4">
         {links.map((link, index) => (
@@ -660,25 +658,25 @@ function UncertaintyDecomposition({
           {netCostlyCount === scenarioRowsOnly.length ? (
             <>
               <span className="font-semibold text-slate-700">
-                Yes: even the cheapest drug-price tier lands a median net cost of {formatCompactDollars(cheapestNet)}{' '}
+                Yes: the cheapest drug-price tier shows a median net cost of {formatCompactDollars(cheapestNet)}{' '}
                 through {horizon}.
               </span>{' '}
-              The price assumption moves the size of the loss, not its sign.
+              The price assumption changes the size of the loss, not its sign.
             </>
           ) : netCostlyCount === 0 ? (
             <>
               <span className="font-semibold text-slate-700">
-                Not within this window: every tier&apos;s median still sits left of zero
+                Not within this window: every tier&apos;s median remains a net offset.
               </span>{' '}
-              - the short-term illusion from the hero. Drag the budget window out and watch the sign flip.
+              Costs from infections already caused accrue beyond it.
             </>
           ) : (
             <>
-              <span className="font-semibold text-slate-700">Within this window it depends on the tier</span> - the
-              medians straddle zero. Extend the budget window to see every tier land net-costly.
+              <span className="font-semibold text-slate-700">Within this window the tiers disagree:</span> the medians
+              straddle zero.
             </>
           )}{' '}
-          The pooled row treats price itself as uncertainty; clicking a tier sets the page-wide price assumption.
+          The pooled row treats price itself as uncertainty. Selecting a tier applies it page-wide.
         </SectionHead>
 
         <div className="mt-10 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
@@ -890,12 +888,7 @@ function DriverTable({
 
   return (
     <div className="min-w-0 rounded-lg border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-      <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h3 className="text-base font-semibold text-slate-900">Ranked drivers through {horizonYear}</h3>
-        <span className="font-mono text-[0.62rem] uppercase tracking-[0.18em] text-slate-400">
-          click a column to re-rank
-        </span>
-      </div>
+      <h3 className="text-base font-semibold text-slate-900">Ranked drivers through {horizonYear}</h3>
       <div className="mt-4 max-h-[480px] overflow-auto">
         <table className="w-full min-w-[680px] text-left text-sm">
           <thead className="sticky top-0 z-10 bg-white text-[0.66rem] uppercase tracking-wide text-slate-400">
@@ -1335,8 +1328,8 @@ function HeterogeneityExplorer({
           </ResponsiveContainer>
         </div>
         <p className="mt-3 text-[0.7rem] leading-relaxed text-slate-400">
-          Descriptive, 30 states, no fitted line. Also checked and mostly flat: transmission rate, viral suppression,
-          client mix (flagged for review). Color = share of draws net-costly at 2035.
+          Descriptive, 30 states, no fitted line. Also examined and mostly flat: transmission rate, viral suppression,
+          client mix. Color = share of draws net-costly at 2035.
         </p>
       </div>
     </div>
@@ -1389,8 +1382,8 @@ function Trajectory({
       </div>
       <p className="mt-1 text-sm leading-relaxed text-slate-500">
         {crossover
-          ? `Care cost overtakes the avoided spending in ${crossover.year} - and is still pulling away at 2035.`
-          : 'Care cost stays below the avoided spending through 2035 in the median draw.'}
+          ? `Care cost exceeds avoided spending from ${crossover.year}.`
+          : 'Care cost remains below avoided spending through 2035 in the median draw.'}
       </p>
       <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs font-medium text-slate-500">
         {legend.map(([label, color]) => (
@@ -1658,12 +1651,7 @@ function QuestionsToResolve() {
     <section className="bg-white">
       <div className="mx-auto w-full max-w-full px-5 pb-4 sm:max-w-6xl sm:px-6">
         <div className="rounded-lg border border-amber-200 bg-amber-50/45 p-5">
-          <div className="flex flex-wrap items-baseline justify-between gap-2">
-            <h2 className="text-sm font-semibold text-slate-900">Questions to resolve</h2>
-            <p className="text-[0.7rem] text-amber-700/80">
-              Kept out of the interface on purpose: unresolved methodology is review context, not a user control.
-            </p>
-          </div>
+          <h2 className="text-sm font-semibold text-slate-900">Questions to resolve</h2>
           <ul className="mt-4 grid gap-x-8 gap-y-2 lg:grid-cols-2">
             {questions.map((item) => (
               <li key={item} className="flex gap-2 text-sm leading-relaxed text-slate-700">
@@ -1833,8 +1821,8 @@ export default function RyanWhiteCostingApp() {
               eyebrow="Trajectory and crossover"
               title="When do the costs overtake the savings?"
             >
-              Cumulative care cost races the ADAP spending a cut would avoid. The lines cross - the question is when,
-              and the drug-price tier shifts the timing ({SCENARIO_LABELS[scenario].toLowerCase()} shown).
+              Cumulative care cost against the ADAP spending a cut would avoid, under the{' '}
+              {SCENARIO_LABELS[scenario].toLowerCase()} assumption.
             </SectionHead>
             <div className="mt-10 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
               <Trajectory
@@ -1870,7 +1858,7 @@ export default function RyanWhiteCostingApp() {
               title="Which states drive the national result?"
             >
               The paper&apos;s supplemental-table columns, recomputed at the selected budget window. {likely} of 30
-              states are net-costly in at least 85% of 2035 simulations; the only near-coin-flips (
+              states are net-costly in at least 85% of 2035 simulations; the least certain (
               {tossUps.map((s) => s.state).join(', ')}) are all large ADAP programs.
             </SectionHead>
 
@@ -1898,7 +1886,6 @@ export default function RyanWhiteCostingApp() {
                   ▸
                 </span>
                 Re-engagement mechanics: who is accruing cost in {selectedName}
-                <span className="ml-auto text-[0.7rem] font-normal text-slate-400">for reviewers</span>
               </summary>
               {mechOpen && (
                 <div className="mt-3">
@@ -1921,13 +1908,14 @@ export default function RyanWhiteCostingApp() {
             <SectionHead
               n="03"
               eyebrow="Why states differ"
-              title="Program dependence predicts where cuts backfire hardest"
+              title="Net cost per dollar tracks ADAP dependence"
             >
               <span className="font-semibold text-slate-700">
-                One baseline trait tracks the ratio: how much of a state&apos;s viral suppression runs through ADAP.
+                One baseline trait tracks the ratio: the share of a state&apos;s viral suppression that runs through
+                ADAP.
               </span>{' '}
-              Where dependence is high, each dollar cut de-suppresses more people; the largest programs are partly
-              diluted, which is why the big dots sit low.
+              Each dollar cut removes coverage from more people where dependence is high; scale partly dilutes the
+              largest programs.
             </SectionHead>
             <div className="mt-10">
               <HeterogeneityExplorer
