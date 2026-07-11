@@ -59,6 +59,7 @@ import {
   ReviewCard,
   SCENARIO_LABELS,
   SCENARIO_ORDER,
+  SCENARIO_SHORT_LABELS,
   seriesForLocation,
   sortDriverRows,
   StateCrossover,
@@ -323,70 +324,97 @@ function PerDollarSparkline({ profile, horizon }: { profile: HorizonProfile; hor
 function HorizonEcho({
   horizon,
   onHorizon,
+  scenario,
+  onScenario,
   visible,
   ready,
 }: {
   horizon: number;
   onHorizon: (year: number) => void;
+  scenario: CostScenarioId;
+  onScenario: (s: CostScenarioId) => void;
   visible: boolean;
   ready: boolean;
 }) {
+  // Fixed, not sticky: the page scrolls at the document level, and the
+  // overflow wrappers between here and the viewport would trap a sticky bar
+  // against a container that never scrolls.
   return (
-    <div className="sticky top-0 z-30 h-0">
-      <div
-        aria-hidden={!visible}
-        className={cx(
-          'border-b border-slate-200 bg-white/95 shadow-sm backdrop-blur transition-all duration-200',
-          visible ? 'translate-y-0 opacity-100' : 'pointer-events-none -translate-y-2 opacity-0'
-        )}
-      >
-        <div className="mx-auto flex w-full max-w-full flex-wrap items-center gap-x-5 gap-y-2 px-5 py-2.5 sm:max-w-6xl sm:px-6">
-          <div className="flex items-baseline gap-2">
-            <span className="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-slate-500">Budget window</span>
-            <span className="font-mono text-base font-semibold tabular-nums text-slate-900">2026-{horizon}</span>
-          </div>
-          <input
-            type="range"
-            min={HORIZON_MIN}
-            max={HORIZON_MAX}
-            step={1}
-            value={horizon}
-            disabled={!ready}
+    <div
+      aria-hidden={!visible}
+      className={cx(
+        'fixed inset-x-0 top-0 z-40 border-b border-slate-200 bg-white/95 shadow-sm backdrop-blur transition-all duration-200',
+        visible ? 'translate-y-0 opacity-100' : 'pointer-events-none -translate-y-full opacity-0'
+      )}
+    >
+      <div className="mx-auto flex w-full max-w-full flex-wrap items-center gap-x-5 gap-y-2 px-5 py-2.5 sm:max-w-6xl sm:px-6">
+        <div className="flex items-baseline gap-2">
+          <span className="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-slate-500">Budget window</span>
+          <span className="font-mono text-base font-semibold tabular-nums text-slate-900">2026-{horizon}</span>
+        </div>
+        <input
+          type="range"
+          min={HORIZON_MIN}
+          max={HORIZON_MAX}
+          step={1}
+          value={horizon}
+          disabled={!ready}
+          tabIndex={visible ? 0 : -1}
+          onChange={(event) => onHorizon(Number(event.target.value))}
+          aria-label="Budget window end year"
+          aria-valuetext={`2026 through ${horizon}`}
+          className="h-1.5 w-full max-w-[220px] min-w-[110px] flex-1 cursor-pointer accent-slate-900 disabled:opacity-40"
+        />
+        {horizon !== HORIZON_MAX && (
+          <button
+            type="button"
             tabIndex={visible ? 0 : -1}
-            onChange={(event) => onHorizon(Number(event.target.value))}
-            aria-label="Budget window end year"
-            aria-valuetext={`2026 through ${horizon}`}
-            className="h-1.5 w-full max-w-[260px] min-w-[120px] flex-1 cursor-pointer accent-slate-900 disabled:opacity-40"
-          />
-          {horizon !== HORIZON_MAX && (
+            onClick={() => onHorizon(HORIZON_MAX)}
+            className="rounded border border-slate-300 px-2 py-0.5 text-[0.7rem] font-medium text-slate-600 transition-colors hover:border-slate-400 hover:text-slate-900"
+          >
+            Full horizon
+          </button>
+        )}
+        <div className="flex items-center gap-1" role="group" aria-label="Drug-price assumption">
+          <span className="mr-1 hidden text-[0.62rem] font-semibold uppercase tracking-wide text-slate-400 sm:inline">
+            Price
+          </span>
+          {SCENARIO_ORDER.map((item) => (
             <button
+              key={item}
               type="button"
               tabIndex={visible ? 0 : -1}
-              onClick={() => onHorizon(HORIZON_MAX)}
-              className="rounded border border-slate-300 px-2 py-0.5 text-[0.7rem] font-medium text-slate-600 transition-colors hover:border-slate-400 hover:text-slate-900"
+              onClick={() => onScenario(item)}
+              aria-pressed={scenario === item}
+              className={cx(
+                'rounded px-1.5 py-0.5 font-mono text-[0.7rem] font-medium transition-colors',
+                scenario === item
+                  ? 'bg-slate-900 text-white'
+                  : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900'
+              )}
             >
-              Full horizon
+              {SCENARIO_SHORT_LABELS[item]}
             </button>
-          )}
-          <nav aria-label="Sections" className="ml-auto hidden items-center gap-4 lg:flex">
-            {[
-              ['Uncertainty', '#uncertainty'],
-              ['Crossover', '#crossover'],
-              ['Drivers', '#drivers'],
-              ['Why states', '#why-states'],
-              ['Methods', '#methods'],
-            ].map(([label, href]) => (
-              <a
-                key={href}
-                href={href}
-                tabIndex={visible ? 0 : -1}
-                className="text-[0.7rem] font-medium text-slate-500 transition-colors hover:text-slate-900"
-              >
-                {label}
-              </a>
-            ))}
-          </nav>
+          ))}
         </div>
+        <nav aria-label="Sections" className="ml-auto hidden items-center gap-4 lg:flex">
+          {[
+            ['Crossover', '#crossover'],
+            ['Drivers', '#drivers'],
+            ['Why states', '#why-states'],
+            ['Robustness', '#robustness'],
+            ['Methods', '#methods'],
+          ].map(([label, href]) => (
+            <a
+              key={href}
+              href={href}
+              tabIndex={visible ? 0 : -1}
+              className="text-[0.7rem] font-medium text-slate-500 transition-colors hover:text-slate-900"
+            >
+              {label}
+            </a>
+          ))}
+        </nav>
       </div>
     </div>
   );
@@ -608,14 +636,17 @@ function UncertaintyDecomposition({
   const epidemicWidth = medianRow ? medianRow.net.upper - medianRow.net.lower : 0;
   const priceShift = lowRow && highRow ? highRow.net.median - lowRow.net.median : 0;
   const epidemicDominates = epidemicWidth > Math.abs(priceShift);
+  const scenarioRowsOnly = rows.filter((row) => !row.isPooled);
+  const netCostlyCount = scenarioRowsOnly.filter((row) => row.net.median > 0).length;
+  const cheapestNet = scenarioRowsOnly[0]?.net.median ?? 0;
 
   return (
-    <section id="uncertainty" className="mx-auto w-full max-w-full scroll-mt-16 px-5 py-16 sm:max-w-6xl sm:px-6">
+    <section id="robustness" className="mx-auto w-full max-w-full scroll-mt-16 px-5 py-16 sm:max-w-6xl sm:px-6">
       <Reveal>
         <SectionHead
-          n="01"
-          eyebrow="Uncertainty decomposition"
-          title="Is the uncertainty drug prices, or the epidemic?"
+          n="04"
+          eyebrow="Price robustness"
+          title="Does the conclusion survive the price assumption?"
           right={
             <div className="flex items-center gap-5 text-xs font-medium text-slate-500">
               <span className="inline-flex items-center gap-2">
@@ -627,16 +658,30 @@ function UncertaintyDecomposition({
             </div>
           }
         >
-          The headline interval mixes two different kinds of unsure: the epidemic (1,000 simulation draws) and the
-          drug-price assumption (three fixed tiers). The scenario rows hold price fixed, so each row&apos;s width is
-          epidemic uncertainty and the drift of the medians across rows is the price assumption.{' '}
-          <span className="font-semibold text-slate-700">
-            In this data, {epidemicDominates ? 'the epidemic dominates' : 'the price assumption dominates'}: at a fixed
-            median price the 95% band spans {formatCompactDollars(epidemicWidth)}, while moving the price low to high
-            shifts the median by {formatCompactDollars(priceShift)}
-          </span>
-          {' '}(both marked below the bands). Net cost through {horizon}; click a scenario row to focus the state views
-          on it.
+          {netCostlyCount === scenarioRowsOnly.length ? (
+            <>
+              <span className="font-semibold text-slate-700">
+                Yes: even the cheapest drug-price tier lands a median net cost of {formatCompactDollars(cheapestNet)}{' '}
+                through {horizon}.
+              </span>{' '}
+              The price assumption moves the size of the loss, not its sign - every row&apos;s median tick sits right
+              of the zero line.
+            </>
+          ) : netCostlyCount === 0 ? (
+            <>
+              <span className="font-semibold text-slate-700">
+                Not within this window: every tier&apos;s median still sits left of zero
+              </span>{' '}
+              - the short-term illusion from the hero. Drag the budget window out and watch the sign flip.
+            </>
+          ) : (
+            <>
+              <span className="font-semibold text-slate-700">Within this window it depends on the tier</span> - the
+              medians straddle zero. Extend the budget window to see every tier land net-costly.
+            </>
+          )}{' '}
+          The pooled row treats the price itself as an extra source of uncertainty. Clicking a tier sets the price
+          assumption used across the whole page.
         </SectionHead>
 
         <div className="mt-10 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
@@ -715,24 +760,6 @@ function UncertaintyDecomposition({
               </button>
             );
           })}
-          {medianRow && lowRow && highRow && (
-            <div className="hidden border-t border-slate-200 bg-slate-50/40 py-2 sm:block">
-              <AnnotationLane
-                at={at}
-                from={medianRow.net.lower}
-                to={medianRow.net.upper}
-                label="Epidemic (median price)"
-                value={formatCompactDollars(epidemicWidth)}
-              />
-              <AnnotationLane
-                at={at}
-                from={lowRow.net.median}
-                to={highRow.net.median}
-                label="Price (low - high medians)"
-                value={formatCompactDollars(priceShift)}
-              />
-            </div>
-          )}
         </div>
         <div className="mt-2 flex justify-between font-mono text-[0.68rem] tabular-nums text-slate-400">
           <span>{formatCompactDollars(domainMin)}</span>
@@ -744,37 +771,54 @@ function UncertaintyDecomposition({
             Shares of draws net-costly are reported at the full 2035 horizon only.
           </p>
         )}
+
+        {medianRow && lowRow && highRow && (
+          <div className="mt-8 max-w-xl">
+            <p className="text-[0.68rem] font-semibold uppercase tracking-wide text-slate-400">
+              Where the interval&apos;s width comes from
+            </p>
+            <div className="mt-2.5 space-y-2.5">
+              <WidthBar
+                label="Epidemic draws, price held at median"
+                value={epidemicWidth}
+                max={Math.max(epidemicWidth, Math.abs(priceShift))}
+                tone="#334155"
+              />
+              <WidthBar
+                label="Price tier, low to high (shift in the median)"
+                value={priceShift}
+                max={Math.max(epidemicWidth, Math.abs(priceShift))}
+                tone="#94a3b8"
+              />
+            </div>
+            <p className="mt-2 text-[0.7rem] leading-relaxed text-slate-400">
+              {epidemicDominates
+                ? 'Mostly epidemic uncertainty: the interval would not collapse even if drug prices were known exactly.'
+                : 'The drug-price assumption is the larger contributor at this window.'}
+            </p>
+          </div>
+        )}
       </Reveal>
     </section>
   );
 }
 
-// Upward-opening bracket aligned to the band column, marking a value span.
-function AnnotationLane({
-  at,
-  from,
-  to,
-  label,
-  value,
-}: {
-  at: (v: number) => number;
-  from: number;
-  to: number;
-  label: string;
-  value: string;
-}) {
-  const left = Math.min(at(from), at(to));
-  const width = Math.max(0.5, Math.abs(at(to) - at(from)));
+// One magnitude per row: the correct form for comparing two numbers.
+function WidthBar({ label, value, max, tone }: { label: string; value: number; max: number; tone: string }) {
   return (
-    <div className="grid grid-cols-[168px_minmax(0,1fr)_190px] items-center gap-6 px-5 py-1">
-      <p className="text-[0.65rem] font-medium uppercase tracking-wide text-slate-400">{label}</p>
-      <div className="relative h-3">
-        <span
-          className="absolute inset-y-0.5 border-x border-b border-slate-400/80"
-          style={{ left: `${left}%`, width: `${width}%` }}
-        />
+    <div className="grid grid-cols-[minmax(0,1fr)_76px] items-center gap-3">
+      <div className="min-w-0">
+        <p className="text-xs text-slate-500">{label}</p>
+        <span className="mt-1 block h-2.5 overflow-hidden rounded-full bg-slate-100">
+          <span
+            className="block h-full rounded-full"
+            style={{ width: `${(Math.abs(value) / max) * 100}%`, background: tone }}
+          />
+        </span>
       </div>
-      <p className="font-mono text-[0.7rem] tabular-nums text-slate-500 sm:text-right">{value}</p>
+      <p className="text-right font-mono text-sm font-semibold tabular-nums text-slate-900">
+        {formatCompactDollars(value)}
+      </p>
     </div>
   );
 }
@@ -1166,7 +1210,7 @@ function HeterogeneityExplorer({
   onSelect: (state: string) => void;
   onHover: (state: string | null) => void;
 }) {
-  const [axisId, setAxisId] = useState<ContextAxisId>('sexualTransmissionRate');
+  const [axisId, setAxisId] = useState<ContextAxisId>('propSuppressedOnAdap');
   const axis = CONTEXT_AXES.find((item) => item.id === axisId) ?? CONTEXT_AXES[0];
   const points = useMemo(
     () => buildHeterogeneityPoints(rows, ryanWhiteCostingSummary.states, axisId),
@@ -1785,7 +1829,14 @@ export default function RyanWhiteCostingApp() {
 
   return (
     <div className="min-h-screen w-full min-w-0 max-w-full overflow-x-hidden overflow-y-auto bg-white text-slate-900">
-      <HorizonEcho horizon={horizon} onHorizon={setHorizon} visible={echoVisible} ready={series !== null} />
+      <HorizonEcho
+        horizon={horizon}
+        onHorizon={setHorizon}
+        scenario={scenario}
+        onScenario={setScenario}
+        visible={echoVisible}
+        ready={series !== null}
+      />
 
       <CascadeHero
         headline={headline}
@@ -1798,25 +1849,18 @@ export default function RyanWhiteCostingApp() {
         controlRef={heroControlRef}
       />
 
-      <UncertaintyDecomposition
-        rows={decompositionRows}
-        scenario={scenario}
-        onScenario={setScenario}
-        horizon={nationalPoint.year}
-        estimand={primaryEstimand}
-      />
-
       <section id="crossover" className="scroll-mt-16 border-t border-slate-200 bg-white">
         <div className="mx-auto w-full max-w-full px-5 py-16 sm:max-w-6xl sm:px-6">
           <Reveal>
             <SectionHead
-              n="02"
+              n="01"
               eyebrow="Trajectory and crossover"
               title="When do the costs overtake the savings?"
             >
               Cumulative downstream care cost races the ADAP spending a cut would avoid, in discounted dollars. The
-              question is not whether the lines cross, but when - and the answer moves with the drug-price row selected
-              above ({SCENARIO_LABELS[scenario].toLowerCase()}). The budget window from the hero is marked on the chart.
+              lines cross; the question is when - and how the timing shifts with the drug-price tier (
+              {SCENARIO_LABELS[scenario].toLowerCase()} shown; switch tiers in the bar above or the robustness section
+              below). The budget window from the hero is marked on the chart.
             </SectionHead>
             <div className="mt-10 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
               <Trajectory
@@ -1847,7 +1891,7 @@ export default function RyanWhiteCostingApp() {
         <div className="mx-auto w-full max-w-full px-5 py-16 sm:max-w-6xl sm:px-6">
           <Reveal>
             <SectionHead
-              n="03"
+              n="02"
               eyebrow="State drivers"
               title="Which states drive the national result?"
             >
@@ -1903,17 +1947,17 @@ export default function RyanWhiteCostingApp() {
         <div className="mx-auto w-full max-w-full px-5 py-16 sm:max-w-6xl sm:px-6">
           <Reveal>
             <SectionHead
-              n="04"
+              n="03"
               eyebrow="Why states differ"
-              title="What separates the high-cost states from the rest?"
+              title="Program dependence predicts where cuts backfire hardest"
             >
-              Two things make a cut backfire harder: leverage - how much of a state&apos;s viral suppression runs
-              through ADAP, so each dollar cut de-suppresses more people - and context, how readily lost suppression
-              turns into new infections. Pick a baseline trait below;{' '}
               <span className="font-semibold text-slate-700">
-                if the dots climb from left to right, that trait travels with worse ledgers
-              </span>
-              . Look where your state sits; selecting a dot syncs every other view.
+                One baseline trait tracks the net cost / ADAP ratio across the 30 states: how much of a state&apos;s
+                viral suppression runs through ADAP.
+              </span>{' '}
+              Where dependence is high, each dollar cut de-suppresses more people. Epidemic intensity, suppression
+              levels, and client mix show little pattern - and the big programs are partly diluted, which is why the
+              largest dots sit low. Selecting a dot syncs every other view.
             </SectionHead>
             <div className="mt-10">
               <HeterogeneityExplorer
@@ -1928,6 +1972,14 @@ export default function RyanWhiteCostingApp() {
           </Reveal>
         </div>
       </section>
+
+      <UncertaintyDecomposition
+        rows={decompositionRows}
+        scenario={scenario}
+        onScenario={setScenario}
+        horizon={nationalPoint.year}
+        estimand={primaryEstimand}
+      />
 
       <ModelReview />
 

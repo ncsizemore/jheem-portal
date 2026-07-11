@@ -522,31 +522,33 @@ export interface ContextAxis {
 
 export const CONTEXT_AXES: ContextAxis[] = [
   {
+    id: 'propSuppressedOnAdap',
+    label: 'Suppressed PWH on ADAP (%)',
+    shortLabel: 'On ADAP',
+    description:
+      'The one trait that tracks the ratio: where more of the suppressed population runs through ADAP, each dollar cut does more damage.',
+    format: formatPercent,
+  },
+  {
     id: 'sexualTransmissionRate',
     label: 'Baseline transmission rate',
     shortLabel: 'Transmission',
-    description: 'Higher transmission contexts turn a coverage loss into more infections.',
+    description:
+      'Little pattern here - if anything the reverse, since big-epidemic states also have bigger ADAP budgets.',
     format: (value) => value.toFixed(3),
   },
   {
     id: 'viralSuppressionPct',
     label: 'Viral suppression (% of diagnosed)',
     shortLabel: 'Suppression',
-    description: 'How much of the diagnosed population is suppressed at baseline.',
-    format: formatPercent,
-  },
-  {
-    id: 'propSuppressedOnAdap',
-    label: 'Suppressed PWH on ADAP (%)',
-    shortLabel: 'On ADAP',
-    description: 'Program dependence: how much of the suppressed population runs through ADAP.',
+    description: 'Little pattern across states.',
     format: formatPercent,
   },
   {
     id: 'adapClientShare',
     label: 'ADAP share of Ryan White clients (%)',
     shortLabel: 'Client share',
-    description: 'ADAP clients as a share of all Ryan White clients.',
+    description: 'Little pattern across states.',
     format: formatPercent,
   },
 ];
