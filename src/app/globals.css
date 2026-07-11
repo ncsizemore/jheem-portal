@@ -74,28 +74,3 @@ body {
   background: rgba(255, 255, 255, 0.5);
 }
 
-/* Ryan White costing: slow sonar ping on states where the model is unsure */
-@keyframes rw-ping {
-  0% {
-    opacity: 0.5;
-    transform: scale(1);
-  }
-  70%,
-  100% {
-    opacity: 0;
-    transform: scale(2);
-  }
-}
-
-.rw-ping {
-  animation: rw-ping 4s ease-out infinite;
-  transform-box: fill-box;
-  transform-origin: center;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .rw-ping {
-    animation: none;
-    opacity: 0;
-  }
-}

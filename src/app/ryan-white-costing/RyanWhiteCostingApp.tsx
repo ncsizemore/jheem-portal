@@ -368,6 +368,24 @@ function HorizonEcho({
               Full horizon
             </button>
           )}
+          <nav aria-label="Sections" className="ml-auto hidden items-center gap-4 lg:flex">
+            {[
+              ['Uncertainty', '#uncertainty'],
+              ['Crossover', '#crossover'],
+              ['Drivers', '#drivers'],
+              ['Why states', '#why-states'],
+              ['Methods', '#methods'],
+            ].map(([label, href]) => (
+              <a
+                key={href}
+                href={href}
+                tabIndex={visible ? 0 : -1}
+                className="text-[0.7rem] font-medium text-slate-500 transition-colors hover:text-slate-900"
+              >
+                {label}
+              </a>
+            ))}
+          </nav>
         </div>
       </div>
     </div>
@@ -583,8 +601,16 @@ function UncertaintyDecomposition({
   const at = (v: number) => ((v - domainMin) / (domainMax - domainMin)) * 100;
   const zero = at(0);
 
+  // The section poses a question; answer it in words, computed from the data.
+  const medianRow = rows.find((row) => row.id === 'median');
+  const lowRow = rows.find((row) => row.id === 'low');
+  const highRow = rows.find((row) => row.id === 'high');
+  const epidemicWidth = medianRow ? medianRow.net.upper - medianRow.net.lower : 0;
+  const priceShift = lowRow && highRow ? highRow.net.median - lowRow.net.median : 0;
+  const epidemicDominates = epidemicWidth > Math.abs(priceShift);
+
   return (
-    <section className="mx-auto w-full max-w-full px-5 py-16 sm:max-w-6xl sm:px-6">
+    <section id="uncertainty" className="mx-auto w-full max-w-full scroll-mt-16 px-5 py-16 sm:max-w-6xl sm:px-6">
       <Reveal>
         <SectionHead
           n="01"
@@ -601,10 +627,16 @@ function UncertaintyDecomposition({
             </div>
           }
         >
-          The pooled row treats the drug-price assumption as a source of uncertainty, mixed with 1,000 epidemic draws.
-          The scenario rows hold price fixed: spread within a row is epidemic uncertainty, spread across rows is the
-          price assumption. Bands are 95% intervals of net cost through {horizon}; click a scenario row to focus the
-          state views on it.
+          The headline interval mixes two different kinds of unsure: the epidemic (1,000 simulation draws) and the
+          drug-price assumption (three fixed tiers). The scenario rows hold price fixed, so each row&apos;s width is
+          epidemic uncertainty and the drift of the medians across rows is the price assumption.{' '}
+          <span className="font-semibold text-slate-700">
+            In this data, {epidemicDominates ? 'the epidemic dominates' : 'the price assumption dominates'}: at a fixed
+            median price the 95% band spans {formatCompactDollars(epidemicWidth)}, while moving the price low to high
+            shifts the median by {formatCompactDollars(priceShift)}
+          </span>
+          {' '}(both marked below the bands). Net cost through {horizon}; click a scenario row to focus the state views
+          on it.
         </SectionHead>
 
         <div className="mt-10 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
@@ -683,6 +715,24 @@ function UncertaintyDecomposition({
               </button>
             );
           })}
+          {medianRow && lowRow && highRow && (
+            <div className="hidden border-t border-slate-200 bg-slate-50/40 py-2 sm:block">
+              <AnnotationLane
+                at={at}
+                from={medianRow.net.lower}
+                to={medianRow.net.upper}
+                label="Epidemic (median price)"
+                value={formatCompactDollars(epidemicWidth)}
+              />
+              <AnnotationLane
+                at={at}
+                from={lowRow.net.median}
+                to={highRow.net.median}
+                label="Price (low - high medians)"
+                value={formatCompactDollars(priceShift)}
+              />
+            </div>
+          )}
         </div>
         <div className="mt-2 flex justify-between font-mono text-[0.68rem] tabular-nums text-slate-400">
           <span>{formatCompactDollars(domainMin)}</span>
@@ -696,6 +746,36 @@ function UncertaintyDecomposition({
         )}
       </Reveal>
     </section>
+  );
+}
+
+// Upward-opening bracket aligned to the band column, marking a value span.
+function AnnotationLane({
+  at,
+  from,
+  to,
+  label,
+  value,
+}: {
+  at: (v: number) => number;
+  from: number;
+  to: number;
+  label: string;
+  value: string;
+}) {
+  const left = Math.min(at(from), at(to));
+  const width = Math.max(0.5, Math.abs(at(to) - at(from)));
+  return (
+    <div className="grid grid-cols-[168px_minmax(0,1fr)_190px] items-center gap-6 px-5 py-1">
+      <p className="text-[0.65rem] font-medium uppercase tracking-wide text-slate-400">{label}</p>
+      <div className="relative h-3">
+        <span
+          className="absolute inset-y-0.5 border-x border-b border-slate-400/80"
+          style={{ left: `${left}%`, width: `${width}%` }}
+        />
+      </div>
+      <p className="font-mono text-[0.7rem] tabular-nums text-slate-500 sm:text-right">{value}</p>
+    </div>
   );
 }
 
@@ -732,301 +812,6 @@ function SplitBand({
         />
       ))}
     </>
-  );
-}
-
-// -----------------------------------------------------------------------------
-// State beeswarm - the uncertainty field
-// -----------------------------------------------------------------------------
-const SWARM = { w: 1000, h: 300, padL: 40, padR: 30, padTop: 42, padBottom: 50 };
-const swarmX = (share: number) => SWARM.padL + ((share - 0.45) / 0.55) * (SWARM.w - SWARM.padL - SWARM.padR);
-
-interface SwarmDot extends RankedStatePoint {
-  cx: number;
-  cy: number;
-  r: number;
-}
-
-interface SwarmLabel {
-  x: number;
-  y: number;
-  anchor: 'start' | 'middle' | 'end';
-  box: { left: number; right: number; top: number; bottom: number };
-}
-
-function computeSwarm(states: RankedStatePoint[]): SwarmDot[] {
-  const maxNet = Math.max(1, ...states.map((s) => Math.abs(s.netCost)));
-  const rOf = (net: number) => 6 + Math.sqrt(Math.abs(net) / maxNet) * 16;
-  const midY = (SWARM.padTop + (SWARM.h - SWARM.padBottom)) / 2;
-  const sorted = [...states].sort((a, b) => a.shareNetPositive - b.shareNetPositive);
-  const placed: SwarmDot[] = [];
-  for (const s of sorted) {
-    const r = rOf(s.netCost);
-    const x = swarmX(s.shareNetPositive);
-    let y = midY;
-    for (let k = 0; k < 260; k++) {
-      const off = Math.ceil(k / 2) * (k % 2 ? -1 : 1) * 6;
-      const cand = midY + off;
-      if (placed.every((p) => Math.hypot(p.cx - x, p.cy - cand) >= p.r + r + 1.5)) {
-        y = cand;
-        break;
-      }
-    }
-    placed.push({ ...s, cx: x, cy: y, r });
-  }
-  return placed;
-}
-
-function intersects(a: SwarmLabel['box'], b: SwarmLabel['box']): boolean {
-  return a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
-}
-
-function labelBox(x: number, y: number, anchor: SwarmLabel['anchor'], text: string): SwarmLabel['box'] {
-  const width = text.length * 7.4 + 5;
-  const left = anchor === 'middle' ? x - width / 2 : anchor === 'end' ? x - width : x;
-  const right = anchor === 'middle' ? x + width / 2 : anchor === 'end' ? x : x + width;
-  return { left, right, top: y - 11, bottom: y + 3 };
-}
-
-function labelCandidate(dot: SwarmDot, placement: 'top' | 'bottom' | 'left' | 'right'): SwarmLabel {
-  const x =
-    placement === 'left'
-      ? dot.cx - dot.r - 7
-      : placement === 'right'
-      ? dot.cx + dot.r + 7
-      : Math.max(14, Math.min(SWARM.w - 14, dot.cx));
-  const y = placement === 'top' ? dot.cy - dot.r - 7 : placement === 'bottom' ? dot.cy + dot.r + 15 : dot.cy + 4;
-  const anchor = placement === 'left' ? 'end' : placement === 'right' ? 'start' : 'middle';
-  return { x, y, anchor, box: labelBox(x, y, anchor, dot.state) };
-}
-
-function computeSwarmLabels(dots: SwarmDot[], avoidBoxes: SwarmLabel['box'][]): Map<string, SwarmLabel> {
-  const labels = new Map<string, SwarmLabel>();
-  const boxes: SwarmLabel['box'][] = [...avoidBoxes];
-  const midY = (SWARM.padTop + (SWARM.h - SWARM.padBottom)) / 2;
-  const ordered = [...dots].sort((a, b) => b.r - a.r || a.cx - b.cx);
-
-  for (const dot of ordered) {
-    const placements: Array<'top' | 'bottom' | 'left' | 'right'> =
-      dot.shareNetPositive < 0.66
-        ? ['bottom', 'left', 'right', 'top']
-        : dot.cy < midY
-        ? ['top', 'bottom', 'right', 'left']
-        : ['bottom', 'top', 'right', 'left'];
-    const candidates = placements.map((placement) => labelCandidate(dot, placement));
-    const chosen =
-      candidates.find((candidate) => {
-        const inBounds = candidate.box.left >= 4 && candidate.box.right <= SWARM.w - 4 && candidate.box.top >= 8 && candidate.box.bottom <= SWARM.h - 8;
-        return inBounds && boxes.every((box) => !intersects(candidate.box, box));
-      }) ?? candidates[0];
-    labels.set(dot.state, chosen);
-    boxes.push(chosen.box);
-  }
-
-  return labels;
-}
-
-function SwarmReadout({ dot }: { dot: SwarmDot }) {
-  const lines = [
-    `${formatPercent(dot.shareNetPositive)} of draws net-costly`,
-    `Net ${formatCompactDollars(dot.netCost)} / care ${formatCompactDollars(dot.careCost)}`,
-    `${formatCompactDollars(dot.netLower)} to ${formatCompactDollars(dot.netUpper)}`,
-  ];
-  const boxW = 264;
-  const boxH = 72;
-  let x = dot.cx + dot.r + 12;
-  if (x + boxW > SWARM.w) x = dot.cx - dot.r - 12 - boxW;
-  const y = Math.max(4, Math.min(dot.cy - boxH / 2, SWARM.h - boxH - 4));
-  return (
-    <g pointerEvents="none">
-      <rect x={x} y={y} width={boxW} height={boxH} rx={8} fill="#ffffff" stroke="#cbd5e1" />
-      <rect x={x} y={y} width={3} height={boxH} rx={1.5} fill={confColor(dot.shareNetPositive)} />
-      <text x={x + 16} y={y + 24} fontSize="15" fontWeight={700} fill={INK}>
-        {dot.stateName}
-      </text>
-      {lines.map((line, i) => (
-        <text key={line} x={x + 16} y={y + 24 + 15 * (i + 1)} fontSize="12.5" fill={MUTED} className="font-mono">
-          {line}
-        </text>
-      ))}
-    </g>
-  );
-}
-
-function StateSwarm({
-  states,
-  selected,
-  hovered,
-  onSelect,
-  onHover,
-}: {
-  states: RankedStatePoint[];
-  selected: LocationKey;
-  hovered: string | null;
-  onSelect: (state: string) => void;
-  onHover: (state: string | null) => void;
-}) {
-  const dots = useMemo(() => computeSwarm(states), [states]);
-  const reduce = useReducedMotion() ?? false;
-  const ticks = [0.5, 0.6, 0.7, 0.8, 0.9, 1.0];
-  const axisY = SWARM.h - SWARM.padBottom;
-  const tossUps = dots.filter((d) => d.shareNetPositive < 0.66);
-  const bracketL = Math.min(...tossUps.map((d) => d.cx - d.r));
-  const bracketR = Math.max(...tossUps.map((d) => d.cx + d.r));
-  const bracketY = Math.max(26, Math.min(...tossUps.map((d) => d.cy - d.r)) - 18);
-  const bracketAvoid = tossUps.length
-    ? [{ left: bracketL - 8, right: bracketR + 8, top: bracketY - 22, bottom: bracketY + 12 }]
-    : [];
-  const labels = useMemo(() => computeSwarmLabels(dots, bracketAvoid), [dots, bracketL, bracketR, bracketY]);
-  const active = hovered ?? (selected !== 'Total' ? selected : null);
-  const hoverDot = hovered ? dots.find((d) => d.state === hovered) ?? null : null;
-  const pinged = dots.filter((d) => d.shareNetPositive < 0.66 || d.state === selected);
-
-  return (
-    <svg
-      viewBox={`0 0 ${SWARM.w} ${SWARM.h}`}
-      className="block w-full"
-      role="img"
-      aria-label="States by share of simulation draws that are net-costly"
-    >
-      <defs>
-        <filter id="rw-glow" x="-60%" y="-60%" width="220%" height="220%">
-          <feGaussianBlur stdDeviation="5" />
-        </filter>
-      </defs>
-
-      <rect x={0} y={0} width={SWARM.w} height={SWARM.h} rx={8} fill={FIELD} />
-      <line x1={swarmX(0.5)} x2={swarmX(0.5)} y1={SWARM.padTop} y2={axisY} stroke={ACCENT} strokeOpacity={0.28} strokeDasharray="4 5" />
-      <line x1={SWARM.padL} x2={SWARM.w - SWARM.padR} y1={axisY} y2={axisY} stroke={GRID} />
-      {ticks.map((t) => (
-        <g key={t}>
-          <line x1={swarmX(t)} x2={swarmX(t)} y1={axisY - 5} y2={axisY + 5} stroke={GRID} />
-          <text x={swarmX(t)} y={axisY + 28} textAnchor="middle" fontSize="14" fill={MUTED} className="font-mono">
-            {Math.round(t * 100)}%
-          </text>
-        </g>
-      ))}
-      <text x={swarmX(0.5)} y={SWARM.padTop - 18} textAnchor="middle" fontSize="13" fill={MUTED}>
-        coin flip
-      </text>
-      <text x={swarmX(1.0)} y={SWARM.padTop - 18} textAnchor="end" fontSize="13" fill={MUTED}>
-        all draws net-costly
-      </text>
-
-      {/* halos (glow) */}
-      {dots.map((d) => (
-        <circle key={`h-${d.state}`} cx={d.cx} cy={d.cy} r={d.r * 1.45} fill={confColor(d.shareNetPositive)} opacity={0.16} filter="url(#rw-glow)" />
-      ))}
-
-      {/* sonar pings on the uncertain states (+ selected) */}
-      {!reduce &&
-        pinged.map((d, i) => (
-          <circle
-            key={`p-${d.state}`}
-            className="rw-ping"
-            cx={d.cx}
-            cy={d.cy}
-            r={d.r}
-            fill="none"
-            stroke={d.state === selected ? NAVY : confColor(d.shareNetPositive)}
-            strokeWidth={1.4}
-            style={{ animationDelay: `${(i % 5) * 0.5}s` }}
-          />
-        ))}
-
-      {/* toss-up region annotation */}
-      {tossUps.length > 0 && (
-        <g>
-          <path
-            d={`M ${bracketL} ${bracketY + 6} L ${bracketL} ${bracketY} L ${bracketR} ${bracketY} L ${bracketR} ${bracketY + 6}`}
-            fill="none"
-            stroke={ACCENT}
-            strokeOpacity={0.45}
-            strokeWidth={1}
-          />
-          <text x={(bracketL + bracketR) / 2} y={bracketY - 6} textAnchor="middle" fontSize="12.5" fill={ACCENT} fillOpacity={0.8}>
-            large-ADAP toss-ups
-          </text>
-        </g>
-      )}
-
-      {dots.map((d) => {
-        const isSel = d.state === selected;
-        const isActive = d.state === active;
-        const label = labels.get(d.state) ?? labelCandidate(d, 'bottom');
-        return (
-          <g
-            key={d.state}
-            className="cursor-pointer"
-            role="button"
-            tabIndex={0}
-            aria-label={`${d.stateName}: ${formatPercent(d.shareNetPositive)} of draws net-costly`}
-            onClick={() => onSelect(d.state)}
-            onMouseEnter={() => onHover(d.state)}
-            onMouseLeave={() => onHover(null)}
-            onFocus={() => onHover(d.state)}
-            onBlur={() => onHover(null)}
-            onKeyDown={(event) => {
-              if (event.key === 'Enter' || event.key === ' ') {
-                event.preventDefault();
-                onSelect(d.state);
-              }
-            }}
-          >
-            <motion.circle
-              initial={false}
-              animate={{ cx: d.cx, cy: d.cy, r: isSel || isActive ? d.r + 2.5 : d.r }}
-              transition={{ duration: reduce ? 0 : 0.6, ease: EASE }}
-              fill={confColor(d.shareNetPositive)}
-              fillOpacity={isSel || isActive ? 1 : 0.88}
-              stroke={isSel ? NAVY : isActive ? INK : '#ffffff'}
-              strokeWidth={isSel ? 2.5 : isActive ? 1.6 : 1}
-            />
-            <text
-              x={label.x}
-              y={label.y}
-              textAnchor={label.anchor}
-              fontSize={isSel || isActive ? 13 : 11.5}
-              fontWeight={isSel || isActive ? 800 : 650}
-              fill={isSel || isActive ? INK : '#475569'}
-              stroke={FIELD}
-              strokeWidth={3}
-              paintOrder="stroke"
-              pointerEvents="none"
-            >
-              {d.state}
-            </text>
-          </g>
-        );
-      })}
-
-      {hoverDot && <SwarmReadout dot={hoverDot} />}
-    </svg>
-  );
-}
-
-function SwarmLegend() {
-  const stops = [0.5, 0.65, 0.8, 0.95, 1.0];
-  return (
-    <div className="flex flex-wrap items-center gap-x-8 gap-y-3 text-xs text-slate-500">
-      <div className="flex items-center gap-2">
-        <span className="font-medium text-slate-600">Draws net-costly</span>
-        <span className="flex overflow-hidden rounded-full">
-          {stops.map((s) => (
-            <span key={s} className="h-2.5 w-7" style={{ background: confColor(s) }} />
-          ))}
-        </span>
-        <span className="font-mono text-slate-400">50 to 100%</span>
-      </div>
-      <div className="flex items-center gap-2">
-        <span className="font-medium text-slate-600">Dot size</span>
-        <svg width="46" height="18" aria-hidden>
-          <circle cx="7" cy="9" r="4" fill="#94a3b8" />
-          <circle cx="30" cy="9" r="8" fill="#94a3b8" />
-        </svg>
-        <span className="text-slate-400">median net cost</span>
-      </div>
-    </div>
   );
 }
 
@@ -1480,8 +1265,8 @@ function HeterogeneityExplorer({
             {item.shortLabel}
           </button>
         ))}
-        <span className="ml-1 text-xs text-slate-400">{axis.description}</span>
       </div>
+      <p className="mt-3 max-w-2xl text-sm leading-relaxed text-slate-600">{axis.description}</p>
 
       <div className="mt-5 rounded-lg border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
@@ -1815,7 +1600,7 @@ function ModelReview() {
   ];
 
   return (
-    <section className="border-t border-slate-200 bg-slate-50">
+    <section id="methods" className="scroll-mt-16 border-t border-slate-200 bg-slate-50">
       <div className="mx-auto w-full max-w-full px-5 py-16 sm:max-w-6xl sm:px-6">
         <Reveal>
           <SectionHead n="05" eyebrow="Methods" title="Accounting frame and model assumptions">
@@ -1883,6 +1668,7 @@ export default function RyanWhiteCostingApp() {
   const [hovered, setHovered] = useState<string | null>(null);
   const [series, setSeries] = useState<RyanWhiteCostingSeries | null>(null);
   const [seriesError, setSeriesError] = useState<string | null>(null);
+  const [mechOpen, setMechOpen] = useState(false);
   const urlHydrated = useRef(false);
   const heroControlRef = useRef<HTMLDivElement | null>(null);
   const [echoVisible, setEchoVisible] = useState(false);
@@ -2020,7 +1806,7 @@ export default function RyanWhiteCostingApp() {
         estimand={primaryEstimand}
       />
 
-      <section className="border-t border-slate-200 bg-white">
+      <section id="crossover" className="scroll-mt-16 border-t border-slate-200 bg-white">
         <div className="mx-auto w-full max-w-full px-5 py-16 sm:max-w-6xl sm:px-6">
           <Reveal>
             <SectionHead
@@ -2057,35 +1843,22 @@ export default function RyanWhiteCostingApp() {
         </div>
       </section>
 
-      <section className="border-t border-slate-200 bg-slate-50">
+      <section id="drivers" className="scroll-mt-16 border-t border-slate-200 bg-slate-50">
         <div className="mx-auto w-full max-w-full px-5 py-16 sm:max-w-6xl sm:px-6">
           <Reveal>
             <SectionHead
               n="03"
               eyebrow="State drivers"
               title="Which states drive the national result?"
-              right={<SwarmLegend />}
             >
               The table carries the paper&apos;s supplemental-table columns, recomputed at the selected budget window;
-              re-rank it by any column. The field above it shows how certain each state&apos;s verdict is at 2035:{' '}
-              {likely} of 30 states are net-costly in at least 85% of simulations, and the {tossUps.length} near a coin
-              flip ({tossUps.map((s) => s.state).join(', ')}) are all large ADAP programs. Selecting a state updates the
-              trajectory, the drilldown, and the mechanism view.
+              re-rank it by any column. Certainty lives in the last column: {likely} of 30 states are net-costly in at
+              least 85% of 2035 simulations, and the only near-coin-flips ({tossUps.map((s) => s.state).join(', ')})
+              are all large ADAP programs. Selecting a state updates the trajectory, the drilldown, and the mechanism
+              view.
             </SectionHead>
 
-            <div className="mt-8 overflow-hidden rounded-lg border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
-              <div className="mb-1 flex flex-wrap items-center justify-between gap-2">
-                <span className="font-mono text-[0.62rem] uppercase tracking-[0.22em] text-slate-500">
-                  Uncertainty field / share of draws net-costly at 2035
-                </span>
-                <span className="font-mono text-[0.62rem] text-slate-400">
-                  30 modeled states
-                </span>
-              </div>
-              <StateSwarm states={rankedStates} selected={location} hovered={hovered} onSelect={setLocation} onHover={setHovered} />
-            </div>
-
-            <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1.55fr)_minmax(0,1fr)]">
+            <div className="mt-10 grid gap-6 lg:grid-cols-[minmax(0,1.55fr)_minmax(0,1fr)]">
               <DriverTable
                 rows={driverRows}
                 horizonYear={nationalPoint.year}
@@ -2100,19 +1873,33 @@ export default function RyanWhiteCostingApp() {
               </div>
             </div>
 
-            <div className="mt-6">
-              <MechanismChart
-                series={mechanismSeries}
-                selectedName={selectedName}
-                horizon={horizon}
-                error={seriesError}
-              />
-            </div>
+            <details
+              className="group mt-6"
+              onToggle={(event) => setMechOpen((event.target as HTMLDetailsElement).open)}
+            >
+              <summary className="flex cursor-pointer select-none items-center gap-2 rounded-lg border border-slate-200 bg-white px-5 py-3.5 text-sm font-semibold text-slate-700 shadow-sm transition-colors hover:text-slate-900">
+                <span aria-hidden className="text-slate-400 transition-transform group-open:rotate-90">
+                  ▸
+                </span>
+                Re-engagement mechanics: who is accruing cost in {selectedName}
+                <span className="ml-auto text-[0.7rem] font-normal text-slate-400">for reviewers</span>
+              </summary>
+              {mechOpen && (
+                <div className="mt-3">
+                  <MechanismChart
+                    series={mechanismSeries}
+                    selectedName={selectedName}
+                    horizon={horizon}
+                    error={seriesError}
+                  />
+                </div>
+              )}
+            </details>
           </Reveal>
         </div>
       </section>
 
-      <section className="border-t border-slate-200 bg-white">
+      <section id="why-states" className="scroll-mt-16 border-t border-slate-200 bg-white">
         <div className="mx-auto w-full max-w-full px-5 py-16 sm:max-w-6xl sm:px-6">
           <Reveal>
             <SectionHead
@@ -2120,9 +1907,13 @@ export default function RyanWhiteCostingApp() {
               eyebrow="Why states differ"
               title="What separates the high-cost states from the rest?"
             >
-              States don&apos;t differ because their models differ - they differ in program dependence and epidemic
-              context. Pick a baseline variable from the model&apos;s 2025 no-intervention state and see how it lines up
-              with the net cost / ADAP ratio. Selecting a state syncs every other view.
+              Two things make a cut backfire harder: leverage - how much of a state&apos;s viral suppression runs
+              through ADAP, so each dollar cut de-suppresses more people - and context, how readily lost suppression
+              turns into new infections. Pick a baseline trait below;{' '}
+              <span className="font-semibold text-slate-700">
+                if the dots climb from left to right, that trait travels with worse ledgers
+              </span>
+              . Look where your state sits; selecting a dot syncs every other view.
             </SectionHead>
             <div className="mt-10">
               <HeterogeneityExplorer
