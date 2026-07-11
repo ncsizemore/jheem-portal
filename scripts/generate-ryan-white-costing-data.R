@@ -590,7 +590,8 @@ metadata <- list(
     "Should the national Total row use the within-simulation state sum (RData Total location) or the supplemental table's independent bootstrap across states?",
     "Funding inflation: the exporter applies the 2025-to-2026 medical-care CPI deflator; the draft script's second CSV read overwrites the inflated values. Which convention should the paper use?",
     "Routine-care deflation: the draft script computes cost_on_art_wtd_2026 (2023-to-2026 CPI) but uses the un-deflated 2023 value in the cost grid; the exporter uses the deflated value (about +0.9 percent on median care cost). Which is intended?",
-    "Is excess infections per $1M of ADAP funding cut acceptable as a derived, policy-portable metric?"
+    "Is excess infections per $1M of ADAP funding cut acceptable as a derived, policy-portable metric?",
+    "Explanatory panels: in this artifact the net/ADAP ratio tracks ADAP dependence (share of suppressed PWH on ADAP, Spearman ~0.5) but shows little or opposite-signed association with transmission rate, viral suppression, and program size (~ -0.4; big programs dilute per-dollar damage). Are the transmission/suppression/urbanicity panels still intended for the paper?"
   ))
 )
 

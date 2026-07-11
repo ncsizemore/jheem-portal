@@ -523,6 +523,7 @@ Additional internal review items for Ryan's pile (script bugs, not app decisions
 - FL supplemental table red-text flag is inverted: `sav_is_negative = sav_med > 0` in `ADAP_supplemental_tables.R` — red marks positive net cost in the FL table but negative net cost in the state table
 - the state table footnote says "Costs in 2035 USD" while the costing script discounts to 2026 — direct evidence the dollar-year question is real
 - `Cost_saving_analysis_v1.R` computes `cost_on_art_wtd_2026` (2023-to-2026 CPI deflation of routine care) but then uses the un-deflated `cost_on_art_wtd` in the cost grid; the exporter uses the deflated value (found during the Phase 2 cross-check; about +0.9% on median care cost, +0.2-0.5% on net vs ADAP)
+- the figure script's explanatory panels may not hold in this artifact: across the 30 states, the net/ADAP ratio tracks ADAP dependence (Spearman ~0.5) but shows little or opposite-signed association with transmission rate (~ -0.4), viral suppression (~0), and client share (~0.2); program size dilutes per-dollar damage. If the paper's discussion leans on the transmission/suppression/urbanicity panels, Ryan should re-check them (found 2026-07-11 while building the heterogeneity view)
 
 ## Implementation Sequence
 
