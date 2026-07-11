@@ -34,7 +34,6 @@ import {
   buildStateCrossovers,
   buildTrajectoryData,
   CONTEXT_AXES,
-  ContextAxisId,
   Crossover,
   crossoverForPoints,
   DecompositionRow,
@@ -205,15 +204,15 @@ function BudgetWindowControl({
         <div className="min-w-0 max-w-md">
           <Eyebrow>Budget window</Eyebrow>
           <p className="mt-2 text-sm leading-relaxed text-slate-600">
-            Savings arrive early; costs arrive late. Drag to evaluate the ledger over a shorter window
+            Savings arrive early; costs arrive late. Drag to shorten the window
             {profile?.crossoverYear != null && (
               <>
                 {' '}
-                - nationally it crosses break-even around{' '}
+                - nationally, break-even lands around{' '}
                 <span className="font-semibold text-slate-900">{profile.crossoverYear}</span>
               </>
             )}
-            . 2035 is the model horizon; nothing is extrapolated past it.
+            ; nothing is extrapolated past 2035.
           </p>
         </div>
         {profile && <PerDollarSparkline profile={profile} horizon={horizon} />}
@@ -336,14 +335,14 @@ function HorizonEcho({
   visible: boolean;
   ready: boolean;
 }) {
-  // Fixed, not sticky: the page scrolls at the document level, and the
-  // overflow wrappers between here and the viewport would trap a sticky bar
-  // against a container that never scrolls.
+  // Fixed and docked BELOW the site nav: the global header is sticky top-0
+  // z-50 (80px tall), so anything fixed at top-0 with a lower z-index sits
+  // permanently hidden behind it.
   return (
     <div
       aria-hidden={!visible}
       className={cx(
-        'fixed inset-x-0 top-0 z-40 border-b border-slate-200 bg-white/95 shadow-sm backdrop-blur transition-all duration-200',
+        'fixed inset-x-0 top-20 z-40 border-b border-slate-200 bg-white/95 shadow-sm backdrop-blur transition-all duration-200',
         visible ? 'translate-y-0 opacity-100' : 'pointer-events-none -translate-y-full opacity-0'
       )}
     >
@@ -641,7 +640,7 @@ function UncertaintyDecomposition({
   const cheapestNet = scenarioRowsOnly[0]?.net.median ?? 0;
 
   return (
-    <section id="robustness" className="mx-auto w-full max-w-full scroll-mt-16 px-5 py-16 sm:max-w-6xl sm:px-6">
+    <section id="robustness" className="mx-auto w-full max-w-full scroll-mt-36 px-5 py-16 sm:max-w-6xl sm:px-6">
       <Reveal>
         <SectionHead
           n="04"
@@ -664,8 +663,7 @@ function UncertaintyDecomposition({
                 Yes: even the cheapest drug-price tier lands a median net cost of {formatCompactDollars(cheapestNet)}{' '}
                 through {horizon}.
               </span>{' '}
-              The price assumption moves the size of the loss, not its sign - every row&apos;s median tick sits right
-              of the zero line.
+              The price assumption moves the size of the loss, not its sign.
             </>
           ) : netCostlyCount === 0 ? (
             <>
@@ -680,8 +678,7 @@ function UncertaintyDecomposition({
               medians straddle zero. Extend the budget window to see every tier land net-costly.
             </>
           )}{' '}
-          The pooled row treats the price itself as an extra source of uncertainty. Clicking a tier sets the price
-          assumption used across the whole page.
+          The pooled row treats price itself as uncertainty; clicking a tier sets the page-wide price assumption.
         </SectionHead>
 
         <div className="mt-10 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
@@ -995,8 +992,8 @@ function DriverTable({
         </table>
       </div>
       <p className="mt-3 text-[0.7rem] leading-relaxed text-slate-400">
-        Columns follow the paper&apos;s supplemental table; ratio = (care cost &minus; ADAP avoided) / ADAP avoided.
-        Values are medians at the selected budget window; the draws-net-costly share is a 2035 quantity.
+        Ratio = (care cost &minus; ADAP avoided) / ADAP avoided, per the paper&apos;s supplemental table. Medians at
+        the selected window; the last column is a 2035 quantity.
       </p>
     </div>
   );
@@ -1078,8 +1075,7 @@ function BaselineContextCard({ context, stateLabel }: { context: BaselineContext
         ))}
       </dl>
       <p className="mt-4 text-[0.7rem] leading-relaxed text-slate-400">
-        2025 values under no intervention; medians across 1,000 simulations. These are the variables the heterogeneity
-        view uses to explain why states differ.
+        2025 no-intervention medians across 1,000 simulations.
       </p>
     </div>
   );
@@ -1146,8 +1142,8 @@ function MechanismChart({
     <div className="min-w-0 rounded-lg border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
       <h3 className="text-base font-semibold text-slate-900">Who is accruing cost / {selectedName}</h3>
       <p className="mt-1 text-sm leading-relaxed text-slate-500">
-        Everyone diagnosed because of the cut is either on ART (immediately, or re-engaged after a delay) or still off
-        ART. The on-ART stock is what drives care costs; this is the paper&apos;s re-engagement model made inspectable.
+        Everyone diagnosed because of the cut is either on ART - immediately, or re-engaged after a delay - or still
+        off ART; the on-ART stock is what drives cost.
       </p>
       <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs font-medium text-slate-500">
         {legend.map(([label, color]) => (
@@ -1185,8 +1181,7 @@ function MechanismChart({
         )}
       </div>
       <p className="mt-3 text-[0.7rem] leading-relaxed text-slate-400">
-        Stocks are per-component medians across simulations, so layers need not sum exactly to the median total. The
-        never-returning share of the re-engagement model (14%) accumulates in the off-ART layer.
+        Component medians need not sum to the median total; the never-returning 14% accumulates off ART.
       </p>
     </div>
   );
@@ -1210,11 +1205,13 @@ function HeterogeneityExplorer({
   onSelect: (state: string) => void;
   onHover: (state: string | null) => void;
 }) {
-  const [axisId, setAxisId] = useState<ContextAxisId>('propSuppressedOnAdap');
-  const axis = CONTEXT_AXES.find((item) => item.id === axisId) ?? CONTEXT_AXES[0];
+  // One axis, on purpose: ADAP dependence is the only baseline trait with a
+  // real association; the flat ones are named in the footnote, not offered as
+  // controls that imply trends the data doesn't show.
+  const axis = CONTEXT_AXES[0];
   const points = useMemo(
-    () => buildHeterogeneityPoints(rows, ryanWhiteCostingSummary.states, axisId),
-    [rows, axisId]
+    () => buildHeterogeneityPoints(rows, ryanWhiteCostingSummary.states, axis.id),
+    [rows, axis.id]
   );
   const reduce = useReducedMotion() ?? false;
   const maxAdap = Math.max(1, ...points.map((point) => point.adap));
@@ -1292,27 +1289,7 @@ function HeterogeneityExplorer({
 
   return (
     <div className="min-w-0">
-      <div className="flex flex-wrap items-center gap-2">
-        {CONTEXT_AXES.map((item) => (
-          <button
-            key={item.id}
-            type="button"
-            onClick={() => setAxisId(item.id)}
-            aria-pressed={item.id === axisId}
-            className={cx(
-              'rounded-full border px-3 py-1 text-xs font-medium transition-colors',
-              item.id === axisId
-                ? 'border-slate-900 bg-slate-900 text-white'
-                : 'border-slate-300 bg-white text-slate-600 hover:border-slate-400 hover:text-slate-900'
-            )}
-          >
-            {item.shortLabel}
-          </button>
-        ))}
-      </div>
-      <p className="mt-3 max-w-2xl text-sm leading-relaxed text-slate-600">{axis.description}</p>
-
-      <div className="mt-5 rounded-lg border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+      <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
           <h3 className="text-base font-semibold text-slate-900">
             Net cost / ADAP ratio vs {axis.label.toLowerCase()}
@@ -1358,8 +1335,8 @@ function HeterogeneityExplorer({
           </ResponsiveContainer>
         </div>
         <p className="mt-3 text-[0.7rem] leading-relaxed text-slate-400">
-          Descriptive associations across 30 states - no fitted line, no adjustment. Color is the share of draws
-          net-costly at 2035; the ratio is evaluated at the selected budget window.
+          Descriptive, 30 states, no fitted line. Also checked and mostly flat: transmission rate, viral suppression,
+          client mix (flagged for review). Color = share of draws net-costly at 2035.
         </p>
       </div>
     </div>
@@ -1535,7 +1512,7 @@ function CrossoverTimeline({
                 ; the national ledger crosses in <span className="font-semibold text-slate-900">{national.year}</span>
               </>
             )}
-            . States past the window edge are dimmed. Click a state to focus it.
+            . States past the window edge are dimmed.
           </>
         )}
       </p>
@@ -1583,8 +1560,7 @@ function CrossoverTimeline({
         </div>
       )}
       <p className="mt-3 text-[0.7rem] leading-relaxed text-slate-400">
-        Break-even = first year median cumulative care cost exceeds cumulative ADAP spending avoided. &ldquo;Not by
-        &rsquo;35&rdquo; states remain net-saving in the median draw within the model horizon.
+        Break-even = first year the median cumulative care cost exceeds cumulative ADAP spending avoided.
       </p>
     </div>
   );
@@ -1644,7 +1620,7 @@ function ModelReview() {
   ];
 
   return (
-    <section id="methods" className="scroll-mt-16 border-t border-slate-200 bg-slate-50">
+    <section id="methods" className="scroll-mt-36 border-t border-slate-200 bg-slate-50">
       <div className="mx-auto w-full max-w-full px-5 py-16 sm:max-w-6xl sm:px-6">
         <Reveal>
           <SectionHead n="05" eyebrow="Methods" title="Accounting frame and model assumptions">
@@ -1755,14 +1731,14 @@ export default function RyanWhiteCostingApp() {
     };
   }, []);
 
-  // The sticky bar is only an echo of the hero control - show it once the
-  // hero control has scrolled above the viewport.
+  // The fixed bar is only an echo of the hero control - show it once the
+  // hero control has scrolled up under the 80px sticky site nav.
   useEffect(() => {
     const el = heroControlRef.current;
     if (!el) return;
     const observer = new IntersectionObserver(
-      ([entry]) => setEchoVisible(!entry.isIntersecting && entry.boundingClientRect.top < 0),
-      { threshold: 0 }
+      ([entry]) => setEchoVisible(!entry.isIntersecting && entry.boundingClientRect.top < 80),
+      { threshold: 0, rootMargin: '-80px 0px 0px 0px' }
     );
     observer.observe(el);
     return () => observer.disconnect();
@@ -1849,7 +1825,7 @@ export default function RyanWhiteCostingApp() {
         controlRef={heroControlRef}
       />
 
-      <section id="crossover" className="scroll-mt-16 border-t border-slate-200 bg-white">
+      <section id="crossover" className="scroll-mt-36 border-t border-slate-200 bg-white">
         <div className="mx-auto w-full max-w-full px-5 py-16 sm:max-w-6xl sm:px-6">
           <Reveal>
             <SectionHead
@@ -1857,10 +1833,8 @@ export default function RyanWhiteCostingApp() {
               eyebrow="Trajectory and crossover"
               title="When do the costs overtake the savings?"
             >
-              Cumulative downstream care cost races the ADAP spending a cut would avoid, in discounted dollars. The
-              lines cross; the question is when - and how the timing shifts with the drug-price tier (
-              {SCENARIO_LABELS[scenario].toLowerCase()} shown; switch tiers in the bar above or the robustness section
-              below). The budget window from the hero is marked on the chart.
+              Cumulative care cost races the ADAP spending a cut would avoid. The lines cross - the question is when,
+              and the drug-price tier shifts the timing ({SCENARIO_LABELS[scenario].toLowerCase()} shown).
             </SectionHead>
             <div className="mt-10 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
               <Trajectory
@@ -1887,7 +1861,7 @@ export default function RyanWhiteCostingApp() {
         </div>
       </section>
 
-      <section id="drivers" className="scroll-mt-16 border-t border-slate-200 bg-slate-50">
+      <section id="drivers" className="scroll-mt-36 border-t border-slate-200 bg-slate-50">
         <div className="mx-auto w-full max-w-full px-5 py-16 sm:max-w-6xl sm:px-6">
           <Reveal>
             <SectionHead
@@ -1895,11 +1869,9 @@ export default function RyanWhiteCostingApp() {
               eyebrow="State drivers"
               title="Which states drive the national result?"
             >
-              The table carries the paper&apos;s supplemental-table columns, recomputed at the selected budget window;
-              re-rank it by any column. Certainty lives in the last column: {likely} of 30 states are net-costly in at
-              least 85% of 2035 simulations, and the only near-coin-flips ({tossUps.map((s) => s.state).join(', ')})
-              are all large ADAP programs. Selecting a state updates the trajectory, the drilldown, and the mechanism
-              view.
+              The paper&apos;s supplemental-table columns, recomputed at the selected budget window. {likely} of 30
+              states are net-costly in at least 85% of 2035 simulations; the only near-coin-flips (
+              {tossUps.map((s) => s.state).join(', ')}) are all large ADAP programs.
             </SectionHead>
 
             <div className="mt-10 grid gap-6 lg:grid-cols-[minmax(0,1.55fr)_minmax(0,1fr)]">
@@ -1943,7 +1915,7 @@ export default function RyanWhiteCostingApp() {
         </div>
       </section>
 
-      <section id="why-states" className="scroll-mt-16 border-t border-slate-200 bg-white">
+      <section id="why-states" className="scroll-mt-36 border-t border-slate-200 bg-white">
         <div className="mx-auto w-full max-w-full px-5 py-16 sm:max-w-6xl sm:px-6">
           <Reveal>
             <SectionHead
@@ -1952,12 +1924,10 @@ export default function RyanWhiteCostingApp() {
               title="Program dependence predicts where cuts backfire hardest"
             >
               <span className="font-semibold text-slate-700">
-                One baseline trait tracks the net cost / ADAP ratio across the 30 states: how much of a state&apos;s
-                viral suppression runs through ADAP.
+                One baseline trait tracks the ratio: how much of a state&apos;s viral suppression runs through ADAP.
               </span>{' '}
-              Where dependence is high, each dollar cut de-suppresses more people. Epidemic intensity, suppression
-              levels, and client mix show little pattern - and the big programs are partly diluted, which is why the
-              largest dots sit low. Selecting a dot syncs every other view.
+              Where dependence is high, each dollar cut de-suppresses more people; the largest programs are partly
+              diluted, which is why the big dots sit low.
             </SectionHead>
             <div className="mt-10">
               <HeterogeneityExplorer
