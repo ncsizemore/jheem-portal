@@ -17,7 +17,7 @@ export type LocationKey = 'Total' | string;
 
 export type EstimandId = 'pooled' | CostScenarioId;
 
-export const HORIZON_MIN = 2027;
+export const HORIZON_MIN = 2026;
 export const HORIZON_MAX = 2035;
 
 export interface CostTrajectoryPoint {
@@ -304,7 +304,7 @@ export function buildDecomposition(
   const pooledRow: DecompositionRow = {
     id: 'pooled',
     label: 'Pooled',
-    detail: 'drug price + epidemic',
+    detail: 'all price tiers + model draws',
     net: point.pooledCumulativeNetCostVsAdap,
     perDollar: point.pooledCumulativeCareCost.median / adap,
     sharePositive: finalShares?.pooled ?? null,
@@ -314,7 +314,7 @@ export function buildDecomposition(
   const scenarioRows = SCENARIO_ORDER.map((scenario): DecompositionRow => ({
     id: scenario,
     label: SCENARIO_SHORT_LABELS[scenario],
-    detail: 'epidemic only, price fixed',
+    detail: 'price fixed; model draws vary',
     net: scenarioMetric(point.cumulativeNetCostVsAdap, scenario),
     perDollar: scenarioMetric(point.cumulativeCareCost, scenario).median / adap,
     sharePositive: finalShares?.scenarios[scenario] ?? null,
@@ -407,12 +407,21 @@ export interface DriverRow {
   adap: number;
   net: QuantileValue;
   ratio: number;
+  ratioLower: number;
+  ratioUpper: number;
   perDollar: number;
   crossoverYear: number | null;
   shareNetPositive2035: number;
 }
 
-export type DriverSortKey = 'net' | 'careCost' | 'adap' | 'ratio' | 'excessDiagnoses' | 'personYears';
+export type DriverSortKey =
+  | 'net'
+  | 'careCost'
+  | 'adap'
+  | 'ratio'
+  | 'excessDiagnoses'
+  | 'excessInfections'
+  | 'personYears';
 
 function driverRowFrom(
   state: string,
@@ -437,6 +446,8 @@ function driverRowFrom(
     adap,
     net,
     ratio: net.median / adap,
+    ratioLower: net.lower / adap,
+    ratioUpper: net.upper / adap,
     perDollar: care.median / adap,
     crossoverYear,
     shareNetPositive2035,
@@ -513,9 +524,9 @@ export function buildMechanismSeries(points: AnnualCostPoint[]): MechanismSeries
 // variable. Descriptive associations only - no fitted lines, no adjustment.
 export type ContextAxisId =
   | 'sexualTransmissionRate'
-  | 'viralSuppressionPct'
   | 'propSuppressedOnAdap'
-  | 'adapClientShare';
+  | 'adapSpendingPerClient'
+  | 'diagnosedHivWeightedUrbanicity';
 
 export interface ContextAxis {
   id: ContextAxisId;
@@ -527,33 +538,32 @@ export interface ContextAxis {
 
 export const CONTEXT_AXES: ContextAxis[] = [
   {
-    id: 'propSuppressedOnAdap',
-    label: 'Suppressed PWH on ADAP (%)',
-    shortLabel: 'On ADAP',
-    description:
-      'The one trait that tracks the ratio: where more of the suppressed population runs through ADAP, each dollar cut does more damage.',
-    format: formatPercent,
-  },
-  {
     id: 'sexualTransmissionRate',
-    label: 'Baseline transmission rate',
+    label: 'Average transmission rate',
     shortLabel: 'Transmission',
     description:
-      'Little pattern here - if anything the reverse, since big-epidemic states also have bigger ADAP budgets.',
+      'Mean 2025 sexual transmission rate among diagnosed people who were not virally suppressed.',
     format: (value) => value.toFixed(3),
   },
   {
-    id: 'viralSuppressionPct',
-    label: 'Viral suppression (% of diagnosed)',
-    shortLabel: 'Suppression',
-    description: 'Little pattern across states.',
+    id: 'adapSpendingPerClient',
+    label: 'Annual ADAP spending per client',
+    shortLabel: 'Spending / client',
+    description: 'Annual 2026-USD ADAP funding divided by mean baseline ADAP clients.',
+    format: (value) => `$${(value / 1_000).toFixed(1)}K`,
+  },
+  {
+    id: 'propSuppressedOnAdap',
+    label: 'Suppressed PWH supported through ADAP',
+    shortLabel: 'Suppressed on ADAP',
+    description: 'Mean share of virally suppressed PWH who were supported through ADAP at baseline.',
     format: formatPercent,
   },
   {
-    id: 'adapClientShare',
-    label: 'ADAP share of Ryan White clients (%)',
-    shortLabel: 'Client share',
-    description: 'Little pattern across states.',
+    id: 'diagnosedHivWeightedUrbanicity',
+    label: 'Diagnosed-HIV-weighted urbanicity',
+    shortLabel: 'Urbanicity',
+    description: 'County urban population share weighted by 2021 diagnosed HIV prevalence.',
     format: formatPercent,
   },
 ];
@@ -564,7 +574,7 @@ export interface HeterogeneityPoint {
   x: number;
   ratio: number;
   adap: number;
-  share2035: number;
+  medicaidExpansion: boolean;
 }
 
 export function buildHeterogeneityPoints(
@@ -584,10 +594,50 @@ export function buildHeterogeneityPoints(
         x: context[axis],
         ratio: row.ratio,
         adap: row.adap,
-        share2035: row.shareNetPositive2035,
+        medicaidExpansion: context.medicaidExpansion,
       };
     })
     .filter((point): point is HeterogeneityPoint => point !== null && Number.isFinite(point.x));
+}
+
+function averageRanks(values: number[]): number[] {
+  const sorted = values
+    .map((value, index) => ({ value, index }))
+    .sort((a, b) => a.value - b.value);
+  const ranks = new Array<number>(values.length);
+
+  for (let start = 0; start < sorted.length; ) {
+    let end = start + 1;
+    while (end < sorted.length && sorted[end].value === sorted[start].value) end += 1;
+    const average = (start + 1 + end) / 2;
+    for (let index = start; index < end; index += 1) ranks[sorted[index].index] = average;
+    start = end;
+  }
+
+  return ranks;
+}
+
+export function spearmanRho(points: Array<{ x: number; ratio: number }>): number | null {
+  const finite = points.filter((point) => Number.isFinite(point.x) && Number.isFinite(point.ratio));
+  if (finite.length < 2) return null;
+  const xRanks = averageRanks(finite.map((point) => point.x));
+  const yRanks = averageRanks(finite.map((point) => point.ratio));
+  const meanX = xRanks.reduce((sum, value) => sum + value, 0) / xRanks.length;
+  const meanY = yRanks.reduce((sum, value) => sum + value, 0) / yRanks.length;
+  let numerator = 0;
+  let xSquares = 0;
+  let ySquares = 0;
+
+  for (let index = 0; index < finite.length; index += 1) {
+    const xDelta = xRanks[index] - meanX;
+    const yDelta = yRanks[index] - meanY;
+    numerator += xDelta * yDelta;
+    xSquares += xDelta * xDelta;
+    ySquares += yDelta * yDelta;
+  }
+
+  const denominator = Math.sqrt(xSquares * ySquares);
+  return denominator === 0 ? null : numerator / denominator;
 }
 
 // Crossover year for every state, for the ranked crossover timeline.

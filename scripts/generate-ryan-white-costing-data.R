@@ -36,6 +36,10 @@ funding_csv_path <- get_arg(
   "--funding-csv",
   Sys.getenv("RYAN_WHITE_COSTING_FUNDING_CSV", unset = "")
 )
+jurisdiction_context_csv_path <- get_arg(
+  "--jurisdiction-context-csv",
+  file.path(repo_root, "scripts", "data", "ryan-white-costing-jurisdiction-context.csv")
+)
 
 if (!nzchar(rdata_path)) {
   stop("Provide --rdata PATH or set RYAN_WHITE_COSTING_RDATA")
@@ -54,6 +58,7 @@ cat("Ryan White ADAP Costing Data Generation\n")
 cat("===========================================\n\n")
 cat(sprintf("RData:       %s\n", rdata_path))
 cat(sprintf("Funding CSV: %s\n", funding_csv_path))
+cat(sprintf("Context CSV: %s\n", jurisdiction_context_csv_path))
 cat(sprintf("Repo root:   %s\n\n", repo_root))
 
 if (!file.exists(rdata_path)) {
@@ -62,9 +67,13 @@ if (!file.exists(rdata_path)) {
 if (!file.exists(funding_csv_path)) {
   stop(sprintf("Funding CSV not found: %s", funding_csv_path))
 }
+if (!file.exists(jurisdiction_context_csv_path)) {
+  stop(sprintf("Jurisdiction context CSV not found: %s", jurisdiction_context_csv_path))
+}
 
 rdata_path <- normalizePath(rdata_path, mustWork = TRUE)
 funding_csv_path <- normalizePath(funding_csv_path, mustWork = TRUE)
+jurisdiction_context_csv_path <- normalizePath(jurisdiction_context_csv_path, mustWork = TRUE)
 
 sha256_file <- function(path) {
   sha256sum <- Sys.which("sha256sum")
@@ -181,6 +190,33 @@ if (length(missing_funding_locations) > 0) {
 }
 
 funding_state_rows <- funding_raw[match(modeled_states, funding_raw$location), ]
+
+jurisdiction_context <- read.csv(jurisdiction_context_csv_path, stringsAsFactors = FALSE)
+required_context_cols <- c("location", "diagnosed_hiv_weighted_urbanicity", "medicaid_expansion")
+missing_context_cols <- setdiff(required_context_cols, names(jurisdiction_context))
+if (length(missing_context_cols) > 0) {
+  stop(sprintf("Jurisdiction context CSV missing columns: %s", paste(missing_context_cols, collapse = ", ")))
+}
+jurisdiction_context$location <- trimws(as.character(jurisdiction_context$location))
+missing_context_locations <- setdiff(modeled_states, jurisdiction_context$location)
+if (length(missing_context_locations) > 0) {
+  stop(sprintf(
+    "Jurisdiction context CSV is missing modeled jurisdictions: %s",
+    paste(missing_context_locations, collapse = ", ")
+  ))
+}
+jurisdiction_context <- jurisdiction_context[match(modeled_states, jurisdiction_context$location), ]
+jurisdiction_context$diagnosed_hiv_weighted_urbanicity <- as.numeric(
+  jurisdiction_context$diagnosed_hiv_weighted_urbanicity
+)
+jurisdiction_context$medicaid_expansion <- as.logical(jurisdiction_context$medicaid_expansion)
+if (any(!is.finite(jurisdiction_context$diagnosed_hiv_weighted_urbanicity))) {
+  stop("Jurisdiction context CSV contains non-finite urbanicity values")
+}
+if (any(is.na(jurisdiction_context$medicaid_expansion))) {
+  stop("Jurisdiction context CSV contains invalid Medicaid expansion values")
+}
+context_by_location <- split(jurisdiction_context, jurisdiction_context$location)
 
 # Economic assumptions from the draft script.
 discount_rate <- 0.03
@@ -333,8 +369,10 @@ baseline_context_for <- function(location) {
   adap_suppression <- v("adap.suppression")
   rw_clients <- v("rw.clients")
   adap_clients <- v("adap.clients")
+  finite_adap_clients <- adap_clients[is.finite(adap_clients)]
   unsuppressed_diagnosed <- diagnosed - suppression
   transmission_rate <- v("sexual.transmission.rates") / unsuppressed_diagnosed
+  external_context <- context_by_location[[location]]
   list(
     diagnosedPrevalence = median_of(diagnosed, 1),
     suppression = median_of(suppression, 1),
@@ -344,6 +382,15 @@ baseline_context_for <- function(location) {
     rwClients = median_of(rw_clients, 1),
     adapClients = median_of(adap_clients, 1),
     adapClientShare = median_of(adap_clients / rw_clients, 6),
+    adapSpendingPerClient = round(
+      funding_by_location[[location]]$annualAdap / mean(finite_adap_clients),
+      2
+    ),
+    diagnosedHivWeightedUrbanicity = round(
+      external_context$diagnosed_hiv_weighted_urbanicity[[1]],
+      8
+    ),
+    medicaidExpansion = isTRUE(external_context$medicaid_expansion[[1]]),
     oahsClients = median_of(v("oahs.clients"), 1),
     testing = median_of(v("testing"), 6),
     sexualTransmissionRate = round(mean(transmission_rate[is.finite(transmission_rate)]), 8),
@@ -606,11 +653,12 @@ mechanism_closure_max_abs_diff <- max(vapply(
 generator_path <- file.path(repo_root, "scripts", "generate-ryan-white-costing-data.R")
 
 metadata <- list(
-  dataContractVersion = "2.0.0",
+  dataContractVersion = "2.1.0",
   generatedAt = format(Sys.time(), "%Y-%m-%dT%H:%M:%SZ", tz = "UTC"),
   sourceArtifacts = list(
     rData = artifact_provenance(rdata_path),
     fundingCsv = artifact_provenance(funding_csv_path),
+    jurisdictionContextCsv = artifact_provenance(jurisdiction_context_csv_path),
     generator = artifact_provenance(generator_path)
   ),
   horizon = list(startYear = 2026, endYear = 2035),
@@ -628,10 +676,10 @@ metadata <- list(
       "the drug-cost scenario is treated as an additional source of uncertainty."
     ),
     nationalTotal = paste(
-      "National pooled and per-scenario summaries use the RData Total location",
-      "(within-simulation sum across modeled jurisdictions). The supplemental table instead",
-      "bootstraps jurisdictions independently; pending Ryan's answer, the web",
-      "convention is within-simulation summation."
+      "Modeled-total pooled and per-scenario summaries use the RData Total location",
+      "(within-simulation sum across modeled jurisdictions). The draft supplemental",
+      "table instead bootstraps jurisdictions independently; the web convention",
+      "is explicitly the within-simulation sum."
     )
   ),
   defaultFocusJurisdiction = "FL",
@@ -659,6 +707,20 @@ metadata <- list(
     ),
     costingCohort = "Excess new diagnoses drive immediate and delayed ART starts and downstream care costs in the current costing model."
   ),
+  contextDefinitions = list(
+    adapSpendingPerClient = paste(
+      "Annual 2026-USD ADAP funding divided by the mean 2025 no-intervention",
+      "ADAP client count across simulations."
+    ),
+    diagnosedHivWeightedUrbanicity = paste(
+      "2020 Census county urbanicity weighted by each county's share of 2021",
+      "diagnosed HIV prevalence from the JHEEM surveillance manager."
+    ),
+    medicaidExpansion = paste(
+      "ACA Medicaid expansion adoption status for the manuscript's 2025 baseline year;",
+      "classification checked against KFF State Health Facts."
+    )
+  ),
   assumptions = json_array(c(
     sprintf(
       "Jurisdiction-level model outputs and funding inputs cover %d modeled jurisdictions, including DC.",
@@ -671,6 +733,8 @@ metadata <- list(
     "Net-cost uncertainty is driven by modeled care-cost uncertainty, with deterministic funding offsets.",
     "Pooled cost summaries treat the drug-cost scenario as an additional source of uncertainty (all scenarios x simulations in one distribution).",
     "Baseline counts are medians across 2025 no-intervention simulations; manuscript context ratios are means of per-simulation ratios.",
+    "ADAP spending per client uses the mean 2025 no-intervention client count to reproduce the manuscript context analysis.",
+    "Urbanicity uses county-level 2020 Census urban shares weighted by 2021 diagnosed HIV prevalence.",
     "Sexual transmission rate is the manuscript-defined numerator divided within simulation by diagnosed prevalence minus viral suppression.",
     "Mechanism series report means of mutually exclusive end-of-year stocks; components close to cumulative excess diagnoses within simulation."
   )),

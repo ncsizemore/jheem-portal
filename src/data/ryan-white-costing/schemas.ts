@@ -156,6 +156,8 @@ function requireBaselineContext(value: unknown, label: string): void {
     'rwClients',
     'adapClients',
     'adapClientShare',
+    'adapSpendingPerClient',
+    'diagnosedHivWeightedUrbanicity',
     'oahsClients',
     'testing',
     'sexualTransmissionRate',
@@ -164,6 +166,7 @@ function requireBaselineContext(value: unknown, label: string): void {
   ]) {
     requireNumber(value[key], `${label}.${key}`);
   }
+  requireBoolean(value.medicaidExpansion, `${label}.medicaidExpansion`);
 }
 
 function requireFinalYearUncertainty(value: unknown, label: string): void {
@@ -202,13 +205,17 @@ function requireOutcomeDefinition(value: unknown, label: string): void {
 
 export function validateRyanWhiteCostingMetadata(value: unknown): RyanWhiteCostingMetadata {
   requireRecord(value, 'metadata');
-  if (value.dataContractVersion !== '2.0.0') {
-    throw new Error('metadata.dataContractVersion must be 2.0.0');
+  if (value.dataContractVersion !== '2.1.0') {
+    throw new Error('metadata.dataContractVersion must be 2.1.0');
   }
   requireString(value.generatedAt, 'metadata.generatedAt');
   requireRecord(value.sourceArtifacts, 'metadata.sourceArtifacts');
   requireArtifactProvenance(value.sourceArtifacts.rData, 'metadata.sourceArtifacts.rData');
   requireArtifactProvenance(value.sourceArtifacts.fundingCsv, 'metadata.sourceArtifacts.fundingCsv');
+  requireArtifactProvenance(
+    value.sourceArtifacts.jurisdictionContextCsv,
+    'metadata.sourceArtifacts.jurisdictionContextCsv'
+  );
   requireArtifactProvenance(value.sourceArtifacts.generator, 'metadata.sourceArtifacts.generator');
   requireStringArray(value.modeledJurisdictions, 'metadata.modeledJurisdictions');
   requireNumber(value.modeledJurisdictionCount, 'metadata.modeledJurisdictionCount');
@@ -222,6 +229,13 @@ export function validateRyanWhiteCostingMetadata(value: unknown): RyanWhiteCosti
   requireOutcomeDefinition(value.outcomeDefinitions.infections, 'metadata.outcomeDefinitions.infections');
   requireOutcomeDefinition(value.outcomeDefinitions.diagnoses, 'metadata.outcomeDefinitions.diagnoses');
   requireString(value.outcomeDefinitions.costingCohort, 'metadata.outcomeDefinitions.costingCohort');
+  requireRecord(value.contextDefinitions, 'metadata.contextDefinitions');
+  requireString(value.contextDefinitions.adapSpendingPerClient, 'metadata.contextDefinitions.adapSpendingPerClient');
+  requireString(
+    value.contextDefinitions.diagnosedHivWeightedUrbanicity,
+    'metadata.contextDefinitions.diagnosedHivWeightedUrbanicity'
+  );
+  requireString(value.contextDefinitions.medicaidExpansion, 'metadata.contextDefinitions.medicaidExpansion');
   requireRecord(value.validation, 'metadata.validation');
   requireBoolean(value.validation.totalEqualsJurisdictionSum, 'metadata.validation.totalEqualsJurisdictionSum');
   requireNumber(

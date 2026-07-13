@@ -89,6 +89,9 @@ export interface BaselineContext {
   rwClients: number;
   adapClients: number;
   adapClientShare: number;
+  adapSpendingPerClient: number;
+  diagnosedHivWeightedUrbanicity: number;
+  medicaidExpansion: boolean;
   oahsClients: number;
   testing: number;
   sexualTransmissionRate: number;
@@ -104,11 +107,12 @@ export interface StateCostingSummary {
 }
 
 export interface RyanWhiteCostingMetadata {
-  dataContractVersion: '2.0.0';
+  dataContractVersion: '2.1.0';
   generatedAt: string;
   sourceArtifacts: {
     rData: ArtifactProvenance;
     fundingCsv: ArtifactProvenance;
+    jurisdictionContextCsv: ArtifactProvenance;
     generator: ArtifactProvenance;
   };
   horizon: {
@@ -136,6 +140,11 @@ export interface RyanWhiteCostingMetadata {
     infections: OutcomeDefinition;
     diagnoses: OutcomeDefinition;
     costingCohort: string;
+  };
+  contextDefinitions: {
+    adapSpendingPerClient: string;
+    diagnosedHivWeightedUrbanicity: string;
+    medicaidExpansion: string;
   };
   assumptions: string[];
   deterministicFields: string[];

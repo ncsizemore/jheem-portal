@@ -1,6 +1,6 @@
 {
-  "dataContractVersion": "2.0.0",
-  "generatedAt": "2026-07-13T18:00:29Z",
+  "dataContractVersion": "2.1.0",
+  "generatedAt": "2026-07-13T20:09:07Z",
   "sourceArtifacts": {
     "rData": {
       "fileName": "ADAP_input_state_costing2026_2026-07-08.Rdata",
@@ -14,11 +14,17 @@
       "modifiedAt": "2026-07-02T14:54:36Z",
       "sha256": "4b5dab61b8230fa5a5717ef2e07f45a6ae78644ab044bcef73c6578654871685"
     },
+    "jurisdictionContextCsv": {
+      "fileName": "ryan-white-costing-jurisdiction-context.csv",
+      "sizeBytes": 659,
+      "modifiedAt": "2026-07-13T19:49:28Z",
+      "sha256": "72f643c0cfe18e05e4b6a2a898f382858bb2625fa788b333bfa995e8a1fe2bf9"
+    },
     "generator": {
       "fileName": "generate-ryan-white-costing-data.R",
-      "sizeBytes": 31011,
-      "modifiedAt": "2026-07-13T17:59:31Z",
-      "sha256": "da4b4a7a63bc287bdf6282d72d7d9b7612f11d0fedae30025b5d27a24be77efe"
+      "sizeBytes": 34302,
+      "modifiedAt": "2026-07-13T20:08:49Z",
+      "sha256": "88bafcc52c1a46f93ef87167d7741784534bf6837095df8a11d7d79eea95b64f"
     }
   },
   "horizon": {
@@ -31,7 +37,7 @@
   "primaryEstimand": "median",
   "pooledConvention": {
     "description": "Pooled values combine all three ART drug-cost scenarios with all simulation draws into one distribution, matching ADAP_supplemental_tables.R; the drug-cost scenario is treated as an additional source of uncertainty.",
-    "nationalTotal": "National pooled and per-scenario summaries use the RData Total location (within-simulation sum across modeled jurisdictions). The supplemental table instead bootstraps jurisdictions independently; pending Ryan's answer, the web convention is within-simulation summation."
+    "nationalTotal": "Modeled-total pooled and per-scenario summaries use the RData Total location (within-simulation sum across modeled jurisdictions). The draft supplemental table instead bootstraps jurisdictions independently; the web convention is explicitly the within-simulation sum."
   },
   "defaultFocusJurisdiction": "FL",
   "dollarYear": "2026 USD",
@@ -55,7 +61,12 @@
     },
     "costingCohort": "Excess new diagnoses drive immediate and delayed ART starts and downstream care costs in the current costing model."
   },
-  "assumptions": ["Jurisdiction-level model outputs and funding inputs cover 31 modeled jurisdictions, including DC.", "The modeled-jurisdiction funding total is the sum of those 31 jurisdictions.", "The 2035 fixed horizon truncates downstream costs for infections occurring late in the horizon.", "Negative per-simulation excess infections and diagnoses are preserved and reported as diagnostics, not floored.", "Funding comparators are deterministic under the current CSV inputs.", "Net-cost uncertainty is driven by modeled care-cost uncertainty, with deterministic funding offsets.", "Pooled cost summaries treat the drug-cost scenario as an additional source of uncertainty (all scenarios x simulations in one distribution).", "Baseline counts are medians across 2025 no-intervention simulations; manuscript context ratios are means of per-simulation ratios.", "Sexual transmission rate is the manuscript-defined numerator divided within simulation by diagnosed prevalence minus viral suppression.", "Mechanism series report means of mutually exclusive end-of-year stocks; components close to cumulative excess diagnoses within simulation."],
+  "contextDefinitions": {
+    "adapSpendingPerClient": "Annual 2026-USD ADAP funding divided by the mean 2025 no-intervention ADAP client count across simulations.",
+    "diagnosedHivWeightedUrbanicity": "2020 Census county urbanicity weighted by each county's share of 2021 diagnosed HIV prevalence from the JHEEM surveillance manager.",
+    "medicaidExpansion": "ACA Medicaid expansion adoption status for the manuscript's 2025 baseline year; classification checked against KFF State Health Facts."
+  },
+  "assumptions": ["Jurisdiction-level model outputs and funding inputs cover 31 modeled jurisdictions, including DC.", "The modeled-jurisdiction funding total is the sum of those 31 jurisdictions.", "The 2035 fixed horizon truncates downstream costs for infections occurring late in the horizon.", "Negative per-simulation excess infections and diagnoses are preserved and reported as diagnostics, not floored.", "Funding comparators are deterministic under the current CSV inputs.", "Net-cost uncertainty is driven by modeled care-cost uncertainty, with deterministic funding offsets.", "Pooled cost summaries treat the drug-cost scenario as an additional source of uncertainty (all scenarios x simulations in one distribution).", "Baseline counts are medians across 2025 no-intervention simulations; manuscript context ratios are means of per-simulation ratios.", "ADAP spending per client uses the mean 2025 no-intervention client count to reproduce the manuscript context analysis.", "Urbanicity uses county-level 2020 Census urban shares weighted by 2021 diagnosed HIV prevalence.", "Sexual transmission rate is the manuscript-defined numerator divided within simulation by diagnosed prevalence minus viral suppression.", "Mechanism series report means of mutually exclusive end-of-year stocks; components close to cumulative excess diagnoses within simulation."],
   "deterministicFields": ["cumulativeAdapSpendingAvoided", "cumulativeTotalRwhapSpendingAvoided"],
   "modelParameters": {
     "reengagementPi": 0.86,

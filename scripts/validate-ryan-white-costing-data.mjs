@@ -12,7 +12,7 @@ const series = readJson(path.join(repoRoot, 'public/data/ryan-white-costing/seri
 const scenarios = ['low', 'median', 'high'];
 const expectedYears = range(metadata.horizon.startYear, metadata.horizon.endYear);
 
-assert(metadata.dataContractVersion === '2.0.0', 'unexpected data contract version');
+assert(metadata.dataContractVersion === '2.1.0', 'unexpected data contract version');
 assert(metadata.simulationDraws === 1000, 'expected 1,000 simulation draws');
 assert(
   metadata.modeledJurisdictionCount === metadata.modeledJurisdictions.length,
@@ -29,6 +29,11 @@ for (const [label, artifact] of Object.entries(metadata.sourceArtifacts)) {
 assert(
   metadata.sourceArtifacts.generator.sha256 === sha256File(path.join(repoRoot, 'scripts/generate-ryan-white-costing-data.R')),
   'generator provenance hash does not match the checked-in exporter'
+);
+assert(
+  metadata.sourceArtifacts.jurisdictionContextCsv.sha256 ===
+    sha256File(path.join(repoRoot, 'scripts/data/ryan-white-costing-jurisdiction-context.csv')),
+  'jurisdiction context provenance hash does not match the checked-in CSV'
 );
 
 const validation = metadata.validation;
@@ -57,6 +62,21 @@ for (const jurisdiction of summary.states) {
   assert(
     Number.isFinite(jurisdiction.baselineContext.baselineNewInfections),
     `${jurisdiction.state} baseline infections are missing`
+  );
+  assert(
+    Number.isFinite(jurisdiction.baselineContext.adapSpendingPerClient) &&
+      jurisdiction.baselineContext.adapSpendingPerClient > 0,
+    `${jurisdiction.state} ADAP spending per client is invalid`
+  );
+  assert(
+    Number.isFinite(jurisdiction.baselineContext.diagnosedHivWeightedUrbanicity) &&
+      jurisdiction.baselineContext.diagnosedHivWeightedUrbanicity >= 0 &&
+      jurisdiction.baselineContext.diagnosedHivWeightedUrbanicity <= 1,
+    `${jurisdiction.state} urbanicity is outside 0-1`
+  );
+  assert(
+    typeof jurisdiction.baselineContext.medicaidExpansion === 'boolean',
+    `${jurisdiction.state} Medicaid expansion status is invalid`
   );
 }
 
