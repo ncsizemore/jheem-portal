@@ -1,27 +1,61 @@
 {
-  "generatedAt": "2026-07-11T21:51:19Z",
-  "sourceRData": "/Volumes/WD_Black/wiley/Documents/jheem/code/jheem_analyses/applications/ryan_white/Ryan_white_costing/ryan_white_results_state_costing_ADAP2026_2026-04-03.Rdata",
-  "sourceFundingCsv": "/Volumes/WD_Black/wiley/Documents/jheem/code/jheem_analyses/applications/ryan_white/Ryan_white_costing/rw_funding_by_state.csv",
+  "dataContractVersion": "2.0.0",
+  "generatedAt": "2026-07-13T18:00:29Z",
+  "sourceArtifacts": {
+    "rData": {
+      "fileName": "ADAP_input_state_costing2026_2026-07-08.Rdata",
+      "sizeBytes": 450966318,
+      "modifiedAt": "2026-07-13T16:09:58Z",
+      "sha256": "b7035c0ecde5c88b2b98bb1d6f01291adabe9e210b8115a7982d4e540eeee69c"
+    },
+    "fundingCsv": {
+      "fileName": "rw_funding_by_state.csv",
+      "sizeBytes": 1563,
+      "modifiedAt": "2026-07-02T14:54:36Z",
+      "sha256": "4b5dab61b8230fa5a5717ef2e07f45a6ae78644ab044bcef73c6578654871685"
+    },
+    "generator": {
+      "fileName": "generate-ryan-white-costing-data.R",
+      "sizeBytes": 31011,
+      "modifiedAt": "2026-07-13T17:59:31Z",
+      "sha256": "da4b4a7a63bc287bdf6282d72d7d9b7612f11d0fedae30025b5d27a24be77efe"
+    }
+  },
   "horizon": {
     "startYear": 2026,
     "endYear": 2035
   },
+  "simulationDraws": 1000,
   "intervalLevel": "p025_p975",
   "defaultCostScenario": "median",
   "primaryEstimand": "median",
   "pooledConvention": {
     "description": "Pooled values combine all three ART drug-cost scenarios with all simulation draws into one distribution, matching ADAP_supplemental_tables.R; the drug-cost scenario is treated as an additional source of uncertainty.",
-    "nationalTotal": "National pooled and per-scenario summaries use the RData Total location (within-simulation sum across states). The supplemental table instead bootstraps states independently; pending Ryan's answer, the web convention is within-simulation summation."
+    "nationalTotal": "National pooled and per-scenario summaries use the RData Total location (within-simulation sum across modeled jurisdictions). The supplemental table instead bootstraps jurisdictions independently; pending Ryan's answer, the web convention is within-simulation summation."
   },
-  "defaultFocusState": "FL",
+  "defaultFocusJurisdiction": "FL",
   "dollarYear": "2026 USD",
   "fundingAdjustment": {
     "applied": true,
     "description": "Funding CSV values multiplied by BLS medical-care CPI deflator 2025 to 2026: 1.019258."
   },
-  "modeledStates": ["AL", "AR", "AZ", "CA", "CO", "FL", "GA", "IL", "IN", "KY", "LA", "MA", "MD", "MI", "MN", "MO", "MS", "NC", "NJ", "NV", "NY", "OH", "OK", "PA", "SC", "TN", "TX", "VA", "WA", "WI"],
-  "excludedFundingLocations": ["DC"],
-  "assumptions": ["State-level model outputs use the 30 locations shared by total.results and rw_funding_by_state.csv.", "DC funding is excluded from national summaries because no DC epidemiologic output is present.", "National funding is the sum of the 30 modeled states.", "The 2035 fixed horizon truncates downstream costs for infections occurring late in the horizon.", "Negative per-simulation excess infections are preserved and reported as diagnostics, not floored.", "Funding comparators are deterministic under the current CSV inputs.", "Net-cost uncertainty is driven by modeled care-cost uncertainty, with deterministic funding offsets.", "Pooled cost summaries treat the drug-cost scenario as an additional source of uncertainty (all scenarios x simulations in one distribution).", "Baseline context variables are medians across simulations of 2025 no-intervention values; per-simulation ratios are collapsed after division.", "Mechanism series report medians across simulations per component; component medians need not sum exactly to the median total."],
+  "modeledJurisdictions": ["AL", "AR", "AZ", "CA", "CO", "FL", "GA", "IL", "IN", "KY", "LA", "MA", "MD", "MI", "MN", "MO", "MS", "NC", "NJ", "NV", "NY", "OH", "OK", "PA", "SC", "TN", "TX", "VA", "WA", "WI", "DC"],
+  "modeledJurisdictionCount": 31,
+  "excludedFundingLocations": [],
+  "outcomeDefinitions": {
+    "infections": {
+      "field": "cumulativeExcessInfections",
+      "source": "total.results outcome 'incidence'",
+      "description": "Additional incident HIV infections under complete ADAP elimination versus no intervention."
+    },
+    "diagnoses": {
+      "field": "cumulativeExcessNewDiagnoses",
+      "source": "total.results outcome 'new'",
+      "description": "Additional new HIV diagnoses under complete ADAP elimination versus no intervention."
+    },
+    "costingCohort": "Excess new diagnoses drive immediate and delayed ART starts and downstream care costs in the current costing model."
+  },
+  "assumptions": ["Jurisdiction-level model outputs and funding inputs cover 31 modeled jurisdictions, including DC.", "The modeled-jurisdiction funding total is the sum of those 31 jurisdictions.", "The 2035 fixed horizon truncates downstream costs for infections occurring late in the horizon.", "Negative per-simulation excess infections and diagnoses are preserved and reported as diagnostics, not floored.", "Funding comparators are deterministic under the current CSV inputs.", "Net-cost uncertainty is driven by modeled care-cost uncertainty, with deterministic funding offsets.", "Pooled cost summaries treat the drug-cost scenario as an additional source of uncertainty (all scenarios x simulations in one distribution).", "Baseline counts are medians across 2025 no-intervention simulations; manuscript context ratios are means of per-simulation ratios.", "Sexual transmission rate is the manuscript-defined numerator divided within simulation by diagnosed prevalence minus viral suppression.", "Mechanism series report means of mutually exclusive end-of-year stocks; components close to cumulative excess diagnoses within simulation."],
   "deterministicFields": ["cumulativeAdapSpendingAvoided", "cumulativeTotalRwhapSpendingAvoided"],
   "modelParameters": {
     "reengagementPi": 0.86,
@@ -41,12 +75,18 @@
     "immediateStartCareFractionDescription": "Per simulation/location, immediate starts equal excess new diagnoses multiplied by the 2025 no-intervention suppression divided by diagnosed prevalence."
   },
   "validation": {
-    "totalEqualsStateSum": true,
-    "totalEqualsStateSumMaxAbsDiff": 0,
+    "totalEqualsJurisdictionSum": true,
+    "totalEqualsJurisdictionSumMaxAbsDiff": 0,
+    "incidenceArrayMatchesTotalResults": true,
+    "incidenceArrayMaxAbsDiff": 0,
+    "diagnosisArrayMatchesTotalResults": true,
+    "diagnosisArrayMaxAbsDiff": 0,
+    "mechanismClosureMaxAbsDiff": 2.9103830457e-11,
     "missingFundingLocations": [],
-    "extraFundingLocations": ["DC"],
-    "negativeExcessNewCount": 22,
-    "negativeExcessNewShare": 7.1e-05
-  },
-  "reviewQuestions": ["Should DC be excluded, included through separate non-model funding context, or modeled separately?", "Are the CSV dollars 2025 nominal dollars, 2026 dollars, or another fiscal-year convention?", "Does part_b include ADAP funding, or is it Part B excluding ADAP?", "Should low/median/high ART drug-cost assumptions be shown separately, pooled, or both?", "Should the primary comparison be ADAP only, total RWHAP, or both?", "What payer perspective should govern the net calculation?", "In the counterfactual, would downstream care for excess infections be ADAP/RWHAP-eligible?", "Should negative per-simulation excess infections be preserved, floored at zero, or shown as a sensitivity?", "Should the national Total row use the within-simulation state sum (RData Total location) or the supplemental table's independent bootstrap across states?", "Funding inflation: the exporter applies the 2025-to-2026 medical-care CPI deflator; the draft script's second CSV read overwrites the inflated values. Which convention should the paper use?", "Routine-care deflation: the draft script computes cost_on_art_wtd_2026 (2023-to-2026 CPI) but uses the un-deflated 2023 value in the cost grid; the exporter uses the deflated value (about +0.9 percent on median care cost). Which is intended?", "Is excess infections per $1M of ADAP funding cut acceptable as a derived, policy-portable metric?", "Explanatory panels: in this artifact the net/ADAP ratio tracks ADAP dependence (share of suppressed PWH on ADAP, Spearman ~0.5) but shows little or opposite-signed association with transmission rate, viral suppression, and program size (~ -0.4; big programs dilute per-dollar damage). Are the transmission/suppression/urbanicity panels still intended for the paper?"]
+    "extraFundingLocations": [],
+    "negativeExcessDiagnosesCount": 146,
+    "negativeExcessDiagnosesShare": 0.000456,
+    "negativeExcessInfectionsCount": 29,
+    "negativeExcessInfectionsShare": 9.1e-05
+  }
 }

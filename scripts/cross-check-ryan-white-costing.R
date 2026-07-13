@@ -1,4 +1,4 @@
-# Cross-check the portal exporter's pooled per-state summaries against
+# Cross-check the portal exporter's pooled per-jurisdiction summaries against
 # Ryan's pipeline (Cost_saving_analysis_v1.R formulas + the pooled convention
 # from ADAP_supplemental_tables.R).
 #
@@ -22,10 +22,30 @@ suppressPackageStartupMessages({
   library(jsonlite)
 })
 
-JA <- "/Volumes/WD_Black/wiley/Documents/jheem/code/jheem_analyses"
-PORTAL <- "/Volumes/WD_Black/wiley/Documents/jheem-portal"
-RDATA <- file.path(JA, "applications/ryan_white/Ryan_white_costing/ryan_white_results_state_costing_ADAP2026_2026-04-03.Rdata")
-FUNDING_CSV <- file.path(JA, "applications/ryan_white/Ryan_white_costing/rw_funding_by_state.csv")
+args <- commandArgs(trailingOnly = TRUE)
+
+get_arg <- function(flag, default) {
+  match_idx <- match(flag, args)
+  if (!is.na(match_idx) && length(args) >= match_idx + 1) {
+    return(args[[match_idx + 1]])
+  }
+  default
+}
+
+PORTAL <- normalizePath(get_arg("--portal", getwd()), mustWork = TRUE)
+RDATA <- get_arg("--rdata", Sys.getenv("RYAN_WHITE_COSTING_RDATA", unset = ""))
+FUNDING_CSV <- get_arg(
+  "--funding-csv",
+  Sys.getenv("RYAN_WHITE_COSTING_FUNDING_CSV", unset = "")
+)
+
+if (!nzchar(RDATA)) stop("Provide --rdata PATH or set RYAN_WHITE_COSTING_RDATA")
+if (!nzchar(FUNDING_CSV)) {
+  stop("Provide --funding-csv PATH or set RYAN_WHITE_COSTING_FUNDING_CSV")
+}
+
+RDATA <- normalizePath(RDATA, mustWork = TRUE)
+FUNDING_CSV <- normalizePath(FUNDING_CSV, mustWork = TRUE)
 
 cat("Loading RData...\n")
 env <- new.env()
@@ -205,7 +225,7 @@ pooled_b <- function(loc) {
 }
 
 counts_ryan <- function(loc) {
-  inf <- new_excess %>%
+  diagnoses <- new_excess %>%
     filter(location == loc, year <= 2035) %>%
     group_by(sim) %>%
     summarise(cum_excess = sum(excess_new, na.rm = TRUE), .groups = "drop")
@@ -215,12 +235,12 @@ counts_ryan <- function(loc) {
     arrange(year, .by_group = TRUE) %>%
     mutate(active_on_art = cumsum(total_starts)) %>%
     summarise(py_on_art = sum(active_on_art, na.rm = TRUE), .groups = "drop")
-  list(inf_med = median(inf$cum_excess), py_med = median(py$py_on_art))
+  list(diagnoses_med = median(diagnoses$cum_excess), py_med = median(py$py_on_art))
 }
 
 states <- vapply(summary_json$states, function(s) s$state, character(1))
 fails <- 0
-worst <- list(care = 0, net = 0, ratio = 0, share = 0, inf = 0, py = 0)
+worst <- list(care = 0, net = 0, ratio = 0, share = 0, diagnoses = 0, py = 0)
 
 for (i in seq_along(states)) {
   st <- states[[i]]
@@ -238,29 +258,29 @@ for (i in seq_along(states)) {
                  abs(b$net_hi  - exp_pooled$cumulativeNetCostVsAdap$upper))
   d_ratio <- abs(b$ratio_med - exp_pooled$cumulativeNetCostRatioVsAdap$median)
   d_share <- abs(b$share_pos - exp_pooled$shareNetCostPositiveVsAdap)
-  d_inf   <- abs(cnt$inf_med - exp_final$cumulativeExcessNewDiagnoses$median)
+  d_diagnoses <- abs(cnt$diagnoses_med - exp_final$cumulativeExcessNewDiagnoses$median)
   d_py    <- abs(cnt$py_med  - exp_final$cumulativePersonYearsOnArt$median)
 
   worst$care  <- max(worst$care, d_care)
   worst$net   <- max(worst$net, d_net)
   worst$ratio <- max(worst$ratio, d_ratio)
   worst$share <- max(worst$share, d_share)
-  worst$inf   <- max(worst$inf, d_inf)
+  worst$diagnoses <- max(worst$diagnoses, d_diagnoses)
   worst$py    <- max(worst$py, d_py)
 
   ok <- d_care <= 1 && d_net <= 1 && d_ratio <= 0.002 && d_share <= (1 / 3000 + 1e-9) &&
-    d_inf <= 0.11 && d_py <= 0.11
+    d_diagnoses <= 0.11 && d_py <= 0.11
   if (!ok) {
     fails <- fails + 1
-    cat(sprintf("  MISMATCH %s: care=%.3f net=%.3f ratio=%.5f share=%.6f inf=%.3f py=%.3f\n",
-                st, d_care, d_net, d_ratio, d_share, d_inf, d_py))
+    cat(sprintf("  MISMATCH %s: care=%.3f net=%.3f ratio=%.5f share=%.6f diagnoses=%.3f py=%.3f\n",
+                st, d_care, d_net, d_ratio, d_share, d_diagnoses, d_py))
   }
 }
 
-cat(sprintf("\n[pooled] Exporter vs Ryan-pipeline-with-exporter-conventions, %d states:\n", length(states)))
-cat(sprintf("  states failing tolerance: %d\n", fails))
-cat(sprintf("  worst abs diffs: care=$%.4f net=$%.4f ratio=%.6f share=%.6f excess=%.4f py=%.4f\n",
-            worst$care, worst$net, worst$ratio, worst$share, worst$inf, worst$py))
+cat(sprintf("\n[pooled] Exporter vs Ryan-pipeline-with-exporter-conventions, %d jurisdictions:\n", length(states)))
+cat(sprintf("  jurisdictions failing tolerance: %d\n", fails))
+cat(sprintf("  worst abs diffs: care=$%.4f net=$%.4f ratio=%.6f share=%.6f diagnoses=%.4f py=%.4f\n",
+            worst$care, worst$net, worst$ratio, worst$share, worst$diagnoses, worst$py))
 
 # ---- national (Total location, within-sim convention) ----------------------
 tot_b <- variant_b %>% filter(location == "Total", year == 2035)
@@ -270,9 +290,10 @@ adap_by_state <- variant_b %>%
 adap_total <- sum(adap_by_state$cumulative_drug_only)
 net_total <- tot_b$cumulative_incremental_cost - adap_total
 exp_nat <- summary_json$national$pooledFinalYear
+national_care_diff <- abs(median(tot_b$cumulative_incremental_cost) - exp_nat$cumulativeCareCost$median)
+national_net_diff <- abs(median(net_total) - exp_nat$cumulativeNetCostVsAdap$median)
 cat(sprintf("\n[national] pooled (within-sim Total): care med diff=$%.4f, net med diff=$%.4f\n",
-            abs(median(tot_b$cumulative_incremental_cost) - exp_nat$cumulativeCareCost$median),
-            abs(median(net_total) - exp_nat$cumulativeNetCostVsAdap$median)))
+            national_care_diff, national_net_diff))
 
 # ---- quantify Ryan's-draft vs exporter-convention deltas (info for Ryan) ----
 delta <- function(loc, adap_a = NULL, adap_b = NULL) {
@@ -291,4 +312,8 @@ cat("\n[deltas] exporter conventions vs Ryan's draft, medians at 2035:\n")
 cat(sprintf("  FL:    care %+0.2f%%  |  net vs ADAP %+0.2f%%\n", d_fl[["care_pct"]], d_fl[["net_pct"]]))
 cat(sprintf("  Total: care %+0.2f%%  |  net vs ADAP %+0.2f%%\n", d_tot[["care_pct"]], d_tot[["net_pct"]]))
 
-if (fails == 0) cat("\nCROSS-CHECK PASSED\n") else cat("\nCROSS-CHECK FAILED\n")
+if (fails == 0 && national_care_diff <= 1 && national_net_diff <= 1) {
+  cat("\nCROSS-CHECK PASSED\n")
+} else {
+  stop("CROSS-CHECK FAILED")
+}

@@ -7,6 +7,7 @@
     "build": "npm run sync-config && next build",
     "start": "next start",
     "lint": "next lint",
+    "validate:ryan-white-costing": "node scripts/validate-ryan-white-costing-data.mjs",
     "sync-config": "npx tsx scripts/sync-config.ts",
     "postinstall": "npm run sync-config"
   },

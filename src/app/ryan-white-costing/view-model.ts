@@ -50,6 +50,7 @@ export interface RankedStatePoint {
   crossesZero: boolean;
   boundedPositive: boolean;
   excessDiagnoses: number;
+  excessInfections: number;
   artPersonYears: number;
   binIndex?: number;
 }
@@ -249,6 +250,7 @@ export interface HeadlineValues {
   adap: number;
   perDollar: QuantileValue;
   excessDiagnoses: number;
+  excessInfections: number;
   personYears: number;
 }
 
@@ -268,6 +270,7 @@ export function headlineAt(point: AnnualCostPoint, estimand: EstimandId): Headli
       upper: care.upper / adap,
     },
     excessDiagnoses: point.cumulativeExcessNewDiagnoses.median,
+    excessInfections: point.cumulativeExcessInfections.median,
     personYears: point.cumulativePersonYearsOnArt.median,
   };
 }
@@ -398,6 +401,7 @@ export interface DriverRow {
   stateName: string;
   year: number;
   excessDiagnoses: number;
+  excessInfections: number;
   personYears: number;
   careCost: QuantileValue;
   adap: number;
@@ -427,6 +431,7 @@ function driverRowFrom(
     stateName: displayName,
     year: point.year,
     excessDiagnoses: point.cumulativeExcessNewDiagnoses.median,
+    excessInfections: point.cumulativeExcessInfections.median,
     personYears: point.cumulativePersonYearsOnArt.median,
     careCost: care,
     adap,
@@ -470,7 +475,7 @@ export function buildNationalDriverRow(
   const crossover = crossoverForPoints(series?.national ?? [], scenario);
   return driverRowFrom(
     'Total',
-    'National total',
+    'Modeled-jurisdiction total',
     point,
     scenario,
     crossover?.year ?? null,
@@ -662,6 +667,7 @@ export function buildRankedStates(
         crossesZero: net.lower <= 0 && net.upper >= 0,
         boundedPositive: net.lower > 0,
         excessDiagnoses: final.cumulativeExcessNewDiagnoses.median,
+        excessInfections: final.cumulativeExcessInfections.median,
         artPersonYears: final.cumulativePersonYearsOnArt.median,
       };
     })

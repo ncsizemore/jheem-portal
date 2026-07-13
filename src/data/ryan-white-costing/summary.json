@@ -4,232 +4,238 @@
       "year": 2035,
       "cumulativeCareCost": {
         "low": {
-          "median": 10961738851,
-          "lower": 1313067921,
-          "upper": 17366771179
+          "median": 10958522868,
+          "lower": 1312632964,
+          "upper": 17361710471
         },
         "median": {
-          "median": 18170967002,
-          "lower": 2176640321,
-          "upper": 28788386261
+          "median": 18165635106,
+          "lower": 2175919219,
+          "upper": 28779995921
         },
         "high": {
-          "median": 25330476338,
-          "lower": 3034257048,
-          "upper": 40131231584
+          "median": 25323043121,
+          "lower": 3033251776,
+          "upper": 40119534575
         }
       },
-      "cumulativeAdapSpendingAvoided": 6483904673,
-      "cumulativeTotalRwhapSpendingAvoided": 18233956140,
+      "cumulativeAdapSpendingAvoided": 6576615604,
+      "cumulativeTotalRwhapSpendingAvoided": 18697827078,
       "cumulativeNetCostVsAdap": {
         "low": {
-          "median": 4477834178,
-          "lower": -5170836752,
-          "upper": 10882866505
+          "median": 4381907264,
+          "lower": -5263982640,
+          "upper": 10785094867
         },
         "median": {
-          "median": 11687062329,
-          "lower": -4307264352,
-          "upper": 22304481588
+          "median": 11589019502,
+          "lower": -4400696385,
+          "upper": 22203380317
         },
         "high": {
-          "median": 18846571665,
-          "lower": -3449647625,
-          "upper": 33647326911
+          "median": 18746427517,
+          "lower": -3543363828,
+          "upper": 33542918971
         }
       },
       "cumulativeNetCostVsTotalRwhap": {
         "low": {
-          "median": -7272217290,
-          "lower": -16920888219,
-          "upper": -867184962
+          "median": -7739304210,
+          "lower": -17385194114,
+          "upper": -1336116608
         },
         "median": {
-          "median": -62989139,
-          "lower": -16057315820,
-          "upper": 10554430121
+          "median": -532191973,
+          "lower": -16521907859,
+          "upper": 10082168842
         },
         "high": {
-          "median": 7096520198,
-          "lower": -15199699092,
-          "upper": 21897275444
+          "median": 6625216043,
+          "lower": -15664575303,
+          "upper": 21421707496
         }
       },
       "cumulativeExcessNewDiagnoses": {
-        "median": 105692.5,
-        "lower": 12595.7,
-        "upper": 167819.2
+        "median": 105730.2,
+        "lower": 12598.6,
+        "upper": 167856.1
+      },
+      "cumulativeExcessInfections": {
+        "median": 143347,
+        "lower": 16946,
+        "upper": 226885.6
       },
       "cumulativePersonYearsOnArt": {
-        "median": 426213.7,
-        "lower": 51075.4,
-        "upper": 675147.1
+        "median": 426084.7,
+        "lower": 51058.1,
+        "upper": 674944.1
       },
-      "negativeExcessNewShare": 0,
+      "negativeExcessDiagnosesShare": 0,
+      "negativeExcessInfectionsShare": 0,
       "pooledCumulativeCareCost": {
-        "median": 15983489379,
-        "lower": 1925487544,
-        "upper": 38920792850
+        "median": 15978498726,
+        "lower": 1924811876,
+        "upper": 38905028037
       },
       "pooledCumulativeNetCostVsAdap": {
-        "median": 9499584706,
-        "lower": -4558417130,
-        "upper": 32436888177
+        "median": 9401883122,
+        "lower": -4651803728,
+        "upper": 32328412433
       },
       "mechanism": {
-        "activeOnArtImmediate": 78144.8,
-        "activeOnArtReengaged": 19086.2,
-        "offArtExcess": 11529.4
+        "activeOnArtImmediate": 76151,
+        "activeOnArtReengaged": 18618.2,
+        "offArtExcess": 8217.5
       },
       "cumulativeNetCostRatioVsAdap": {
         "low": {
-          "median": 0.691,
-          "lower": -0.797,
-          "upper": 1.678
+          "median": 0.666,
+          "lower": -0.8,
+          "upper": 1.64
         },
         "median": {
-          "median": 1.802,
-          "lower": -0.664,
-          "upper": 3.44
+          "median": 1.762,
+          "lower": -0.669,
+          "upper": 3.376
         },
         "high": {
-          "median": 2.907,
-          "lower": -0.532,
-          "upper": 5.189
+          "median": 2.85,
+          "lower": -0.539,
+          "upper": 5.1
         }
       },
       "cumulativeNetCostRatioVsTotalRwhap": {
         "low": {
-          "median": -0.399,
-          "lower": -0.928,
-          "upper": -0.048
+          "median": -0.414,
+          "lower": -0.93,
+          "upper": -0.071
         },
         "median": {
-          "median": -0.003,
-          "lower": -0.881,
-          "upper": 0.579
+          "median": -0.028,
+          "lower": -0.884,
+          "upper": 0.539
         },
         "high": {
-          "median": 0.389,
-          "lower": -0.834,
-          "upper": 1.201
+          "median": 0.354,
+          "lower": -0.838,
+          "upper": 1.146
         }
       },
       "cumulativeNetCostVsAdapQuantiles": {
         "low": {
-          "p025": -5170836752,
-          "p05": -4298437888,
-          "p10": -2832221986,
-          "p25": 109240271,
-          "p50": 4477834178,
-          "p75": 8767171704,
-          "p90": 10194024118,
-          "p95": 10620876325,
-          "p975": 10882866505
+          "p025": -5263982640,
+          "p05": -4392029382,
+          "p10": -2926436136,
+          "p25": 14359572,
+          "p50": 4381907264,
+          "p75": 8669605854,
+          "p90": 10094895181,
+          "p95": 10523290416,
+          "p975": 10785094867
         },
         "median": {
-          "p025": -4307264352,
-          "p05": -2861113158,
-          "p10": -430612978,
-          "p25": 4445366680,
-          "p50": 11687062329,
-          "p75": 18797401986,
-          "p90": 21162644309,
-          "p95": 21870192648,
-          "p975": 22304481588
+          "p025": -4400696385,
+          "p05": -2955283960,
+          "p10": -525816054,
+          "p25": 4349058528,
+          "p50": 11589019502,
+          "p75": 18696641949,
+          "p90": 21059291379,
+          "p95": 21769399312,
+          "p975": 22203380317
         },
         "high": {
-          "p025": -3449647625,
-          "p05": -1433701012,
-          "p10": 1954433210,
-          "p25": 8751588768,
-          "p50": 18846571665,
-          "p75": 28758458266,
-          "p90": 32055618844,
-          "p95": 33041927478,
-          "p975": 33647326911
+          "p025": -3543363828,
+          "p05": -1528447127,
+          "p10": 1858248027,
+          "p25": 8653863008,
+          "p50": 18746427517,
+          "p75": 28654526071,
+          "p90": 31948071051,
+          "p95": 32937948836,
+          "p975": 33542918971
         }
       },
       "cumulativeCareCostQuantiles": {
         "low": {
-          "p025": 1313067921,
-          "p05": 2185466785,
-          "p10": 3651682688,
-          "p25": 6593144944,
-          "p50": 10961738851,
-          "p75": 15251076377,
-          "p90": 16677928791,
-          "p95": 17104780998,
-          "p975": 17366771179
+          "p025": 1312632964,
+          "p05": 2184586222,
+          "p10": 3650179468,
+          "p25": 6590975176,
+          "p50": 10958522868,
+          "p75": 15246221458,
+          "p90": 16671510785,
+          "p95": 17099906020,
+          "p975": 17361710471
         },
         "median": {
-          "p025": 2176640321,
-          "p05": 3622791515,
-          "p10": 6053291696,
-          "p25": 10929271353,
-          "p50": 18170967002,
-          "p75": 25281306659,
-          "p90": 27646548983,
-          "p95": 28354097321,
-          "p975": 28788386261
+          "p025": 2175919219,
+          "p05": 3621331644,
+          "p10": 6050799550,
+          "p25": 10925674132,
+          "p50": 18165635106,
+          "p75": 25273257553,
+          "p90": 27635906983,
+          "p95": 28346014916,
+          "p975": 28779995921
         },
         "high": {
-          "p025": 3034257048,
-          "p05": 5050203661,
-          "p10": 8438337883,
-          "p25": 15235493441,
-          "p50": 25330476338,
-          "p75": 35242362940,
-          "p90": 38539523517,
-          "p95": 39525832151,
-          "p975": 40131231584
+          "p025": 3033251776,
+          "p05": 5048168477,
+          "p10": 8434863631,
+          "p25": 15230478612,
+          "p50": 25323043121,
+          "p75": 35231141675,
+          "p90": 38524686655,
+          "p95": 39514564440,
+          "p975": 40119534575
         }
       },
       "shareNetCostPositiveVsAdap": {
-        "low": 0.752,
-        "median": 0.887,
-        "high": 0.93
+        "low": 0.75,
+        "median": 0.883,
+        "high": 0.928
       }
     },
     "pooledFinalYear": {
       "cumulativeCareCost": {
-        "median": 15983489379,
-        "lower": 1925487544,
-        "upper": 38920792850
+        "median": 15978498726,
+        "lower": 1924811876,
+        "upper": 38905028037
       },
       "cumulativeCareCostQuantiles": {
-        "p025": 1925487544,
-        "p05": 3148668780,
-        "p10": 5120931934,
-        "p25": 9615218424,
-        "p50": 15983489379,
-        "p75": 25293254185,
-        "p90": 33472773920,
-        "p95": 37825005805,
-        "p975": 38920792850
+        "p025": 1924811876,
+        "p05": 3148020629,
+        "p10": 5118788481,
+        "p25": 9612158732,
+        "p50": 15978498726,
+        "p75": 25284953902,
+        "p90": 33460712290,
+        "p95": 37813075909,
+        "p975": 38905028037
       },
       "cumulativeNetCostVsAdap": {
-        "median": 9499584706,
-        "lower": -4558417130,
-        "upper": 32436888177
+        "median": 9401883122,
+        "lower": -4651803728,
+        "upper": 32328412433
       },
       "cumulativeNetCostVsAdapQuantiles": {
-        "p025": -4558417130,
-        "p05": -3335235893,
-        "p10": -1362972740,
-        "p25": 3131313750,
-        "p50": 9499584706,
-        "p75": 18809349512,
-        "p90": 26988869247,
-        "p95": 31341101132,
-        "p975": 32436888177
+        "p025": -4651803728,
+        "p05": -3428594975,
+        "p10": -1457827123,
+        "p25": 3035543128,
+        "p50": 9401883122,
+        "p75": 18708338298,
+        "p90": 26884096686,
+        "p95": 31236460305,
+        "p975": 32328412433
       },
       "cumulativeNetCostRatioVsAdap": {
-        "median": 1.465,
-        "lower": -0.703,
-        "upper": 5.003
+        "median": 1.43,
+        "lower": -0.707,
+        "upper": 4.916
       },
-      "shareNetCostPositiveVsAdap": 0.856333
+      "shareNetCostPositiveVsAdap": 0.853667
     }
   },
   "states": [
@@ -295,12 +301,18 @@
           "lower": 606.9,
           "upper": 5605.9
         },
+        "cumulativeExcessInfections": {
+          "median": 5157.3,
+          "lower": 804.9,
+          "upper": 7473.7
+        },
         "cumulativePersonYearsOnArt": {
           "median": 15656.2,
           "lower": 2326.7,
           "upper": 22758.8
         },
-        "negativeExcessNewShare": 0,
+        "negativeExcessDiagnosesShare": 0,
+        "negativeExcessInfectionsShare": 0,
         "pooledCumulativeCareCost": {
           "median": 561946253,
           "lower": 87264799,
@@ -312,9 +324,9 @@
           "upper": 1179315008
         },
         "mechanism": {
-          "activeOnArtImmediate": 2935.8,
-          "activeOnArtReengaged": 692,
-          "offArtExcess": 422.7
+          "activeOnArtImmediate": 2715.8,
+          "activeOnArtReengaged": 635.5,
+          "offArtExcess": 281.8
         },
         "cumulativeNetCostRatioVsAdap": {
           "low": {
@@ -471,16 +483,17 @@
       "baselineContext": {
         "diagnosedPrevalence": 15058.8,
         "suppression": 11261.9,
-        "viralSuppressionPct": 0.746369,
+        "viralSuppressionPct": 0.747371,
         "adapSuppression": 3702.2,
-        "propSuppressedOnAdap": 0.330237,
+        "propSuppressedOnAdap": 0.329559,
         "rwClients": 12152,
         "adapClients": 4552.2,
         "adapClientShare": 0.374476,
         "oahsClients": 6425.5,
         "testing": 364421.69628,
-        "sexualTransmissionRate": 2571.73759513,
-        "baselineNewDiagnoses": 574.4
+        "sexualTransmissionRate": 0.68876937,
+        "baselineNewDiagnoses": 574.4,
+        "baselineNewInfections": 649.7
       }
     },
     {
@@ -545,12 +558,18 @@
           "lower": 87.9,
           "upper": 1740.4
         },
+        "cumulativeExcessInfections": {
+          "median": 1239.1,
+          "lower": 121.9,
+          "upper": 2328.4
+        },
         "cumulativePersonYearsOnArt": {
           "median": 3504.5,
           "lower": 332.3,
           "upper": 6890
         },
-        "negativeExcessNewShare": 0,
+        "negativeExcessDiagnosesShare": 0,
+        "negativeExcessInfectionsShare": 0,
         "pooledCumulativeCareCost": {
           "median": 132977246,
           "lower": 11775602,
@@ -562,9 +581,9 @@
           "upper": 330130608
         },
         "mechanism": {
-          "activeOnArtImmediate": 577.1,
-          "activeOnArtReengaged": 233.7,
-          "offArtExcess": 134.2
+          "activeOnArtImmediate": 571.1,
+          "activeOnArtReengaged": 230.6,
+          "offArtExcess": 95.9
         },
         "cumulativeNetCostRatioVsAdap": {
           "low": {
@@ -721,16 +740,17 @@
       "baselineContext": {
         "diagnosedPrevalence": 7057.9,
         "suppression": 4483,
-        "viralSuppressionPct": 0.636161,
+        "viralSuppressionPct": 0.635598,
         "adapSuppression": 1811.9,
-        "propSuppressedOnAdap": 0.40429,
+        "propSuppressedOnAdap": 0.404538,
         "rwClients": 4080,
         "adapClients": 2190.4,
         "adapClientShare": 0.537204,
         "oahsClients": 1518.7,
         "testing": 110492.785061,
-        "sexualTransmissionRate": 1134.49557232,
-        "baselineNewDiagnoses": 306.4
+        "sexualTransmissionRate": 0.42510242,
+        "baselineNewDiagnoses": 306.4,
+        "baselineNewInfections": 354.7
       }
     },
     {
@@ -795,12 +815,18 @@
           "lower": 135.7,
           "upper": 3068.1
         },
+        "cumulativeExcessInfections": {
+          "median": 1968.4,
+          "lower": 175.5,
+          "upper": 4061
+        },
         "cumulativePersonYearsOnArt": {
           "median": 6273.5,
           "lower": 574.2,
           "upper": 12371.8
         },
-        "negativeExcessNewShare": 0,
+        "negativeExcessDiagnosesShare": 0,
+        "negativeExcessInfectionsShare": 0,
         "pooledCumulativeCareCost": {
           "median": 236637499,
           "lower": 19030523,
@@ -812,9 +838,9 @@
           "upper": 561211865
         },
         "mechanism": {
-          "activeOnArtImmediate": 1068.1,
-          "activeOnArtReengaged": 319.3,
-          "offArtExcess": 184.8
+          "activeOnArtImmediate": 1070.4,
+          "activeOnArtReengaged": 325.8,
+          "offArtExcess": 139
         },
         "cumulativeNetCostRatioVsAdap": {
           "low": {
@@ -971,16 +997,17 @@
       "baselineContext": {
         "diagnosedPrevalence": 20151.2,
         "suppression": 14049.3,
-        "viralSuppressionPct": 0.698131,
+        "viralSuppressionPct": 0.697479,
         "adapSuppression": 4319.1,
-        "propSuppressedOnAdap": 0.307925,
+        "propSuppressedOnAdap": 0.307356,
         "rwClients": 11238.7,
         "adapClients": 4719.8,
         "adapClientShare": 0.419853,
         "oahsClients": 6065.9,
         "testing": 488139.732145,
-        "sexualTransmissionRate": 12179.0571144,
-        "baselineNewDiagnoses": 619.9
+        "sexualTransmissionRate": 2.01809444,
+        "baselineNewDiagnoses": 619.9,
+        "baselineNewInfections": 688.8
       }
     },
     {
@@ -1045,12 +1072,18 @@
           "lower": 670.7,
           "upper": 15077.4
         },
+        "cumulativeExcessInfections": {
+          "median": 10617.7,
+          "lower": 972.5,
+          "upper": 21568
+        },
         "cumulativePersonYearsOnArt": {
           "median": 29585.5,
           "lower": 2693.2,
           "upper": 60363.7
         },
-        "negativeExcessNewShare": 0,
+        "negativeExcessDiagnosesShare": 0,
+        "negativeExcessInfectionsShare": 0,
         "pooledCumulativeCareCost": {
           "median": 1137283413,
           "lower": 102515419,
@@ -1062,9 +1095,9 @@
           "upper": 2417645897
         },
         "mechanism": {
-          "activeOnArtImmediate": 5629.7,
-          "activeOnArtReengaged": 1189.9,
-          "offArtExcess": 721.8
+          "activeOnArtImmediate": 5801.9,
+          "activeOnArtReengaged": 1219.6,
+          "offArtExcess": 538.8
         },
         "cumulativeNetCostRatioVsAdap": {
           "low": {
@@ -1221,16 +1254,17 @@
       "baselineContext": {
         "diagnosedPrevalence": 140509.8,
         "suppression": 107854.3,
-        "viralSuppressionPct": 0.767752,
+        "viralSuppressionPct": 0.767388,
         "adapSuppression": 34489.2,
-        "propSuppressedOnAdap": 0.320166,
+        "propSuppressedOnAdap": 0.319647,
         "rwClients": 70357.8,
         "adapClients": 38253.5,
         "adapClientShare": 0.544132,
         "oahsClients": 33778.7,
         "testing": 2737960.5715959999,
-        "sexualTransmissionRate": 25872.39405256,
-        "baselineNewDiagnoses": 3239.6
+        "sexualTransmissionRate": 0.79145139,
+        "baselineNewDiagnoses": 3239.6,
+        "baselineNewInfections": 3149.1
       }
     },
     {
@@ -1295,12 +1329,18 @@
           "lower": 223.8,
           "upper": 5265.6
         },
+        "cumulativeExcessInfections": {
+          "median": 3389.5,
+          "lower": 311.7,
+          "upper": 7362.1
+        },
         "cumulativePersonYearsOnArt": {
           "median": 8947.7,
           "lower": 836.4,
           "upper": 18384.1
         },
-        "negativeExcessNewShare": 0,
+        "negativeExcessDiagnosesShare": 0,
+        "negativeExcessInfectionsShare": 0,
         "pooledCumulativeCareCost": {
           "median": 342428521,
           "lower": 29349267,
@@ -1312,9 +1352,9 @@
           "upper": 908852470
         },
         "mechanism": {
-          "activeOnArtImmediate": 1715,
-          "activeOnArtReengaged": 493.1,
-          "offArtExcess": 334
+          "activeOnArtImmediate": 1760.9,
+          "activeOnArtReengaged": 503.2,
+          "offArtExcess": 249.2
         },
         "cumulativeNetCostRatioVsAdap": {
           "low": {
@@ -1471,16 +1511,17 @@
       "baselineContext": {
         "diagnosedPrevalence": 15168.2,
         "suppression": 10631.1,
-        "viralSuppressionPct": 0.700899,
+        "viralSuppressionPct": 0.700634,
         "adapSuppression": 5270.2,
-        "propSuppressedOnAdap": 0.494784,
+        "propSuppressedOnAdap": 0.494915,
         "rwClients": 14881.5,
         "adapClients": 6952.9,
         "adapClientShare": 0.467604,
         "oahsClients": 3270.1,
         "testing": 266673.311032,
-        "sexualTransmissionRate": 4073.92520939,
-        "baselineNewDiagnoses": 412.5
+        "sexualTransmissionRate": 0.91946147,
+        "baselineNewDiagnoses": 412.5,
+        "baselineNewInfections": 391.8
       }
     },
     {
@@ -1545,12 +1586,18 @@
           "lower": 2157.1,
           "upper": 24249.7
         },
+        "cumulativeExcessInfections": {
+          "median": 21482.7,
+          "lower": 2823.4,
+          "upper": 32074.9
+        },
         "cumulativePersonYearsOnArt": {
           "median": 67077.5,
           "lower": 9141.3,
           "upper": 99433.5
         },
-        "negativeExcessNewShare": 0,
+        "negativeExcessDiagnosesShare": 0,
+        "negativeExcessInfectionsShare": 0,
         "pooledCumulativeCareCost": {
           "median": 2425267910,
           "lower": 343719698,
@@ -1562,9 +1609,9 @@
           "upper": 4866669581
         },
         "mechanism": {
-          "activeOnArtImmediate": 12185.2,
-          "activeOnArtReengaged": 2835.7,
-          "offArtExcess": 1654.6
+          "activeOnArtImmediate": 11416.5,
+          "activeOnArtReengaged": 2642.4,
+          "offArtExcess": 1142.9
         },
         "cumulativeNetCostRatioVsAdap": {
           "low": {
@@ -1721,16 +1768,17 @@
       "baselineContext": {
         "diagnosedPrevalence": 126299.6,
         "suppression": 94805.6,
-        "viralSuppressionPct": 0.751054,
+        "viralSuppressionPct": 0.751022,
         "adapSuppression": 27972.9,
-        "propSuppressedOnAdap": 0.294621,
+        "propSuppressedOnAdap": 0.294524,
         "rwClients": 64841.8,
         "adapClients": 30450.1,
         "adapClientShare": 0.468501,
         "oahsClients": 31987.5,
         "testing": 2087121.76275,
-        "sexualTransmissionRate": 31671.60612685,
-        "baselineNewDiagnoses": 3285.5
+        "sexualTransmissionRate": 1.04077982,
+        "baselineNewDiagnoses": 3285.5,
+        "baselineNewInfections": 3613.6
       }
     },
     {
@@ -1795,12 +1843,18 @@
           "lower": 1063.7,
           "upper": 10081.1
         },
+        "cumulativeExcessInfections": {
+          "median": 10653.2,
+          "lower": 1497.9,
+          "upper": 15298.9
+        },
         "cumulativePersonYearsOnArt": {
           "median": 28326.6,
           "lower": 4028.3,
           "upper": 39688.1
         },
-        "negativeExcessNewShare": 0,
+        "negativeExcessDiagnosesShare": 0,
+        "negativeExcessInfectionsShare": 0,
         "pooledCumulativeCareCost": {
           "median": 992173150,
           "lower": 154457838,
@@ -1812,9 +1866,9 @@
           "upper": 1884082935
         },
         "mechanism": {
-          "activeOnArtImmediate": 5456.7,
-          "activeOnArtReengaged": 1206.4,
-          "offArtExcess": 764.9
+          "activeOnArtImmediate": 4985.5,
+          "activeOnArtReengaged": 1130.3,
+          "offArtExcess": 518.6
         },
         "cumulativeNetCostRatioVsAdap": {
           "low": {
@@ -1971,16 +2025,17 @@
       "baselineContext": {
         "diagnosedPrevalence": 63842.7,
         "suppression": 47969.5,
-        "viralSuppressionPct": 0.751757,
+        "viralSuppressionPct": 0.751554,
         "adapSuppression": 12619.8,
-        "propSuppressedOnAdap": 0.262866,
+        "propSuppressedOnAdap": 0.262805,
         "rwClients": 33511.7,
         "adapClients": 15020.2,
         "adapClientShare": 0.448744,
         "oahsClients": 24518.2,
         "testing": 916923.497632,
-        "sexualTransmissionRate": 13071.28017325,
-        "baselineNewDiagnoses": 2036
+        "sexualTransmissionRate": 0.83360012,
+        "baselineNewDiagnoses": 2036,
+        "baselineNewInfections": 2270.9
       }
     },
     {
@@ -2045,12 +2100,18 @@
           "lower": 393.2,
           "upper": 9012.5
         },
+        "cumulativeExcessInfections": {
+          "median": 6201.5,
+          "lower": 532.5,
+          "upper": 12431
+        },
         "cumulativePersonYearsOnArt": {
           "median": 18491.5,
           "lower": 1659.6,
           "upper": 36379.6
         },
-        "negativeExcessNewShare": 0,
+        "negativeExcessDiagnosesShare": 0,
+        "negativeExcessInfectionsShare": 0,
         "pooledCumulativeCareCost": {
           "median": 707728901,
           "lower": 56413454,
@@ -2062,9 +2123,9 @@
           "upper": 1784990001
         },
         "mechanism": {
-          "activeOnArtImmediate": 3508.1,
-          "activeOnArtReengaged": 746.7,
-          "offArtExcess": 450.2
+          "activeOnArtImmediate": 3539.5,
+          "activeOnArtReengaged": 750.4,
+          "offArtExcess": 332
         },
         "cumulativeNetCostRatioVsAdap": {
           "low": {
@@ -2221,16 +2282,17 @@
       "baselineContext": {
         "diagnosedPrevalence": 35670.8,
         "suppression": 27358.7,
-        "viralSuppressionPct": 0.765969,
+        "viralSuppressionPct": 0.765123,
         "adapSuppression": 12492.3,
-        "propSuppressedOnAdap": 0.458062,
+        "propSuppressedOnAdap": 0.457691,
         "rwClients": 26467.2,
         "adapClients": 13580.5,
         "adapClientShare": 0.513603,
         "oahsClients": 16736.1,
         "testing": 860693.634666,
-        "sexualTransmissionRate": 20285.11832197,
-        "baselineNewDiagnoses": 922.8
+        "sexualTransmissionRate": 2.42524394,
+        "baselineNewDiagnoses": 922.8,
+        "baselineNewInfections": 960.1
       }
     },
     {
@@ -2295,12 +2357,18 @@
           "lower": 83.2,
           "upper": 2073.7
         },
+        "cumulativeExcessInfections": {
+          "median": 1448.5,
+          "lower": 115.6,
+          "upper": 3057.5
+        },
         "cumulativePersonYearsOnArt": {
           "median": 3913.3,
           "lower": 320,
           "upper": 7991.9
         },
-        "negativeExcessNewShare": 0.001,
+        "negativeExcessDiagnosesShare": 0.001,
+        "negativeExcessInfectionsShare": 0.001,
         "pooledCumulativeCareCost": {
           "median": 151572294,
           "lower": 12303671,
@@ -2312,9 +2380,9 @@
           "upper": 359357188
         },
         "mechanism": {
-          "activeOnArtImmediate": 740.3,
-          "activeOnArtReengaged": 188.7,
-          "offArtExcess": 123.8
+          "activeOnArtImmediate": 765.2,
+          "activeOnArtReengaged": 194.2,
+          "offArtExcess": 90.7
         },
         "cumulativeNetCostRatioVsAdap": {
           "low": {
@@ -2471,16 +2539,17 @@
       "baselineContext": {
         "diagnosedPrevalence": 12737.2,
         "suppression": 9300.4,
-        "viralSuppressionPct": 0.729256,
+        "viralSuppressionPct": 0.728198,
         "adapSuppression": 3710,
-        "propSuppressedOnAdap": 0.399224,
+        "propSuppressedOnAdap": 0.398802,
         "rwClients": 6830.3,
         "adapClients": 4285.6,
         "adapClientShare": 0.627269,
         "oahsClients": 1386.3,
         "testing": 345682.818941,
-        "sexualTransmissionRate": 4412.71220159,
-        "baselineNewDiagnoses": 433.9
+        "sexualTransmissionRate": 1.27831653,
+        "baselineNewDiagnoses": 433.9,
+        "baselineNewInfections": 442.1
       }
     },
     {
@@ -2545,12 +2614,18 @@
           "lower": 109.4,
           "upper": 2634.1
         },
+        "cumulativeExcessInfections": {
+          "median": 1679.5,
+          "lower": 143.6,
+          "upper": 3570.9
+        },
         "cumulativePersonYearsOnArt": {
           "median": 4947.1,
           "lower": 458.6,
           "upper": 10426.6
         },
-        "negativeExcessNewShare": 0,
+        "negativeExcessDiagnosesShare": 0,
+        "negativeExcessInfectionsShare": 0,
         "pooledCumulativeCareCost": {
           "median": 187041898,
           "lower": 17392910,
@@ -2562,9 +2637,9 @@
           "upper": 496420625
         },
         "mechanism": {
-          "activeOnArtImmediate": 932.7,
-          "activeOnArtReengaged": 211.7,
-          "offArtExcess": 129.6
+          "activeOnArtImmediate": 960.7,
+          "activeOnArtReengaged": 214.2,
+          "offArtExcess": 96.6
         },
         "cumulativeNetCostRatioVsAdap": {
           "low": {
@@ -2721,16 +2796,17 @@
       "baselineContext": {
         "diagnosedPrevalence": 8821,
         "suppression": 6662.3,
-        "viralSuppressionPct": 0.75564,
+        "viralSuppressionPct": 0.755171,
         "adapSuppression": 3924.8,
-        "propSuppressedOnAdap": 0.588955,
+        "propSuppressedOnAdap": 0.589556,
         "rwClients": 8933.4,
         "adapClients": 4988.1,
         "adapClientShare": 0.558555,
         "oahsClients": 4784.9,
         "testing": 250864.317317,
-        "sexualTransmissionRate": 2686.66078794,
-        "baselineNewDiagnoses": 293.5
+        "sexualTransmissionRate": 1.2586363,
+        "baselineNewDiagnoses": 293.5,
+        "baselineNewInfections": 277
       }
     },
     {
@@ -2795,12 +2871,18 @@
           "lower": 239.3,
           "upper": 4510.3
         },
+        "cumulativeExcessInfections": {
+          "median": 3101.7,
+          "lower": 310.4,
+          "upper": 5982.1
+        },
         "cumulativePersonYearsOnArt": {
           "median": 10069.3,
           "lower": 1005.5,
           "upper": 19323.5
         },
-        "negativeExcessNewShare": 0,
+        "negativeExcessDiagnosesShare": 0,
+        "negativeExcessInfectionsShare": 0,
         "pooledCumulativeCareCost": {
           "median": 376230161,
           "lower": 36318645,
@@ -2812,9 +2894,9 @@
           "upper": 906391593
         },
         "mechanism": {
-          "activeOnArtImmediate": 1886.4,
-          "activeOnArtReengaged": 330.2,
-          "offArtExcess": 183
+          "activeOnArtImmediate": 1859.5,
+          "activeOnArtReengaged": 326.4,
+          "offArtExcess": 133.9
         },
         "cumulativeNetCostRatioVsAdap": {
           "low": {
@@ -2971,16 +3053,17 @@
       "baselineContext": {
         "diagnosedPrevalence": 22324.4,
         "suppression": 17898.2,
-        "viralSuppressionPct": 0.802696,
+        "viralSuppressionPct": 0.801596,
         "adapSuppression": 5003.2,
-        "propSuppressedOnAdap": 0.279975,
+        "propSuppressedOnAdap": 0.27963,
         "rwClients": 15214.9,
         "adapClients": 5483.9,
         "adapClientShare": 0.360421,
         "oahsClients": 7996.2,
         "testing": 420365.900132,
-        "sexualTransmissionRate": 2479.87475323,
-        "baselineNewDiagnoses": 703.4
+        "sexualTransmissionRate": 0.57318529,
+        "baselineNewDiagnoses": 703.4,
+        "baselineNewInfections": 778.5
       }
     },
     {
@@ -3045,12 +3128,18 @@
           "lower": 128.4,
           "upper": 2988.7
         },
+        "cumulativeExcessInfections": {
+          "median": 2020.9,
+          "lower": 176.5,
+          "upper": 4138.6
+        },
         "cumulativePersonYearsOnArt": {
           "median": 5580.8,
           "lower": 500.6,
           "upper": 11437
         },
-        "negativeExcessNewShare": 0,
+        "negativeExcessDiagnosesShare": 0,
+        "negativeExcessInfectionsShare": 0,
         "pooledCumulativeCareCost": {
           "median": 212474905,
           "lower": 18316671,
@@ -3062,9 +3151,9 @@
           "upper": 489073499
         },
         "mechanism": {
-          "activeOnArtImmediate": 1044,
-          "activeOnArtReengaged": 274.6,
-          "offArtExcess": 172.6
+          "activeOnArtImmediate": 1062,
+          "activeOnArtReengaged": 279.7,
+          "offArtExcess": 128.9
         },
         "cumulativeNetCostRatioVsAdap": {
           "low": {
@@ -3221,16 +3310,17 @@
       "baselineContext": {
         "diagnosedPrevalence": 20987.3,
         "suppression": 15102.1,
-        "viralSuppressionPct": 0.722929,
+        "viralSuppressionPct": 0.721376,
         "adapSuppression": 7173.3,
-        "propSuppressedOnAdap": 0.47472,
+        "propSuppressedOnAdap": 0.474101,
         "rwClients": 15846.6,
         "adapClients": 8005.1,
         "adapClientShare": 0.502986,
         "oahsClients": 6777.4,
         "testing": 402629.497118,
-        "sexualTransmissionRate": 10474.71417617,
-        "baselineNewDiagnoses": 457.6
+        "sexualTransmissionRate": 1.79411466,
+        "baselineNewDiagnoses": 457.6,
+        "baselineNewInfections": 455.8
       }
     },
     {
@@ -3295,12 +3385,18 @@
           "lower": 132.3,
           "upper": 3327.6
         },
+        "cumulativeExcessInfections": {
+          "median": 2074.2,
+          "lower": 190.4,
+          "upper": 4707.2
+        },
         "cumulativePersonYearsOnArt": {
           "median": 6127.9,
           "lower": 569.8,
           "upper": 13914.1
         },
-        "negativeExcessNewShare": 0.001,
+        "negativeExcessDiagnosesShare": 0.001,
+        "negativeExcessInfectionsShare": 0.001,
         "pooledCumulativeCareCost": {
           "median": 228094130,
           "lower": 19711616,
@@ -3312,9 +3408,9 @@
           "upper": 495134126
         },
         "mechanism": {
-          "activeOnArtImmediate": 1154.5,
-          "activeOnArtReengaged": 213.3,
-          "offArtExcess": 123.8
+          "activeOnArtImmediate": 1171.8,
+          "activeOnArtReengaged": 217.4,
+          "offArtExcess": 92.5
         },
         "cumulativeNetCostRatioVsAdap": {
           "low": {
@@ -3471,16 +3567,17 @@
       "baselineContext": {
         "diagnosedPrevalence": 33130.3,
         "suppression": 26056.4,
-        "viralSuppressionPct": 0.793013,
+        "viralSuppressionPct": 0.790196,
         "adapSuppression": 6422.3,
-        "propSuppressedOnAdap": 0.243296,
+        "propSuppressedOnAdap": 0.243157,
         "rwClients": 19379.1,
         "adapClients": 7443.1,
         "adapClientShare": 0.387024,
         "oahsClients": 10506.7,
         "testing": 637063.959718,
-        "sexualTransmissionRate": 6222.84478346,
-        "baselineNewDiagnoses": 599.2
+        "sexualTransmissionRate": 0.9042086,
+        "baselineNewDiagnoses": 599.2,
+        "baselineNewInfections": 547.3
       }
     },
     {
@@ -3545,12 +3642,18 @@
           "lower": 110.6,
           "upper": 2272.8
         },
+        "cumulativeExcessInfections": {
+          "median": 1606.8,
+          "lower": 150.2,
+          "upper": 3109.4
+        },
         "cumulativePersonYearsOnArt": {
           "median": 4844.8,
           "lower": 455.4,
           "upper": 9317.6
         },
-        "negativeExcessNewShare": 0,
+        "negativeExcessDiagnosesShare": 0,
+        "negativeExcessInfectionsShare": 0,
         "pooledCumulativeCareCost": {
           "median": 184742078,
           "lower": 16342845,
@@ -3562,9 +3665,9 @@
           "upper": 405070705
         },
         "mechanism": {
-          "activeOnArtImmediate": 996.1,
-          "activeOnArtReengaged": 127.4,
-          "offArtExcess": 78.1
+          "activeOnArtImmediate": 996.3,
+          "activeOnArtReengaged": 127.7,
+          "offArtExcess": 57.1
         },
         "cumulativeNetCostRatioVsAdap": {
           "low": {
@@ -3721,16 +3824,17 @@
       "baselineContext": {
         "diagnosedPrevalence": 17612.8,
         "suppression": 14857.5,
-        "viralSuppressionPct": 0.844595,
+        "viralSuppressionPct": 0.843654,
         "adapSuppression": 3958.1,
-        "propSuppressedOnAdap": 0.266431,
+        "propSuppressedOnAdap": 0.266186,
         "rwClients": 11449.9,
         "adapClients": 4303.2,
         "adapClientShare": 0.375467,
         "oahsClients": 7409.3,
         "testing": 602485.474115,
-        "sexualTransmissionRate": 6552.44667975,
-        "baselineNewDiagnoses": 500
+        "sexualTransmissionRate": 2.42950763,
+        "baselineNewDiagnoses": 500,
+        "baselineNewInfections": 460
       }
     },
     {
@@ -3795,12 +3899,18 @@
           "lower": 110.5,
           "upper": 2339.5
         },
+        "cumulativeExcessInfections": {
+          "median": 1420.9,
+          "lower": 143.3,
+          "upper": 2959
+        },
         "cumulativePersonYearsOnArt": {
           "median": 4305,
           "lower": 420.2,
           "upper": 8903.5
         },
-        "negativeExcessNewShare": 0,
+        "negativeExcessDiagnosesShare": 0,
+        "negativeExcessInfectionsShare": 0,
         "pooledCumulativeCareCost": {
           "median": 164243688,
           "lower": 13899475,
@@ -3812,9 +3922,9 @@
           "upper": 414248214
         },
         "mechanism": {
-          "activeOnArtImmediate": 900.6,
-          "activeOnArtReengaged": 148.5,
-          "offArtExcess": 101.1
+          "activeOnArtImmediate": 917.3,
+          "activeOnArtReengaged": 150.9,
+          "offArtExcess": 74.8
         },
         "cumulativeNetCostRatioVsAdap": {
           "low": {
@@ -3971,16 +4081,17 @@
       "baselineContext": {
         "diagnosedPrevalence": 9975.3,
         "suppression": 7995.6,
-        "viralSuppressionPct": 0.80208,
+        "viralSuppressionPct": 0.802717,
         "adapSuppression": 2327,
-        "propSuppressedOnAdap": 0.290606,
+        "propSuppressedOnAdap": 0.290511,
         "rwClients": 7045.9,
         "adapClients": 2934.7,
         "adapClientShare": 0.416191,
         "oahsClients": 2618.9,
         "testing": 319478.270382,
-        "sexualTransmissionRate": 6826.48773699,
-        "baselineNewDiagnoses": 274
+        "sexualTransmissionRate": 3.48436302,
+        "baselineNewDiagnoses": 274,
+        "baselineNewInfections": 248.4
       }
     },
     {
@@ -4045,12 +4156,18 @@
           "lower": 434.2,
           "upper": 8662.7
         },
+        "cumulativeExcessInfections": {
+          "median": 5114.7,
+          "lower": 514.2,
+          "upper": 10055.3
+        },
         "cumulativePersonYearsOnArt": {
           "median": 17292.3,
           "lower": 1797.9,
           "upper": 35546.2
         },
-        "negativeExcessNewShare": 0,
+        "negativeExcessDiagnosesShare": 0,
+        "negativeExcessInfectionsShare": 0,
         "pooledCumulativeCareCost": {
           "median": 670375628,
           "lower": 58010776,
@@ -4062,9 +4179,9 @@
           "upper": 1816330439
         },
         "mechanism": {
-          "activeOnArtImmediate": 3259.3,
-          "activeOnArtReengaged": 715.8,
-          "offArtExcess": 435.9
+          "activeOnArtImmediate": 3332.9,
+          "activeOnArtReengaged": 732.2,
+          "offArtExcess": 322.2
         },
         "cumulativeNetCostRatioVsAdap": {
           "low": {
@@ -4221,16 +4338,17 @@
       "baselineContext": {
         "diagnosedPrevalence": 13815.2,
         "suppression": 10483.3,
-        "viralSuppressionPct": 0.759556,
+        "viralSuppressionPct": 0.759263,
         "adapSuppression": 4623.4,
-        "propSuppressedOnAdap": 0.44106,
+        "propSuppressedOnAdap": 0.440901,
         "rwClients": 10447.9,
         "adapClients": 5106.1,
         "adapClientShare": 0.491117,
         "oahsClients": 4816.8,
         "testing": 340506.13573,
-        "sexualTransmissionRate": 3569.51423316,
-        "baselineNewDiagnoses": 489.5
+        "sexualTransmissionRate": 1.03048673,
+        "baselineNewDiagnoses": 489.5,
+        "baselineNewInfections": 492.9
       }
     },
     {
@@ -4295,12 +4413,18 @@
           "lower": 246.3,
           "upper": 2184.5
         },
+        "cumulativeExcessInfections": {
+          "median": 2026.3,
+          "lower": 354.4,
+          "upper": 2990.4
+        },
         "cumulativePersonYearsOnArt": {
           "median": 6048.1,
           "lower": 1097.1,
           "upper": 9613.5
         },
-        "negativeExcessNewShare": 0.001,
+        "negativeExcessDiagnosesShare": 0.001,
+        "negativeExcessInfectionsShare": 0.002,
         "pooledCumulativeCareCost": {
           "median": 222833266,
           "lower": 35964671,
@@ -4312,9 +4436,9 @@
           "upper": 448654115
         },
         "mechanism": {
-          "activeOnArtImmediate": 1053.6,
-          "activeOnArtReengaged": 243.3,
-          "offArtExcess": 130.3
+          "activeOnArtImmediate": 1000.5,
+          "activeOnArtReengaged": 229.8,
+          "offArtExcess": 90.9
         },
         "cumulativeNetCostRatioVsAdap": {
           "low": {
@@ -4471,16 +4595,17 @@
       "baselineContext": {
         "diagnosedPrevalence": 10159.8,
         "suppression": 7690.5,
-        "viralSuppressionPct": 0.756901,
+        "viralSuppressionPct": 0.757043,
         "adapSuppression": 2372.2,
-        "propSuppressedOnAdap": 0.308596,
+        "propSuppressedOnAdap": 0.308501,
         "rwClients": 6955.1,
         "adapClients": 2996,
         "adapClientShare": 0.432354,
         "oahsClients": 4606.8,
         "testing": 203334.270635,
-        "sexualTransmissionRate": 1840.82619803,
-        "baselineNewDiagnoses": 403.3
+        "sexualTransmissionRate": 0.7440461,
+        "baselineNewDiagnoses": 403.3,
+        "baselineNewInfections": 447.5
       }
     },
     {
@@ -4545,12 +4670,18 @@
           "lower": 427.2,
           "upper": 8520.6
         },
+        "cumulativeExcessInfections": {
+          "median": 6229.7,
+          "lower": 577.3,
+          "upper": 11803.7
+        },
         "cumulativePersonYearsOnArt": {
           "median": 18571,
           "lower": 1763.8,
           "upper": 35266.5
         },
-        "negativeExcessNewShare": 0,
+        "negativeExcessDiagnosesShare": 0,
+        "negativeExcessInfectionsShare": 0,
         "pooledCumulativeCareCost": {
           "median": 699121371,
           "lower": 61993686,
@@ -4562,9 +4693,9 @@
           "upper": 1718149091
         },
         "mechanism": {
-          "activeOnArtImmediate": 3329.9,
-          "activeOnArtReengaged": 827,
-          "offArtExcess": 484.3
+          "activeOnArtImmediate": 3332,
+          "activeOnArtReengaged": 827.4,
+          "offArtExcess": 350.7
         },
         "cumulativeNetCostRatioVsAdap": {
           "low": {
@@ -4721,16 +4852,17 @@
       "baselineContext": {
         "diagnosedPrevalence": 37397.8,
         "suppression": 27600.6,
-        "viralSuppressionPct": 0.738274,
+        "viralSuppressionPct": 0.739021,
         "adapSuppression": 11460.1,
-        "propSuppressedOnAdap": 0.413995,
+        "propSuppressedOnAdap": 0.414148,
         "rwClients": 22666.7,
         "adapClients": 12825,
         "adapClientShare": 0.565656,
         "oahsClients": 14088.6,
         "testing": 633244.936663,
-        "sexualTransmissionRate": 10483.019907,
-        "baselineNewDiagnoses": 1138.1
+        "sexualTransmissionRate": 1.07056259,
+        "baselineNewDiagnoses": 1138.1,
+        "baselineNewInfections": 1237.3
       }
     },
     {
@@ -4795,12 +4927,18 @@
           "lower": 156.1,
           "upper": 4036.8
         },
+        "cumulativeExcessInfections": {
+          "median": 2448.5,
+          "lower": 235.1,
+          "upper": 5453.9
+        },
         "cumulativePersonYearsOnArt": {
           "median": 6688.3,
           "lower": 569.4,
           "upper": 15943
         },
-        "negativeExcessNewShare": 0,
+        "negativeExcessDiagnosesShare": 0,
+        "negativeExcessInfectionsShare": 0,
         "pooledCumulativeCareCost": {
           "median": 258431105,
           "lower": 21602676,
@@ -4812,9 +4950,9 @@
           "upper": 573675311
         },
         "mechanism": {
-          "activeOnArtImmediate": 1042.8,
-          "activeOnArtReengaged": 500.2,
-          "offArtExcess": 296.2
+          "activeOnArtImmediate": 1108.3,
+          "activeOnArtReengaged": 525.9,
+          "offArtExcess": 230.1
         },
         "cumulativeNetCostRatioVsAdap": {
           "low": {
@@ -4971,16 +5109,17 @@
       "baselineContext": {
         "diagnosedPrevalence": 35840.1,
         "suppression": 21260.3,
-        "viralSuppressionPct": 0.592948,
+        "viralSuppressionPct": 0.593308,
         "adapSuppression": 5110.8,
-        "propSuppressedOnAdap": 0.239939,
+        "propSuppressedOnAdap": 0.240554,
         "rwClients": 17690,
         "adapClients": 6749.2,
         "adapClientShare": 0.38143,
         "oahsClients": 11234.5,
         "testing": 578601.782287,
-        "sexualTransmissionRate": 10944.18304828,
-        "baselineNewDiagnoses": 933.5
+        "sexualTransmissionRate": 0.78454902,
+        "baselineNewDiagnoses": 933.5,
+        "baselineNewInfections": 1028.7
       }
     },
     {
@@ -5045,12 +5184,18 @@
           "lower": 99.5,
           "upper": 2017.1
         },
+        "cumulativeExcessInfections": {
+          "median": 1319.8,
+          "lower": 127.2,
+          "upper": 2563.8
+        },
         "cumulativePersonYearsOnArt": {
           "median": 4146.4,
           "lower": 392,
           "upper": 8140.7
         },
-        "negativeExcessNewShare": 0,
+        "negativeExcessDiagnosesShare": 0,
+        "negativeExcessInfectionsShare": 0,
         "pooledCumulativeCareCost": {
           "median": 158743589,
           "lower": 13829081,
@@ -5062,9 +5207,9 @@
           "upper": 375978703
         },
         "mechanism": {
-          "activeOnArtImmediate": 707.4,
-          "activeOnArtReengaged": 229,
-          "offArtExcess": 137.4
+          "activeOnArtImmediate": 720.8,
+          "activeOnArtReengaged": 233.7,
+          "offArtExcess": 102.2
         },
         "cumulativeNetCostRatioVsAdap": {
           "low": {
@@ -5221,16 +5366,17 @@
       "baselineContext": {
         "diagnosedPrevalence": 13260,
         "suppression": 9075.1,
-        "viralSuppressionPct": 0.682317,
+        "viralSuppressionPct": 0.681608,
         "adapSuppression": 3340.9,
-        "propSuppressedOnAdap": 0.369737,
+        "propSuppressedOnAdap": 0.369304,
         "rwClients": 6829.4,
         "adapClients": 3704.4,
         "adapClientShare": 0.542906,
         "oahsClients": 3582.2,
         "testing": 220845.578633,
-        "sexualTransmissionRate": 4057.87733748,
-        "baselineNewDiagnoses": 419.8
+        "sexualTransmissionRate": 0.9295303,
+        "baselineNewDiagnoses": 419.8,
+        "baselineNewInfections": 433.2
       }
     },
     {
@@ -5295,12 +5441,18 @@
           "lower": 520.8,
           "upper": 11271.2
         },
+        "cumulativeExcessInfections": {
+          "median": 7498.4,
+          "lower": 694.1,
+          "upper": 14867.4
+        },
         "cumulativePersonYearsOnArt": {
           "median": 21098.9,
           "lower": 1926.9,
           "upper": 44153.7
         },
-        "negativeExcessNewShare": 0,
+        "negativeExcessDiagnosesShare": 0,
+        "negativeExcessInfectionsShare": 0,
         "pooledCumulativeCareCost": {
           "median": 798230952,
           "lower": 68527517,
@@ -5312,9 +5464,9 @@
           "upper": 1566908773
         },
         "mechanism": {
-          "activeOnArtImmediate": 3996.9,
-          "activeOnArtReengaged": 1026.1,
-          "offArtExcess": 651.3
+          "activeOnArtImmediate": 4020.6,
+          "activeOnArtReengaged": 1035.5,
+          "offArtExcess": 474.9
         },
         "cumulativeNetCostRatioVsAdap": {
           "low": {
@@ -5471,16 +5623,17 @@
       "baselineContext": {
         "diagnosedPrevalence": 122563.4,
         "suppression": 89071,
-        "viralSuppressionPct": 0.726763,
+        "viralSuppressionPct": 0.726685,
         "adapSuppression": 21103.9,
-        "propSuppressedOnAdap": 0.236891,
+        "propSuppressedOnAdap": 0.236871,
         "rwClients": 53102.3,
         "adapClients": 23053.2,
         "adapClientShare": 0.434947,
         "oahsClients": 30660.8,
         "testing": 1718320.722079,
-        "sexualTransmissionRate": 38764.89473122,
-        "baselineNewDiagnoses": 1786.3
+        "sexualTransmissionRate": 1.16135401,
+        "baselineNewDiagnoses": 1786.3,
+        "baselineNewInfections": 1845.9
       }
     },
     {
@@ -5545,12 +5698,18 @@
           "lower": 186,
           "upper": 4324.6
         },
+        "cumulativeExcessInfections": {
+          "median": 2696.4,
+          "lower": 231.7,
+          "upper": 5442.6
+        },
         "cumulativePersonYearsOnArt": {
           "median": 8208.6,
           "lower": 719.9,
           "upper": 17824.8
         },
-        "negativeExcessNewShare": 0,
+        "negativeExcessDiagnosesShare": 0,
+        "negativeExcessInfectionsShare": 0,
         "pooledCumulativeCareCost": {
           "median": 310726663,
           "lower": 26889861,
@@ -5562,9 +5721,9 @@
           "upper": 799306180
         },
         "mechanism": {
-          "activeOnArtImmediate": 1578.3,
-          "activeOnArtReengaged": 336.1,
-          "offArtExcess": 209
+          "activeOnArtImmediate": 1608.1,
+          "activeOnArtReengaged": 345.3,
+          "offArtExcess": 155.2
         },
         "cumulativeNetCostRatioVsAdap": {
           "low": {
@@ -5721,16 +5880,17 @@
       "baselineContext": {
         "diagnosedPrevalence": 26063.7,
         "suppression": 19886.6,
-        "viralSuppressionPct": 0.762708,
+        "viralSuppressionPct": 0.76251,
         "adapSuppression": 6044.6,
-        "propSuppressedOnAdap": 0.304217,
+        "propSuppressedOnAdap": 0.303982,
         "rwClients": 15193.9,
         "adapClients": 6478.4,
         "adapClientShare": 0.42605,
         "oahsClients": 9307.2,
         "testing": 625944.357678,
-        "sexualTransmissionRate": 8359.08702582,
-        "baselineNewDiagnoses": 791.1
+        "sexualTransmissionRate": 1.35466905,
+        "baselineNewDiagnoses": 791.1,
+        "baselineNewInfections": 796.3
       }
     },
     {
@@ -5795,12 +5955,18 @@
           "lower": 75,
           "upper": 1879.1
         },
+        "cumulativeExcessInfections": {
+          "median": 1497.6,
+          "lower": 136.1,
+          "upper": 2940.8
+        },
         "cumulativePersonYearsOnArt": {
           "median": 3013.5,
           "lower": 248,
           "upper": 6520.2
         },
-        "negativeExcessNewShare": 0,
+        "negativeExcessDiagnosesShare": 0,
+        "negativeExcessInfectionsShare": 0,
         "pooledCumulativeCareCost": {
           "median": 111836456,
           "lower": 10194697,
@@ -5812,9 +5978,9 @@
           "upper": 292943738
         },
         "mechanism": {
-          "activeOnArtImmediate": 594.9,
-          "activeOnArtReengaged": 198.6,
-          "offArtExcess": 146.5
+          "activeOnArtImmediate": 595.8,
+          "activeOnArtReengaged": 202,
+          "offArtExcess": 107.1
         },
         "cumulativeNetCostRatioVsAdap": {
           "low": {
@@ -5971,16 +6137,17 @@
       "baselineContext": {
         "diagnosedPrevalence": 7303.5,
         "suppression": 4813.4,
-        "viralSuppressionPct": 0.65757,
+        "viralSuppressionPct": 0.658336,
         "adapSuppression": 1933.6,
-        "propSuppressedOnAdap": 0.401682,
+        "propSuppressedOnAdap": 0.401761,
         "rwClients": 5793.3,
         "adapClients": 2583.1,
         "adapClientShare": 0.445072,
         "oahsClients": 2880.8,
         "testing": 151531.882087,
-        "sexualTransmissionRate": 3065.6258373,
-        "baselineNewDiagnoses": 320
+        "sexualTransmissionRate": 1.23346427,
+        "baselineNewDiagnoses": 320,
+        "baselineNewInfections": 393.4
       }
     },
     {
@@ -6045,12 +6212,18 @@
           "lower": 135.3,
           "upper": 3505.8
         },
+        "cumulativeExcessInfections": {
+          "median": 2133.1,
+          "lower": 186.2,
+          "upper": 4585.9
+        },
         "cumulativePersonYearsOnArt": {
           "median": 6343,
           "lower": 531.7,
           "upper": 13783.9
         },
-        "negativeExcessNewShare": 0,
+        "negativeExcessDiagnosesShare": 0,
+        "negativeExcessInfectionsShare": 0,
         "pooledCumulativeCareCost": {
           "median": 241936649,
           "lower": 20295039,
@@ -6062,9 +6235,9 @@
           "upper": 503962750
         },
         "mechanism": {
-          "activeOnArtImmediate": 1119.1,
-          "activeOnArtReengaged": 341.8,
-          "offArtExcess": 216
+          "activeOnArtImmediate": 1160.7,
+          "activeOnArtReengaged": 361,
+          "offArtExcess": 163.8
         },
         "cumulativeNetCostRatioVsAdap": {
           "low": {
@@ -6221,16 +6394,17 @@
       "baselineContext": {
         "diagnosedPrevalence": 38225.9,
         "suppression": 26305.4,
-        "viralSuppressionPct": 0.687985,
+        "viralSuppressionPct": 0.687958,
         "adapSuppression": 7074.3,
-        "propSuppressedOnAdap": 0.26913,
+        "propSuppressedOnAdap": 0.268908,
         "rwClients": 28418.5,
         "adapClients": 8716.7,
         "adapClientShare": 0.307011,
         "oahsClients": 19557.6,
         "testing": 733983.908066,
-        "sexualTransmissionRate": 7015.28823006,
-        "baselineNewDiagnoses": 749.4
+        "sexualTransmissionRate": 0.59720337,
+        "baselineNewDiagnoses": 749.4,
+        "baselineNewInfections": 720.7
       }
     },
     {
@@ -6295,12 +6469,18 @@
           "lower": 427.3,
           "upper": 5274.8
         },
+        "cumulativeExcessInfections": {
+          "median": 4548.8,
+          "lower": 625.7,
+          "upper": 6850.8
+        },
         "cumulativePersonYearsOnArt": {
           "median": 13314.2,
           "lower": 1776.7,
           "upper": 21982.3
         },
-        "negativeExcessNewShare": 0,
+        "negativeExcessDiagnosesShare": 0,
+        "negativeExcessInfectionsShare": 0,
         "pooledCumulativeCareCost": {
           "median": 493837738,
           "lower": 71958277,
@@ -6312,9 +6492,9 @@
           "upper": 1072798206
         },
         "mechanism": {
-          "activeOnArtImmediate": 2506.2,
-          "activeOnArtReengaged": 494.2,
-          "offArtExcess": 294.8
+          "activeOnArtImmediate": 2373.4,
+          "activeOnArtReengaged": 472.6,
+          "offArtExcess": 205.1
         },
         "cumulativeNetCostRatioVsAdap": {
           "low": {
@@ -6471,16 +6651,17 @@
       "baselineContext": {
         "diagnosedPrevalence": 18578.1,
         "suppression": 14475.4,
-        "viralSuppressionPct": 0.778279,
+        "viralSuppressionPct": 0.778303,
         "adapSuppression": 5784.4,
-        "propSuppressedOnAdap": 0.399509,
+        "propSuppressedOnAdap": 0.400055,
         "rwClients": 15898.9,
         "adapClients": 6483,
         "adapClientShare": 0.409159,
         "oahsClients": 11872.1,
         "testing": 373618.195427,
-        "sexualTransmissionRate": 4272.80761849,
-        "baselineNewDiagnoses": 565.9
+        "sexualTransmissionRate": 1.01758286,
+        "baselineNewDiagnoses": 565.9,
+        "baselineNewInfections": 604.8
       }
     },
     {
@@ -6545,12 +6726,18 @@
           "lower": 1002.1,
           "upper": 10283.8
         },
+        "cumulativeExcessInfections": {
+          "median": 9039.6,
+          "lower": 1270.6,
+          "upper": 12831.9
+        },
         "cumulativePersonYearsOnArt": {
           "median": 27289,
           "lower": 3848.5,
           "upper": 40675.8
         },
-        "negativeExcessNewShare": 0,
+        "negativeExcessDiagnosesShare": 0,
+        "negativeExcessInfectionsShare": 0,
         "pooledCumulativeCareCost": {
           "median": 988497841,
           "lower": 156642323,
@@ -6562,9 +6749,9 @@
           "upper": 2155780818
         },
         "mechanism": {
-          "activeOnArtImmediate": 4691.3,
-          "activeOnArtReengaged": 1578.2,
-          "offArtExcess": 954
+          "activeOnArtImmediate": 4395.3,
+          "activeOnArtReengaged": 1474.6,
+          "offArtExcess": 648.3
         },
         "cumulativeNetCostRatioVsAdap": {
           "low": {
@@ -6721,16 +6908,17 @@
       "baselineContext": {
         "diagnosedPrevalence": 19783.2,
         "suppression": 13337.1,
-        "viralSuppressionPct": 0.673918,
+        "viralSuppressionPct": 0.674164,
         "adapSuppression": 8183.9,
-        "propSuppressedOnAdap": 0.613608,
+        "propSuppressedOnAdap": 0.613076,
         "rwClients": 18513.4,
         "adapClients": 9526.9,
         "adapClientShare": 0.514153,
         "oahsClients": 9990.8,
         "testing": 467409.682457,
-        "sexualTransmissionRate": 9729.11716148,
-        "baselineNewDiagnoses": 799.3
+        "sexualTransmissionRate": 1.59088372,
+        "baselineNewDiagnoses": 799.3,
+        "baselineNewInfections": 904.6
       }
     },
     {
@@ -6795,12 +6983,18 @@
           "lower": 1859,
           "upper": 20055
         },
+        "cumulativeExcessInfections": {
+          "median": 15822.5,
+          "lower": 2393.9,
+          "upper": 25621.1
+        },
         "cumulativePersonYearsOnArt": {
           "median": 51698,
           "lower": 7760.2,
           "upper": 82184.7
         },
-        "negativeExcessNewShare": 0,
+        "negativeExcessDiagnosesShare": 0,
+        "negativeExcessInfectionsShare": 0,
         "pooledCumulativeCareCost": {
           "median": 1901868701,
           "lower": 279496282,
@@ -6812,9 +7006,9 @@
           "upper": 3776098578
         },
         "mechanism": {
-          "activeOnArtImmediate": 8830.3,
-          "activeOnArtReengaged": 2554.9,
-          "offArtExcess": 1418
+          "activeOnArtImmediate": 8444.1,
+          "activeOnArtReengaged": 2429.9,
+          "offArtExcess": 1004.9
         },
         "cumulativeNetCostRatioVsAdap": {
           "low": {
@@ -6971,16 +7165,17 @@
       "baselineContext": {
         "diagnosedPrevalence": 107122.9,
         "suppression": 76172.4,
-        "viralSuppressionPct": 0.710633,
+        "viralSuppressionPct": 0.710699,
         "adapSuppression": 20333.1,
-        "propSuppressedOnAdap": 0.266846,
+        "propSuppressedOnAdap": 0.266853,
         "rwClients": 58994.2,
         "adapClients": 27476.2,
         "adapClientShare": 0.466832,
         "oahsClients": 49.7,
         "testing": 2193243.2060070001,
-        "sexualTransmissionRate": 34383.81446614,
-        "baselineNewDiagnoses": 3694
+        "sexualTransmissionRate": 1.10668632,
+        "baselineNewDiagnoses": 3694,
+        "baselineNewInfections": 4167.2
       }
     },
     {
@@ -7045,12 +7240,18 @@
           "lower": 215.4,
           "upper": 5424.4
         },
+        "cumulativeExcessInfections": {
+          "median": 3368.9,
+          "lower": 281.3,
+          "upper": 7385.4
+        },
         "cumulativePersonYearsOnArt": {
           "median": 10606.2,
           "lower": 930.1,
           "upper": 22604.9
         },
-        "negativeExcessNewShare": 0,
+        "negativeExcessDiagnosesShare": 0,
+        "negativeExcessInfectionsShare": 0,
         "pooledCumulativeCareCost": {
           "median": 404357017,
           "lower": 32942650,
@@ -7062,9 +7263,9 @@
           "upper": 1028492097
         },
         "mechanism": {
-          "activeOnArtImmediate": 1971.7,
-          "activeOnArtReengaged": 367.4,
-          "offArtExcess": 215.2
+          "activeOnArtImmediate": 2041.1,
+          "activeOnArtReengaged": 379.2,
+          "offArtExcess": 164.7
         },
         "cumulativeNetCostRatioVsAdap": {
           "low": {
@@ -7221,16 +7422,17 @@
       "baselineContext": {
         "diagnosedPrevalence": 25511.1,
         "suppression": 20150.6,
-        "viralSuppressionPct": 0.790043,
+        "viralSuppressionPct": 0.789279,
         "adapSuppression": 6865.1,
-        "propSuppressedOnAdap": 0.341276,
+        "propSuppressedOnAdap": 0.340743,
         "rwClients": 15033.9,
         "adapClients": 7866.2,
         "adapClientShare": 0.523441,
         "oahsClients": 6957,
         "testing": 614130.531767,
-        "sexualTransmissionRate": 11837.47019252,
-        "baselineNewDiagnoses": 559.7
+        "sexualTransmissionRate": 2.16843843,
+        "baselineNewDiagnoses": 559.7,
+        "baselineNewInfections": 609.9
       }
     },
     {
@@ -7295,12 +7497,18 @@
           "lower": 157.6,
           "upper": 3590.1
         },
+        "cumulativeExcessInfections": {
+          "median": 2751.8,
+          "lower": 232.2,
+          "upper": 5715.8
+        },
         "cumulativePersonYearsOnArt": {
           "median": 6542,
           "lower": 588.2,
           "upper": 13507.3
         },
-        "negativeExcessNewShare": 0,
+        "negativeExcessDiagnosesShare": 0,
+        "negativeExcessInfectionsShare": 0,
         "pooledCumulativeCareCost": {
           "median": 245661768,
           "lower": 20612314,
@@ -7312,9 +7520,9 @@
           "upper": 640118591
         },
         "mechanism": {
-          "activeOnArtImmediate": 1506.7,
-          "activeOnArtReengaged": 158.9,
-          "offArtExcess": 117.3
+          "activeOnArtImmediate": 1510.4,
+          "activeOnArtReengaged": 161.3,
+          "offArtExcess": 86
         },
         "cumulativeNetCostRatioVsAdap": {
           "low": {
@@ -7471,16 +7679,17 @@
       "baselineContext": {
         "diagnosedPrevalence": 16144.2,
         "suppression": 13870.3,
-        "viralSuppressionPct": 0.859871,
+        "viralSuppressionPct": 0.85941,
         "adapSuppression": 5268.7,
-        "propSuppressedOnAdap": 0.37984,
+        "propSuppressedOnAdap": 0.379504,
         "rwClients": 10777.3,
         "adapClients": 5746.2,
         "adapClientShare": 0.533946,
         "oahsClients": 4331.5,
         "testing": 407640.422392,
-        "sexualTransmissionRate": 7185.36927029,
-        "baselineNewDiagnoses": 542.7
+        "sexualTransmissionRate": 3.16095467,
+        "baselineNewDiagnoses": 542.7,
+        "baselineNewInfections": 565.4
       }
     },
     {
@@ -7545,12 +7754,18 @@
           "lower": 233.2,
           "upper": 2145
         },
+        "cumulativeExcessInfections": {
+          "median": 1885.9,
+          "lower": 329.2,
+          "upper": 3020.1
+        },
         "cumulativePersonYearsOnArt": {
           "median": 5170.3,
           "lower": 898.2,
           "upper": 7998.9
         },
-        "negativeExcessNewShare": 0,
+        "negativeExcessDiagnosesShare": 0,
+        "negativeExcessInfectionsShare": 0,
         "pooledCumulativeCareCost": {
           "median": 192434084,
           "lower": 30083337,
@@ -7562,9 +7777,9 @@
           "upper": 410553090
         },
         "mechanism": {
-          "activeOnArtImmediate": 1111.5,
-          "activeOnArtReengaged": 139.8,
-          "offArtExcess": 93.9
+          "activeOnArtImmediate": 1078.3,
+          "activeOnArtReengaged": 134.5,
+          "offArtExcess": 67.2
         },
         "cumulativeNetCostRatioVsAdap": {
           "low": {
@@ -7721,16 +7936,274 @@
       "baselineContext": {
         "diagnosedPrevalence": 7256.2,
         "suppression": 6108.7,
-        "viralSuppressionPct": 0.84241,
+        "viralSuppressionPct": 0.842501,
         "adapSuppression": 2024.5,
-        "propSuppressedOnAdap": 0.331298,
+        "propSuppressedOnAdap": 0.330681,
         "rwClients": 5010.4,
         "adapClients": 2207.1,
         "adapClientShare": 0.439699,
         "oahsClients": 2707.9,
         "testing": 228377.821572,
-        "sexualTransmissionRate": 2620.93195814,
-        "baselineNewDiagnoses": 218
+        "sexualTransmissionRate": 2.27317583,
+        "baselineNewDiagnoses": 218,
+        "baselineNewInfections": 229.8
+      }
+    },
+    {
+      "state": "DC",
+      "finalYear": {
+        "year": 2035,
+        "cumulativeCareCost": {
+          "low": {
+            "median": 2606029,
+            "lower": 249082,
+            "upper": 7103609
+          },
+          "median": {
+            "median": 4319859,
+            "lower": 412900,
+            "upper": 11775573
+          },
+          "high": {
+            "median": 6021870,
+            "lower": 575589,
+            "upper": 16415317
+          }
+        },
+        "cumulativeAdapSpendingAvoided": 92710931,
+        "cumulativeTotalRwhapSpendingAvoided": 463870938,
+        "cumulativeNetCostVsAdap": {
+          "low": {
+            "median": -90104902,
+            "lower": -92461849,
+            "upper": -85607322
+          },
+          "median": {
+            "median": -88391071,
+            "lower": -92298031,
+            "upper": -80935357
+          },
+          "high": {
+            "median": -86689061,
+            "lower": -92135342,
+            "upper": -76295614
+          }
+        },
+        "cumulativeNetCostVsTotalRwhap": {
+          "low": {
+            "median": -461264909,
+            "lower": -463621856,
+            "upper": -456767329
+          },
+          "median": {
+            "median": -459551079,
+            "lower": -463458038,
+            "upper": -452095365
+          },
+          "high": {
+            "median": -457849068,
+            "lower": -463295349,
+            "upper": -447455621
+          }
+        },
+        "cumulativeExcessNewDiagnoses": {
+          "median": 28,
+          "lower": 2.6,
+          "upper": 74.8
+        },
+        "cumulativeExcessInfections": {
+          "median": 39.1,
+          "lower": 3.4,
+          "upper": 93.8
+        },
+        "cumulativePersonYearsOnArt": {
+          "median": 100.9,
+          "lower": 9.7,
+          "upper": 276.8
+        },
+        "negativeExcessDiagnosesShare": 0.001,
+        "negativeExcessInfectionsShare": 0,
+        "pooledCumulativeCareCost": {
+          "median": 3937665,
+          "lower": 351283,
+          "upper": 13902750
+        },
+        "pooledCumulativeNetCostVsAdap": {
+          "median": -88773266,
+          "lower": -92359648,
+          "upper": -78808181
+        },
+        "mechanism": {
+          "activeOnArtImmediate": 19.3,
+          "activeOnArtReengaged": 7.9,
+          "offArtExcess": 3.8
+        },
+        "cumulativeNetCostRatioVsAdap": {
+          "low": {
+            "median": -0.972,
+            "lower": -0.997,
+            "upper": -0.923
+          },
+          "median": {
+            "median": -0.953,
+            "lower": -0.996,
+            "upper": -0.873
+          },
+          "high": {
+            "median": -0.935,
+            "lower": -0.994,
+            "upper": -0.823
+          }
+        },
+        "cumulativeNetCostRatioVsTotalRwhap": {
+          "low": {
+            "median": -0.994,
+            "lower": -0.999,
+            "upper": -0.985
+          },
+          "median": {
+            "median": -0.991,
+            "lower": -0.999,
+            "upper": -0.975
+          },
+          "high": {
+            "median": -0.987,
+            "lower": -0.999,
+            "upper": -0.965
+          }
+        },
+        "cumulativeNetCostVsAdapQuantiles": {
+          "low": {
+            "p025": -92461849,
+            "p05": -92309158,
+            "p10": -92033251,
+            "p25": -91352673,
+            "p50": -90104902,
+            "p75": -88658675,
+            "p90": -87184491,
+            "p95": -86318557,
+            "p975": -85607322
+          },
+          "median": {
+            "p025": -92298031,
+            "p05": -92044944,
+            "p10": -91587601,
+            "p25": -90459427,
+            "p50": -88391071,
+            "p75": -85993612,
+            "p90": -83549992,
+            "p95": -82114582,
+            "p975": -80935357
+          },
+          "high": {
+            "p025": -92135342,
+            "p05": -91782553,
+            "p10": -91145024,
+            "p25": -89572342,
+            "p50": -86689061,
+            "p75": -83346928,
+            "p90": -79940559,
+            "p95": -77939600,
+            "p975": -76295614
+          }
+        },
+        "cumulativeCareCostQuantiles": {
+          "low": {
+            "p025": 249082,
+            "p05": 401772,
+            "p10": 677680,
+            "p25": 1358258,
+            "p50": 2606029,
+            "p75": 4052256,
+            "p90": 5526440,
+            "p95": 6392374,
+            "p975": 7103609
+          },
+          "median": {
+            "p025": 412900,
+            "p05": 665986,
+            "p10": 1123330,
+            "p25": 2251504,
+            "p50": 4319859,
+            "p75": 6717319,
+            "p90": 9160939,
+            "p95": 10596349,
+            "p975": 11775573
+          },
+          "high": {
+            "p025": 575589,
+            "p05": 928378,
+            "p10": 1565907,
+            "p25": 3138589,
+            "p50": 6021870,
+            "p75": 9364003,
+            "p90": 12770372,
+            "p95": 14771331,
+            "p975": 16415317
+          }
+        },
+        "shareNetCostPositiveVsAdap": {
+          "low": 0,
+          "median": 0,
+          "high": 0
+        },
+        "rankByNetCostVsAdap": 31,
+        "rankByNetCostRatioVsAdap": 31
+      },
+      "pooledFinalYear": {
+        "cumulativeCareCost": {
+          "median": 3937665,
+          "lower": 351283,
+          "upper": 13902750
+        },
+        "cumulativeCareCostQuantiles": {
+          "p025": 351283,
+          "p05": 577185,
+          "p10": 965544,
+          "p25": 2019355,
+          "p50": 3937665,
+          "p75": 6656529,
+          "p90": 9895014,
+          "p95": 12028264,
+          "p975": 13902750
+        },
+        "cumulativeNetCostVsAdap": {
+          "median": -88773266,
+          "lower": -92359648,
+          "upper": -78808181
+        },
+        "cumulativeNetCostVsAdapQuantiles": {
+          "p025": -92359648,
+          "p05": -92133746,
+          "p10": -91745387,
+          "p25": -90691576,
+          "p50": -88773266,
+          "p75": -86054402,
+          "p90": -82815917,
+          "p95": -80682667,
+          "p975": -78808181
+        },
+        "cumulativeNetCostRatioVsAdap": {
+          "median": -0.958,
+          "lower": -0.996,
+          "upper": -0.85
+        },
+        "shareNetCostPositiveVsAdap": 0
+      },
+      "baselineContext": {
+        "diagnosedPrevalence": 12373.5,
+        "suppression": 7715.2,
+        "viralSuppressionPct": 0.622542,
+        "adapSuppression": 249.6,
+        "propSuppressedOnAdap": 0.032605,
+        "rwClients": 5893.1,
+        "adapClients": 1190.1,
+        "adapClientShare": 0.202118,
+        "oahsClients": 2791.6,
+        "testing": 115844.39618,
+        "sexualTransmissionRate": 0.40709696,
+        "baselineNewDiagnoses": 148.7,
+        "baselineNewInfections": 136.1
       }
     }
   ],

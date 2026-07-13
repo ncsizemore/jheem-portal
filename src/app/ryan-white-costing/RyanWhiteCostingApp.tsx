@@ -400,7 +400,7 @@ function HorizonEcho({
           {[
             ['Crossover', '#crossover'],
             ['Drivers', '#drivers'],
-            ['Why states', '#why-states'],
+            ['Why places', '#why-states'],
             ['Robustness', '#robustness'],
             ['Methods', '#methods'],
           ].map(([label, href]) => (
@@ -445,14 +445,15 @@ function CascadeHero({
   const truncated = horizon < HORIZON_MAX;
   const appearsToSave = headline.net.median <= 0;
   const bold = (text: string) => <span className="font-semibold text-slate-900">{text}</span>;
+  const jurisdictionCount = ryanWhiteCostingMetadata.modeledJurisdictionCount;
 
   // A truncated view must carry its own rebuttal: name the mechanism (costs
   // haven't landed yet) and the direction of travel, never a bare number.
   const narrative = !truncated ? (
     <>
-      Eliminating ADAP in 30 states avoids {bold(formatCompactDollars(headline.adap))} in spending through {horizon} -
-      but the infections the cut causes generate {bold(formatCompactDollars(headline.care.median))} in downstream HIV
-      care costs
+      Eliminating ADAP across {jurisdictionCount} modeled jurisdictions avoids{' '}
+      {bold(formatCompactDollars(headline.adap))} in spending through {horizon} - but the additional infections and
+      diagnoses attributable to the cut generate {bold(formatCompactDollars(headline.care.median))} in downstream HIV care costs
       {share !== null ? <>, exceeding the avoided spending in {bold(formatPercent(share))} of simulations</> : null}.
     </>
   ) : appearsToSave ? (
@@ -545,8 +546,13 @@ function CascadeChain({ headline, horizon }: { headline: HeadlineValues; horizon
   const links: Array<{ label: string; value: string; sub: string; mark?: string }> = [
     {
       label: 'Excess infections',
+      value: formatNumber(headline.excessInfections),
+      sub: 'modeled incident infections',
+    },
+    {
+      label: 'Excess diagnoses',
       value: formatNumber(headline.excessDiagnoses),
-      sub: 'caused by the cut',
+      sub: 'cohort used for costing',
     },
     {
       label: 'Person-years on ART',
@@ -583,7 +589,7 @@ function CascadeChain({ headline, horizon }: { headline: HeadlineValues; horizon
           <div key={link.label} className="flex min-w-0 items-center">
             {index > 0 && (
               <span aria-hidden className="mx-3 text-lg text-slate-300 sm:mx-4">
-                {index === 3 ? 'vs' : '→'}
+                {index === 4 ? 'vs' : '→'}
               </span>
             )}
             <div className="min-w-0">
@@ -995,7 +1001,7 @@ function DriverTable({
 function StateDetailCard({ row, crossoverKnown }: { row: DriverRow; crossoverKnown: boolean }) {
   return (
     <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-      <Eyebrow>Selected {row.state === 'Total' ? 'view' : 'state'}</Eyebrow>
+      <Eyebrow>Selected {row.state === 'Total' ? 'view' : 'jurisdiction'}</Eyebrow>
       <h3 className={cx(SERIF, 'mt-2 text-3xl font-medium text-slate-900')}>{row.stateName}</h3>
       <p className="mt-1 text-sm font-medium text-slate-500">
         {!crossoverKnown ? (
@@ -1019,6 +1025,7 @@ function StateDetailCard({ row, crossoverKnown }: { row: DriverRow; crossoverKno
           ['Downstream care', formatCompactDollars(row.careCost.median)],
           ['ADAP avoided', formatCompactDollars(row.adap)],
           ['Per $1 cut', formatPerDollar(row.perDollar)],
+          ['Excess infections', formatNumber(row.excessInfections)],
           ['Excess diagnoses', formatNumber(row.excessDiagnoses)],
           ['ART person-years', formatNumber(row.personYears)],
           ['Window', `2026-${row.year}`],
@@ -1039,7 +1046,7 @@ function BaselineContextCard({ context, stateLabel }: { context: BaselineContext
       <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
         <Eyebrow>Baseline context</Eyebrow>
         <p className="mt-3 text-sm leading-relaxed text-slate-500">
-          Program-dependence and epidemic context are state-level measures; select a state to see them.
+          Program-dependence and epidemic context are jurisdiction-level measures; select a jurisdiction to see them.
         </p>
       </div>
     );
@@ -1052,6 +1059,7 @@ function BaselineContextCard({ context, stateLabel }: { context: BaselineContext
     ['ADAP clients', formatNumber(context.adapClients)],
     ['Ryan White clients', formatNumber(context.rwClients)],
     ['Diagnosed PWH', formatNumber(context.diagnosedPrevalence)],
+    ['New infections', formatNumber(context.baselineNewInfections)],
     ['New diagnoses', formatNumber(context.baselineNewDiagnoses)],
     ['Transmission rate', context.sexualTransmissionRate.toFixed(3)],
   ];
@@ -1068,7 +1076,7 @@ function BaselineContextCard({ context, stateLabel }: { context: BaselineContext
         ))}
       </dl>
       <p className="mt-4 text-[0.7rem] leading-relaxed text-slate-400">
-        2025 no-intervention medians across 1,000 simulations.
+        2025 no-intervention summaries across 1,000 simulations; ratios are calculated within simulation.
       </p>
     </div>
   );
@@ -1174,14 +1182,15 @@ function MechanismChart({
         )}
       </div>
       <p className="mt-3 text-[0.7rem] leading-relaxed text-slate-400">
-        Component medians need not sum to the median total; the never-returning 14% accumulates off ART.
+        Mean end-of-year stocks across simulations. Categories are mutually exclusive and close to excess diagnoses;
+        the never-returning 14% accumulates off ART.
       </p>
     </div>
   );
 }
 
 // -----------------------------------------------------------------------------
-// Heterogeneity explorer - why states differ, against baseline context
+// Heterogeneity explorer - why jurisdictions differ, against baseline context
 // -----------------------------------------------------------------------------
 function HeterogeneityExplorer({
   rows,
@@ -1328,8 +1337,8 @@ function HeterogeneityExplorer({
           </ResponsiveContainer>
         </div>
         <p className="mt-3 text-[0.7rem] leading-relaxed text-slate-400">
-          Descriptive, 30 states, no fitted line. Also examined and mostly flat: transmission rate, viral suppression,
-          client mix. Color = share of draws net-costly at 2035.
+          Descriptive, {points.length} modeled jurisdictions, no fitted line. Also examined: transmission rate, viral
+          suppression, and client mix. Color = share of draws net-costly at 2035.
         </p>
       </div>
     </div>
@@ -1492,20 +1501,23 @@ function CrossoverTimeline({
 
   return (
     <div className="min-w-0 rounded-lg border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-      <h3 className="text-base font-semibold text-slate-900">Break-even year, all 30 states</h3>
+      <h3 className="text-base font-semibold text-slate-900">
+        Break-even year, all {crossovers.length || ryanWhiteCostingMetadata.modeledJurisdictionCount} jurisdictions
+      </h3>
       <p className="mt-1 text-sm leading-relaxed text-slate-500">
         {crossovers.length === 0 ? (
           'Loading annual series…'
         ) : (
           <>
             Within the current window,{' '}
-            <span className="font-semibold text-slate-900">{crossedByHorizon} of 30</span> states cross break-even
+            <span className="font-semibold text-slate-900">{crossedByHorizon} of {crossovers.length}</span>{' '}
+            jurisdictions cross break-even
             {national && (
               <>
                 ; the national ledger crosses in <span className="font-semibold text-slate-900">{national.year}</span>
               </>
             )}
-            . States past the window edge are dimmed.
+            . Jurisdictions past the window edge are dimmed.
           </>
         )}
       </p>
@@ -1595,20 +1607,25 @@ function ModelReview() {
     {
       title: 'Data scope',
       items: [
-        { label: 'Locations', value: '30 modeled states' },
-        { label: 'Funding benchmark', value: 'Fixed state inputs' },
+        {
+          label: 'Locations',
+          value: `${ryanWhiteCostingMetadata.modeledJurisdictionCount} modeled jurisdictions`,
+        },
+        { label: 'Funding benchmark', value: 'Fixed jurisdiction inputs' },
         { label: 'Horizon', value: `${ryanWhiteCostingMetadata.horizon.startYear}-${ryanWhiteCostingMetadata.horizon.endYear}` },
       ],
-      note: 'DC funding is excluded because no DC epidemiologic output is present. Intervals reflect modeled epidemiologic and care-cost uncertainty, not funding uncertainty.',
+      note: 'DC is included in both modeled outcomes and funding totals. Intervals reflect modeled epidemiologic and care-cost uncertainty, not funding uncertainty.',
     },
     {
       title: 'Provenance',
       items: [
         { label: 'Generated', value: ryanWhiteCostingMetadata.generatedAt.slice(0, 10) },
-        { label: 'Model output', value: ryanWhiteCostingMetadata.sourceRData.split('/').pop() ?? '' },
-        { label: 'Funding input', value: ryanWhiteCostingMetadata.sourceFundingCsv.split('/').pop() ?? '' },
+        { label: 'Model output', value: ryanWhiteCostingMetadata.sourceArtifacts.rData.fileName },
+        { label: 'Model SHA-256', value: ryanWhiteCostingMetadata.sourceArtifacts.rData.sha256.slice(0, 12) },
+        { label: 'Funding input', value: ryanWhiteCostingMetadata.sourceArtifacts.fundingCsv.fileName },
+        { label: 'Funding SHA-256', value: ryanWhiteCostingMetadata.sourceArtifacts.fundingCsv.sha256.slice(0, 12) },
       ],
-      note: `${ryanWhiteCostingMetadata.fundingAdjustment.description} National summaries use the within-simulation state sum (RData Total location); the paper's supplemental table bootstraps states independently - convention pending confirmation. Exporter output is numerically cross-checked against the draft analysis pipeline (scripts/cross-check-ryan-white-costing.R).`,
+      note: `${ryanWhiteCostingMetadata.fundingAdjustment.description} National summaries use the within-simulation jurisdiction sum (RData Total location); the paper's supplemental table bootstraps jurisdictions independently - convention pending confirmation. Exporter output is numerically cross-checked against the draft analysis pipeline (scripts/cross-check-ryan-white-costing.R).`,
     },
   ];
 
@@ -1644,34 +1661,12 @@ function ModelReview() {
   );
 }
 
-function QuestionsToResolve() {
-  const questions = ryanWhiteCostingMetadata.reviewQuestions;
-
-  return (
-    <section className="bg-white">
-      <div className="mx-auto w-full max-w-full px-5 pb-4 sm:max-w-6xl sm:px-6">
-        <div className="rounded-lg border border-amber-200 bg-amber-50/45 p-5">
-          <h2 className="text-sm font-semibold text-slate-900">Questions to resolve</h2>
-          <ul className="mt-4 grid gap-x-8 gap-y-2 lg:grid-cols-2">
-            {questions.map((item) => (
-              <li key={item} className="flex gap-2 text-sm leading-relaxed text-slate-700">
-                <span className="mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-amber-500/70" />
-                <span>{item}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
-    </section>
-  );
-}
-
 // -----------------------------------------------------------------------------
 // Page
 // -----------------------------------------------------------------------------
 export default function RyanWhiteCostingApp() {
   const [scenario, setScenario] = useState<CostScenarioId>(ryanWhiteCostingSummary.sensitivity.primaryScenario);
-  const [location, setLocation] = useState<LocationKey>(ryanWhiteCostingMetadata.defaultFocusState);
+  const [location, setLocation] = useState<LocationKey>(ryanWhiteCostingMetadata.defaultFocusJurisdiction);
   const [horizon, setHorizon] = useState<number>(HORIZON_MAX);
   const [hovered, setHovered] = useState<string | null>(null);
   const [series, setSeries] = useState<RyanWhiteCostingSeries | null>(null);
@@ -1681,10 +1676,9 @@ export default function RyanWhiteCostingApp() {
   const heroControlRef = useRef<HTMLDivElement | null>(null);
   const [echoVisible, setEchoVisible] = useState(false);
 
-  const primaryEstimand = ryanWhiteCostingMetadata.primaryEstimand;
   const defaultScenario = ryanWhiteCostingSummary.sensitivity.primaryScenario;
-  const defaultState = ryanWhiteCostingMetadata.defaultFocusState;
-  const modeledStates = useMemo(() => new Set(ryanWhiteCostingSummary.states.map((item) => item.state)), []);
+  const defaultState = ryanWhiteCostingMetadata.defaultFocusJurisdiction;
+  const modeledJurisdictions = useMemo(() => new Set(ryanWhiteCostingSummary.states.map((item) => item.state)), []);
 
   // Shareable app state: read ?through/&state/&scenario once on mount, then
   // mirror changes back with replaceState (no history spam, no server round trip).
@@ -1693,11 +1687,11 @@ export default function RyanWhiteCostingApp() {
     const through = Number(params.get('through'));
     if (Number.isInteger(through) && through >= HORIZON_MIN && through <= HORIZON_MAX) setHorizon(through);
     const state = params.get('state');
-    if (state && (state === 'Total' || modeledStates.has(state))) setLocation(state);
+    if (state && (state === 'Total' || modeledJurisdictions.has(state))) setLocation(state);
     const urlScenario = params.get('scenario');
     if (urlScenario && (SCENARIO_ORDER as string[]).includes(urlScenario)) setScenario(urlScenario as CostScenarioId);
     urlHydrated.current = true;
-  }, [modeledStates]);
+  }, [modeledJurisdictions]);
 
   useEffect(() => {
     if (!urlHydrated.current) return;
@@ -1737,15 +1731,13 @@ export default function RyanWhiteCostingApp() {
   // loads (or if the URL preset a horizon), fall back to the 2035 summary.
   const nationalPoint = pointForYear(series?.national ?? [], horizon) ?? nationalFinal;
   const atFullHorizon = nationalPoint.year === HORIZON_MAX;
-  const headline = useMemo(() => headlineAt(nationalPoint, primaryEstimand), [nationalPoint, primaryEstimand]);
+  const headline = useMemo(() => headlineAt(nationalPoint, scenario), [nationalPoint, scenario]);
   const horizonProfile = useMemo(
-    () => buildHorizonProfile(series?.national ?? [], primaryEstimand),
-    [series, primaryEstimand]
+    () => buildHorizonProfile(series?.national ?? [], scenario),
+    [series, scenario]
   );
   const share = atFullHorizon
-    ? primaryEstimand === 'pooled'
-      ? ryanWhiteCostingSummary.national.pooledFinalYear.shareNetCostPositiveVsAdap
-      : nationalFinal.shareNetCostPositiveVsAdap[primaryEstimand]
+    ? nationalFinal.shareNetCostPositiveVsAdap[scenario]
     : null;
   const decompositionRows = useMemo(
     () =>
@@ -1787,7 +1779,7 @@ export default function RyanWhiteCostingApp() {
       : ryanWhiteCostingSummary.states.find((item) => item.state === location)?.baselineContext ?? null;
   const mechanismSeries = useMemo(() => buildMechanismSeries(selectedSeries), [selectedSeries]);
 
-  const selectedName = location === 'Total' ? 'National total' : stateName(location);
+  const selectedName = location === 'Total' ? 'Modeled-jurisdiction total' : stateName(location);
   const tossUps = rankedStates.filter((s) => s.shareNetPositive < 0.66);
   const likely = rankedStates.filter((s) => s.shareNetPositive >= 0.85).length;
 
@@ -1804,7 +1796,7 @@ export default function RyanWhiteCostingApp() {
 
       <CascadeHero
         headline={headline}
-        estimand={primaryEstimand}
+        estimand={scenario}
         horizon={nationalPoint.year}
         share={share}
         profile={horizonProfile}
@@ -1854,11 +1846,11 @@ export default function RyanWhiteCostingApp() {
           <Reveal>
             <SectionHead
               n="02"
-              eyebrow="State drivers"
-              title="Which states drive the national result?"
+              eyebrow="Jurisdiction drivers"
+              title="Which jurisdictions drive the modeled total?"
             >
-              The paper&apos;s supplemental-table columns, recomputed at the selected budget window. {likely} of 30
-              states are net-costly in at least 85% of 2035 simulations; the least certain (
+              The paper&apos;s supplemental-table columns, recomputed at the selected budget window. {likely} of{' '}
+              {rankedStates.length} jurisdictions are net-costly in at least 85% of 2035 simulations; the least certain (
               {tossUps.map((s) => s.state).join(', ')}) are all large ADAP programs.
             </SectionHead>
 
@@ -1907,11 +1899,11 @@ export default function RyanWhiteCostingApp() {
           <Reveal>
             <SectionHead
               n="03"
-              eyebrow="Why states differ"
+              eyebrow="Why jurisdictions differ"
               title="Net cost per dollar tracks ADAP dependence"
             >
               <span className="font-semibold text-slate-700">
-                One baseline trait tracks the ratio: the share of a state&apos;s viral suppression that runs through
+                One baseline trait tracks the ratio descriptively: the share of a jurisdiction&apos;s viral suppression that runs through
                 ADAP.
               </span>{' '}
               Each dollar cut removes coverage from more people where dependence is high; scale partly dilutes the
@@ -1936,18 +1928,16 @@ export default function RyanWhiteCostingApp() {
         scenario={scenario}
         onScenario={setScenario}
         horizon={nationalPoint.year}
-        estimand={primaryEstimand}
+        estimand={scenario}
       />
 
       <ModelReview />
 
-      <QuestionsToResolve />
-
       <footer className="mx-auto w-full max-w-full px-5 py-12 sm:max-w-6xl sm:px-6">
         <p className="text-xs leading-relaxed text-slate-400">
-          30 modeled states. DC funding is excluded because no DC epidemiologic output is present. Funding benchmarks are
-          fixed state inputs; care-cost intervals are computed after per-simulation cumulative costing. Internal review
-          preview; figures are provisional.
+          {ryanWhiteCostingMetadata.modeledJurisdictionCount} modeled jurisdictions, including DC. Funding benchmarks are
+          fixed jurisdiction inputs; care-cost intervals are computed after per-simulation cumulative costing. Figures
+          remain provisional pending confirmation of the documented analysis conventions.
         </p>
       </footer>
     </div>

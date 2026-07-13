@@ -52,8 +52,10 @@ export interface AnnualCostPoint {
   cumulativeNetCostVsAdap: ScenarioValues;
   cumulativeNetCostVsTotalRwhap: ScenarioValues;
   cumulativeExcessNewDiagnoses: QuantileValue;
+  cumulativeExcessInfections: QuantileValue;
   cumulativePersonYearsOnArt: QuantileValue;
-  negativeExcessNewShare?: number;
+  negativeExcessDiagnosesShare: number;
+  negativeExcessInfectionsShare: number;
   pooledCumulativeCareCost: QuantileValue;
   pooledCumulativeNetCostVsAdap: QuantileValue;
   mechanism: MechanismPoint;
@@ -91,6 +93,7 @@ export interface BaselineContext {
   testing: number;
   sexualTransmissionRate: number;
   baselineNewDiagnoses: number;
+  baselineNewInfections: number;
 }
 
 export interface StateCostingSummary {
@@ -101,13 +104,18 @@ export interface StateCostingSummary {
 }
 
 export interface RyanWhiteCostingMetadata {
+  dataContractVersion: '2.0.0';
   generatedAt: string;
-  sourceRData: string;
-  sourceFundingCsv: string;
+  sourceArtifacts: {
+    rData: ArtifactProvenance;
+    fundingCsv: ArtifactProvenance;
+    generator: ArtifactProvenance;
+  };
   horizon: {
     startYear: number;
     endYear: number;
   };
+  simulationDraws: number;
   intervalLevel: IntervalLevel;
   defaultCostScenario: CostScenarioId;
   primaryEstimand: 'pooled' | CostScenarioId;
@@ -115,14 +123,20 @@ export interface RyanWhiteCostingMetadata {
     description: string;
     nationalTotal: string;
   };
-  defaultFocusState: string;
+  defaultFocusJurisdiction: string;
   dollarYear: string;
   fundingAdjustment: {
     applied: boolean;
     description: string;
   };
-  modeledStates: string[];
+  modeledJurisdictions: string[];
+  modeledJurisdictionCount: number;
   excludedFundingLocations: string[];
+  outcomeDefinitions: {
+    infections: OutcomeDefinition;
+    diagnoses: OutcomeDefinition;
+    costingCohort: string;
+  };
   assumptions: string[];
   deterministicFields: string[];
   modelParameters: {
@@ -135,14 +149,33 @@ export interface RyanWhiteCostingMetadata {
     immediateStartCareFractionDescription: string;
   };
   validation: {
-    totalEqualsStateSum: boolean;
-    totalEqualsStateSumMaxAbsDiff: number;
+    totalEqualsJurisdictionSum: boolean;
+    totalEqualsJurisdictionSumMaxAbsDiff: number;
+    incidenceArrayMatchesTotalResults: boolean;
+    incidenceArrayMaxAbsDiff: number;
+    diagnosisArrayMatchesTotalResults: boolean;
+    diagnosisArrayMaxAbsDiff: number;
+    mechanismClosureMaxAbsDiff: number;
     missingFundingLocations: string[];
     extraFundingLocations: string[];
-    negativeExcessNewCount: number;
-    negativeExcessNewShare: number;
+    negativeExcessDiagnosesCount: number;
+    negativeExcessDiagnosesShare: number;
+    negativeExcessInfectionsCount: number;
+    negativeExcessInfectionsShare: number;
   };
-  reviewQuestions: string[];
+}
+
+export interface ArtifactProvenance {
+  fileName: string;
+  sizeBytes: number;
+  modifiedAt: string;
+  sha256: string;
+}
+
+export interface OutcomeDefinition {
+  field: string;
+  source: string;
+  description: string;
 }
 
 export interface RyanWhiteCostingSummary {

@@ -21,9 +21,26 @@ function requireRecord(value: unknown, label: string): asserts value is Record<s
 }
 
 function requireNumber(value: unknown, label: string): void {
-  if (typeof value !== 'number' || Number.isNaN(value)) {
-    throw new Error(`${label} must be a number`);
+  if (typeof value !== 'number' || !Number.isFinite(value)) {
+    throw new Error(`${label} must be a finite number`);
   }
+}
+
+function requireString(value: unknown, label: string): void {
+  if (typeof value !== 'string' || value.length === 0) {
+    throw new Error(`${label} must be a non-empty string`);
+  }
+}
+
+function requireBoolean(value: unknown, label: string): void {
+  if (typeof value !== 'boolean') {
+    throw new Error(`${label} must be a boolean`);
+  }
+}
+
+function requireStringArray(value: unknown, label: string): asserts value is string[] {
+  requireArray(value, label);
+  value.forEach((item, index) => requireString(item, `${label}[${index}]`));
 }
 
 const COST_SCENARIOS = ['low', 'median', 'high'] as const;
@@ -103,6 +120,31 @@ function requirePooledFinalYear(value: unknown, label: string): void {
   requireNumber(value.shareNetCostPositiveVsAdap, `${label}.shareNetCostPositiveVsAdap`);
 }
 
+function requireMechanism(value: unknown, label: string): void {
+  requireRecord(value, label);
+  requireNumber(value.activeOnArtImmediate, `${label}.activeOnArtImmediate`);
+  requireNumber(value.activeOnArtReengaged, `${label}.activeOnArtReengaged`);
+  requireNumber(value.offArtExcess, `${label}.offArtExcess`);
+}
+
+function requireAnnualCostPoint(value: unknown, label: string): void {
+  requireRecord(value, label);
+  requireNumber(value.year, `${label}.year`);
+  requireScenarioValues(value.cumulativeCareCost, `${label}.cumulativeCareCost`);
+  requireNumber(value.cumulativeAdapSpendingAvoided, `${label}.cumulativeAdapSpendingAvoided`);
+  requireNumber(value.cumulativeTotalRwhapSpendingAvoided, `${label}.cumulativeTotalRwhapSpendingAvoided`);
+  requireScenarioValues(value.cumulativeNetCostVsAdap, `${label}.cumulativeNetCostVsAdap`);
+  requireScenarioValues(value.cumulativeNetCostVsTotalRwhap, `${label}.cumulativeNetCostVsTotalRwhap`);
+  requireQuantileValue(value.cumulativeExcessNewDiagnoses, `${label}.cumulativeExcessNewDiagnoses`);
+  requireQuantileValue(value.cumulativeExcessInfections, `${label}.cumulativeExcessInfections`);
+  requireQuantileValue(value.cumulativePersonYearsOnArt, `${label}.cumulativePersonYearsOnArt`);
+  requireNumber(value.negativeExcessDiagnosesShare, `${label}.negativeExcessDiagnosesShare`);
+  requireNumber(value.negativeExcessInfectionsShare, `${label}.negativeExcessInfectionsShare`);
+  requireQuantileValue(value.pooledCumulativeCareCost, `${label}.pooledCumulativeCareCost`);
+  requireQuantileValue(value.pooledCumulativeNetCostVsAdap, `${label}.pooledCumulativeNetCostVsAdap`);
+  requireMechanism(value.mechanism, `${label}.mechanism`);
+}
+
 function requireBaselineContext(value: unknown, label: string): void {
   requireRecord(value, label);
   for (const key of [
@@ -114,12 +156,18 @@ function requireBaselineContext(value: unknown, label: string): void {
     'rwClients',
     'adapClients',
     'adapClientShare',
+    'oahsClients',
+    'testing',
+    'sexualTransmissionRate',
+    'baselineNewDiagnoses',
+    'baselineNewInfections',
   ]) {
     requireNumber(value[key], `${label}.${key}`);
   }
 }
 
 function requireFinalYearUncertainty(value: unknown, label: string): void {
+  requireAnnualCostPoint(value, label);
   requireRecord(value, label);
   requireScenarioQuantileCurves(
     value.cumulativeNetCostVsAdapQuantiles,
@@ -134,17 +182,69 @@ function requireFinalYearUncertainty(value: unknown, label: string): void {
   assertConsistentQuantiles(value, 'cumulativeCareCost', 'cumulativeCareCostQuantiles', label);
 }
 
+function requireArtifactProvenance(value: unknown, label: string): void {
+  requireRecord(value, label);
+  requireString(value.fileName, `${label}.fileName`);
+  requireNumber(value.sizeBytes, `${label}.sizeBytes`);
+  requireString(value.modifiedAt, `${label}.modifiedAt`);
+  requireString(value.sha256, `${label}.sha256`);
+  if (!/^[0-9a-f]{64}$/.test(value.sha256 as string)) {
+    throw new Error(`${label}.sha256 must be a lowercase SHA-256 digest`);
+  }
+}
+
+function requireOutcomeDefinition(value: unknown, label: string): void {
+  requireRecord(value, label);
+  requireString(value.field, `${label}.field`);
+  requireString(value.source, `${label}.source`);
+  requireString(value.description, `${label}.description`);
+}
+
 export function validateRyanWhiteCostingMetadata(value: unknown): RyanWhiteCostingMetadata {
   requireRecord(value, 'metadata');
-  requireArray(value.modeledStates, 'metadata.modeledStates');
-  requireArray(value.excludedFundingLocations, 'metadata.excludedFundingLocations');
-  requireArray(value.assumptions, 'metadata.assumptions');
-  requireArray(value.reviewQuestions, 'metadata.reviewQuestions');
+  if (value.dataContractVersion !== '2.0.0') {
+    throw new Error('metadata.dataContractVersion must be 2.0.0');
+  }
+  requireString(value.generatedAt, 'metadata.generatedAt');
+  requireRecord(value.sourceArtifacts, 'metadata.sourceArtifacts');
+  requireArtifactProvenance(value.sourceArtifacts.rData, 'metadata.sourceArtifacts.rData');
+  requireArtifactProvenance(value.sourceArtifacts.fundingCsv, 'metadata.sourceArtifacts.fundingCsv');
+  requireArtifactProvenance(value.sourceArtifacts.generator, 'metadata.sourceArtifacts.generator');
+  requireStringArray(value.modeledJurisdictions, 'metadata.modeledJurisdictions');
+  requireNumber(value.modeledJurisdictionCount, 'metadata.modeledJurisdictionCount');
+  requireStringArray(value.excludedFundingLocations, 'metadata.excludedFundingLocations');
+  requireStringArray(value.assumptions, 'metadata.assumptions');
   requireRecord(value.horizon, 'metadata.horizon');
   requireNumber(value.horizon.startYear, 'metadata.horizon.startYear');
   requireNumber(value.horizon.endYear, 'metadata.horizon.endYear');
+  requireNumber(value.simulationDraws, 'metadata.simulationDraws');
+  requireRecord(value.outcomeDefinitions, 'metadata.outcomeDefinitions');
+  requireOutcomeDefinition(value.outcomeDefinitions.infections, 'metadata.outcomeDefinitions.infections');
+  requireOutcomeDefinition(value.outcomeDefinitions.diagnoses, 'metadata.outcomeDefinitions.diagnoses');
+  requireString(value.outcomeDefinitions.costingCohort, 'metadata.outcomeDefinitions.costingCohort');
   requireRecord(value.validation, 'metadata.validation');
-  requireNumber(value.validation.negativeExcessNewShare, 'metadata.validation.negativeExcessNewShare');
+  requireBoolean(value.validation.totalEqualsJurisdictionSum, 'metadata.validation.totalEqualsJurisdictionSum');
+  requireNumber(
+    value.validation.totalEqualsJurisdictionSumMaxAbsDiff,
+    'metadata.validation.totalEqualsJurisdictionSumMaxAbsDiff'
+  );
+  requireBoolean(
+    value.validation.incidenceArrayMatchesTotalResults,
+    'metadata.validation.incidenceArrayMatchesTotalResults'
+  );
+  requireNumber(value.validation.incidenceArrayMaxAbsDiff, 'metadata.validation.incidenceArrayMaxAbsDiff');
+  requireBoolean(
+    value.validation.diagnosisArrayMatchesTotalResults,
+    'metadata.validation.diagnosisArrayMatchesTotalResults'
+  );
+  requireNumber(value.validation.diagnosisArrayMaxAbsDiff, 'metadata.validation.diagnosisArrayMaxAbsDiff');
+  requireNumber(value.validation.mechanismClosureMaxAbsDiff, 'metadata.validation.mechanismClosureMaxAbsDiff');
+  requireStringArray(value.validation.missingFundingLocations, 'metadata.validation.missingFundingLocations');
+  requireStringArray(value.validation.extraFundingLocations, 'metadata.validation.extraFundingLocations');
+  requireNumber(value.validation.negativeExcessDiagnosesCount, 'metadata.validation.negativeExcessDiagnosesCount');
+  requireNumber(value.validation.negativeExcessDiagnosesShare, 'metadata.validation.negativeExcessDiagnosesShare');
+  requireNumber(value.validation.negativeExcessInfectionsCount, 'metadata.validation.negativeExcessInfectionsCount');
+  requireNumber(value.validation.negativeExcessInfectionsShare, 'metadata.validation.negativeExcessInfectionsShare');
 
   return value as unknown as RyanWhiteCostingMetadata;
 }
@@ -152,12 +252,12 @@ export function validateRyanWhiteCostingMetadata(value: unknown): RyanWhiteCosti
 export function validateRyanWhiteCostingSummary(value: unknown): RyanWhiteCostingSummary {
   requireRecord(value, 'summary');
   requireRecord(value.national, 'summary.national');
-  requireRecord(value.national.finalYear, 'summary.national.finalYear');
   requireFinalYearUncertainty(value.national.finalYear, 'summary.national.finalYear');
   requirePooledFinalYear(value.national.pooledFinalYear, 'summary.national.pooledFinalYear');
   requireArray(value.states, 'summary.states');
   value.states.forEach((state, index) => {
     requireRecord(state, `summary.states[${index}]`);
+    requireString(state.state, `summary.states[${index}].state`);
     requireFinalYearUncertainty(state.finalYear, `summary.states[${index}].finalYear`);
     requirePooledFinalYear(state.pooledFinalYear, `summary.states[${index}].pooledFinalYear`);
     requireBaselineContext(state.baselineContext, `summary.states[${index}].baselineContext`);
@@ -172,6 +272,11 @@ export function validateRyanWhiteCostingSeries(value: unknown): RyanWhiteCosting
   requireRecord(value, 'series');
   requireArray(value.national, 'series.national');
   requireRecord(value.states, 'series.states');
+  value.national.forEach((point, index) => requireAnnualCostPoint(point, `series.national[${index}]`));
+  Object.entries(value.states).forEach(([state, points]) => {
+    requireArray(points, `series.states.${state}`);
+    points.forEach((point, index) => requireAnnualCostPoint(point, `series.states.${state}[${index}]`));
+  });
 
   return value as unknown as RyanWhiteCostingSeries;
 }

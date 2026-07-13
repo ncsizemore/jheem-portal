@@ -16,10 +16,12 @@ import type {
 
 export type {
   AnnualCostPoint,
+  ArtifactProvenance,
   BaselineContext,
   CostScenarioId,
   FinalYearSummary,
   MechanismPoint,
+  OutcomeDefinition,
   PooledFinalYearSummary,
   QuantileCurve,
   QuantileValue,
