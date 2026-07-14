@@ -170,7 +170,7 @@ Record these separately from functional defects so the collaborative section-by-
 
 | Field | Result |
 | --- | --- |
-| Tested commit | Pending checkpoint |
+| Tested commit | `477fb71` (`Refine Ryan White costing narrative and QA`) |
 | Test date | 2026-07-14 |
 | Browser surface | In-app Browser at `localhost:3000` |
 | Desktop screenshot | Opening and section-aligned captures inspected at 1440 px |
