@@ -74,6 +74,16 @@ const NON_EXPANSION = '#a8cdd1';
 const EASE = [0.22, 1, 0.36, 1] as const;
 const SERIF = '[font-family:var(--font-serif)]';
 
+const ANALYSIS_SECTIONS = [
+  { id: 'crossover', label: 'Over time' },
+  { id: 'drivers', label: 'Jurisdictions' },
+  { id: 'context', label: 'Context' },
+  { id: 'robustness', label: 'Price sensitivity' },
+  { id: 'methods', label: 'Methods' },
+] as const;
+
+type AnalysisSectionId = (typeof ANALYSIS_SECTIONS)[number]['id'];
+
 function formatNcer(value: number): string {
   return value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
@@ -167,160 +177,156 @@ function TrajTip({ active, payload, label }: TipProps) {
 // this control scrolls away.
 // -----------------------------------------------------------------------------
 
-function BudgetWindowControl({
-  horizon,
-  onHorizon,
-  profile,
-  ready,
-  controlRef,
-}: {
-  horizon: number;
-  onHorizon: (year: number) => void;
-  profile: HorizonProfile | null;
-  ready: boolean;
-  controlRef: React.RefObject<HTMLDivElement | null>;
-}) {
-  const tickYears = Array.from({ length: HORIZON_MAX - HORIZON_MIN + 1 }, (_, i) => HORIZON_MIN + i);
-
-  return (
-    <div ref={controlRef} className="border-b border-slate-200 pb-8">
-      <div className="flex flex-wrap items-center gap-3">
-        <h2 className={cx(SERIF, 'mr-1 text-xl font-medium text-slate-900')}>Budget window</h2>
-        <label
-          htmlFor="hero-budget-window"
-          className="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-500"
-        >
-          <span>2026 through</span>
-        <select
-          id="hero-budget-window"
-          value={horizon}
-          disabled={!ready}
-          onChange={(event) => onHorizon(Number(event.target.value))}
-          className="rounded border-0 bg-transparent p-0 font-mono text-sm font-semibold tabular-nums text-slate-900 outline-none disabled:cursor-wait disabled:opacity-40"
-        >
-          {tickYears.map((year) => (
-            <option key={year} value={year}>{year}</option>
-          ))}
-        </select>
-        </label>
-        {horizon !== HORIZON_MAX && (
-          <button
-            type="button"
-            onClick={() => onHorizon(HORIZON_MAX)}
-            className="rounded-full px-2.5 py-1.5 text-xs font-semibold text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
-          >
-            Full horizon
-          </button>
-        )}
-      </div>
-      <p className="mt-3 max-w-3xl text-sm leading-relaxed text-slate-500">
-        Avoided ADAP spending begins immediately; downstream care costs accrue over time.
-        {profile?.crossoverYear != null && (
-          <>
-            {' '}The modeled-total median reaches break-even around{' '}
-            <span className="font-semibold text-slate-700">{profile.crossoverYear}</span>.
-          </>
-        )}
-      </p>
-      {!ready && <p className="mt-2 text-[0.7rem] text-slate-400">Loading annual series…</p>}
-    </div>
-  );
-}
-
-function HorizonEcho({
+function AnalysisNavigation({
   horizon,
   onHorizon,
   scenario,
   onScenario,
-  visible,
+  activeSection,
   ready,
 }: {
   horizon: number;
   onHorizon: (year: number) => void;
   scenario: CostScenarioId;
-  onScenario: (s: CostScenarioId) => void;
-  visible: boolean;
+  onScenario: (scenario: CostScenarioId) => void;
+  activeSection: AnalysisSectionId;
   ready: boolean;
 }) {
-  // Fixed and docked BELOW the site nav: the global header is sticky top-0
-  // z-50 (80px tall), so anything fixed at top-0 with a lower z-index sits
-  // permanently hidden behind it.
-  return (
-    <div
-      aria-hidden={!visible}
-      className={cx(
-        'fixed inset-x-0 top-20 z-40 border-b border-slate-200 bg-white/95 shadow-sm backdrop-blur transition-all duration-200',
-        visible ? 'translate-y-0 opacity-100' : 'pointer-events-none -translate-y-full opacity-0'
-      )}
-    >
-      <div className="mx-auto flex w-full max-w-full flex-wrap items-center gap-x-5 gap-y-2 px-5 py-2.5 sm:max-w-6xl sm:px-6">
-        <div className="flex items-baseline gap-2">
-          <span className="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-slate-500">Budget window</span>
-          <span className="font-mono text-base font-semibold tabular-nums text-slate-900">2026-{horizon}</span>
-        </div>
-        <input
-          type="range"
-          min={HORIZON_MIN}
-          max={HORIZON_MAX}
-          step={1}
-          value={horizon}
-          disabled={!ready}
-          tabIndex={visible ? 0 : -1}
-          onChange={(event) => onHorizon(Number(event.target.value))}
-          aria-label="Budget window end year"
-          aria-valuetext={`2026 through ${horizon}`}
-          className="h-1.5 w-full max-w-[220px] min-w-[110px] flex-1 cursor-pointer accent-slate-900 disabled:opacity-40"
-        />
-        {horizon !== HORIZON_MAX && (
-          <button
-            type="button"
-            tabIndex={visible ? 0 : -1}
-            onClick={() => onHorizon(HORIZON_MAX)}
-            className="rounded border border-slate-300 px-2 py-0.5 text-[0.7rem] font-medium text-slate-600 transition-colors hover:border-slate-400 hover:text-slate-900"
+  const tickYears = Array.from({ length: HORIZON_MAX - HORIZON_MIN + 1 }, (_, i) => HORIZON_MIN + i);
+  const sentinelRef = useRef<HTMLSpanElement | null>(null);
+  const navRef = useRef<HTMLDivElement | null>(null);
+  const [fixed, setFixed] = useState(false);
+  const [navHeight, setNavHeight] = useState(0);
+
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setFixed(!entry.isIntersecting && entry.boundingClientRect.top < 80),
+      { threshold: 0, rootMargin: '-80px 0px 0px 0px' }
+    );
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const nav = navRef.current;
+    if (!nav) return;
+    const updateHeight = () => setNavHeight(Math.ceil(nav.getBoundingClientRect().height));
+    updateHeight();
+    const observer = new ResizeObserver(updateHeight);
+    observer.observe(nav);
+    return () => observer.disconnect();
+  }, []);
+  const sectionLinks = (
+    <>
+      {ANALYSIS_SECTIONS.map((section) => {
+        const active = activeSection === section.id;
+        return (
+          <a
+            key={section.id}
+            href={`#${section.id}`}
+            aria-current={active ? 'location' : undefined}
+            className={cx(
+              'relative flex-shrink-0 whitespace-nowrap py-3 text-xs font-medium transition-colors after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:origin-center after:transition-transform',
+              active
+                ? 'text-slate-950 after:scale-x-100 after:bg-blue-800'
+                : 'text-slate-500 after:scale-x-0 after:bg-transparent hover:text-slate-900'
+            )}
           >
-            Full horizon
-          </button>
+            {section.label}
+          </a>
+        );
+      })}
+    </>
+  );
+
+  const horizonSelect = (id: string) => (
+    <label htmlFor={id} className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-500">
+      <span>Through</span>
+      <select
+        id={id}
+        value={horizon}
+        disabled={!ready}
+        onChange={(event) => onHorizon(Number(event.target.value))}
+        className="rounded-full border border-slate-300 bg-white px-2.5 py-1 font-mono text-xs font-semibold tabular-nums text-slate-900 outline-none focus:border-slate-500 focus:ring-2 focus:ring-slate-200 disabled:cursor-wait disabled:opacity-40"
+      >
+        {tickYears.map((year) => (
+          <option key={year} value={year}>{year}</option>
+        ))}
+      </select>
+    </label>
+  );
+
+  const priceControl = (compact = false) => (
+    <div className="flex items-center gap-1" role="group" aria-label="Drug-price assumption">
+      {!compact && <span className="mr-1 text-xs font-medium text-slate-500">ART price</span>}
+      {SCENARIO_ORDER.map((item) => (
+        <button
+          key={item}
+          type="button"
+          onClick={() => onScenario(item)}
+          aria-pressed={scenario === item}
+          className={cx(
+            'rounded-full px-2 py-1 font-mono text-[0.7rem] font-medium transition-colors',
+            scenario === item
+              ? 'bg-slate-900 text-white'
+              : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900'
+          )}
+        >
+          {SCENARIO_SHORT_LABELS[item]}
+        </button>
+      ))}
+    </div>
+  );
+
+  return (
+    <div id="analysis-navigation" className="relative" style={navHeight ? { height: navHeight } : undefined}>
+      <span ref={sentinelRef} aria-hidden className="pointer-events-none absolute left-0 top-0 h-px w-px" />
+      <div
+        ref={navRef}
+        className={cx(
+          'z-40 border-y border-slate-200 bg-white/95 shadow-sm backdrop-blur',
+          fixed ? 'fixed inset-x-0 top-20' : 'relative'
         )}
-        <div className="flex items-center gap-1" role="group" aria-label="Drug-price assumption">
-          <span className="mr-1 hidden text-[0.62rem] font-semibold uppercase tracking-wide text-slate-400 sm:inline">
-            Price
-          </span>
-          {SCENARIO_ORDER.map((item) => (
-            <button
-              key={item}
-              type="button"
-              tabIndex={visible ? 0 : -1}
-              onClick={() => onScenario(item)}
-              aria-pressed={scenario === item}
-              className={cx(
-                'rounded px-1.5 py-0.5 font-mono text-[0.7rem] font-medium transition-colors',
-                scenario === item
-                  ? 'bg-slate-900 text-white'
-                  : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900'
-              )}
-            >
-              {SCENARIO_SHORT_LABELS[item]}
-            </button>
-          ))}
-        </div>
-        <nav aria-label="Sections" className="ml-auto hidden items-center gap-4 lg:flex">
-          {[
-            ['Over time', '#crossover'],
-            ['Jurisdictions', '#drivers'],
-            ['Context', '#context'],
-            ['Price sensitivity', '#robustness'],
-            ['Methods', '#methods'],
-          ].map(([label, href]) => (
-            <a
-              key={href}
-              href={href}
-              tabIndex={visible ? 0 : -1}
-              className="text-[0.7rem] font-medium text-slate-500 transition-colors hover:text-slate-900"
-            >
-              {label}
-            </a>
-          ))}
+      >
+      <div className="mx-auto hidden w-full max-w-6xl items-center gap-5 px-6 lg:flex">
+        <span className="flex-shrink-0 text-[0.66rem] font-semibold uppercase tracking-[0.16em] text-slate-400">
+          Analysis
+        </span>
+        <nav aria-label="Analysis sections" className="flex min-w-0 flex-1 items-center gap-5 overflow-x-auto">
+          {sectionLinks}
         </nav>
+        <div className="flex flex-shrink-0 items-center gap-4 border-l border-slate-200 pl-5">
+          {horizonSelect('analysis-window-desktop')}
+          {priceControl()}
+        </div>
+      </div>
+
+      <div className="lg:hidden">
+        <div className="flex items-center gap-3 border-b border-slate-100 px-5">
+          <span className="flex-shrink-0 text-[0.62rem] font-semibold uppercase tracking-[0.14em] text-slate-400">
+            Analysis
+          </span>
+          <nav aria-label="Analysis sections" className="flex min-w-0 flex-1 items-center gap-4 overflow-x-auto">
+            {sectionLinks}
+          </nav>
+        </div>
+        <details className="group px-5 py-2">
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-xs text-slate-600 [&::-webkit-details-marker]:hidden">
+            <span>
+              Through <span className="font-mono font-semibold text-slate-900">{horizon}</span>
+              {' '}· <span className="font-semibold text-slate-900">{SCENARIO_SHORT_LABELS[scenario]}</span> ART price
+            </span>
+            <span className="font-medium text-slate-500 group-open:hidden">Change assumptions</span>
+            <span className="hidden font-medium text-slate-500 group-open:inline">Close</span>
+          </summary>
+          <div className="mt-2 flex flex-wrap items-center gap-4 border-t border-slate-100 pt-2">
+            {horizonSelect('analysis-window-mobile')}
+            {priceControl(true)}
+          </div>
+        </details>
+      </div>
       </div>
     </div>
   );
@@ -335,25 +341,16 @@ function CascadeHero({
   estimand,
   horizon,
   share,
-  profile,
-  onHorizon,
-  ready,
-  controlRef,
 }: {
   headline: HeadlineValues;
   estimand: CostScenarioId;
   horizon: number;
   share: number | null;
-  profile: HorizonProfile | null;
-  onHorizon: (year: number) => void;
-  ready: boolean;
-  controlRef: React.RefObject<HTMLDivElement | null>;
 }) {
   const netPositive = headline.net.median > 0;
 
   return (
-    <>
-      <header className="border-b border-slate-200">
+    <header className="border-b border-slate-200">
         <div className="mx-auto w-full max-w-full px-5 py-10 sm:max-w-5xl sm:px-6 sm:py-14">
           <div>
             <h1 className={cx(SERIF, 'text-[2rem] font-medium leading-[1.08] text-slate-900 sm:text-[3rem]')}>
@@ -438,21 +435,7 @@ function CascadeHero({
             </p>
           </div>
         </div>
-      </header>
-
-      <section className="border-b border-slate-200" aria-label="Explore the modeled result">
-        <div className="mx-auto w-full max-w-full px-5 py-8 sm:max-w-5xl sm:px-6 sm:py-10">
-          <BudgetWindowControl
-            horizon={horizon}
-            onHorizon={onHorizon}
-            profile={profile}
-            ready={ready}
-            controlRef={controlRef}
-          />
-          <CascadeChain headline={headline} horizon={horizon} />
-        </div>
-      </section>
-    </>
+    </header>
   );
 }
 
@@ -565,7 +548,7 @@ function UncertaintyDecomposition({
   const zero = at(0);
 
   return (
-    <section id="robustness" className="mx-auto w-full max-w-full scroll-mt-36 px-5 py-16 sm:max-w-6xl sm:px-6">
+    <section id="robustness" className="mx-auto w-full max-w-full scroll-mt-44 px-5 py-16 sm:max-w-6xl sm:px-6">
       <Reveal>
         <SectionHead
           n="04"
@@ -1600,7 +1583,7 @@ function ModelReview() {
   ];
 
   return (
-    <section id="methods" className="scroll-mt-36 border-t border-slate-200 bg-slate-50">
+    <section id="methods" className="scroll-mt-44 border-t border-slate-200 bg-slate-50">
       <div className="mx-auto w-full max-w-full px-5 py-16 sm:max-w-6xl sm:px-6">
         <Reveal>
           <SectionHead n="05" eyebrow="Methods" title="Accounting frame and model assumptions">
@@ -1666,9 +1649,8 @@ export default function RyanWhiteCostingApp() {
   const [hovered, setHovered] = useState<string | null>(null);
   const [series, setSeries] = useState<RyanWhiteCostingSeries | null>(null);
   const [seriesError, setSeriesError] = useState<string | null>(null);
+  const [activeSection, setActiveSection] = useState<AnalysisSectionId>('crossover');
   const urlHydrated = useRef(false);
-  const heroControlRef = useRef<HTMLDivElement | null>(null);
-  const [echoVisible, setEchoVisible] = useState(false);
 
   const defaultScenario = ryanWhiteCostingSummary.sensitivity.primaryScenario;
   const defaultState: LocationKey = 'FL';
@@ -1707,17 +1689,32 @@ export default function RyanWhiteCostingApp() {
     };
   }, []);
 
-  // The fixed bar is only an echo of the hero control - show it once the
-  // hero control has scrolled up under the 80px sticky site nav.
+  // Keep the analysis navigation synchronized with the section currently
+  // crossing beneath the site header and sticky analysis bar.
   useEffect(() => {
-    const el = heroControlRef.current;
-    if (!el) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => setEchoVisible(!entry.isIntersecting && entry.boundingClientRect.top < 80),
-      { threshold: 0, rootMargin: '-80px 0px 0px 0px' }
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      const anchor = 200;
+      let current: AnalysisSectionId = ANALYSIS_SECTIONS[0].id;
+      for (const section of ANALYSIS_SECTIONS) {
+        const element = document.getElementById(section.id);
+        if (element && element.getBoundingClientRect().top <= anchor) current = section.id;
+        else break;
+      }
+      setActiveSection((previous) => (previous === current ? previous : current));
+    };
+    const schedule = () => {
+      if (!frame) frame = window.requestAnimationFrame(update);
+    };
+    update();
+    window.addEventListener('scroll', schedule, { passive: true });
+    window.addEventListener('resize', schedule);
+    return () => {
+      if (frame) window.cancelAnimationFrame(frame);
+      window.removeEventListener('scroll', schedule);
+      window.removeEventListener('resize', schedule);
+    };
   }, []);
 
   const nationalFinal = ryanWhiteCostingSummary.national.finalYear;
@@ -1778,28 +1775,38 @@ export default function RyanWhiteCostingApp() {
   const intervalsCrossingZero = driverRows.filter((row) => row.ratioLower <= 0 && row.ratioUpper >= 0).length;
 
   return (
-    <div className="min-h-screen w-full min-w-0 max-w-full overflow-x-hidden overflow-y-auto bg-white text-slate-900">
-      <HorizonEcho
-        horizon={horizon}
-        onHorizon={setHorizon}
-        scenario={scenario}
-        onScenario={setScenario}
-        visible={echoVisible}
-        ready={series !== null}
-      />
-
+    <div className="min-h-screen w-full min-w-0 max-w-full overflow-x-hidden bg-white text-slate-900">
       <CascadeHero
         headline={headline}
         estimand={scenario}
         horizon={nationalPoint.year}
         share={share}
-        profile={horizonProfile}
-        onHorizon={setHorizon}
-        ready={series !== null}
-        controlRef={heroControlRef}
       />
 
-      <section id="crossover" className="scroll-mt-36 border-t border-slate-200 bg-white">
+      <AnalysisNavigation
+        horizon={horizon}
+        onHorizon={setHorizon}
+        scenario={scenario}
+        onScenario={setScenario}
+        activeSection={activeSection}
+        ready={series !== null}
+      />
+
+      <section className="border-b border-slate-200 bg-white" aria-label="How the result is constructed">
+        <div className="mx-auto w-full max-w-full px-5 py-8 sm:max-w-5xl sm:px-6 sm:py-10">
+          <p className="max-w-3xl text-sm leading-relaxed text-slate-500">
+            Avoided ADAP spending begins immediately while downstream care costs accrue over time.
+            {horizonProfile?.crossoverYear != null && (
+              <> The modeled-total median reaches break-even around{' '}
+                <span className="font-semibold text-slate-700">{horizonProfile.crossoverYear}</span>.
+              </>
+            )}
+          </p>
+          <CascadeChain headline={headline} horizon={nationalPoint.year} />
+        </div>
+      </section>
+
+      <section id="crossover" className="scroll-mt-44 border-t border-slate-200 bg-white">
         <div className="mx-auto w-full max-w-full px-5 py-16 sm:max-w-6xl sm:px-6">
           <Reveal>
             <SectionHead
@@ -1856,7 +1863,7 @@ export default function RyanWhiteCostingApp() {
         </div>
       </section>
 
-      <section id="drivers" className="scroll-mt-36 border-t border-slate-200 bg-slate-50">
+      <section id="drivers" className="scroll-mt-44 border-t border-slate-200 bg-slate-50">
         <div className="mx-auto w-full max-w-full px-5 py-16 sm:max-w-6xl sm:px-6">
           <Reveal>
             <SectionHead
@@ -1907,7 +1914,7 @@ export default function RyanWhiteCostingApp() {
         </div>
       </section>
 
-      <section id="context" className="scroll-mt-36 border-t border-slate-200 bg-white">
+      <section id="context" className="scroll-mt-44 border-t border-slate-200 bg-white">
         <div className="mx-auto w-full max-w-full px-5 py-16 sm:max-w-6xl sm:px-6">
           <Reveal>
             <SectionHead
