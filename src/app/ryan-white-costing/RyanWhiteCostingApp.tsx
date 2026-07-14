@@ -39,7 +39,6 @@ import {
   DriverRow,
   DriverSortKey,
   HeterogeneityPoint,
-  ESTIMAND_LABELS,
   EstimandId,
   formatCompactDollars,
   formatNumber,
@@ -163,23 +162,10 @@ function TrajTip({ active, payload, label }: TipProps) {
 }
 
 // -----------------------------------------------------------------------------
-// Budget-window control - the app's one computation-bearing input. Lives in
-// the hero (a top-bar slider reads as chrome and gets missed); the sticky bar
-// below is only a condensed echo once the hero control scrolls away.
+// Budget-window control - the app's one computation-bearing input. The hero
+// keeps it compact and explicit; the sticky bar below is a condensed echo once
+// this control scrolls away.
 // -----------------------------------------------------------------------------
-const THUMB_PX = 20;
-
-const RANGE_THUMB_CLASSES =
-  '[&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:appearance-none ' +
-  '[&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-slate-900 ' +
-  '[&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:shadow-md ' +
-  '[&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:rounded-full ' +
-  '[&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-slate-900 [&::-moz-range-thumb]:bg-white ' +
-  '[&::-moz-range-track]:bg-transparent';
-
-function horizonPct(year: number): number {
-  return ((year - HORIZON_MIN) / (HORIZON_MAX - HORIZON_MIN)) * 100;
-}
 
 function BudgetWindowControl({
   horizon,
@@ -194,133 +180,52 @@ function BudgetWindowControl({
   ready: boolean;
   controlRef: React.RefObject<HTMLDivElement | null>;
 }) {
-  const crossPct =
-    profile?.crossoverPosition != null
-      ? Math.max(0, Math.min(100, horizonPct(profile.crossoverPosition)))
-      : null;
   const tickYears = Array.from({ length: HORIZON_MAX - HORIZON_MIN + 1 }, (_, i) => HORIZON_MIN + i);
 
   return (
-    <div ref={controlRef} className="mt-10 rounded-lg border border-slate-200 bg-slate-50/60 p-5 sm:p-6">
-      <div className="flex flex-wrap items-start justify-between gap-x-10 gap-y-4">
-        <div className="min-w-0 max-w-md">
-          <Eyebrow>Budget window</Eyebrow>
-          <p className="mt-2 text-sm leading-relaxed text-slate-600">
-            Avoided spending accrues immediately; care costs accrue later. Use the control to change the ledger window.
-            {profile?.crossoverYear != null && (
-              <>
-                {' '}
-                The modeled-total median reaches break-even around{' '}
-                <span className="font-semibold text-slate-900">{profile.crossoverYear}</span>.
-              </>
-            )}
-            {' '}Nothing is extrapolated past 2035.
-          </p>
-        </div>
-        {profile && <PerDollarSparkline profile={profile} horizon={horizon} />}
+    <div
+      ref={controlRef}
+      className="flex flex-col gap-4 border-b border-slate-200 pb-7 sm:flex-row sm:items-center sm:justify-between"
+    >
+      <div className="min-w-0 max-w-2xl">
+        <h2 className={cx(SERIF, 'text-xl font-medium text-slate-900')}>Explore the budget window</h2>
+        <p className="mt-1.5 text-sm leading-relaxed text-slate-500">
+          Avoided ADAP spending begins immediately; downstream care costs accrue over time.
+          {profile?.crossoverYear != null && (
+            <>
+              {' '}The modeled-total median reaches break-even around{' '}
+              <span className="font-semibold text-slate-700">{profile.crossoverYear}</span>.
+            </>
+          )}
+        </p>
       </div>
 
-      <div className="relative mt-6 h-12">
-        {/* Track layers, inset by half the thumb so tick positions align with thumb centers */}
-        <div
-          className="pointer-events-none absolute top-[15px]"
-          style={{ left: THUMB_PX / 2, right: THUMB_PX / 2 }}
-        >
-          <div className="relative h-2 overflow-hidden rounded-full bg-teal-100">
-            {crossPct !== null && (
-              <span className="absolute inset-y-0 right-0 bg-amber-100" style={{ left: `${crossPct}%` }} />
-            )}
-          </div>
-          {tickYears.map((year) => (
-            <span
-              key={year}
-              className="absolute top-[-3px] h-[14px] w-px -translate-x-1/2 bg-slate-300"
-              style={{ left: `${horizonPct(year)}%` }}
-            />
-          ))}
-          {crossPct !== null && (
-            <span
-              className="absolute top-[-6px] h-[20px] w-[2px] -translate-x-1/2 rounded-full bg-slate-700"
-              style={{ left: `${crossPct}%` }}
-            />
-          )}
-        </div>
-        <input
-          type="range"
-          min={HORIZON_MIN}
-          max={HORIZON_MAX}
-          step={1}
+      <div className="flex flex-wrap items-center gap-2 sm:flex-nowrap">
+        <label htmlFor="hero-budget-window" className="text-xs font-medium text-slate-500">
+          2026 through
+        </label>
+        <select
+          id="hero-budget-window"
           value={horizon}
           disabled={!ready}
           onChange={(event) => onHorizon(Number(event.target.value))}
-          aria-label="Budget window end year"
-          aria-valuetext={`2026 through ${horizon}`}
-          className={cx(
-            'absolute inset-x-0 top-[5px] h-7 w-full min-w-0 cursor-grab appearance-none bg-transparent',
-            'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-slate-400',
-            'disabled:cursor-wait disabled:opacity-40',
-            RANGE_THUMB_CLASSES
-          )}
-        />
-        <div
-          className="pointer-events-none absolute bottom-0 font-mono text-[0.68rem] tabular-nums text-slate-400"
-          style={{ left: THUMB_PX / 2, right: THUMB_PX / 2 }}
+          className="min-w-[6.5rem] rounded-md border border-slate-300 bg-white px-3 py-2 font-mono text-sm font-semibold tabular-nums text-slate-900 shadow-sm outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-200 disabled:cursor-wait disabled:opacity-40"
         >
-          <span className="absolute left-0 -translate-x-1/2">{HORIZON_MIN}</span>
-          {crossPct !== null && crossPct > 12 && crossPct < 88 && (
-            <span className="absolute -translate-x-1/2 font-medium text-slate-600" style={{ left: `${crossPct}%` }}>
-              break-even
-            </span>
-          )}
-          <span className="absolute right-0 translate-x-1/2">{HORIZON_MAX}</span>
-        </div>
-      </div>
-      {!ready && <p className="mt-2 text-[0.7rem] text-slate-400">Loading annual series…</p>}
-    </div>
-  );
-}
-
-function PerDollarSparkline({ profile, horizon }: { profile: HorizonProfile; horizon: number }) {
-  const W = 230;
-  const H = 68;
-  const padL = 6;
-  const padR = 36;
-  const padT = 10;
-  const padB = 8;
-  const first = profile.years[0];
-  const last = profile.years[profile.years.length - 1];
-  const x = (year: number) => padL + ((year - first) / (last - first)) * (W - padL - padR);
-  const values = profile.perDollar.map((value) => value - 1);
-  const yMin = Math.min(0, ...values);
-  const yMax = Math.max(0, ...values);
-  const ySpan = Math.max(yMax - yMin, 0.1);
-  const y = (v: number) => H - padB - ((v - yMin) / ySpan) * (H - padT - padB);
-  const path = profile.years.map((year, i) => `${i === 0 ? 'M' : 'L'}${x(year).toFixed(1)},${y(values[i]).toFixed(1)}`).join(' ');
-  const horizonIdx = profile.years.indexOf(horizon);
-
-  return (
-    <div className="min-w-0">
-      <p className="text-[0.62rem] font-medium uppercase tracking-wide text-slate-400">NCER by window end</p>
-      <svg
-        viewBox={`0 0 ${W} ${H}`}
-        width={W}
-        height={H}
-        className="mt-1 max-w-full"
-        role="img"
-        aria-label={`Net cost to ADAP expenditure ratio changes from ${formatNcer(values[0])} to ${formatNcer(values[values.length - 1])} as the window extends to ${last}`}
-      >
-        <line x1={padL} x2={W - padR} y1={y(0)} y2={y(0)} stroke={GRID} strokeDasharray="3 3" />
-        <text x={W - padR + 4} y={y(0) + 3.5} fontSize="10" fill={MUTED} className="font-mono">
-          0
-        </text>
-        <path d={path} fill="none" stroke={INK} strokeWidth={2} strokeLinejoin="round" />
-        {horizonIdx >= 0 && (
-          <circle cx={x(horizon)} cy={y(values[horizonIdx])} r={3.5} fill={INK} stroke="#ffffff" strokeWidth={1.5} />
+          {tickYears.map((year) => (
+            <option key={year} value={year}>{year}</option>
+          ))}
+        </select>
+        {horizon !== HORIZON_MAX && (
+          <button
+            type="button"
+            onClick={() => onHorizon(HORIZON_MAX)}
+            className="rounded-md px-2.5 py-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
+          >
+            Full horizon
+          </button>
         )}
-        <text x={W - padR + 4} y={y(values[values.length - 1]) + 3.5} fontSize="10" fill={INK} fontWeight={600} className="font-mono">
-          {formatNcer(values[values.length - 1])}
-        </text>
-      </svg>
+      </div>
+      {!ready && <span className="text-[0.7rem] text-slate-400">Loading annual series…</span>}
     </div>
   );
 }
@@ -447,204 +352,145 @@ function CascadeHero({
   ready: boolean;
   controlRef: React.RefObject<HTMLDivElement | null>;
 }) {
-  const ncer = headline.perDollar.median - 1;
-  const ncerLower = headline.perDollar.lower - 1;
-  const ncerUpper = headline.perDollar.upper - 1;
-  const truncated = horizon < HORIZON_MAX;
   const netPositive = headline.net.median > 0;
-  const bold = (text: string) => <span className="font-semibold text-slate-900">{text}</span>;
-  const jurisdictionCount = ryanWhiteCostingMetadata.modeledJurisdictionCount;
-
-  const narrative = netPositive ? (
-    <>
-      Across {jurisdictionCount}{' '}modeled jurisdictions in the complete-elimination scenario, projected care costs for
-      excess incident cases reach{' '}
-      {bold(formatCompactDollars(headline.care.median))}, compared with{' '}
-      {bold(formatCompactDollars(headline.adap))} in ADAP spending avoided
-      {share !== null ? <>{' '}({bold(formatPercent(share))} of simulations have net cost above zero)</> : null}.
-    </>
-  ) : (
-    <>
-      Across {jurisdictionCount}{' '}modeled jurisdictions through {horizon}, projected accrued care costs are{' '}
-      {bold(formatCompactDollars(headline.care.median))}, below the{' '}
-      {bold(formatCompactDollars(headline.adap))} in ADAP spending avoided within this window
-      {profile?.crossoverYear != null ? (
-        <>
-          ; the modeled-total median first exceeds the comparator in {bold(String(profile.crossoverYear))}
-        </>
-      ) : null}
-      .
-    </>
-  );
 
   return (
-    <header className="border-b border-slate-200">
-      <div className="mx-auto w-full max-w-full px-5 py-14 sm:max-w-6xl sm:px-6 sm:py-16">
-        <div className="grid gap-x-12 gap-y-10 lg:grid-cols-[1.05fr_0.95fr] lg:items-end">
-          <div className="min-w-0">
-            <Eyebrow>
-              Ryan White ADAP / Cost-consequence analysis / {ryanWhiteCostingMetadata.horizon.startYear}-{horizon}
-            </Eyebrow>
-            <h1
-              className={cx(
-                SERIF,
-                'mt-6 max-w-2xl text-[2.35rem] font-medium leading-[1.08] text-slate-900 sm:text-[3.3rem]'
-              )}
-            >
-              {netPositive
-                ? `In the ${SCENARIO_SHORT_LABELS[estimand].toLowerCase()} drug-cost scenario, downstream care costs exceed ADAP spending avoided by ${horizon}.`
-                : `In the ${SCENARIO_SHORT_LABELS[estimand].toLowerCase()} drug-cost scenario, ADAP spending avoided exceeds accrued care costs through ${horizon}.`}
+    <>
+      <header className="border-b border-slate-200">
+        <div className="mx-auto w-full max-w-full px-5 py-10 sm:max-w-6xl sm:px-6 sm:py-14">
+          <div className="max-w-4xl">
+            <h1 className={cx(SERIF, 'text-[2rem] font-medium leading-[1.08] text-slate-900 sm:text-[3rem]')}>
+              When Cuts Cost More: Modeling ADAP Elimination Across Multiple US States
             </h1>
-            <p className="mt-6 max-w-xl text-lg leading-relaxed text-slate-600">{narrative}</p>
+            <p className="mt-5 max-w-3xl text-base leading-relaxed text-slate-600 sm:text-lg">
+              An interactive companion to a 2026-{HORIZON_MAX} modeled stress test of complete ADAP elimination across
+              30 states and Washington, D.C.
+            </p>
 
-            <div className="mt-8 max-w-xl border-l-2 pl-4" style={{ borderColor: NAVY }}>
-              <p className="text-sm font-semibold text-slate-800">How to read this result</p>
-              <p className="mt-1.5 text-sm leading-relaxed text-slate-500">
-                A modeled stress test across {jurisdictionCount}{' '}jurisdictions, not an estimate for all US jurisdictions
-                or a federal budget score. The modified healthcare-system frame compares one program&apos;s avoided
-                spending with a restricted set of downstream HIV care costs.
-              </p>
-            </div>
-          </div>
+            <p className="mt-7 max-w-4xl text-xl leading-relaxed text-slate-800 sm:text-2xl">
+              Under the {SCENARIO_SHORT_LABELS[estimand].toLowerCase()} drug-cost assumption and through {horizon},
+              projected downstream care costs reach{' '}
+              <strong className="font-semibold text-slate-950">{formatCompactDollars(headline.care.median)}</strong>,
+              compared with{' '}
+              <strong className="font-semibold text-slate-950">{formatCompactDollars(headline.adap)}</strong> in avoided
+              ADAP spending—{netPositive ? 'a median net cost of ' : 'a median net offset of '}
+              <strong className="font-semibold text-slate-950">{formatCompactDollars(Math.abs(headline.net.median))}</strong>.
+            </p>
 
-          <div className="min-w-0 rounded-lg border border-slate-200 bg-slate-50/70 p-5 sm:p-6">
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <Eyebrow>{horizon} accounting result</Eyebrow>
-              <span className="rounded bg-white px-2 py-1 text-[0.65rem] font-medium text-slate-500 shadow-sm">
-                {ESTIMAND_LABELS[estimand]}
+            <div className="mt-7 flex max-w-4xl flex-wrap items-baseline gap-x-3 gap-y-2 border-y border-slate-200 py-4 font-mono tabular-nums">
+              <span className="text-xl font-semibold text-slate-900 sm:text-2xl">
+                {formatCompactDollars(headline.care.median)}
               </span>
+              <span className="text-sm text-slate-500">care</span>
+              <span className="mx-1 text-xl text-slate-300">−</span>
+              <span className="text-xl font-semibold text-slate-900 sm:text-2xl">{formatCompactDollars(headline.adap)}</span>
+              <span className="text-sm text-slate-500">avoided</span>
+              <span className="mx-1 text-xl text-slate-300">=</span>
+              <span className="text-xl font-semibold text-slate-900 sm:text-2xl">
+                {formatCompactDollars(Math.abs(headline.net.median))}
+              </span>
+              <span className="text-sm text-slate-500">{netPositive ? 'net cost' : 'net offset'}</span>
             </div>
-            <p className="mt-4 font-mono text-5xl font-semibold tabular-nums tracking-tight text-slate-900 sm:text-6xl">
-              {formatCompactDollars(headline.net.median)}
-            </p>
-            <p className="mt-2 text-sm font-medium text-slate-600">
-              {headline.net.median >= 0 ? 'net cost' : 'net offset'} after subtracting ADAP spending avoided
-            </p>
-            <dl className="mt-5 grid grid-cols-2 gap-x-6 gap-y-4 border-t border-slate-200 pt-4">
-              <div>
-                <dt className="text-[0.65rem] font-semibold uppercase tracking-wide text-slate-400">Downstream care</dt>
-                <dd className="mt-1 font-mono text-lg font-semibold tabular-nums text-slate-900">
-                  {formatCompactDollars(headline.care.median)}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-[0.65rem] font-semibold uppercase tracking-wide text-slate-400">ADAP avoided</dt>
-                <dd className="mt-1 font-mono text-lg font-semibold tabular-nums text-slate-900">
-                  {formatCompactDollars(headline.adap)}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-[0.65rem] font-semibold uppercase tracking-wide text-slate-400">NCER</dt>
-                <dd className="mt-1 font-mono text-lg font-semibold tabular-nums text-slate-900">{formatNcer(ncer)}</dd>
-              </div>
-              <div>
-                <dt className="text-[0.65rem] font-semibold uppercase tracking-wide text-slate-400">Care / $1 avoided</dt>
-                <dd className="mt-1 font-mono text-lg font-semibold tabular-nums text-slate-900">
-                  {formatPerDollar(headline.perDollar.median)}
-                </dd>
-              </div>
-            </dl>
-            <p className="mt-4 text-xs leading-relaxed text-slate-500">
+
+            <p className="mt-4 max-w-3xl text-xs leading-relaxed text-slate-500 sm:text-sm">
               Net-cost 95% interval {formatCompactDollars(headline.net.lower)} to{' '}
-              {formatCompactDollars(headline.net.upper)}. NCER = net cost / ADAP spending avoided ({formatNcer(ncerLower)}{' '}
-              to {formatNcer(ncerUpper)}).
+              {formatCompactDollars(headline.net.upper)}
+              {share !== null ? <>; {formatPercent(share)} of simulations are above zero</> : null}. The comparison
+              includes a restricted set of downstream HIV care costs and is not a federal budget score.
             </p>
-            {truncated && profile && (
-              <p className="mt-3 border-t border-slate-200 pt-3 text-xs leading-relaxed text-slate-500">
-                At the full 2035 horizon, the modeled-total median NCER is {formatNcer(profile.finalPerDollar - 1)}.
-              </p>
-            )}
           </div>
         </div>
+      </header>
 
-        <BudgetWindowControl
-          horizon={horizon}
-          onHorizon={onHorizon}
-          profile={profile}
-          ready={ready}
-          controlRef={controlRef}
-        />
-
-        <details className="group mt-8">
-          <summary className="flex cursor-pointer select-none items-center gap-2 text-sm font-semibold text-slate-600 transition-colors hover:text-slate-900">
-            <span aria-hidden className="text-slate-400 transition-transform group-open:rotate-90">▸</span>
-            See the modeled health pathway and accounting components
-          </summary>
+      <section className="border-b border-slate-200" aria-label="Explore the modeled result">
+        <div className="mx-auto w-full max-w-full px-5 py-8 sm:max-w-6xl sm:px-6 sm:py-10">
+          <BudgetWindowControl
+            horizon={horizon}
+            onHorizon={onHorizon}
+            profile={profile}
+            ready={ready}
+            controlRef={controlRef}
+          />
           <CascadeChain headline={headline} horizon={horizon} />
-        </details>
-      </div>
-    </header>
+        </div>
+      </section>
+    </>
   );
 }
 
 function CascadeChain({ headline, horizon }: { headline: HeadlineValues; horizon: number }) {
-  const healthLinks: Array<{ label: string; value: string; sub: string }> = [
+  const stages: Array<{ value: string; sub: string }> = [
     {
-      label: 'Excess infections',
-      value: formatNumber(headline.excessInfections),
-      sub: 'modeled incident infections',
+      value: 'Complete ADAP elimination',
+      sub: 'Hypothetical change beginning January 1, 2026',
     },
     {
-      label: 'Excess diagnoses',
-      value: formatNumber(headline.excessDiagnoses),
-      sub: 'cohort used for costing',
+      value: `${formatNumber(headline.excessInfections)} excess infections`,
+      sub: 'Relative to continued coverage',
     },
     {
-      label: 'Person-years on ART',
-      value: formatNumber(headline.personYears),
-      sub: 'immediate + re-engaged starts',
+      value: `${formatNumber(headline.excessDiagnoses)} excess diagnoses`,
+      sub: `${formatNumber(headline.personYears)} person-years on ART`,
+    },
+    {
+      value: `${formatCompactDollars(headline.care.median)} downstream care`,
+      sub: 'ART and routine care for the costed cohort',
     },
   ];
 
   return (
-    <div className="mt-12 border-t border-slate-200 pt-6">
-      <p className="font-mono text-[0.62rem] uppercase tracking-[0.22em] text-slate-500">
-        Cumulative 2026-{horizon} · medians across 1,000 simulations
-      </p>
-      <div className="mt-4 grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
-        <div className="rounded-lg border border-slate-200 bg-white p-4 sm:p-5">
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Modeled health pathway</p>
-          <div className="mt-4 flex flex-wrap items-center gap-y-4">
-            {healthLinks.map((link, index) => (
-              <div key={link.label} className="flex min-w-0 items-center">
-                {index > 0 && <span aria-hidden className="mx-3 text-lg text-slate-300">→</span>}
-                <div className="min-w-0">
-                  <p className="text-[0.68rem] font-medium uppercase tracking-wide text-slate-400">{link.label}</p>
-                  <p className="mt-1 font-mono text-xl font-semibold tabular-nums text-slate-900">{link.value}</p>
-                  <p className="mt-0.5 text-[0.68rem] leading-relaxed text-slate-400">{link.sub}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="rounded-lg border border-slate-200 bg-white p-4 sm:p-5">
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Accounting comparison</p>
-          <div className="mt-4 flex flex-wrap items-center gap-y-4">
-            {[
-              ['Downstream care', formatCompactDollars(headline.care.median), NAVY],
-              ['ADAP avoided', formatCompactDollars(headline.adap), TEAL],
-              ['Net cost', formatCompactDollars(headline.net.median), headline.net.median > 0 ? RUST : TEAL],
-            ].map(([label, value, color], index) => (
-              <div key={label} className="flex min-w-0 items-center">
-                {index > 0 && <span aria-hidden className="mx-3 text-lg text-slate-300">{index === 1 ? '−' : '='}</span>}
-                <div className="min-w-0">
-                  <p className="flex items-center gap-1.5 text-[0.68rem] font-medium uppercase tracking-wide text-slate-400">
-                    <span className="h-2 w-2 flex-shrink-0 rounded-sm" style={{ background: color }} />
-                    {label}
-                  </p>
-                  <p className="mt-1 font-mono text-xl font-semibold tabular-nums text-slate-900">{value}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-          <p className="mt-4 text-[0.7rem] leading-relaxed text-slate-400">
-            Care-cost 95% interval {formatCompactDollars(headline.care.lower)} to{' '}
-            {formatCompactDollars(headline.care.upper)}; funding is deterministic in this analysis.
-          </p>
-        </div>
+    <section className="mt-8" aria-labelledby="modeled-pathway-title">
+      <div className="flex flex-wrap items-baseline justify-between gap-3">
+        <h2 id="modeled-pathway-title" className={cx(SERIF, 'text-xl font-medium text-slate-900')}>
+          How the result is constructed
+        </h2>
+        <p className="text-xs text-slate-400">2026-{horizon} · medians across 1,000 simulations</p>
       </div>
-    </div>
+
+      <ol className="mt-5 flex flex-col gap-4 lg:flex-row lg:items-center lg:gap-5">
+        {stages.map((stage, index) => (
+          <li key={stage.value} className="flex min-w-0 flex-1 items-center gap-4">
+            {index > 0 && (
+              <span aria-hidden className="flex-shrink-0 rotate-90 text-lg text-slate-300 lg:rotate-0">→</span>
+            )}
+            <div className="min-w-0">
+              <p className="text-sm font-semibold leading-snug text-slate-900">{stage.value}</p>
+              <p className="mt-1 text-xs leading-relaxed text-slate-500">{stage.sub}</p>
+            </div>
+          </li>
+        ))}
+      </ol>
+
+      <details className="group mt-6 border-t border-slate-200 pt-3">
+        <summary className="flex cursor-pointer select-none items-center gap-2 py-1 text-sm font-medium text-slate-500 transition-colors hover:text-slate-900">
+          <span aria-hidden className="text-slate-400 transition-transform group-open:rotate-90">▸</span>
+          Definitions, cost boundary, and uncertainty
+        </summary>
+        <div className="grid gap-5 pt-4 text-xs leading-relaxed text-slate-500 sm:grid-cols-3">
+          <div>
+            <p className="font-semibold text-slate-700">Health pathway</p>
+            <p className="mt-1">
+              Excess infections are modeled incident infections. Excess diagnoses define the cohort entering the cost
+              model; person-years include immediate and later ART starts.
+            </p>
+          </div>
+          <div>
+            <p className="font-semibold text-slate-700">Cost boundary</p>
+            <p className="mt-1">
+              Downstream costs include ART and routine HIV care accrued by excess diagnosed cases. Costs incurred by
+              current ADAP enrollees losing access are not included.
+            </p>
+          </div>
+          <div>
+            <p className="font-semibold text-slate-700">Uncertainty</p>
+            <p className="mt-1">
+              Care-cost 95% interval {formatCompactDollars(headline.care.lower)} to{' '}
+              {formatCompactDollars(headline.care.upper)}. ADAP spending is deterministic in this analysis.
+            </p>
+          </div>
+        </div>
+      </details>
+    </section>
   );
 }
 
