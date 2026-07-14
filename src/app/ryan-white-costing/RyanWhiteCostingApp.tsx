@@ -183,49 +183,46 @@ function BudgetWindowControl({
   const tickYears = Array.from({ length: HORIZON_MAX - HORIZON_MIN + 1 }, (_, i) => HORIZON_MIN + i);
 
   return (
-    <div
-      ref={controlRef}
-      className="flex flex-col gap-4 border-b border-slate-200 pb-7 sm:flex-row sm:items-center sm:justify-between"
-    >
-      <div className="min-w-0 max-w-2xl">
-        <h2 className={cx(SERIF, 'text-xl font-medium text-slate-900')}>Explore the budget window</h2>
-        <p className="mt-1.5 text-sm leading-relaxed text-slate-500">
-          Avoided ADAP spending begins immediately; downstream care costs accrue over time.
-          {profile?.crossoverYear != null && (
-            <>
-              {' '}The modeled-total median reaches break-even around{' '}
-              <span className="font-semibold text-slate-700">{profile.crossoverYear}</span>.
-            </>
-          )}
-        </p>
-      </div>
-
-      <div className="flex flex-wrap items-center gap-2 sm:flex-nowrap">
-        <label htmlFor="hero-budget-window" className="text-xs font-medium text-slate-500">
-          2026 through
-        </label>
+    <div ref={controlRef} className="border-b border-slate-200 pb-8">
+      <div className="flex flex-wrap items-center gap-3">
+        <h2 className={cx(SERIF, 'mr-1 text-xl font-medium text-slate-900')}>Budget window</h2>
+        <label
+          htmlFor="hero-budget-window"
+          className="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-500"
+        >
+          <span>2026 through</span>
         <select
           id="hero-budget-window"
           value={horizon}
           disabled={!ready}
           onChange={(event) => onHorizon(Number(event.target.value))}
-          className="min-w-[6.5rem] rounded-md border border-slate-300 bg-white px-3 py-2 font-mono text-sm font-semibold tabular-nums text-slate-900 shadow-sm outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-200 disabled:cursor-wait disabled:opacity-40"
+          className="rounded border-0 bg-transparent p-0 font-mono text-sm font-semibold tabular-nums text-slate-900 outline-none disabled:cursor-wait disabled:opacity-40"
         >
           {tickYears.map((year) => (
             <option key={year} value={year}>{year}</option>
           ))}
         </select>
+        </label>
         {horizon !== HORIZON_MAX && (
           <button
             type="button"
             onClick={() => onHorizon(HORIZON_MAX)}
-            className="rounded-md px-2.5 py-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
+            className="rounded-full px-2.5 py-1.5 text-xs font-semibold text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
           >
             Full horizon
           </button>
         )}
       </div>
-      {!ready && <span className="text-[0.7rem] text-slate-400">Loading annual series…</span>}
+      <p className="mt-3 max-w-3xl text-sm leading-relaxed text-slate-500">
+        Avoided ADAP spending begins immediately; downstream care costs accrue over time.
+        {profile?.crossoverYear != null && (
+          <>
+            {' '}The modeled-total median reaches break-even around{' '}
+            <span className="font-semibold text-slate-700">{profile.crossoverYear}</span>.
+          </>
+        )}
+      </p>
+      {!ready && <p className="mt-2 text-[0.7rem] text-slate-400">Loading annual series…</p>}
     </div>
   );
 }
@@ -357,8 +354,8 @@ function CascadeHero({
   return (
     <>
       <header className="border-b border-slate-200">
-        <div className="mx-auto w-full max-w-full px-5 py-10 sm:max-w-6xl sm:px-6 sm:py-14">
-          <div className="max-w-4xl">
+        <div className="mx-auto w-full max-w-full px-5 py-10 sm:max-w-5xl sm:px-6 sm:py-14">
+          <div>
             <h1 className={cx(SERIF, 'text-[2rem] font-medium leading-[1.08] text-slate-900 sm:text-[3rem]')}>
               When Cuts Cost More: Modeling ADAP Elimination Across Multiple US States
             </h1>
@@ -367,32 +364,73 @@ function CascadeHero({
               30 states and Washington, D.C.
             </p>
 
-            <p className="mt-7 max-w-4xl text-xl leading-relaxed text-slate-800 sm:text-2xl">
+            <p className="mt-7 text-xl leading-relaxed text-slate-800 sm:text-2xl">
               Under the {SCENARIO_SHORT_LABELS[estimand].toLowerCase()} drug-cost assumption and through {horizon},
               projected downstream care costs reach{' '}
-              <strong className="font-semibold text-slate-950">{formatCompactDollars(headline.care.median)}</strong>,
+              <strong className="font-semibold" style={{ color: NAVY }}>{formatCompactDollars(headline.care.median)}</strong>,
               compared with{' '}
-              <strong className="font-semibold text-slate-950">{formatCompactDollars(headline.adap)}</strong> in avoided
+              <strong className="font-semibold" style={{ color: TEAL }}>{formatCompactDollars(headline.adap)}</strong> in avoided
               ADAP spending—{netPositive ? 'a median net cost of ' : 'a median net offset of '}
-              <strong className="font-semibold text-slate-950">{formatCompactDollars(Math.abs(headline.net.median))}</strong>.
+              <strong className="font-semibold" style={{ color: netPositive ? RUST : TEAL }}>
+                {formatCompactDollars(Math.abs(headline.net.median))}
+              </strong>.
             </p>
 
-            <div className="mt-7 flex max-w-4xl flex-wrap items-baseline gap-x-3 gap-y-2 border-y border-slate-200 py-4 font-mono tabular-nums">
-              <span className="text-xl font-semibold text-slate-900 sm:text-2xl">
-                {formatCompactDollars(headline.care.median)}
-              </span>
-              <span className="text-sm text-slate-500">care</span>
-              <span className="mx-1 text-xl text-slate-300">−</span>
-              <span className="text-xl font-semibold text-slate-900 sm:text-2xl">{formatCompactDollars(headline.adap)}</span>
-              <span className="text-sm text-slate-500">avoided</span>
-              <span className="mx-1 text-xl text-slate-300">=</span>
-              <span className="text-xl font-semibold text-slate-900 sm:text-2xl">
-                {formatCompactDollars(Math.abs(headline.net.median))}
-              </span>
-              <span className="text-sm text-slate-500">{netPositive ? 'net cost' : 'net offset'}</span>
-            </div>
+            <dl className="mt-7 hidden grid-cols-[1fr_auto_1fr_auto_1fr] items-center gap-6 border-y border-slate-200 py-5 sm:grid">
+              <div>
+                <dt className="text-xs font-medium text-slate-500">Downstream care</dt>
+                <dd className="mt-1 font-mono text-2xl font-semibold tabular-nums" style={{ color: NAVY }}>
+                  {formatCompactDollars(headline.care.median)}
+                </dd>
+              </div>
+              <span aria-hidden className="text-2xl text-slate-300">−</span>
+              <div>
+                <dt className="text-xs font-medium text-slate-500">ADAP spending avoided</dt>
+                <dd className="mt-1 font-mono text-2xl font-semibold tabular-nums" style={{ color: TEAL }}>
+                  {formatCompactDollars(headline.adap)}
+                </dd>
+              </div>
+              <span aria-hidden className="text-2xl text-slate-300">=</span>
+              <div>
+                <dt className="text-xs font-medium text-slate-500">Median {netPositive ? 'net cost' : 'net offset'}</dt>
+                <dd
+                  className="mt-1 font-mono text-2xl font-semibold tabular-nums"
+                  style={{ color: netPositive ? RUST : TEAL }}
+                >
+                  {formatCompactDollars(Math.abs(headline.net.median))}
+                </dd>
+              </div>
+            </dl>
 
-            <p className="mt-4 max-w-3xl text-xs leading-relaxed text-slate-500 sm:text-sm">
+            <dl className="mt-7 grid grid-cols-[1fr_auto_1fr] items-end gap-x-4 gap-y-3 border-y border-slate-200 py-5 sm:hidden">
+              <div>
+                <dt className="text-xs font-medium text-slate-500">Downstream care</dt>
+                <dd className="mt-1 font-mono text-xl font-semibold tabular-nums" style={{ color: NAVY }}>
+                  {formatCompactDollars(headline.care.median)}
+                </dd>
+              </div>
+              <span aria-hidden className="pb-0.5 text-xl text-slate-300">−</span>
+              <div>
+                <dt className="text-xs font-medium text-slate-500">ADAP avoided</dt>
+                <dd className="mt-1 font-mono text-xl font-semibold tabular-nums" style={{ color: TEAL }}>
+                  {formatCompactDollars(headline.adap)}
+                </dd>
+              </div>
+              <div className="col-span-3 flex items-end gap-4 border-t border-slate-100 pt-3">
+                <span aria-hidden className="pb-0.5 text-xl text-slate-300">=</span>
+                <div>
+                  <dt className="text-xs font-medium text-slate-500">Median {netPositive ? 'net cost' : 'net offset'}</dt>
+                  <dd
+                    className="mt-1 font-mono text-xl font-semibold tabular-nums"
+                    style={{ color: netPositive ? RUST : TEAL }}
+                  >
+                    {formatCompactDollars(Math.abs(headline.net.median))}
+                  </dd>
+                </div>
+              </div>
+            </dl>
+
+            <p className="mt-4 max-w-4xl text-xs leading-relaxed text-slate-600 sm:text-sm">
               Net-cost 95% interval {formatCompactDollars(headline.net.lower)} to{' '}
               {formatCompactDollars(headline.net.upper)}
               {share !== null ? <>; {formatPercent(share)} of simulations are above zero</> : null}. The comparison
@@ -403,7 +441,7 @@ function CascadeHero({
       </header>
 
       <section className="border-b border-slate-200" aria-label="Explore the modeled result">
-        <div className="mx-auto w-full max-w-full px-5 py-8 sm:max-w-6xl sm:px-6 sm:py-10">
+        <div className="mx-auto w-full max-w-full px-5 py-8 sm:max-w-5xl sm:px-6 sm:py-10">
           <BudgetWindowControl
             horizon={horizon}
             onHorizon={onHorizon}
@@ -440,19 +478,26 @@ function CascadeChain({ headline, horizon }: { headline: HeadlineValues; horizon
 
   return (
     <section className="mt-8" aria-labelledby="modeled-pathway-title">
-      <div className="flex flex-wrap items-baseline justify-between gap-3">
+      <div>
         <h2 id="modeled-pathway-title" className={cx(SERIF, 'text-xl font-medium text-slate-900')}>
           How the result is constructed
         </h2>
-        <p className="text-xs text-slate-400">2026-{horizon} · medians across 1,000 simulations</p>
+        <p className="mt-1 text-xs text-slate-500">Cumulative 2026-{horizon} medians across 1,000 simulations.</p>
       </div>
 
-      <ol className="mt-5 flex flex-col gap-4 lg:flex-row lg:items-center lg:gap-5">
-        {stages.map((stage, index) => (
-          <li key={stage.value} className="flex min-w-0 flex-1 items-center gap-4">
-            {index > 0 && (
-              <span aria-hidden className="flex-shrink-0 rotate-90 text-lg text-slate-300 lg:rotate-0">→</span>
-            )}
+      <ol
+        className={cx(
+          'relative mt-6 space-y-6 before:absolute before:bottom-2 before:left-[5px] before:top-2 before:w-px before:bg-slate-200',
+          'lg:grid lg:grid-cols-4 lg:gap-8 lg:space-y-0 lg:before:bottom-auto lg:before:left-[6px] lg:before:right-[6px] lg:before:top-[6px] lg:before:h-px lg:before:w-auto'
+        )}
+      >
+        {stages.map((stage) => (
+          <li key={stage.value} className="relative min-w-0 pl-7 lg:pl-0 lg:pt-8">
+            <span
+              aria-hidden
+              className="absolute left-0 top-1 z-10 h-3 w-3 rounded-full ring-4 ring-white lg:top-0"
+              style={{ background: NAVY }}
+            />
             <div className="min-w-0">
               <p className="text-sm font-semibold leading-snug text-slate-900">{stage.value}</p>
               <p className="mt-1 text-xs leading-relaxed text-slate-500">{stage.sub}</p>
