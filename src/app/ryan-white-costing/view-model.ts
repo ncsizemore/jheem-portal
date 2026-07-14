@@ -303,8 +303,8 @@ export function buildDecomposition(
 
   const pooledRow: DecompositionRow = {
     id: 'pooled',
-    label: 'Pooled',
-    detail: 'all price tiers + model draws',
+    label: 'Equal-weight pooled',
+    detail: 'all three tiers + model draws',
     net: point.pooledCumulativeNetCostVsAdap,
     perDollar: point.pooledCumulativeCareCost.median / adap,
     sharePositive: finalShares?.pooled ?? null,

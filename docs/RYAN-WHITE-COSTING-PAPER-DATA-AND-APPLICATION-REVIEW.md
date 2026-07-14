@@ -2,7 +2,7 @@
 
 **Review date:** 2026-07-13
 
-**Status:** Review snapshot for application and manuscript alignment
+**Status:** Historical July 13 snapshot. Superseded for current-build design decisions by `RYAN-WHITE-COSTING-CURRENT-BUILD-AND-CORRECTED-DRAFT-REVIEW.md`.
 
 **Purpose:** Preserve the independent review of the July 2026 manuscript draft, supplement, updated RData, and current portal implementation.
 

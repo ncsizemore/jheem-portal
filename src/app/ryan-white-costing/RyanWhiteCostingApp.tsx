@@ -439,7 +439,7 @@ function CascadeHero({
   controlRef,
 }: {
   headline: HeadlineValues;
-  estimand: EstimandId;
+  estimand: CostScenarioId;
   horizon: number;
   share: number | null;
   profile: HorizonProfile | null;
@@ -457,7 +457,7 @@ function CascadeHero({
 
   const narrative = netPositive ? (
     <>
-      Across {jurisdictionCount} modeled jurisdictions in the complete-elimination scenario, projected care costs for
+      Across {jurisdictionCount}{' '}modeled jurisdictions in the complete-elimination scenario, projected care costs for
       excess incident cases reach{' '}
       {bold(formatCompactDollars(headline.care.median))}, compared with{' '}
       {bold(formatCompactDollars(headline.adap))} in ADAP spending avoided
@@ -465,7 +465,7 @@ function CascadeHero({
     </>
   ) : (
     <>
-      Across {jurisdictionCount} modeled jurisdictions through {horizon}, projected accrued care costs are{' '}
+      Across {jurisdictionCount}{' '}modeled jurisdictions through {horizon}, projected accrued care costs are{' '}
       {bold(formatCompactDollars(headline.care.median))}, below the{' '}
       {bold(formatCompactDollars(headline.adap))} in ADAP spending avoided within this window
       {profile?.crossoverYear != null ? (
@@ -492,15 +492,15 @@ function CascadeHero({
               )}
             >
               {netPositive
-                ? `In the median projection, downstream care costs exceed ADAP spending avoided by ${horizon}.`
-                : `In the median projection, ADAP spending avoided exceeds accrued care costs through ${horizon}.`}
+                ? `In the ${SCENARIO_SHORT_LABELS[estimand].toLowerCase()} drug-cost scenario, downstream care costs exceed ADAP spending avoided by ${horizon}.`
+                : `In the ${SCENARIO_SHORT_LABELS[estimand].toLowerCase()} drug-cost scenario, ADAP spending avoided exceeds accrued care costs through ${horizon}.`}
             </h1>
             <p className="mt-6 max-w-xl text-lg leading-relaxed text-slate-600">{narrative}</p>
 
             <div className="mt-8 max-w-xl border-l-2 pl-4" style={{ borderColor: NAVY }}>
               <p className="text-sm font-semibold text-slate-800">How to read this result</p>
               <p className="mt-1.5 text-sm leading-relaxed text-slate-500">
-                A modeled stress test across {jurisdictionCount} jurisdictions, not an estimate for all US jurisdictions
+                A modeled stress test across {jurisdictionCount}{' '}jurisdictions, not an estimate for all US jurisdictions
                 or a federal budget score. The modified healthcare-system frame compares one program&apos;s avoided
                 spending with a restricted set of downstream HIV care costs.
               </p>
@@ -509,21 +509,45 @@ function CascadeHero({
 
           <div className="min-w-0 rounded-lg border border-slate-200 bg-slate-50/70 p-5 sm:p-6">
             <div className="flex flex-wrap items-start justify-between gap-3">
-              <Eyebrow>Primary outcome / Median NCER</Eyebrow>
+              <Eyebrow>{horizon} accounting result</Eyebrow>
               <span className="rounded bg-white px-2 py-1 text-[0.65rem] font-medium text-slate-500 shadow-sm">
                 {ESTIMAND_LABELS[estimand]}
               </span>
             </div>
             <p className="mt-4 font-mono text-5xl font-semibold tabular-nums tracking-tight text-slate-900 sm:text-6xl">
-              {formatNcer(ncer)}
+              {formatCompactDollars(headline.net.median)}
             </p>
-            <p className="mt-2 font-mono text-sm tabular-nums text-slate-500">
-              {formatNcer(ncerLower)} to {formatNcer(ncerUpper)} / 95% interval
+            <p className="mt-2 text-sm font-medium text-slate-600">
+              {headline.net.median >= 0 ? 'net cost' : 'net offset'} after subtracting ADAP spending avoided
             </p>
-            <p className="mt-4 text-sm leading-relaxed text-slate-600">
-              Net cost divided by ADAP spending avoided. An NCER above zero means projected downstream care costs
-              exceed that comparator; {formatNcer(ncer)} corresponds to {formatPerDollar(headline.perDollar.median)} in
-              care costs per $1 avoided.
+            <dl className="mt-5 grid grid-cols-2 gap-x-6 gap-y-4 border-t border-slate-200 pt-4">
+              <div>
+                <dt className="text-[0.65rem] font-semibold uppercase tracking-wide text-slate-400">Downstream care</dt>
+                <dd className="mt-1 font-mono text-lg font-semibold tabular-nums text-slate-900">
+                  {formatCompactDollars(headline.care.median)}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-[0.65rem] font-semibold uppercase tracking-wide text-slate-400">ADAP avoided</dt>
+                <dd className="mt-1 font-mono text-lg font-semibold tabular-nums text-slate-900">
+                  {formatCompactDollars(headline.adap)}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-[0.65rem] font-semibold uppercase tracking-wide text-slate-400">NCER</dt>
+                <dd className="mt-1 font-mono text-lg font-semibold tabular-nums text-slate-900">{formatNcer(ncer)}</dd>
+              </div>
+              <div>
+                <dt className="text-[0.65rem] font-semibold uppercase tracking-wide text-slate-400">Care / $1 avoided</dt>
+                <dd className="mt-1 font-mono text-lg font-semibold tabular-nums text-slate-900">
+                  {formatPerDollar(headline.perDollar.median)}
+                </dd>
+              </div>
+            </dl>
+            <p className="mt-4 text-xs leading-relaxed text-slate-500">
+              Net-cost 95% interval {formatCompactDollars(headline.net.lower)} to{' '}
+              {formatCompactDollars(headline.net.upper)}. NCER = net cost / ADAP spending avoided ({formatNcer(ncerLower)}{' '}
+              to {formatNcer(ncerUpper)}).
             </p>
             {truncated && profile && (
               <p className="mt-3 border-t border-slate-200 pt-3 text-xs leading-relaxed text-slate-500">
@@ -541,7 +565,13 @@ function CascadeHero({
           controlRef={controlRef}
         />
 
-        <CascadeChain headline={headline} horizon={horizon} />
+        <details className="group mt-8">
+          <summary className="flex cursor-pointer select-none items-center gap-2 text-sm font-semibold text-slate-600 transition-colors hover:text-slate-900">
+            <span aria-hidden className="text-slate-400 transition-transform group-open:rotate-90">▸</span>
+            See the modeled health pathway and accounting components
+          </summary>
+          <CascadeChain headline={headline} horizon={horizon} />
+        </details>
       </div>
     </header>
   );
@@ -643,12 +673,6 @@ function UncertaintyDecomposition({
   const at = (v: number) => ((v - domainMin) / (domainMax - domainMin)) * 100;
   const zero = at(0);
 
-  const medianRow = rows.find((row) => row.id === 'median');
-  const lowRow = rows.find((row) => row.id === 'low');
-  const highRow = rows.find((row) => row.id === 'high');
-  const epidemicWidth = medianRow ? medianRow.net.upper - medianRow.net.lower : 0;
-  const priceShift = lowRow && highRow ? highRow.net.median - lowRow.net.median : 0;
-
   return (
     <section id="robustness" className="mx-auto w-full max-w-full scroll-mt-36 px-5 py-16 sm:max-w-6xl sm:px-6">
       <Reveal>
@@ -684,6 +708,7 @@ function UncertaintyDecomposition({
                     {row.label}
                     {isPrimary && (
                       <span className="ml-2 rounded-sm bg-slate-100 px-1.5 py-0.5 align-middle text-[0.6rem] font-semibold uppercase tracking-wide text-slate-500">
+                        {' '}
                         headline
                       </span>
                     )}
@@ -760,52 +785,13 @@ function UncertaintyDecomposition({
           </p>
         )}
 
-        {medianRow && lowRow && highRow && (
-          <div className="mt-8 max-w-xl">
-            <p className="text-[0.68rem] font-semibold uppercase tracking-wide text-slate-400">
-              Two distinct sensitivity quantities
-            </p>
-            <div className="mt-2.5 space-y-2.5">
-              <WidthBar
-                label="95% simulation interval width, median price"
-                value={epidemicWidth}
-                max={Math.max(epidemicWidth, Math.abs(priceShift))}
-                tone="#334155"
-              />
-              <WidthBar
-                label="Low-to-high price-tier shift in the median"
-                value={priceShift}
-                max={Math.max(epidemicWidth, Math.abs(priceShift))}
-                tone="#94a3b8"
-              />
-            </div>
-            <p className="mt-2 text-[0.7rem] leading-relaxed text-slate-400">
-              These magnitudes are shown side by side for orientation; they are not a formal variance decomposition.
-            </p>
-          </div>
-        )}
+        <p className="mt-6 max-w-2xl text-xs leading-relaxed text-slate-500">
+          The equal-weight pooled row is shown only to document the draft paper&apos;s reporting convention. It is not a
+          fourth price scenario and should not be interpreted as assigning empirically estimated probabilities to the
+          low, median, and high tiers.
+        </p>
       </Reveal>
     </section>
-  );
-}
-
-// One magnitude per row: the correct form for comparing two numbers.
-function WidthBar({ label, value, max, tone }: { label: string; value: number; max: number; tone: string }) {
-  return (
-    <div className="grid grid-cols-[minmax(0,1fr)_76px] items-center gap-3">
-      <div className="min-w-0">
-        <p className="text-xs text-slate-500">{label}</p>
-        <span className="mt-1 block h-2.5 overflow-hidden rounded-full bg-slate-100">
-          <span
-            className="block h-full rounded-full"
-            style={{ width: `${(Math.abs(value) / Math.max(max, 1)) * 100}%`, background: tone }}
-          />
-        </span>
-      </div>
-      <p className="text-right font-mono text-sm font-semibold tabular-nums text-slate-900">
-        {formatCompactDollars(value)}
-      </p>
-    </div>
   );
 }
 
@@ -966,7 +952,8 @@ function JurisdictionRatioPlot({
 }
 
 const DRIVER_COLUMNS: Array<{ key: DriverSortKey; label: string }> = [
-  { key: 'excessInfections', label: 'Excess infections' },
+  { key: 'excessDiagnoses', label: 'Excess diagnoses' },
+  { key: 'personYears', label: 'ART person-years' },
   { key: 'careCost', label: 'Care cost' },
   { key: 'adap', label: 'ADAP avoided' },
   { key: 'net', label: 'Net cost' },
@@ -996,7 +983,7 @@ function DriverTable({
     <div className="min-w-0 rounded-lg border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
       <h3 className="text-base font-semibold text-slate-900">Exact jurisdiction values through {horizonYear}</h3>
       <div className="mt-4 max-h-[480px] overflow-auto">
-        <table className="w-full min-w-[680px] text-left text-sm">
+        <table className="w-full min-w-[820px] text-left text-sm">
           <thead className="sticky top-0 z-10 bg-white text-[0.66rem] uppercase tracking-wide text-slate-400">
             <tr className="border-b border-slate-200">
               <th className="py-2 pr-3 font-medium">State</th>
@@ -1051,7 +1038,10 @@ function DriverTable({
                     {row.stateName} <span className="text-slate-400">{row.state}</span>
                   </td>
                   <td className="py-2 px-2 text-right font-mono tabular-nums text-slate-500">
-                    {formatNumber(row.excessInfections)}
+                    {formatNumber(row.excessDiagnoses)}
+                  </td>
+                  <td className="py-2 px-2 text-right font-mono tabular-nums text-slate-500">
+                    {formatNumber(row.personYears)}
                   </td>
                   <td className="py-2 px-2 text-right font-mono tabular-nums text-slate-500">
                     {formatCompactDollars(row.careCost.median)}
@@ -1112,22 +1102,17 @@ function StateDetailCard({ row, crossoverKnown }: { row: DriverRow; crossoverKno
         )}{' '}
         ·{' '}
         <span style={{ color: shareColor(row.shareNetPositive2035) }}>
-          {formatPercent(row.shareNetPositive2035)} net-costly at &rsquo;35
+          {formatPercent(row.shareNetPositive2035)}{' '}net-costly at &rsquo;35
         </span>
       </p>
       <dl className="mt-6 grid grid-cols-2 gap-x-6 gap-y-4">
         {[
           ['NCER', formatNcer(row.ratio)],
-          ['NCER 95% interval', `${formatNcer(row.ratioLower)} to ${formatNcer(row.ratioUpper)}`],
-          ['Net cost vs ADAP', formatCompactDollars(row.net.median)],
-          ['95% interval', `${formatCompactDollars(row.net.lower)} to ${formatCompactDollars(row.net.upper)}`],
           ['Downstream care', formatCompactDollars(row.careCost.median)],
           ['ADAP avoided', formatCompactDollars(row.adap)],
-          ['Care per $1 avoided', formatPerDollar(row.perDollar)],
-          ['Excess infections', formatNumber(row.excessInfections)],
+          ['Net cost vs ADAP', formatCompactDollars(row.net.median)],
           ['Excess diagnoses', formatNumber(row.excessDiagnoses)],
           ['ART person-years', formatNumber(row.personYears)],
-          ['Window', `2026-${row.year}`],
         ].map(([label, value]) => (
           <div key={label} className="min-w-0">
             <dt className="text-[0.68rem] font-medium uppercase tracking-wide text-slate-400">{label}</dt>
@@ -1135,6 +1120,25 @@ function StateDetailCard({ row, crossoverKnown }: { row: DriverRow; crossoverKno
           </div>
         ))}
       </dl>
+      <details className="group mt-5 border-t border-slate-200 pt-4">
+        <summary className="cursor-pointer select-none text-xs font-semibold text-slate-500 transition-colors hover:text-slate-800">
+          More result detail
+        </summary>
+        <dl className="mt-4 grid grid-cols-2 gap-x-6 gap-y-4">
+          {[
+            ['NCER 95% interval', `${formatNcer(row.ratioLower)} to ${formatNcer(row.ratioUpper)}`],
+            ['Net-cost 95% interval', `${formatCompactDollars(row.net.lower)} to ${formatCompactDollars(row.net.upper)}`],
+            ['Care per $1 avoided', formatPerDollar(row.perDollar)],
+            ['Excess infections', formatNumber(row.excessInfections)],
+            ['Window', `2026-${row.year}`],
+          ].map(([label, value]) => (
+            <div key={label} className="min-w-0">
+              <dt className="text-[0.68rem] font-medium uppercase tracking-wide text-slate-400">{label}</dt>
+              <dd className="mt-1 font-mono text-sm font-semibold tabular-nums text-slate-900">{value}</dd>
+            </div>
+          ))}
+        </dl>
+      </details>
     </div>
   );
 }
@@ -1157,13 +1161,15 @@ function BaselineContextCard({ context, stateLabel }: { context: BaselineContext
     ['ADAP spending / client', `$${Math.round(context.adapSpendingPerClient).toLocaleString('en-US')}`],
     ['HIV-weighted urbanicity', formatPercent(context.diagnosedHivWeightedUrbanicity)],
     ['Medicaid expansion', context.medicaidExpansion ? 'Expansion' : 'Non-expansion'],
+    ['Transmission rate', context.sexualTransmissionRate.toFixed(3)],
+  ];
+  const secondaryItems: Array<[string, string]> = [
     ['ADAP client share', formatPercent(context.adapClientShare)],
     ['ADAP clients', formatNumber(context.adapClients)],
     ['Ryan White clients', formatNumber(context.rwClients)],
     ['Diagnosed PWH', formatNumber(context.diagnosedPrevalence)],
     ['New infections', formatNumber(context.baselineNewInfections)],
     ['New diagnoses', formatNumber(context.baselineNewDiagnoses)],
-    ['Transmission rate', context.sexualTransmissionRate.toFixed(3)],
   ];
 
   return (
@@ -1181,6 +1187,19 @@ function BaselineContextCard({ context, stateLabel }: { context: BaselineContext
         Model-based measures use the 2025 no-intervention baseline. Spending per client combines annual 2026-USD
         funding with mean baseline clients; urbanicity uses 2020 Census shares weighted by 2021 diagnosed prevalence.
       </p>
+      <details className="group mt-4 border-t border-slate-200 pt-3">
+        <summary className="cursor-pointer select-none text-xs font-semibold text-slate-500 transition-colors hover:text-slate-800">
+          More baseline detail
+        </summary>
+        <dl className="mt-4 grid grid-cols-2 gap-x-6 gap-y-4">
+          {secondaryItems.map(([label, value]) => (
+            <div key={label} className="min-w-0">
+              <dt className="text-[0.68rem] font-medium uppercase tracking-wide text-slate-400">{label}</dt>
+              <dd className="mt-1 font-mono text-sm font-semibold tabular-nums text-slate-900">{value}</dd>
+            </div>
+          ))}
+        </dl>
+      </details>
     </div>
   );
 }
@@ -1197,6 +1216,8 @@ function HeterogeneityExplorer({
   hovered,
   onSelect,
   onHover,
+  fixedAxis,
+  compact = false,
 }: {
   rows: DriverRow[];
   horizonYear: number;
@@ -1205,8 +1226,11 @@ function HeterogeneityExplorer({
   hovered: string | null;
   onSelect: (state: string) => void;
   onHover: (state: string | null) => void;
+  fixedAxis?: ContextAxisId;
+  compact?: boolean;
 }) {
-  const [axisId, setAxisId] = useState<ContextAxisId>(CONTEXT_AXES[0].id);
+  const [selectedAxisId, setSelectedAxisId] = useState<ContextAxisId>(CONTEXT_AXES[0].id);
+  const axisId = fixedAxis ?? selectedAxisId;
   const axis = CONTEXT_AXES.find((item) => item.id === axisId) ?? CONTEXT_AXES[0];
   const points = useMemo(
     () => buildHeterogeneityPoints(rows, ryanWhiteCostingSummary.states, axis.id),
@@ -1236,6 +1260,7 @@ function HeterogeneityExplorer({
         className="cursor-pointer"
         role="button"
         tabIndex={0}
+        aria-pressed={isSel}
         aria-label={`${payload.stateName}: NCER ${formatNcer(payload.ratio)}, ${axis.label} ${axis.format(payload.x)}, ${payload.medicaidExpansion ? 'Medicaid expansion' : 'Medicaid non-expansion'}`}
         onClick={() => onSelect(payload.state)}
         onMouseEnter={() => onHover(payload.state)}
@@ -1293,7 +1318,9 @@ function HeterogeneityExplorer({
       <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <h3 className="text-base font-semibold text-slate-900">NCER vs {axis.label.toLowerCase()}</h3>
+            <h3 className="text-base font-semibold text-slate-900">
+              NCER vs {axis.label.charAt(0).toLowerCase() + axis.label.slice(1)}
+            </h3>
             <p className="mt-1 max-w-2xl text-sm leading-relaxed text-slate-500">{axis.description}</p>
           </div>
           <div className="text-right">
@@ -1305,25 +1332,27 @@ function HeterogeneityExplorer({
           </div>
         </div>
 
-        <div className="mt-5 flex flex-wrap gap-2" role="group" aria-label="Jurisdiction context variable">
-          {CONTEXT_AXES.map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => setAxisId(item.id)}
-              aria-pressed={axis.id === item.id}
-              className={cx(
-                'rounded-md border px-3 py-1.5 text-xs font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-400',
-                axis.id === item.id
-                  ? 'border-slate-900 bg-slate-900 text-white'
-                  : 'border-slate-200 bg-white text-slate-600 hover:border-slate-400 hover:text-slate-900'
-              )}
-            >
-              {item.shortLabel}
-            </button>
-          ))}
-        </div>
-        <div className="mt-4 h-[340px] sm:h-[400px]">
+        {!fixedAxis && (
+          <div className="mt-5 flex flex-wrap gap-2" role="group" aria-label="Jurisdiction context variable">
+            {CONTEXT_AXES.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => setSelectedAxisId(item.id)}
+                aria-pressed={axis.id === item.id}
+                className={cx(
+                  'rounded-md border px-3 py-1.5 text-xs font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-400',
+                  axis.id === item.id
+                    ? 'border-slate-900 bg-slate-900 text-white'
+                    : 'border-slate-200 bg-white text-slate-600 hover:border-slate-400 hover:text-slate-900'
+                )}
+              >
+                {item.shortLabel}
+              </button>
+            ))}
+          </div>
+        )}
+        <div className={cx('mt-4', compact ? 'h-[320px] sm:h-[340px]' : 'h-[340px] sm:h-[400px]')}>
           <ResponsiveContainer width="100%" height="100%">
             <ScatterChart margin={{ top: 12, right: 24, bottom: 22, left: 4 }}>
               <CartesianGrid stroke="#eef2f6" />
@@ -1391,6 +1420,7 @@ function Trajectory({
   horizon,
   selectedLocation,
   onLocation,
+  showPresets = true,
 }: {
   trajectory: ReturnType<typeof buildTrajectoryData>;
   selectedName: string;
@@ -1400,6 +1430,7 @@ function Trajectory({
   horizon: number;
   selectedLocation: LocationKey;
   onLocation: (location: LocationKey) => void;
+  showPresets?: boolean;
 }) {
   const reduce = useReducedMotion() ?? false;
   const legend = [
@@ -1413,27 +1444,29 @@ function Trajectory({
         <h3 className="text-base font-semibold text-slate-900">
           {selectedName} / {SCENARIO_LABELS[scenario].toLowerCase()}
         </h3>
-        <div className="flex items-center gap-1" role="group" aria-label="Trajectory preset">
-          {[
-            ['Total', 'Modeled total'],
-            ['FL', 'Florida example'],
-          ].map(([value, label]) => (
-            <button
-              key={value}
-              type="button"
-              onClick={() => onLocation(value)}
-              aria-pressed={selectedLocation === value}
-              className={cx(
-                'rounded border px-2 py-1 text-[0.7rem] font-medium transition-colors',
-                selectedLocation === value
-                  ? 'border-slate-900 bg-slate-900 text-white'
-                  : 'border-slate-300 text-slate-600 hover:border-slate-400 hover:text-slate-900'
-              )}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
+        {showPresets && (
+          <div className="flex items-center gap-1" role="group" aria-label="Trajectory preset">
+            {[
+              ['Total', 'Modeled total'],
+              ['FL', 'Florida example'],
+            ].map(([value, label]) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => onLocation(value)}
+                aria-pressed={selectedLocation === value}
+                className={cx(
+                  'rounded border px-2 py-1 text-[0.7rem] font-medium transition-colors',
+                  selectedLocation === value
+                    ? 'border-slate-900 bg-slate-900 text-white'
+                    : 'border-slate-300 text-slate-600 hover:border-slate-400 hover:text-slate-900'
+                )}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
       <p className="mt-1 text-sm leading-relaxed text-slate-500">
         {crossover
@@ -1622,108 +1655,56 @@ function CrossoverTimeline({
 // -----------------------------------------------------------------------------
 function ModelReview() {
   const p = ryanWhiteCostingMetadata.modelParameters;
-  const cd4Mix = Object.entries(p.cd4Weights)
-    .map(([label, value]) => `${label} ${formatPercent(value)}`)
-    .join(' / ');
   const methodSections: ReviewCard[] = [
     {
-      title: 'Study design',
+      title: 'Scenario and core assumption',
       items: [
         { label: 'Policy scenario', value: 'Complete ADAP elimination on Jan 1, 2026' },
-        { label: 'Comparator', value: 'ADAP continues at fixed baseline funding' },
-        { label: 'Projection', value: '2026-2035; no extrapolation beyond 2035' },
-        { label: 'Perspective', value: 'Modified healthcare system' },
+        { label: 'Suppression effect', value: 'Mean 65% decline among ADAP recipients' },
+        { label: 'Elicited range', value: '40%-90% interquartile range' },
+        { label: 'Comparator', value: '2025 ADAP coverage and spending continue' },
       ],
-      note: 'This is a deliberately extreme counterfactual used to estimate cost consequences, not a forecast of a specific enacted policy.',
+      note: 'The suppression effect comes from a survey of 180 Ryan White clinic and public-health respondents. Complete, persistent elimination is a stress test, not a forecast of a specific enacted restriction.',
     },
     {
-      title: 'Outcome definitions',
+      title: 'Modeled pathway and costing cohort',
       items: [
         { label: 'Excess infections', value: ryanWhiteCostingMetadata.outcomeDefinitions.infections.description },
         { label: 'Excess diagnoses', value: ryanWhiteCostingMetadata.outcomeDefinitions.diagnoses.description },
-        { label: 'Costing cohort', value: ryanWhiteCostingMetadata.outcomeDefinitions.costingCohort },
+        { label: 'Immediate ART', value: 'Scaled to each jurisdiction\'s baseline suppressed share among diagnosed PWH' },
+        { label: 'Delayed engagement', value: '60% within one year; 86% within five years after diagnosis' },
       ],
-      note: 'Infections and diagnoses are distinct model outcomes; downstream costs begin only after excess incident cases are diagnosed and initiate ART.',
+      note: 'Infections and diagnoses are distinct. The cost ledger begins only after an excess incident case is diagnosed, engages in care, and starts ART.',
     },
     {
-      title: 'Accounting frame',
+      title: 'Costs and uncertainty',
       items: [
-        { label: 'Comparator', value: 'ADAP spending avoided' },
-        { label: 'Net metric', value: 'Care cost minus ADAP' },
-        { label: 'NCER', value: '(Care cost − ADAP avoided) / ADAP avoided' },
-        { label: 'Break-even', value: 'NCER = 0' },
-      ],
-      note: 'The payer that realizes ADAP savings may not be the payer that incurs downstream care costs. NCER is a cost-consequence ratio, not a cost-effectiveness ratio.',
-    },
-    {
-      title: 'Costing assumptions',
-      items: [
-        { label: 'Drug tiers', value: SCENARIO_ORDER.map((s) => formatCompactDollars(p.artDrugCosts[s])).join(' / ') },
-        { label: 'Routine care', value: formatCompactDollars(p.routineCareCost) },
+        { label: 'Annual ART tiers', value: SCENARIO_ORDER.map((s) => formatCompactDollars(p.artDrugCosts[s])).join(' / ') },
+        { label: 'Routine care', value: `${formatCompactDollars(p.routineCareCost)} weighted annual baseline` },
         { label: 'Discount rate', value: formatPercent(p.discountRate) },
-      ],
-    },
-    {
-      title: 'Engagement model',
-      items: [
-        { label: 'Reengagement', value: `pi ${p.reengagementPi} / lambda ${p.reengagementLambda}` },
-        { label: 'CD4 mix', value: cd4Mix },
-      ],
-      note: p.immediateStartCareFractionDescription,
-    },
-    {
-      title: 'Costs not counted',
-      items: [
-        { label: 'Existing clients', value: 'Treatment interruption, rebound, hospitalization, mortality, or higher replacement prices' },
-        { label: 'Before ART', value: 'Costs accrued while excess incident cases remain undiagnosed or off ART' },
-        { label: 'After 2035', value: 'All later care costs from infections occurring within the horizon' },
-        { label: 'Broader effects', value: 'Non-HIV care, productivity, quality of life, and behavioral responses' },
-      ],
-      note: 'The app therefore reports a restricted downstream-care ledger, not the total economic or health impact of ADAP elimination.',
-    },
-    {
-      title: 'Uncertainty',
-      items: [
         { label: 'Model draws', value: ryanWhiteCostingMetadata.simulationDraws.toLocaleString('en-US') },
-        { label: 'Displayed interval', value: '2.5th to 97.5th percentile' },
-        { label: 'ART price tiers', value: 'Low / median / high' },
-        { label: 'Funding', value: 'Deterministic under current inputs' },
       ],
-      note: 'Scenario-specific intervals vary model draws at a fixed ART price. The pooled distribution additionally combines all three ART price tiers.',
+      note: 'Displayed 95% intervals are the 2.5th-97.5th percentiles across model draws at a fixed ART-price tier. Funding is deterministic under the current input convention.',
     },
     {
-      title: 'Jurisdiction context',
+      title: 'Accounting and interpretation',
       items: [
-        { label: 'Spending per client', value: ryanWhiteCostingMetadata.contextDefinitions.adapSpendingPerClient },
-        { label: 'Urbanicity', value: ryanWhiteCostingMetadata.contextDefinitions.diagnosedHivWeightedUrbanicity },
-        { label: 'Medicaid status', value: ryanWhiteCostingMetadata.contextDefinitions.medicaidExpansion },
+        { label: 'Perspective', value: 'Modified healthcare system' },
+        { label: 'Comparator', value: 'ADAP spending avoided' },
+        { label: 'Net cost', value: 'Downstream care cost minus ADAP spending avoided' },
+        { label: 'NCER', value: 'Net cost / ADAP spending avoided; break-even = 0' },
       ],
-      note: 'Spearman correlations are descriptive, unadjusted jurisdiction-level associations and should not be interpreted causally.',
+      note: 'The payer realizing ADAP savings may differ from the payer incurring downstream care costs. NCER is a cost-consequence ratio, not a cost-effectiveness ratio or payer-specific budget impact.',
     },
     {
-      title: 'Data scope',
+      title: 'Scope and costs not counted',
       items: [
-        {
-          label: 'Locations',
-          value: `${ryanWhiteCostingMetadata.modeledJurisdictionCount} modeled jurisdictions`,
-        },
-        { label: 'Funding benchmark', value: 'Fixed jurisdiction inputs' },
-        { label: 'Horizon', value: `${ryanWhiteCostingMetadata.horizon.startYear}-${ryanWhiteCostingMetadata.horizon.endYear}` },
+        { label: 'Geography', value: `${ryanWhiteCostingMetadata.modeledJurisdictionCount} modeled jurisdictions, including DC` },
+        { label: 'Existing clients', value: 'Rebound, acute care, mortality, or replacement coverage' },
+        { label: 'Before or after window', value: 'Off-ART costs and all care after 2035' },
+        { label: 'Broader effects', value: 'Quality of life, productivity, prevention, and behavioral responses' },
       ],
-      note: 'DC is included in modeled outcomes and funding totals. “Modeled total” means the sum of these jurisdictions, not a national all-jurisdiction estimate.',
-    },
-    {
-      title: 'Provenance',
-      items: [
-        { label: 'Generated', value: ryanWhiteCostingMetadata.generatedAt.slice(0, 10) },
-        { label: 'Model output', value: ryanWhiteCostingMetadata.sourceArtifacts.rData.fileName },
-        { label: 'Model SHA-256', value: ryanWhiteCostingMetadata.sourceArtifacts.rData.sha256.slice(0, 12) },
-        { label: 'Funding input', value: ryanWhiteCostingMetadata.sourceArtifacts.fundingCsv.fileName },
-        { label: 'Funding SHA-256', value: ryanWhiteCostingMetadata.sourceArtifacts.fundingCsv.sha256.slice(0, 12) },
-        { label: 'Context input', value: ryanWhiteCostingMetadata.sourceArtifacts.jurisdictionContextCsv.fileName },
-        { label: 'Context SHA-256', value: ryanWhiteCostingMetadata.sourceArtifacts.jurisdictionContextCsv.sha256.slice(0, 12) },
-      ],
-      note: `${ryanWhiteCostingMetadata.fundingAdjustment.description} Modeled-total summaries use the within-simulation jurisdiction sum stored in the RData Total location. Exported values are checked against source arrays and the draft costing pipeline.`,
+      note: 'The app reports a restricted downstream-care ledger through 2035, not the total economic or health impact of ADAP elimination. “Modeled total” is the sum of covered jurisdictions, not an estimate for all US jurisdictions.',
     },
   ];
 
@@ -1753,6 +1734,31 @@ function ModelReview() {
               </div>
             ))}
           </div>
+          <details className="group mt-6 rounded-lg border border-slate-200 bg-white px-5 py-4">
+            <summary className="cursor-pointer select-none text-sm font-semibold text-slate-600 transition-colors hover:text-slate-900">
+              Technical data provenance
+            </summary>
+            <dl className="mt-4 grid gap-4 text-sm sm:grid-cols-2 lg:grid-cols-3">
+              {[
+                ['Generated', ryanWhiteCostingMetadata.generatedAt.slice(0, 10)],
+                ['Model output', ryanWhiteCostingMetadata.sourceArtifacts.rData.fileName],
+                ['Model SHA-256', ryanWhiteCostingMetadata.sourceArtifacts.rData.sha256],
+                ['Funding input', ryanWhiteCostingMetadata.sourceArtifacts.fundingCsv.fileName],
+                ['Funding SHA-256', ryanWhiteCostingMetadata.sourceArtifacts.fundingCsv.sha256],
+                ['Context input', ryanWhiteCostingMetadata.sourceArtifacts.jurisdictionContextCsv.fileName],
+                ['Context SHA-256', ryanWhiteCostingMetadata.sourceArtifacts.jurisdictionContextCsv.sha256],
+              ].map(([label, value]) => (
+                <div key={label} className="min-w-0">
+                  <dt className="text-[0.68rem] font-semibold uppercase tracking-wide text-slate-400">{label}</dt>
+                  <dd className="mt-1 break-all font-mono text-xs text-slate-700">{value}</dd>
+                </div>
+              ))}
+            </dl>
+            <p className="mt-4 text-xs leading-relaxed text-slate-500">
+              {ryanWhiteCostingMetadata.fundingAdjustment.description} Modeled-total summaries use the within-simulation
+              jurisdiction sum stored in the RData Total location; generated values are checked against source arrays.
+            </p>
+          </details>
         </Reveal>
       </div>
     </section>
@@ -1764,7 +1770,7 @@ function ModelReview() {
 // -----------------------------------------------------------------------------
 export default function RyanWhiteCostingApp() {
   const [scenario, setScenario] = useState<CostScenarioId>(ryanWhiteCostingSummary.sensitivity.primaryScenario);
-  const [location, setLocation] = useState<LocationKey>('Total');
+  const [location, setLocation] = useState<LocationKey>('FL');
   const [horizon, setHorizon] = useState<number>(HORIZON_MAX);
   const [hovered, setHovered] = useState<string | null>(null);
   const [series, setSeries] = useState<RyanWhiteCostingSeries | null>(null);
@@ -1774,7 +1780,7 @@ export default function RyanWhiteCostingApp() {
   const [echoVisible, setEchoVisible] = useState(false);
 
   const defaultScenario = ryanWhiteCostingSummary.sensitivity.primaryScenario;
-  const defaultState: LocationKey = 'Total';
+  const defaultState: LocationKey = 'FL';
   const modeledJurisdictions = useMemo(() => new Set(ryanWhiteCostingSummary.states.map((item) => item.state)), []);
 
   // Shareable app state: read ?through/&state/&scenario once on mount, then
@@ -1838,21 +1844,25 @@ export default function RyanWhiteCostingApp() {
     : null;
   const decompositionRows = useMemo(
     () =>
-      buildDecomposition(
-        nationalPoint,
-        atFullHorizon
-          ? {
-              pooled: ryanWhiteCostingSummary.national.pooledFinalYear.shareNetCostPositiveVsAdap,
-              scenarios: nationalFinal.shareNetCostPositiveVsAdap,
-            }
-          : null
-      ),
-    [nationalPoint, atFullHorizon, nationalFinal]
+      buildDecomposition(nationalFinal, {
+        pooled: ryanWhiteCostingSummary.national.pooledFinalYear.shareNetCostPositiveVsAdap,
+        scenarios: nationalFinal.shareNetCostPositiveVsAdap,
+      }),
+    [nationalFinal]
   );
 
-  const selectedSeries = seriesForLocation(series, location);
-  const trajectory = useMemo(() => buildTrajectoryData(selectedSeries, scenario), [selectedSeries, scenario]);
-  const selectedCrossover = useMemo(() => crossoverForPoints(selectedSeries, scenario), [selectedSeries, scenario]);
+  const nationalTrajectory = useMemo(
+    () => buildTrajectoryData(seriesForLocation(series, 'Total'), scenario),
+    [series, scenario]
+  );
+  const floridaTrajectory = useMemo(
+    () => buildTrajectoryData(seriesForLocation(series, 'FL'), scenario),
+    [series, scenario]
+  );
+  const floridaCrossover = useMemo(
+    () => crossoverForPoints(seriesForLocation(series, 'FL'), scenario),
+    [series, scenario]
+  );
   const stateCrossovers = useMemo(() => buildStateCrossovers(series, scenario), [series, scenario]);
   const nationalCrossover = useMemo(
     () => crossoverForPoints(series?.national ?? [], scenario),
@@ -1860,12 +1870,12 @@ export default function RyanWhiteCostingApp() {
   );
 
   const driverRows = useMemo(
-    () => buildDriverRows(series, ryanWhiteCostingSummary.states, scenario, horizon, stateCrossovers),
-    [series, scenario, horizon, stateCrossovers]
+    () => buildDriverRows(series, ryanWhiteCostingSummary.states, scenario, HORIZON_MAX, stateCrossovers),
+    [series, scenario, stateCrossovers]
   );
   const nationalDriverRow = useMemo(
-    () => buildNationalDriverRow(series, ryanWhiteCostingSummary, scenario, horizon),
-    [series, scenario, horizon]
+    () => buildNationalDriverRow(series, ryanWhiteCostingSummary, scenario, HORIZON_MAX),
+    [series, scenario]
   );
   const selectedDriver =
     location === 'Total' ? nationalDriverRow : driverRows.find((row) => row.state === location) ?? nationalDriverRow;
@@ -1907,30 +1917,50 @@ export default function RyanWhiteCostingApp() {
               title="How does the accounting balance change over the projection window?"
             >
               Cumulative downstream HIV care costs and ADAP spending avoided under the{' '}
-              {SCENARIO_LABELS[scenario].toLowerCase()} assumption. The Florida preset mirrors the manuscript example;
-              the modeled total is the app default.
+              {SCENARIO_LABELS[scenario].toLowerCase()}{' '}assumption. The two panels mirror the manuscript&apos;s Florida
+              example and modeled-jurisdiction aggregate.
             </SectionHead>
             <div className="mt-10 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
               <Trajectory
-                trajectory={trajectory}
-                selectedName={selectedName}
+                trajectory={floridaTrajectory}
+                selectedName="Florida"
                 scenario={scenario}
                 error={seriesError}
-                crossover={selectedCrossover}
+                crossover={floridaCrossover}
                 horizon={horizon}
-                selectedLocation={location}
+                selectedLocation="FL"
                 onLocation={setLocation}
+                showPresets={false}
               />
-              <CrossoverTimeline
-                crossovers={stateCrossovers}
+              <Trajectory
+                trajectory={nationalTrajectory}
+                selectedName="Modeled-jurisdiction total"
+                scenario={scenario}
+                error={seriesError}
+                crossover={nationalCrossover}
                 horizon={horizon}
-                national={nationalCrossover}
-                selected={location}
-                hovered={hovered}
-                onSelect={setLocation}
-                onHover={setHovered}
+                selectedLocation="Total"
+                onLocation={setLocation}
+                showPresets={false}
               />
             </div>
+            <details className="group mt-6">
+              <summary className="flex cursor-pointer select-none items-center gap-2 rounded-lg border border-slate-200 bg-white px-5 py-3.5 text-sm font-semibold text-slate-700 shadow-sm transition-colors hover:text-slate-900">
+                <span aria-hidden className="text-slate-400 transition-transform group-open:rotate-90">▸</span>
+                Explore median break-even timing across jurisdictions
+              </summary>
+              <div className="mt-3">
+                <CrossoverTimeline
+                  crossovers={stateCrossovers}
+                  horizon={horizon}
+                  national={nationalCrossover}
+                  selected={location}
+                  hovered={hovered}
+                  onSelect={setLocation}
+                  onHover={setHovered}
+                />
+              </div>
+            </details>
           </Reveal>
         </div>
       </section>
@@ -1943,7 +1973,7 @@ export default function RyanWhiteCostingApp() {
               eyebrow="Jurisdiction variation"
               title="How do projected cost consequences vary across jurisdictions?"
             >
-              NCER is the manuscript&apos;s primary jurisdiction-level outcome. At the selected window and price tier,{' '}
+              NCER is the manuscript&apos;s primary jurisdiction-level outcome. At the 2035 endpoint and selected price tier,{' '}
               {intervalsCrossingZero} of {driverRows.length} jurisdiction intervals include zero; medians describe
               modeled magnitude, while intervals show substantial within-jurisdiction uncertainty.
             </SectionHead>
@@ -1951,7 +1981,7 @@ export default function RyanWhiteCostingApp() {
             <div className="mt-10 grid gap-6 lg:grid-cols-[minmax(0,1.45fr)_minmax(0,0.75fr)]">
               <JurisdictionRatioPlot
                 rows={driverRows}
-                horizonYear={nationalPoint.year}
+                horizonYear={HORIZON_MAX}
                 scenario={scenario}
                 selected={location}
                 hovered={hovered}
@@ -1974,7 +2004,7 @@ export default function RyanWhiteCostingApp() {
               <div className="mt-3">
                 <DriverTable
                   rows={driverRows}
-                  horizonYear={nationalPoint.year}
+                  horizonYear={HORIZON_MAX}
                   selected={location}
                   hovered={hovered}
                   onSelect={setLocation}
@@ -1994,20 +2024,25 @@ export default function RyanWhiteCostingApp() {
               eyebrow="Jurisdiction context"
               title="Which baseline characteristics are associated with NCER?"
             >
-              The four comparisons presented in the manuscript, reproduced as selectable views. Correlations summarize
-              unadjusted jurisdiction-level patterns; they do not identify why jurisdictions differ or estimate causal
-              effects of the baseline characteristics.
+              The four comparisons presented in the manuscript, shown together at the 2035 endpoint. Correlations
+              summarize unadjusted jurisdiction-level patterns; they do not identify why jurisdictions differ or
+              estimate causal effects of the baseline characteristics.
             </SectionHead>
-            <div className="mt-10">
-              <HeterogeneityExplorer
-                rows={driverRows}
-                horizonYear={nationalPoint.year}
-                scenario={scenario}
-                selected={location}
-                hovered={hovered}
-                onSelect={setLocation}
-                onHover={setHovered}
-              />
+            <div className="mt-10 grid gap-6 lg:grid-cols-2">
+              {CONTEXT_AXES.map((axis) => (
+                <HeterogeneityExplorer
+                  key={axis.id}
+                  rows={driverRows}
+                  horizonYear={HORIZON_MAX}
+                  scenario={scenario}
+                  selected={location}
+                  hovered={hovered}
+                  onSelect={setLocation}
+                  onHover={setHovered}
+                  fixedAxis={axis.id}
+                  compact
+                />
+              ))}
             </div>
           </Reveal>
         </div>
@@ -2017,7 +2052,7 @@ export default function RyanWhiteCostingApp() {
         rows={decompositionRows}
         scenario={scenario}
         onScenario={setScenario}
-        horizon={nationalPoint.year}
+        horizon={HORIZON_MAX}
         estimand={scenario}
       />
 
@@ -2025,9 +2060,11 @@ export default function RyanWhiteCostingApp() {
 
       <footer className="mx-auto w-full max-w-full px-5 py-12 sm:max-w-6xl sm:px-6">
         <p className="text-xs leading-relaxed text-slate-400">
-          {ryanWhiteCostingMetadata.modeledJurisdictionCount} modeled jurisdictions, including DC. Funding benchmarks are
+          {ryanWhiteCostingMetadata.modeledJurisdictionCount}{' '}modeled jurisdictions, including DC. Funding benchmarks are
           fixed jurisdiction inputs; care-cost intervals are computed after per-simulation cumulative costing. Figures
-          use the latest provided model artifact and are labeled by the selected horizon and ART price tier.
+          use the latest provided model artifact. The opening ledger responds to the budget window; jurisdiction,
+          context, and price-sensitivity comparisons use the paper&apos;s 2035 endpoint. The selected ART-price tier applies
+          page-wide except where the equal-weight pooled row is explicitly labeled.
         </p>
       </footer>
     </div>
