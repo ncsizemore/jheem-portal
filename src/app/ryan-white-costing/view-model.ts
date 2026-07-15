@@ -534,6 +534,8 @@ export interface ContextAxis {
   shortLabel: string;
   description: string;
   format: (value: number) => string;
+  domain?: [number, number];
+  ticks?: number[];
 }
 
 export const CONTEXT_AXES: ContextAxis[] = [
@@ -542,15 +544,19 @@ export const CONTEXT_AXES: ContextAxis[] = [
     label: 'Average transmission rate',
     shortLabel: 'Transmission',
     description:
-      'Mean 2025 sexual transmission rate among diagnosed people who were not virally suppressed.',
+      'Mean modeled 2025 sexual transmissions divided by diagnosed PWH who were not virally suppressed.',
     format: (value) => value.toFixed(3),
+    domain: [0, 4],
+    ticks: [0, 1, 2, 3, 4],
   },
   {
     id: 'adapSpendingPerClient',
     label: 'Annual ADAP spending per client',
     shortLabel: 'Spending / client',
-    description: 'Annual 2026-USD ADAP funding divided by mean baseline ADAP clients.',
+    description: 'Annual baseline ADAP funding (2026 USD) divided by mean 2025 baseline clients.',
     format: (value) => `$${(value / 1_000).toFixed(1)}K`,
+    domain: [0, 10_000],
+    ticks: [0, 2_500, 5_000, 7_500, 10_000],
   },
   {
     id: 'propSuppressedOnAdap',
@@ -558,6 +564,8 @@ export const CONTEXT_AXES: ContextAxis[] = [
     shortLabel: 'Suppressed on ADAP',
     description: 'Mean share of virally suppressed PWH who were supported through ADAP at baseline.',
     format: formatPercent,
+    domain: [0, 0.7],
+    ticks: [0, 0.2, 0.4, 0.6],
   },
   {
     id: 'diagnosedHivWeightedUrbanicity',
@@ -565,6 +573,8 @@ export const CONTEXT_AXES: ContextAxis[] = [
     shortLabel: 'Urbanicity',
     description: 'County urban population share weighted by 2021 diagnosed HIV prevalence.',
     format: formatPercent,
+    domain: [0.5, 1.02],
+    ticks: [0.5, 0.6, 0.7, 0.8, 0.9, 1],
   },
 ];
 

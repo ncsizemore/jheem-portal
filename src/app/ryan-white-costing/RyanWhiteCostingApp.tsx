@@ -1141,32 +1141,24 @@ function BaselineContextCard({ context, stateLabel }: { context: BaselineContext
 }
 
 // -----------------------------------------------------------------------------
-// Context explorer - descriptive jurisdiction-level associations from the
-// manuscript, without a fitted causal model.
+// Context explorer - descriptive jurisdiction-level associations without a
+// fitted causal model.
 // -----------------------------------------------------------------------------
 function HeterogeneityExplorer({
   rows,
-  horizonYear,
-  scenario,
+  axisId,
   selected,
   hovered,
   onSelect,
   onHover,
-  fixedAxis,
-  compact = false,
 }: {
   rows: DriverRow[];
-  horizonYear: number;
-  scenario: CostScenarioId;
+  axisId: ContextAxisId;
   selected: LocationKey;
   hovered: string | null;
   onSelect: (state: string) => void;
   onHover: (state: string | null) => void;
-  fixedAxis?: ContextAxisId;
-  compact?: boolean;
 }) {
-  const [selectedAxisId, setSelectedAxisId] = useState<ContextAxisId>(CONTEXT_AXES[0].id);
-  const axisId = fixedAxis ?? selectedAxisId;
   const axis = CONTEXT_AXES.find((item) => item.id === axisId) ?? CONTEXT_AXES[0];
   const points = useMemo(
     () => buildHeterogeneityPoints(rows, ryanWhiteCostingSummary.states, axis.id),
@@ -1180,14 +1172,24 @@ function HeterogeneityExplorer({
   const padX = (maxX - minX) * 0.08 || 0.01;
   const minRatio = Math.min(0, ...points.map((point) => point.ratio));
   const maxRatio = Math.max(0, ...points.map((point) => point.ratio));
-  const padY = (maxRatio - minRatio) * 0.1 || 0.1;
+  const ratioSpan = maxRatio - minRatio;
+  const ratioStep = ratioSpan > 8 ? 2 : ratioSpan > 4 ? 1 : 0.5;
+  const ratioDomain: [number, number] = [
+    Math.floor((minRatio - ratioStep * 0.25) / ratioStep) * ratioStep,
+    Math.ceil((maxRatio + ratioStep * 0.25) / ratioStep) * ratioStep,
+  ];
+  const ratioTicks = Array.from(
+    { length: Math.round((ratioDomain[1] - ratioDomain[0]) / ratioStep) + 1 },
+    (_, index) => ratioDomain[0] + index * ratioStep
+  );
+  const xDomain = axis.domain ?? [Math.max(0, minX - padX), maxX + padX];
   const alwaysLabel = new Set(['DC', 'TN', 'FL', 'NY']);
   const active = hovered ?? (selected !== 'Total' ? selected : null);
 
   const renderDot = (props: unknown) => {
     const { cx: x, cy: y, payload } = props as { cx?: number; cy?: number; payload?: HeterogeneityPoint };
     if (typeof x !== 'number' || typeof y !== 'number' || !payload) return <g />;
-    const r = 5 + Math.sqrt(payload.adap / maxAdap) * 12;
+    const r = 4 + Math.sqrt(payload.adap / maxAdap) * 8;
     const isSel = payload.state === selected;
     const isActive = payload.state === active;
     const color = payload.medicaidExpansion ? EXPANSION : NON_EXPANSION;
@@ -1197,7 +1199,7 @@ function HeterogeneityExplorer({
         role="button"
         tabIndex={0}
         aria-pressed={isSel}
-        aria-label={`${payload.stateName}: NCER ${formatNcer(payload.ratio)}, ${axis.label} ${axis.format(payload.x)}, ${payload.medicaidExpansion ? 'Medicaid expansion' : 'Medicaid non-expansion'}`}
+        aria-label={`${payload.stateName}: median NCER ${formatNcer(payload.ratio)}, ${axis.label} ${axis.format(payload.x)}, ${payload.medicaidExpansion ? 'Medicaid expansion' : 'Medicaid non-expansion'}`}
         onClick={() => onSelect(payload.state)}
         onMouseEnter={() => onHover(payload.state)}
         onMouseLeave={() => onHover(null)}
@@ -1226,7 +1228,13 @@ function HeterogeneityExplorer({
           strokeWidth={isSel ? 2.5 : isActive ? 1.8 : 1.4}
         />
         {(alwaysLabel.has(payload.state) || isSel || isActive) && (
-          <text x={x + r + 3} y={y + 4} fontSize={11} fill="#475569" fontWeight={isSel || isActive ? 700 : 500}>
+          <text
+            x={x + r + 3}
+            y={payload.state === 'NY' ? y - 7 : y + 4}
+            fontSize={11}
+            fill="#475569"
+            fontWeight={isSel || isActive ? 700 : 500}
+          >
             {payload.state}
           </text>
         )}
@@ -1241,7 +1249,7 @@ function HeterogeneityExplorer({
       <div className="rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 shadow-md">
         <p className="text-sm font-semibold text-slate-900">{p.stateName}</p>
         <p className="mt-1 font-mono text-xs tabular-nums text-slate-500">
-          {axis.shortLabel} {axis.format(p.x)} · NCER {formatNcer(p.ratio)}
+          {axis.shortLabel} {axis.format(p.x)} · Median NCER {formatNcer(p.ratio)}
         </p>
         <p className="font-mono text-xs tabular-nums text-slate-500">ADAP avoided {formatCompactDollars(p.adap)}</p>
         <p className="text-xs text-slate-500">{p.medicaidExpansion ? 'Medicaid expansion' : 'Medicaid non-expansion'}</p>
@@ -1252,50 +1260,27 @@ function HeterogeneityExplorer({
   return (
     <div className="min-w-0">
       <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <h3 className="text-base font-semibold text-slate-900">
-              NCER vs {axis.label.charAt(0).toLowerCase() + axis.label.slice(1)}
-            </h3>
+        <div className="grid items-start gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:gap-4">
+          <div className="min-w-0">
+            <h3 className="text-base font-semibold text-slate-900">{axis.label}</h3>
             <p className="mt-1 max-w-2xl text-sm leading-relaxed text-slate-500">{axis.description}</p>
           </div>
-          <div className="text-right">
+          <div className="flex items-baseline gap-2 sm:block sm:text-right">
             <p className="font-mono text-base font-semibold tabular-nums text-slate-800">
               ρ = {rho === null ? '—' : rho.toFixed(2)}
             </p>
-            <p className="text-[0.65rem] uppercase tracking-wide text-slate-400">Spearman · n = {points.length}</p>
-            <p className="mt-1 text-[0.65rem] text-slate-400">{SCENARIO_LABELS[scenario]} · through {horizonYear}</p>
+            <p className="text-[0.65rem] uppercase tracking-wide text-slate-400">Spearman</p>
           </div>
         </div>
-
-        {!fixedAxis && (
-          <div className="mt-5 flex flex-wrap gap-2" role="group" aria-label="Jurisdiction context variable">
-            {CONTEXT_AXES.map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => setSelectedAxisId(item.id)}
-                aria-pressed={axis.id === item.id}
-                className={cx(
-                  'rounded-md border px-3 py-1.5 text-xs font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-400',
-                  axis.id === item.id
-                    ? 'border-slate-900 bg-slate-900 text-white'
-                    : 'border-slate-200 bg-white text-slate-600 hover:border-slate-400 hover:text-slate-900'
-                )}
-              >
-                {item.shortLabel}
-              </button>
-            ))}
-          </div>
-        )}
-        <div className={cx('mt-4', compact ? 'h-[320px] sm:h-[340px]' : 'h-[340px] sm:h-[400px]')}>
+        <div className="mt-4 h-[300px] sm:h-[330px]">
           <ResponsiveContainer width="100%" height="100%">
             <ScatterChart margin={{ top: 12, right: 24, bottom: 22, left: 4 }}>
               <CartesianGrid stroke="#eef2f6" />
               <XAxis
                 type="number"
                 dataKey="x"
-                domain={[minX - padX, maxX + padX]}
+                domain={xDomain}
+                ticks={axis.ticks}
                 tickFormatter={axis.format}
                 tickLine={false}
                 axisLine={{ stroke: '#e2e8f0' }}
@@ -1305,38 +1290,24 @@ function HeterogeneityExplorer({
               <YAxis
                 type="number"
                 dataKey="ratio"
-                domain={[minRatio - padY, maxRatio + padY]}
+                domain={ratioDomain}
+                ticks={ratioTicks}
                 tickFormatter={(value: number) => value.toFixed(1)}
                 tickLine={false}
                 axisLine={false}
                 tick={{ fill: MUTED, fontSize: 11 }}
                 width={48}
-                label={{ value: 'NCER', angle: -90, position: 'insideLeft', fill: MUTED, fontSize: 12 }}
+                label={{ value: 'Median NCER', angle: -90, position: 'insideLeft', fill: MUTED, fontSize: 12 }}
               />
               <ReferenceLine
                 y={0}
                 stroke="#94a3b8"
                 strokeDasharray="5 5"
-                label={{ value: 'break-even', position: 'insideTopRight', fill: MUTED, fontSize: 11 }}
               />
               <Tooltip content={<HetTip />} cursor={{ strokeDasharray: '3 3', stroke: '#cbd5e1' }} />
               <Scatter data={points} shape={renderDot} isAnimationActive={false} />
             </ScatterChart>
           </ResponsiveContainer>
-        </div>
-        <div className="mt-3 flex flex-wrap items-center justify-between gap-3 text-[0.7rem] leading-relaxed text-slate-400">
-          <p>
-            Descriptive, unadjusted association through {horizonYear}; no fitted line or causal interpretation. Dot size
-            = cumulative ADAP spending avoided.
-          </p>
-          <div className="flex gap-4 text-slate-500" aria-label="Medicaid expansion legend">
-            <span className="inline-flex items-center gap-1.5">
-              <span className="h-2 w-2 rounded-full" style={{ background: EXPANSION }} /> Expansion
-            </span>
-            <span className="inline-flex items-center gap-1.5">
-              <span className="h-2 w-2 rounded-full" style={{ background: NON_EXPANSION }} /> Non-expansion
-            </span>
-          </div>
         </div>
       </div>
     </div>
@@ -1951,23 +1922,31 @@ export default function RyanWhiteCostingApp() {
               eyebrow="Jurisdiction context"
               title="Which baseline characteristics are associated with NCER?"
             >
-              The four comparisons presented in the manuscript, shown together at the 2035 endpoint. Correlations
-              summarize unadjusted jurisdiction-level patterns; they do not identify why jurisdictions differ or
-              estimate causal effects of the baseline characteristics.
+              Spearman correlations compare four baseline characteristics with jurisdiction median NCER. These
+              unadjusted jurisdiction-level associations do not incorporate within-jurisdiction simulation uncertainty
+              or identify causal effects.
             </SectionHead>
+            <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-2 border-y border-slate-200 py-3 text-xs text-slate-500">
+              <span>Fixed 2035 endpoint · {SCENARIO_LABELS[scenario]} · n = {driverRows.length}</span>
+              <span className="inline-flex items-center gap-1.5">
+                <span className="h-2.5 w-2.5 rounded-full" style={{ background: EXPANSION }} /> Medicaid expansion
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <span className="h-2.5 w-2.5 rounded-full" style={{ background: NON_EXPANSION }} /> Non-expansion
+              </span>
+              <span>NCER 0 = break-even.</span>
+              <span>Dot size reflects cumulative ADAP spending avoided.</span>
+            </div>
             <div className="mt-10 grid gap-6 lg:grid-cols-2">
               {CONTEXT_AXES.map((axis) => (
                 <HeterogeneityExplorer
                   key={axis.id}
                   rows={driverRows}
-                  horizonYear={HORIZON_MAX}
-                  scenario={scenario}
+                  axisId={axis.id}
                   selected={location}
                   hovered={hovered}
                   onSelect={setLocation}
                   onHover={setHovered}
-                  fixedAxis={axis.id}
-                  compact
                 />
               ))}
             </div>
