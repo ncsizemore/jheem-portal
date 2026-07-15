@@ -286,8 +286,10 @@ function AnalysisNavigation({
       <div
         ref={navRef}
         className={cx(
-          'z-40 border-y border-slate-200 bg-white/95 shadow-sm backdrop-blur',
-          fixed ? 'fixed inset-x-0 top-20' : 'relative'
+          'z-40 border-y border-slate-200 bg-white/95 backdrop-blur transition-[box-shadow,background-color] duration-200',
+          fixed
+            ? 'fixed inset-x-0 top-20 shadow-[0_6px_18px_rgba(15,23,42,0.08)]'
+            : 'relative shadow-sm'
         )}
       >
       <div className="mx-auto hidden w-full max-w-6xl items-center gap-5 px-6 lg:flex">
@@ -308,9 +310,11 @@ function AnalysisNavigation({
           <span className="flex-shrink-0 text-[0.62rem] font-semibold uppercase tracking-[0.14em] text-slate-400">
             Analysis
           </span>
-          <nav aria-label="Analysis sections" className="flex min-w-0 flex-1 items-center gap-4 overflow-x-auto">
-            {sectionLinks}
-          </nav>
+          <div className="relative min-w-0 flex-1 after:pointer-events-none after:absolute after:inset-y-0 after:right-0 after:w-6 after:bg-gradient-to-l after:from-white after:to-transparent">
+            <nav aria-label="Analysis sections" className="flex min-w-0 items-center gap-4 overflow-x-auto pr-6">
+              {sectionLinks}
+            </nav>
+          </div>
         </div>
         <details className="group px-5 py-2">
           <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-xs text-slate-600 [&::-webkit-details-marker]:hidden">
@@ -350,18 +354,24 @@ function CascadeHero({
   const netPositive = headline.net.median > 0;
 
   return (
-    <header className="border-b border-slate-200">
+    <header
+      className="relative overflow-hidden border-b border-slate-200 bg-[#fbfcfe]"
+      style={{
+        backgroundImage:
+          'radial-gradient(ellipse 70% 76% at 92% 4%, rgba(0, 45, 114, 0.055), transparent 68%)',
+      }}
+    >
         <div className="mx-auto w-full max-w-full px-5 py-10 sm:max-w-5xl sm:px-6 sm:py-14">
           <div>
-            <h1 className={cx(SERIF, 'text-[2rem] font-medium leading-[1.08] text-slate-900 sm:text-[3rem]')}>
+            <h1 className={cx(SERIF, 'text-balance text-[2rem] font-medium leading-[1.08] text-slate-900 sm:text-[3rem]')}>
               When Cuts Cost More: Modeling ADAP Elimination Across Multiple US States
             </h1>
-            <p className="mt-5 max-w-3xl text-base leading-relaxed text-slate-600 sm:text-lg">
+            <p className="mt-5 max-w-3xl text-pretty text-base leading-relaxed text-slate-600 sm:text-lg">
               An interactive companion to a 2026-{HORIZON_MAX} modeled stress test of complete ADAP elimination across
               30 states and Washington, D.C.
             </p>
 
-            <p className="mt-7 text-xl leading-relaxed text-slate-800 sm:text-2xl">
+            <p className="mt-7 text-pretty text-xl leading-relaxed text-slate-800 sm:text-2xl">
               Under the {SCENARIO_SHORT_LABELS[estimand].toLowerCase()} drug-cost assumption and through {horizon},
               projected downstream care costs reach{' '}
               <strong className="font-semibold" style={{ color: NAVY }}>{formatCompactDollars(headline.care.median)}</strong>,
@@ -427,7 +437,7 @@ function CascadeHero({
               </div>
             </dl>
 
-            <p className="mt-4 max-w-4xl text-xs leading-relaxed text-slate-600 sm:text-sm">
+            <p className="mt-4 max-w-4xl text-pretty text-xs leading-relaxed text-slate-600 sm:text-sm">
               Net-cost 95% interval {formatCompactDollars(headline.net.lower)} to{' '}
               {formatCompactDollars(headline.net.upper)}
               {share !== null ? <>; {formatPercent(share)} of simulations are above zero</> : null}. The comparison
