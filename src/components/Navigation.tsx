@@ -29,13 +29,14 @@ export default function Navigation() {
 
   const isRyanWhiteActive = pathname === '/ryan-white' || showRyanWhiteSubmenu;
   const isStateLevelActive = pathname === '/ryan-white-state-level' || showStateLevelSubmenu;
+  const isCostingActive = pathname === '/ryan-white-costing';
   const showCdcTestingSubmenu = pathname === '/cdc-testing' ||
                                 pathname?.startsWith('/cdc-testing/explorer') ||
                                 pathname?.startsWith('/cdc-testing/custom');
 
   const isCdcTestingActive = pathname === '/cdc-testing' || showCdcTestingSubmenu || pathname === '/shiny/cdc-testing';
   const isHIVAgeProjectionsActive = pathname === '/aging';
-  const isAnyModelActive = isRyanWhiteActive || isStateLevelActive || isCdcTestingActive || isHIVAgeProjectionsActive;
+  const isAnyModelActive = isRyanWhiteActive || isStateLevelActive || isCostingActive || isCdcTestingActive || isHIVAgeProjectionsActive;
 
   return (
     <header className="bg-hopkins-blue/95 backdrop-blur sticky top-0 z-50 border-b border-white/10 shadow-[0_1px_0_rgba(255,255,255,0.06)]">
