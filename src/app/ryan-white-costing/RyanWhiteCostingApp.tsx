@@ -271,7 +271,7 @@ function AnalysisNavigation({
 
   const horizonSelect = (id: string) => (
     <label htmlFor={id} className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-500">
-      <span>Through</span>
+      <span>Headline through</span>
       <select
         id={id}
         value={horizon}
@@ -347,7 +347,7 @@ function AnalysisNavigation({
         <details className="group px-5 py-2">
           <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-xs text-slate-600 [&::-webkit-details-marker]:hidden">
             <span>
-              Through <span className="font-mono font-semibold text-slate-900">{horizon}</span>
+              Headline through <span className="font-mono font-semibold text-slate-900">{horizon}</span>
               {' '}· <span className="font-semibold text-slate-900">{SCENARIO_SHORT_LABELS[scenario]}</span> ART price
             </span>
             <span className="font-medium text-slate-500 group-open:hidden">Change assumptions</span>
@@ -764,8 +764,8 @@ function SplitBand({
 }
 
 // -----------------------------------------------------------------------------
-// Jurisdiction comparison: the manuscript's primary state-level outcome,
-// expressed as an accessible ranked interval plot plus an exact-value table.
+// Jurisdiction comparison: a relative cost-consequence measure, expressed as
+// an accessible interval plot plus an exact-value table.
 // -----------------------------------------------------------------------------
 function JurisdictionRatioPlot({
   rows,
@@ -785,10 +785,6 @@ function JurisdictionRatioPlot({
   onHover: (state: string | null) => void;
 }) {
   const sorted = useMemo(() => [...rows].sort((a, b) => b.ratio - a.ratio), [rows]);
-  const expansionByState = useMemo(
-    () => new Map(ryanWhiteCostingSummary.states.map((item) => [item.state, item.baselineContext.medicaidExpansion])),
-    []
-  );
   const rawMin = Math.min(0, ...rows.map((row) => row.ratioLower));
   const rawMax = Math.max(0, ...rows.map((row) => row.ratioUpper));
   const domainMin = Math.floor(rawMin);
@@ -801,25 +797,30 @@ function JurisdictionRatioPlot({
     <div className="min-w-0 rounded-lg border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h3 className="text-base font-semibold text-slate-900">NCER by jurisdiction</h3>
+          <h3 className="text-base font-semibold text-slate-900">
+            Net cost relative to ADAP spending avoided (NCER)
+          </h3>
           <p className="mt-1 text-sm leading-relaxed text-slate-500">
-            Median and 95% simulation interval through {horizonYear} under the{' '}
-            {SCENARIO_LABELS[scenario].toLowerCase()} assumption, ordered by the median.
+            Median and 95% simulation interval at the fixed {horizonYear} endpoint under the{' '}
+            {SCENARIO_LABELS[scenario].toLowerCase()} assumption. Jurisdictions are ordered by median NCER.
           </p>
         </div>
-        <div className="flex flex-wrap gap-x-4 gap-y-2 text-xs text-slate-500" aria-label="Medicaid expansion legend">
+        <div className="flex flex-wrap gap-x-4 gap-y-2 text-xs text-slate-500" aria-label="Simulation interval legend">
           <span className="inline-flex items-center gap-2">
-            <span className="h-2.5 w-2.5 rounded-full" style={{ background: EXPANSION }} /> Expansion
+            <span className="h-2.5 w-2.5 rounded-full bg-slate-400" /> Includes zero
           </span>
           <span className="inline-flex items-center gap-2">
-            <span className="h-2.5 w-2.5 rounded-full" style={{ background: NON_EXPANSION }} /> Non-expansion
+            <span className="h-2.5 w-2.5 rounded-full" style={{ background: RUST }} /> Interval above zero
+          </span>
+          <span className="inline-flex items-center gap-2">
+            <span className="h-2.5 w-2.5 rounded-full" style={{ background: TEAL }} /> Interval below zero
           </span>
         </div>
       </div>
 
-      <div className="mt-5 overflow-x-auto">
-        <div className="min-w-[440px]">
-          <div className="grid grid-cols-[104px_minmax(250px,1fr)_58px] items-end gap-3 border-b border-slate-200 pb-2 text-[0.65rem] uppercase tracking-wide text-slate-400">
+      <div className="mt-5 min-w-0">
+        <div className="min-w-0">
+          <div className="grid grid-cols-[76px_minmax(0,1fr)_44px] items-end gap-2 border-b border-slate-200 pb-2 text-[0.62rem] uppercase tracking-wide text-slate-400 sm:grid-cols-[104px_minmax(250px,1fr)_58px] sm:gap-3 sm:text-[0.65rem]">
             <span>Jurisdiction</span>
             <div className="relative h-4 font-mono normal-case tracking-normal">
               <span className="absolute left-0">{domainMin}</span>
@@ -831,11 +832,11 @@ function JurisdictionRatioPlot({
             <span className="text-right">Median</span>
           </div>
 
-          <div className="max-h-[640px] overflow-y-auto">
+          <div className="sm:max-h-[640px] sm:overflow-y-auto">
             {sorted.map((row) => {
               const isSelected = row.state === selected;
               const isHovered = row.state === hovered;
-              const color = expansionByState.get(row.state) ? EXPANSION : NON_EXPANSION;
+              const color = row.ratioLower > 0 ? RUST : row.ratioUpper < 0 ? TEAL : '#94a3b8';
               return (
                 <button
                   key={row.state}
@@ -848,12 +849,15 @@ function JurisdictionRatioPlot({
                   aria-pressed={isSelected}
                   aria-label={`${row.stateName}: NCER ${formatNcer(row.ratio)}, 95% interval ${formatNcer(row.ratioLower)} to ${formatNcer(row.ratioUpper)}`}
                   className={cx(
-                    'grid w-full grid-cols-[104px_minmax(250px,1fr)_58px] items-center gap-3 border-b border-slate-100 py-2 text-left transition-colors last:border-b-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-slate-400',
+                    'grid w-full grid-cols-[76px_minmax(0,1fr)_44px] items-center gap-2 border-b border-slate-100 py-2 text-left transition-colors last:border-b-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-slate-400 sm:grid-cols-[104px_minmax(250px,1fr)_58px] sm:gap-3',
                     isSelected ? 'bg-slate-100' : isHovered ? 'bg-slate-50' : 'hover:bg-slate-50/70'
                   )}
                 >
                   <span className="truncate text-xs font-medium text-slate-700" title={row.stateName}>
-                    {row.stateName} <span className="text-slate-400">{row.state}</span>
+                    <span className="sm:hidden">{row.state}</span>
+                    <span className="hidden sm:inline">
+                      {row.stateName} <span className="text-slate-400">{row.state}</span>
+                    </span>
                   </span>
                   <span className="relative block h-7 overflow-hidden rounded-sm bg-slate-50">
                     <span className="absolute inset-y-0 w-px bg-slate-300" style={{ left: `${zero}%` }} />
@@ -876,8 +880,8 @@ function JurisdictionRatioPlot({
         </div>
       </div>
       <p className="mt-3 text-[0.7rem] leading-relaxed text-slate-400">
-        NCER = (downstream care cost − ADAP spending avoided) / ADAP spending avoided. Color uses ACA Medicaid
-        expansion status for the 2025 baseline year.
+        NCER = (downstream care cost − ADAP spending avoided) / ADAP spending avoided. Zero is break-even; 1.00 means
+        $1 in net cost for each $1 of ADAP spending avoided. Gray intervals span both net offset and net cost.
       </p>
     </div>
   );
@@ -938,8 +942,8 @@ function DriverTable({
                   </button>
                 </th>
               ))}
-              <th className="py-2 pl-2 text-right font-medium" title="Share of draws net-costly at the 2035 horizon">
-                Draws&gt;0 &rsquo;35
+              <th className="py-2 pl-2 text-right font-medium" title="Share of draws with positive net cost at the 2035 horizon">
+                Net-costly draws &rsquo;35
               </th>
             </tr>
           </thead>
@@ -1010,8 +1014,8 @@ function DriverTable({
         </table>
       </div>
       <p className="mt-3 text-[0.7rem] leading-relaxed text-slate-400">
-        Medians at the selected window. NCER uses the paper&apos;s primary definition; the last column remains a 2035
-        quantity because draw-level sign shares are not exported annually.
+        Medians at the fixed {horizonYear} endpoint. The last column reports the share of draws with positive net cost;
+        draw-level sign shares are available at 2035 only.
       </p>
     </div>
   );
@@ -1027,24 +1031,24 @@ function StateDetailCard({ row, crossoverKnown }: { row: DriverRow; crossoverKno
           'Break-even: …'
         ) : row.crossoverYear !== null ? (
           <>
-            Crosses break-even in <span className="font-semibold text-slate-800">{row.crossoverYear}</span>
+            Median crosses break-even in <span className="font-semibold text-slate-800">{row.crossoverYear}</span>
           </>
         ) : (
-          'Does not cross break-even by 2035'
+          'Median does not cross break-even by 2035'
         )}{' '}
         ·{' '}
         <span style={{ color: shareColor(row.shareNetPositive2035) }}>
-          {formatPercent(row.shareNetPositive2035)}{' '}net-costly at &rsquo;35
+          {formatPercent(row.shareNetPositive2035)}{' '}of &rsquo;35 draws are net-costly
         </span>
       </p>
       <dl className="mt-6 grid grid-cols-2 gap-x-6 gap-y-4">
         {[
           ['NCER', formatNcer(row.ratio)],
+          ['Care per $1 avoided', formatPerDollar(row.perDollar)],
           ['Downstream care', formatCompactDollars(row.careCost.median)],
           ['ADAP avoided', formatCompactDollars(row.adap)],
-          ['Net cost vs ADAP', formatCompactDollars(row.net.median)],
-          ['Excess diagnoses', formatNumber(row.excessDiagnoses)],
-          ['ART person-years', formatNumber(row.personYears)],
+          [row.net.median >= 0 ? 'Median net cost' : 'Median net offset', formatCompactDollars(Math.abs(row.net.median))],
+          ['NCER 95% interval', `${formatNcer(row.ratioLower)} to ${formatNcer(row.ratioUpper)}`],
         ].map(([label, value]) => (
           <div key={label} className="min-w-0">
             <dt className="text-[0.68rem] font-medium uppercase tracking-wide text-slate-400">{label}</dt>
@@ -1058,9 +1062,9 @@ function StateDetailCard({ row, crossoverKnown }: { row: DriverRow; crossoverKno
         </summary>
         <dl className="mt-4 grid grid-cols-2 gap-x-6 gap-y-4">
           {[
-            ['NCER 95% interval', `${formatNcer(row.ratioLower)} to ${formatNcer(row.ratioUpper)}`],
             ['Net-cost 95% interval', `${formatCompactDollars(row.net.lower)} to ${formatCompactDollars(row.net.upper)}`],
-            ['Care per $1 avoided', formatPerDollar(row.perDollar)],
+            ['Excess diagnoses', formatNumber(row.excessDiagnoses)],
+            ['ART person-years', formatNumber(row.personYears)],
             ['Excess infections', formatNumber(row.excessInfections)],
             ['Window', `2026-${row.year}`],
           ].map(([label, value]) => (
@@ -1894,24 +1898,26 @@ export default function RyanWhiteCostingApp() {
               eyebrow="Jurisdiction variation"
               title="How do projected cost consequences vary across jurisdictions?"
             >
-              NCER is the manuscript&apos;s primary jurisdiction-level outcome. At the 2035 endpoint and selected price tier,{' '}
-              {intervalsCrossingZero} of {driverRows.length} jurisdiction intervals include zero; medians describe
-              modeled magnitude, while intervals show substantial within-jurisdiction uncertainty.
+              NCER describes net downstream care cost relative to ADAP spending avoided: zero is break-even, while
+              1.00 means $1 in net cost for each $1 avoided. At the fixed 2035 endpoint under the selected price
+              assumption, {intervalsCrossingZero} of {driverRows.length} jurisdiction intervals include zero,
+              indicating uncertainty in the direction of net cost for most jurisdictions.
             </SectionHead>
 
             <div className="mt-10 grid gap-6 lg:grid-cols-[minmax(0,1.45fr)_minmax(0,0.75fr)]">
-              <JurisdictionRatioPlot
-                rows={driverRows}
-                horizonYear={HORIZON_MAX}
-                scenario={scenario}
-                selected={location}
-                hovered={hovered}
-                onSelect={setLocation}
-                onHover={setHovered}
-              />
-              <div className="flex min-w-0 flex-col gap-6">
+              <div className="order-2 min-w-0 lg:order-1">
+                <JurisdictionRatioPlot
+                  rows={driverRows}
+                  horizonYear={HORIZON_MAX}
+                  scenario={scenario}
+                  selected={location}
+                  hovered={hovered}
+                  onSelect={setLocation}
+                  onHover={setHovered}
+                />
+              </div>
+              <div className="order-1 min-w-0 lg:order-2">
                 <StateDetailCard row={selectedDriver} crossoverKnown={series !== null} />
-                <BaselineContextCard context={selectedContext} stateLabel={selectedName} />
               </div>
             </div>
 
@@ -1965,6 +1971,15 @@ export default function RyanWhiteCostingApp() {
                 />
               ))}
             </div>
+            <details className="group mt-6">
+              <summary className="flex cursor-pointer select-none items-center gap-2 rounded-lg border border-slate-200 bg-white px-5 py-3.5 text-sm font-semibold text-slate-700 shadow-sm transition-colors hover:text-slate-900">
+                <span aria-hidden className="text-slate-400 transition-transform group-open:rotate-90">▸</span>
+                View baseline values for {selectedName}
+              </summary>
+              <div className="mt-3 max-w-xl">
+                <BaselineContextCard context={selectedContext} stateLabel={selectedName} />
+              </div>
+            </details>
           </Reveal>
         </div>
       </section>
