@@ -75,6 +75,7 @@ const EASE = [0.22, 1, 0.36, 1] as const;
 const SERIF = '[font-family:var(--font-serif)]';
 
 const ANALYSIS_SECTIONS = [
+  { id: 'pathway', label: 'Model pathway' },
   { id: 'crossover', label: 'Over time' },
   { id: 'drivers', label: 'Jurisdictions' },
   { id: 'context', label: 'Context' },
@@ -201,12 +202,22 @@ function AnalysisNavigation({
   useEffect(() => {
     const sentinel = sentinelRef.current;
     if (!sentinel) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => setFixed(!entry.isIntersecting && entry.boundingClientRect.top < 80),
-      { threshold: 0, rootMargin: '-80px 0px 0px 0px' }
-    );
-    observer.observe(sentinel);
-    return () => observer.disconnect();
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      setFixed(sentinel.getBoundingClientRect().top < 80);
+    };
+    const schedule = () => {
+      if (!frame) frame = window.requestAnimationFrame(update);
+    };
+    update();
+    window.addEventListener('scroll', schedule, { passive: true });
+    window.addEventListener('resize', schedule);
+    return () => {
+      if (frame) window.cancelAnimationFrame(frame);
+      window.removeEventListener('scroll', schedule);
+      window.removeEventListener('resize', schedule);
+    };
   }, []);
 
   useEffect(() => {
@@ -228,10 +239,10 @@ function AnalysisNavigation({
             href={`#${section.id}`}
             aria-current={active ? 'location' : undefined}
             className={cx(
-              'relative flex-shrink-0 whitespace-nowrap py-3 text-xs font-medium transition-colors after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:origin-center after:transition-transform',
+              'relative flex-shrink-0 whitespace-nowrap py-3 text-xs transition-colors after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:origin-center after:transition-transform lg:text-[0.8rem]',
               active
-                ? 'text-slate-950 after:scale-x-100 after:bg-blue-800'
-                : 'text-slate-500 after:scale-x-0 after:bg-transparent hover:text-slate-900'
+                ? 'font-semibold text-slate-950 after:scale-x-100 after:bg-blue-900'
+                : 'font-medium text-slate-500 after:scale-x-0 after:bg-transparent hover:text-slate-900'
             )}
           >
             {section.label}
@@ -294,7 +305,7 @@ function AnalysisNavigation({
       >
       <div className="mx-auto hidden w-full max-w-6xl items-center gap-5 px-6 lg:flex">
         <span className="flex-shrink-0 text-[0.66rem] font-semibold uppercase tracking-[0.16em] text-slate-400">
-          Analysis
+          Sections
         </span>
         <nav aria-label="Analysis sections" className="flex min-w-0 flex-1 items-center gap-5 overflow-x-auto">
           {sectionLinks}
@@ -308,7 +319,7 @@ function AnalysisNavigation({
       <div className="lg:hidden">
         <div className="flex items-center gap-3 border-b border-slate-100 px-5">
           <span className="flex-shrink-0 text-[0.62rem] font-semibold uppercase tracking-[0.14em] text-slate-400">
-            Analysis
+            Sections
           </span>
           <div className="relative min-w-0 flex-1 after:pointer-events-none after:absolute after:inset-y-0 after:right-0 after:w-6 after:bg-gradient-to-l after:from-white after:to-transparent">
             <nav aria-label="Analysis sections" className="flex min-w-0 items-center gap-4 overflow-x-auto pr-6">
@@ -450,18 +461,27 @@ function CascadeHero({
 }
 
 function CascadeChain({ headline, horizon }: { headline: HeadlineValues; horizon: number }) {
+  const netPositive = headline.net.median >= 0;
   const stages: Array<{ value: string; sub: string }> = [
     {
       value: 'Complete ADAP elimination',
-      sub: 'Hypothetical change beginning January 1, 2026',
+      sub: 'Hypothetical stress test beginning January 1, 2026; not a forecast',
+    },
+    {
+      value: '65% suppression decline',
+      sub: 'Mean elicited effect among ADAP recipients; 40%–90% IQR',
     },
     {
       value: `${formatNumber(headline.excessInfections)} excess infections`,
-      sub: 'Relative to continued coverage',
+      sub: 'Modeled relative to continued ADAP coverage',
     },
     {
       value: `${formatNumber(headline.excessDiagnoses)} excess diagnoses`,
-      sub: `${formatNumber(headline.personYears)} person-years on ART`,
+      sub: 'The downstream costing cohort begins after diagnosis and care engagement',
+    },
+    {
+      value: `${formatNumber(headline.personYears)} ART person-years`,
+      sub: `Immediate and later ART starts accumulated through ${horizon}`,
     },
     {
       value: `${formatCompactDollars(headline.care.median)} downstream care`,
@@ -470,18 +490,19 @@ function CascadeChain({ headline, horizon }: { headline: HeadlineValues; horizon
   ];
 
   return (
-    <section className="mt-8" aria-labelledby="modeled-pathway-title">
-      <div>
-        <h2 id="modeled-pathway-title" className={cx(SERIF, 'text-xl font-medium text-slate-900')}>
-          How the result is constructed
-        </h2>
-        <p className="mt-1 text-xs text-slate-500">Cumulative 2026-{horizon} medians across 1,000 simulations.</p>
-      </div>
+    <div aria-labelledby="modeled-pathway-title">
+      <h2 id="modeled-pathway-title" className={cx(SERIF, 'text-2xl font-medium text-slate-900')}>
+        How the model connects ADAP elimination to downstream cost
+      </h2>
+      <p className="mt-2 max-w-3xl text-sm leading-relaxed text-slate-600">
+        Displayed outcomes are cumulative 2026-{horizon} medians across 1,000 simulations; avoided program spending
+        enters in the final accounting comparison.
+      </p>
 
       <ol
         className={cx(
-          'relative mt-6 space-y-6 before:absolute before:bottom-2 before:left-[5px] before:top-2 before:w-px before:bg-slate-200',
-          'lg:grid lg:grid-cols-4 lg:gap-8 lg:space-y-0 lg:before:bottom-auto lg:before:left-[6px] lg:before:right-[6px] lg:before:top-[6px] lg:before:h-px lg:before:w-auto'
+          'relative mt-7 space-y-5 before:absolute before:bottom-2 before:left-[5px] before:top-2 before:w-px before:bg-slate-200',
+          'lg:grid lg:grid-cols-6 lg:gap-5 lg:space-y-0 lg:before:bottom-auto lg:before:left-[6px] lg:before:right-[6px] lg:before:top-[6px] lg:before:h-px lg:before:w-auto'
         )}
       >
         {stages.map((stage) => (
@@ -499,24 +520,34 @@ function CascadeChain({ headline, horizon }: { headline: HeadlineValues; horizon
         ))}
       </ol>
 
-      <details className="group mt-6 border-t border-slate-200 pt-3">
+      <p className="mt-7 max-w-5xl border-t border-slate-200 pt-5 text-sm leading-relaxed text-slate-700">
+        The pathway yields{' '}
+        <strong className="font-semibold" style={{ color: NAVY }}>{formatCompactDollars(headline.care.median)}</strong>{' '}
+        in downstream care. Compared with{' '}
+        <strong className="font-semibold" style={{ color: TEAL }}>{formatCompactDollars(headline.adap)}</strong>{' '}
+        in ADAP spending avoided, the accounting result is a median {netPositive ? 'net cost' : 'net offset'} of{' '}
+        <strong className="font-semibold" style={{ color: netPositive ? RUST : TEAL }}>
+          {formatCompactDollars(Math.abs(headline.net.median))}
+        </strong>.
+      </p>
+
+      <p className="mt-3 max-w-4xl text-xs leading-relaxed text-slate-600">
+        <span className="font-semibold text-slate-700">Cost boundary:</span>{' '}
+        costs begin only after an excess incident case is diagnosed and enters care; costs experienced by current ADAP
+        enrollees who lose access are not included.
+      </p>
+
+      <details className="group mt-4 border-t border-slate-200 pt-3">
         <summary className="flex cursor-pointer select-none items-center gap-2 py-1 text-sm font-medium text-slate-500 transition-colors hover:text-slate-900">
           <span aria-hidden className="text-slate-400 transition-transform group-open:rotate-90">▸</span>
-          Definitions, cost boundary, and uncertainty
+          Definitions and uncertainty
         </summary>
-        <div className="grid gap-5 pt-4 text-xs leading-relaxed text-slate-500 sm:grid-cols-3">
+        <div className="grid gap-5 pt-4 text-xs leading-relaxed text-slate-500 sm:grid-cols-2">
           <div>
-            <p className="font-semibold text-slate-700">Health pathway</p>
+            <p className="font-semibold text-slate-700">Outcome definitions</p>
             <p className="mt-1">
               Excess infections are modeled incident infections. Excess diagnoses define the cohort entering the cost
               model; person-years include immediate and later ART starts.
-            </p>
-          </div>
-          <div>
-            <p className="font-semibold text-slate-700">Cost boundary</p>
-            <p className="mt-1">
-              Downstream costs include ART and routine HIV care accrued by excess diagnosed cases. Costs incurred by
-              current ADAP enrollees losing access are not included.
             </p>
           </div>
           <div>
@@ -528,7 +559,7 @@ function CascadeChain({ headline, horizon }: { headline: HeadlineValues; horizon
           </div>
         </div>
       </details>
-    </section>
+    </div>
   );
 }
 
@@ -1659,7 +1690,7 @@ export default function RyanWhiteCostingApp() {
   const [hovered, setHovered] = useState<string | null>(null);
   const [series, setSeries] = useState<RyanWhiteCostingSeries | null>(null);
   const [seriesError, setSeriesError] = useState<string | null>(null);
-  const [activeSection, setActiveSection] = useState<AnalysisSectionId>('crossover');
+  const [activeSection, setActiveSection] = useState<AnalysisSectionId>(ANALYSIS_SECTIONS[0].id);
   const urlHydrated = useRef(false);
 
   const defaultScenario = ryanWhiteCostingSummary.sensitivity.primaryScenario;
@@ -1802,16 +1833,12 @@ export default function RyanWhiteCostingApp() {
         ready={series !== null}
       />
 
-      <section className="border-b border-slate-200 bg-white" aria-label="How the result is constructed">
-        <div className="mx-auto w-full max-w-full px-5 py-8 sm:max-w-5xl sm:px-6 sm:py-10">
-          <p className="max-w-3xl text-sm leading-relaxed text-slate-500">
-            Avoided ADAP spending begins immediately while downstream care costs accrue over time.
-            {horizonProfile?.crossoverYear != null && (
-              <> The modeled-total median reaches break-even around{' '}
-                <span className="font-semibold text-slate-700">{horizonProfile.crossoverYear}</span>.
-              </>
-            )}
-          </p>
+      <section
+        id="pathway"
+        className="scroll-mt-44 border-b border-slate-200 bg-white"
+        aria-label="How the result is constructed"
+      >
+        <div className="mx-auto w-full max-w-full px-5 py-10 sm:max-w-6xl sm:px-6 sm:py-12">
           <CascadeChain headline={headline} horizon={nationalPoint.year} />
         </div>
       </section>
@@ -1825,8 +1852,13 @@ export default function RyanWhiteCostingApp() {
               title="How does the accounting balance change over the projection window?"
             >
               Cumulative downstream HIV care costs and ADAP spending avoided under the{' '}
-              {SCENARIO_LABELS[scenario].toLowerCase()}{' '}assumption. The two panels mirror the manuscript&apos;s Florida
-              example and modeled-jurisdiction aggregate.
+              {SCENARIO_LABELS[scenario].toLowerCase()}{' '}assumption.
+              {horizonProfile?.crossoverYear != null && (
+                <> The modeled-jurisdiction median reaches break-even around{' '}
+                  <span className="font-semibold text-slate-700">{horizonProfile.crossoverYear}</span>.
+                </>
+              )}{' '}
+              The two panels mirror the manuscript&apos;s Florida example and modeled-jurisdiction aggregate.
             </SectionHead>
             <div className="mt-10 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
               <Trajectory
