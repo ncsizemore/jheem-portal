@@ -33,6 +33,7 @@ import {
   buildTrajectoryData,
   CONTEXT_AXES,
   ContextAxisId,
+  CostTrajectoryPoint,
   Crossover,
   crossoverForPoints,
   DecompositionRow,
@@ -152,21 +153,37 @@ interface TipProps {
 
 function TrajTip({ active, payload, label }: TipProps) {
   if (!active || !payload?.length) return null;
-  const names: Record<string, string> = { careMedian: 'Care cost', adap: 'ADAP avoided' };
-  const rows = payload.filter((pl) => pl.dataKey && names[pl.dataKey]);
+  const point = payload.find((item) => item.payload)?.payload as CostTrajectoryPoint | undefined;
+  if (!point) return null;
+  const netPositive = point.netMedian >= 0;
   return (
-    <div className="rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 shadow-md">
+    <div className="min-w-52 rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 shadow-md">
       <p className="font-mono text-[0.7rem] uppercase tracking-wide text-slate-400">Year {label}</p>
-      <div className="mt-1.5 space-y-1">
-        {rows.map((pl) => (
-          <p key={pl.dataKey} className="flex items-center justify-between gap-6 text-xs">
-            <span className="flex items-center gap-1.5 text-slate-500">
-              <span className="h-2 w-2 rounded-full" style={{ background: pl.stroke }} />
-              {names[pl.dataKey as string]}
-            </span>
-            <span className="font-mono tabular-nums text-slate-900">{formatCompactDollars(Number(pl.value))}</span>
-          </p>
-        ))}
+      <div className="mt-1.5 space-y-1.5 text-xs">
+        <p className="flex items-center justify-between gap-6">
+          <span className="flex items-center gap-1.5 text-slate-500">
+            <span className="h-2 w-2 rounded-full" style={{ background: NAVY }} /> Care cost
+          </span>
+          <span className="font-mono tabular-nums text-slate-900">{formatCompactDollars(point.careMedian)}</span>
+        </p>
+        <p className="flex items-center justify-between gap-6 text-[0.7rem] text-slate-400">
+          <span>95% interval</span>
+          <span className="font-mono tabular-nums">
+            {formatCompactDollars(point.careLower)} to {formatCompactDollars(point.careUpper)}
+          </span>
+        </p>
+        <p className="flex items-center justify-between gap-6">
+          <span className="flex items-center gap-1.5 text-slate-500">
+            <span className="h-2 w-2 rounded-full" style={{ background: TEAL }} /> ADAP avoided
+          </span>
+          <span className="font-mono tabular-nums text-slate-900">{formatCompactDollars(point.adap)}</span>
+        </p>
+        <p className="flex items-center justify-between gap-6 border-t border-slate-100 pt-1.5">
+          <span className="text-slate-500">Median {netPositive ? 'net cost' : 'net offset'}</span>
+          <span className="font-mono font-semibold tabular-nums" style={{ color: netPositive ? RUST : TEAL }}>
+            {formatCompactDollars(Math.abs(point.netMedian))}
+          </span>
+        </p>
       </div>
     </div>
   );
@@ -1329,75 +1346,27 @@ function HeterogeneityExplorer({
 function Trajectory({
   trajectory,
   selectedName,
-  scenario,
   error,
   crossover,
   horizon,
-  selectedLocation,
-  onLocation,
-  showPresets = true,
 }: {
   trajectory: ReturnType<typeof buildTrajectoryData>;
   selectedName: string;
-  scenario: CostScenarioId;
   error: string | null;
   crossover: Crossover | null;
   horizon: number;
-  selectedLocation: LocationKey;
-  onLocation: (location: LocationKey) => void;
-  showPresets?: boolean;
 }) {
   const reduce = useReducedMotion() ?? false;
-  const legend = [
-    ['Care cost', NAVY],
-    ['ADAP avoided', TEAL],
-  ] as const;
 
   return (
     <div className="min-w-0 rounded-lg border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-      <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-        <h3 className="text-base font-semibold text-slate-900">
-          {selectedName} / {SCENARIO_LABELS[scenario].toLowerCase()}
-        </h3>
-        {showPresets && (
-          <div className="flex items-center gap-1" role="group" aria-label="Trajectory preset">
-            {[
-              ['Total', 'Modeled total'],
-              ['FL', 'Florida example'],
-            ].map(([value, label]) => (
-              <button
-                key={value}
-                type="button"
-                onClick={() => onLocation(value)}
-                aria-pressed={selectedLocation === value}
-                className={cx(
-                  'rounded border px-2 py-1 text-[0.7rem] font-medium transition-colors',
-                  selectedLocation === value
-                    ? 'border-slate-900 bg-slate-900 text-white'
-                    : 'border-slate-300 text-slate-600 hover:border-slate-400 hover:text-slate-900'
-                )}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
+      <h3 className="text-base font-semibold text-slate-900">{selectedName}</h3>
       <p className="mt-1 text-sm leading-relaxed text-slate-500">
         {crossover
-          ? `Care cost exceeds avoided spending from ${crossover.year}.`
-          : 'The median care-cost trajectory remains below avoided spending through 2035.'}
+          ? `Median care cost exceeds avoided spending from ${crossover.year}.`
+          : 'Median care cost remains below avoided spending through 2035.'}
       </p>
-      <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs font-medium text-slate-500">
-        {legend.map(([label, color]) => (
-          <span key={label} className="inline-flex items-center gap-2">
-            <span className="h-2.5 w-2.5 rounded-full" style={{ background: color }} />
-            {label}
-          </span>
-        ))}
-        <span className="text-slate-400">band = 95% simulation interval · discounted dollars</span>
-      </div>
-      <div className="mt-4 h-[320px] sm:h-[340px]">
+      <div className="mt-5 h-[320px] sm:h-[340px]">
         {error ? (
           <div className="flex h-full items-center justify-center border border-red-200 bg-red-50 text-sm text-red-700">{error}</div>
         ) : trajectory.length === 0 ? (
@@ -1422,7 +1391,7 @@ function Trajectory({
                   x={crossover.year}
                   stroke={RUST}
                   strokeWidth={1.4}
-                  label={{ value: 'crosses', position: 'top', fill: RUST, fontSize: 11 }}
+                  label={{ value: 'median break-even', position: 'top', fill: RUST, fontSize: 10 }}
                 />
               )}
               <Area type="monotone" dataKey="careLower" stackId="care" stroke="none" fill="transparent" isAnimationActive={false} />
@@ -1511,7 +1480,8 @@ function CrossoverTimeline({
                 ; the modeled-total ledger crosses in <span className="font-semibold text-slate-900">{national.year}</span>
               </>
             )}
-            . Jurisdictions past the window edge are dimmed.
+            . Jurisdictions past the window edge are dimmed. Select a jurisdiction to update the comparison trajectory
+            above.
           </>
         )}
       </p>
@@ -1784,13 +1754,14 @@ export default function RyanWhiteCostingApp() {
     () => buildTrajectoryData(seriesForLocation(series, 'Total'), scenario),
     [series, scenario]
   );
-  const floridaTrajectory = useMemo(
-    () => buildTrajectoryData(seriesForLocation(series, 'FL'), scenario),
-    [series, scenario]
+  const selectedTrajectoryLocation = location === 'Total' ? defaultState : location;
+  const selectedTrajectory = useMemo(
+    () => buildTrajectoryData(seriesForLocation(series, selectedTrajectoryLocation), scenario),
+    [series, selectedTrajectoryLocation, scenario]
   );
-  const floridaCrossover = useMemo(
-    () => crossoverForPoints(seriesForLocation(series, 'FL'), scenario),
-    [series, scenario]
+  const selectedTrajectoryCrossover = useMemo(
+    () => crossoverForPoints(seriesForLocation(series, selectedTrajectoryLocation), scenario),
+    [series, selectedTrajectoryLocation, scenario]
   );
   const stateCrossovers = useMemo(() => buildStateCrossovers(series, scenario), [series, scenario]);
   const nationalCrossover = useMemo(
@@ -1813,6 +1784,7 @@ export default function RyanWhiteCostingApp() {
       ? null
       : ryanWhiteCostingSummary.states.find((item) => item.state === location)?.baselineContext ?? null;
   const selectedName = location === 'Total' ? 'Modeled-jurisdiction total' : stateName(location);
+  const selectedTrajectoryName = stateName(selectedTrajectoryLocation);
   const intervalsCrossingZero = driverRows.filter((row) => row.ratioLower <= 0 && row.ratioUpper >= 0).length;
 
   return (
@@ -1857,44 +1829,53 @@ export default function RyanWhiteCostingApp() {
                 <> The modeled-jurisdiction median reaches break-even around{' '}
                   <span className="font-semibold text-slate-700">{horizonProfile.crossoverYear}</span>.
                 </>
-              )}{' '}
-              The two panels mirror the manuscript&apos;s Florida example and modeled-jurisdiction aggregate.
+              )}
+              {horizon < HORIZON_MAX && (
+                <> Both charts retain the complete 2026-{HORIZON_MAX} trajectory; the dashed marker shows the selected{' '}
+                  accounting window.</>
+              )}
             </SectionHead>
-            <div className="mt-10 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-              <Trajectory
-                trajectory={floridaTrajectory}
-                selectedName="Florida"
-                scenario={scenario}
-                error={seriesError}
-                crossover={floridaCrossover}
-                horizon={horizon}
-                selectedLocation="FL"
-                onLocation={setLocation}
-                showPresets={false}
-              />
+
+            <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs font-medium text-slate-500">
+              <span className="inline-flex items-center gap-2">
+                <span className="h-2.5 w-2.5 rounded-full" style={{ background: NAVY }} /> Care cost
+              </span>
+              <span className="inline-flex items-center gap-2">
+                <span className="h-2.5 w-2.5 rounded-full" style={{ background: TEAL }} /> ADAP spending avoided
+              </span>
+              <span className="text-slate-400">
+                Shading = year-specific 95% care-cost interval · ADAP spending fixed · discounted 2026 USD ·
+                independent y-scales
+              </span>
+            </div>
+
+            <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
               <Trajectory
                 trajectory={nationalTrajectory}
                 selectedName="Modeled-jurisdiction total"
-                scenario={scenario}
                 error={seriesError}
                 crossover={nationalCrossover}
                 horizon={horizon}
-                selectedLocation="Total"
-                onLocation={setLocation}
-                showPresets={false}
+              />
+              <Trajectory
+                trajectory={selectedTrajectory}
+                selectedName={selectedTrajectoryName}
+                error={seriesError}
+                crossover={selectedTrajectoryCrossover}
+                horizon={horizon}
               />
             </div>
             <details className="group mt-6">
               <summary className="flex cursor-pointer select-none items-center gap-2 rounded-lg border border-slate-200 bg-white px-5 py-3.5 text-sm font-semibold text-slate-700 shadow-sm transition-colors hover:text-slate-900">
                 <span aria-hidden className="text-slate-400 transition-transform group-open:rotate-90">▸</span>
-                Explore median break-even timing across jurisdictions
+                Change jurisdiction or compare median break-even timing
               </summary>
               <div className="mt-3">
                 <CrossoverTimeline
                   crossovers={stateCrossovers}
                   horizon={horizon}
                   national={nationalCrossover}
-                  selected={location}
+                  selected={selectedTrajectoryLocation}
                   hovered={hovered}
                   onSelect={setLocation}
                   onHover={setHovered}
