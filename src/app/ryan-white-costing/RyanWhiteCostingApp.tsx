@@ -589,15 +589,18 @@ function UncertaintyDecomposition({
   scenario,
   onScenario,
   horizon,
-  estimand,
 }: {
   rows: DecompositionRow[];
   scenario: CostScenarioId;
   onScenario: (s: CostScenarioId) => void;
   horizon: number;
-  estimand: EstimandId;
 }) {
   const [hoveredRow, setHoveredRow] = useState<EstimandId | null>(null);
+  const scenarioRows = rows.filter((row) => !row.isPooled);
+  const pooledRow = rows.find((row) => row.isPooled) ?? null;
+  const lowRow = rows.find((row) => row.id === 'low');
+  const highRow = rows.find((row) => row.id === 'high');
+  const allScenarioIntervalsIncludeZero = scenarioRows.every((row) => row.net.lower <= 0 && row.net.upper >= 0);
   const min = Math.min(0, ...rows.map((row) => row.net.lower));
   const max = Math.max(0, ...rows.map((row) => row.net.upper));
   const domainMin = Math.floor(min / 1e9) * 1e9;
@@ -623,71 +626,66 @@ function UncertaintyDecomposition({
             </div>
           }
         >
-          Net cost through {horizon} under the low, median, and high annual ART cost tiers. Within each tier, the band
-          reflects variation across model simulations. The pooled row combines all three tiers and simulations; it is
-          a summary distribution, not a fourth price assumption. Selecting a tier updates the app.
+          Through {horizon}, median net cost rises from{' '}
+          {lowRow ? formatCompactDollars(lowRow.net.median) : 'the low-tier estimate'} under the low ART-price tier to{' '}
+          {highRow ? formatCompactDollars(highRow.net.median) : 'the high-tier estimate'} under the high tier.
+          {allScenarioIntervalsIncludeZero && <> The 95% simulation interval includes zero in all three tiers.</>}{' '}
+          Select a tier to update the app.
         </SectionHead>
 
         <div className="mt-10 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
-          {rows.map((row) => {
+          {scenarioRows.map((row) => {
             const isSel = !row.isPooled && row.id === scenario;
-            const isPrimary = row.id === estimand;
-            const isActive = hoveredRow ? hoveredRow === row.id : isSel || row.isPooled;
+            const isActive = hoveredRow ? hoveredRow === row.id : isSel;
             const rowInner = (
               <>
-                <div className="flex items-baseline justify-between sm:block sm:pl-1">
-                  <p className={cx('text-sm font-semibold', isSel || row.isPooled ? 'text-slate-900' : 'text-slate-600')}>
+                <div className="min-w-0 sm:pl-1">
+                  <p className="text-sm font-semibold text-slate-900">
                     {row.label}
-                    {isPrimary && (
-                      <span className="ml-2 rounded-sm bg-slate-100 px-1.5 py-0.5 align-middle text-[0.6rem] font-semibold uppercase tracking-wide text-slate-500">
-                        {' '}
-                        headline
-                      </span>
-                    )}
+                    {isSel && <span className="ml-2 text-xs font-normal text-slate-500"> selected</span>}
                   </p>
                   <p className="mt-0.5 text-[0.7rem] text-slate-400">{row.detail}</p>
-                  <p className="mt-1 font-mono text-xs tabular-nums text-slate-400">
-                    {formatCompactDollars(row.net.median)} median
+                  <p className="mt-2 text-xs text-slate-500">
+                    <span className="font-mono font-semibold tabular-nums text-slate-800">
+                      {formatCompactDollars(row.net.median)}
+                    </span>{' '}
+                    median net cost
+                  </p>
+                  <p className="mt-0.5 font-mono text-[0.68rem] tabular-nums text-slate-400">
+                    95%: {formatCompactDollars(row.net.lower)} to {formatCompactDollars(row.net.upper)}
                   </p>
                 </div>
                 <div className="relative h-12 min-w-0 overflow-hidden rounded-md">
                   <span className="absolute inset-y-0 left-0 bg-teal-50/60" style={{ width: `${zero}%` }} />
                   <span className="absolute inset-y-0 right-0 bg-amber-50/60" style={{ width: `${100 - zero}%` }} />
                   <span className="absolute inset-y-0 w-px bg-slate-400" style={{ left: `${zero}%` }} />
-                  <SplitBand at={at} lo={row.net.lower} hi={row.net.upper} thickness={isActive ? 14 : 10} opacity={isActive ? 0.75 : 0.45} />
+                  <SplitBand
+                    at={at}
+                    lo={row.net.lower}
+                    hi={row.net.upper}
+                    thickness={isActive ? 14 : 11}
+                    opacity={isActive ? 0.8 : 0.62}
+                  />
                   <span
                     className="absolute top-1/2 w-[3px] -translate-y-1/2 rounded-full transition-all"
-                    style={{ left: `${at(row.net.median)}%`, height: isActive ? 36 : 28, background: INK }}
+                    style={{ left: `${at(row.net.median)}%`, height: isActive ? 36 : 30, background: INK }}
                   />
                 </div>
-                <div className="flex items-baseline justify-between sm:block sm:text-right">
+                <div className="min-w-0 sm:text-right">
                   <p className="font-mono text-xl font-semibold tabular-nums text-slate-900">
                     {formatPerDollar(row.perDollar)}
                   </p>
-                  <p className="text-[0.68rem] uppercase tracking-wide text-slate-400 sm:mt-0.5">
-                    care per $1 avoided
-                    {row.sharePositive !== null && (
-                      <span className="normal-case"> · {formatPercent(row.sharePositive)} net-costly</span>
-                    )}
-                  </p>
+                  <p className="mt-0.5 text-[0.7rem] text-slate-400">care cost per $1 of ADAP spending avoided</p>
+                  {row.sharePositive !== null && (
+                    <p className="mt-1 text-xs text-slate-500">{formatPercent(row.sharePositive)} of draws net-costly</p>
+                  )}
                 </div>
               </>
             );
             const rowClass = cx(
-              'flex w-full flex-col gap-4 border-b border-slate-200 px-4 py-5 text-left transition-all last:border-b-0 sm:grid sm:grid-cols-[168px_minmax(0,1fr)_190px] sm:items-center sm:gap-6 sm:px-5',
-              row.isPooled && 'border-b-2 bg-slate-50/40',
-              isSel && 'bg-slate-50',
-              !row.isPooled && !isSel && 'hover:bg-slate-50/60',
-              isActive ? 'opacity-100' : 'opacity-70'
+              'grid w-full gap-4 border-b border-slate-200 px-4 py-5 text-left transition-colors sm:grid-cols-[210px_minmax(0,1fr)_190px] sm:items-center sm:gap-6 sm:px-5',
+              isSel ? 'bg-slate-50 shadow-[inset_3px_0_0_#002D72]' : 'hover:bg-slate-50/60'
             );
-
-            if (row.isPooled) {
-              return (
-                <div key={row.id} className={rowClass} onMouseEnter={() => setHoveredRow(row.id)} onMouseLeave={() => setHoveredRow(null)}>
-                  {rowInner}
-                </div>
-              );
-            }
 
             return (
               <button
@@ -699,29 +697,72 @@ function UncertaintyDecomposition({
                 onFocus={() => setHoveredRow(row.id)}
                 onBlur={() => setHoveredRow(null)}
                 aria-pressed={isSel}
+                aria-label={`${row.label} ART-price tier. Median net cost ${formatCompactDollars(row.net.median)}; 95% simulation interval ${formatCompactDollars(row.net.lower)} to ${formatCompactDollars(row.net.upper)}; care cost ${formatPerDollar(row.perDollar)} per $1 of ADAP spending avoided${row.sharePositive !== null ? `; ${formatPercent(row.sharePositive)} of draws net-costly` : ''}. Select this tier.`}
                 className={rowClass}
               >
                 {rowInner}
               </button>
             );
           })}
+          {pooledRow && (
+            <>
+              <div className="border-b border-slate-200 bg-slate-50 px-4 py-3 text-xs leading-relaxed text-slate-500 sm:px-5">
+                <span className="font-semibold text-slate-700">Combined reporting summary.</span>{' '}
+                Equal numbers of draws from each price tier are mixed with model-simulation variation. This is not a
+                fourth price assumption or a probability-weighted forecast.
+              </div>
+              <div className="grid gap-4 bg-slate-50/50 px-4 py-5 text-left sm:grid-cols-[210px_minmax(0,1fr)_190px] sm:items-center sm:gap-6 sm:px-5">
+                <div className="min-w-0 sm:pl-1">
+                  <p className="text-sm font-semibold text-slate-900">{pooledRow.label}</p>
+                  <p className="mt-0.5 text-[0.7rem] text-slate-400">{pooledRow.detail}</p>
+                  <p className="mt-2 text-xs text-slate-500">
+                    <span className="font-mono font-semibold tabular-nums text-slate-800">
+                      {formatCompactDollars(pooledRow.net.median)}
+                    </span>{' '}
+                    median net cost
+                  </p>
+                  <p className="mt-0.5 font-mono text-[0.68rem] tabular-nums text-slate-400">
+                    95%: {formatCompactDollars(pooledRow.net.lower)} to {formatCompactDollars(pooledRow.net.upper)}
+                  </p>
+                </div>
+                <div className="relative h-12 min-w-0 overflow-hidden rounded-md">
+                  <span className="absolute inset-y-0 left-0 bg-teal-50/60" style={{ width: `${zero}%` }} />
+                  <span className="absolute inset-y-0 right-0 bg-amber-50/60" style={{ width: `${100 - zero}%` }} />
+                  <span className="absolute inset-y-0 w-px bg-slate-400" style={{ left: `${zero}%` }} />
+                  <SplitBand at={at} lo={pooledRow.net.lower} hi={pooledRow.net.upper} thickness={11} opacity={0.62} />
+                  <span
+                    className="absolute top-1/2 h-[30px] w-[3px] -translate-y-1/2 rounded-full"
+                    style={{ left: `${at(pooledRow.net.median)}%`, background: INK }}
+                  />
+                </div>
+                <div className="min-w-0 sm:text-right">
+                  <p className="font-mono text-xl font-semibold tabular-nums text-slate-900">
+                    {formatPerDollar(pooledRow.perDollar)}
+                  </p>
+                  <p className="mt-0.5 text-[0.7rem] text-slate-400">care cost per $1 of ADAP spending avoided</p>
+                  {pooledRow.sharePositive !== null && (
+                    <p className="mt-1 text-xs text-slate-500">
+                      {formatPercent(pooledRow.sharePositive)} of draws net-costly
+                    </p>
+                  )}
+                </div>
+              </div>
+            </>
+          )}
         </div>
         <div className="mt-2 flex justify-between font-mono text-[0.68rem] tabular-nums text-slate-400">
           <span>{formatCompactDollars(domainMin)}</span>
-          <span className="hidden sm:inline">net offset / $0 / net cost</span>
+          <span className="text-center font-sans">
+            <span className="sm:hidden">$0 break-even</span>
+            <span className="hidden sm:inline">net offset / $0 / net cost</span>
+          </span>
           <span>{formatCompactDollars(domainMax)}</span>
         </div>
-        {rows[0]?.sharePositive === null && (
+        {rows.some((row) => row.sharePositive === null) && (
           <p className="mt-2 text-[0.7rem] text-slate-400">
             Shares of draws net-costly are reported at the full 2035 horizon only.
           </p>
         )}
-
-        <p className="mt-6 max-w-2xl text-xs leading-relaxed text-slate-500">
-          The equal-weight pooled row is shown only to document the draft paper&apos;s reporting convention. It is not a
-          fourth price scenario and should not be interpreted as assigning empirically estimated probabilities to the
-          low, median, and high tiers.
-        </p>
       </Reveal>
     </section>
   );
@@ -1968,7 +2009,6 @@ export default function RyanWhiteCostingApp() {
         scenario={scenario}
         onScenario={setScenario}
         horizon={HORIZON_MAX}
-        estimand={scenario}
       />
 
       <ModelReview />

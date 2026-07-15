@@ -303,8 +303,8 @@ export function buildDecomposition(
 
   const pooledRow: DecompositionRow = {
     id: 'pooled',
-    label: 'Equal-weight pooled',
-    detail: 'all three tiers + model draws',
+    label: 'Equal-weight combined',
+    detail: 'three price tiers + model simulations',
     net: point.pooledCumulativeNetCostVsAdap,
     perDollar: point.pooledCumulativeCareCost.median / adap,
     sharePositive: finalShares?.pooled ?? null,
@@ -314,14 +314,14 @@ export function buildDecomposition(
   const scenarioRows = SCENARIO_ORDER.map((scenario): DecompositionRow => ({
     id: scenario,
     label: SCENARIO_SHORT_LABELS[scenario],
-    detail: 'price fixed; model draws vary',
+    detail: 'fixed price tier; model simulations vary',
     net: scenarioMetric(point.cumulativeNetCostVsAdap, scenario),
     perDollar: scenarioMetric(point.cumulativeCareCost, scenario).median / adap,
     sharePositive: finalShares?.scenarios[scenario] ?? null,
     isPooled: false,
   }));
 
-  return [pooledRow, ...scenarioRows];
+  return [...scenarioRows, pooledRow];
 }
 
 export function formatPerDollar(value: number): string {
