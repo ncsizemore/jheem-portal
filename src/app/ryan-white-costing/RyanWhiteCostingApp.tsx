@@ -90,6 +90,10 @@ function formatNcer(value: number): string {
   return value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
+function formatAnnualCostInput(value: number): string {
+  return `$${(value / 1_000).toLocaleString('en-US', { maximumFractionDigits: 1 })}K`;
+}
+
 function cx(...classes: Array<string | false | null | undefined>): string {
   return classes.filter(Boolean).join(' ');
 }
@@ -1562,7 +1566,7 @@ function ModelReview() {
       items: [
         { label: 'Policy scenario', value: 'Complete ADAP elimination on Jan 1, 2026' },
         { label: 'Suppression effect', value: 'Mean 65% decline among ADAP recipients' },
-        { label: 'Elicited range', value: '40%-90% interquartile range' },
+        { label: 'Elicited range', value: '40%–90% interquartile range' },
         { label: 'Comparator', value: '2025 ADAP coverage and spending continue' },
       ],
       note: 'The suppression effect comes from a survey of 180 Ryan White clinic and public-health respondents. Complete, persistent elimination is a stress test, not a forecast of a specific enacted restriction.',
@@ -1580,12 +1584,12 @@ function ModelReview() {
     {
       title: 'Costs and uncertainty',
       items: [
-        { label: 'Annual ART tiers', value: SCENARIO_ORDER.map((s) => formatCompactDollars(p.artDrugCosts[s])).join(' / ') },
-        { label: 'Routine care', value: `${formatCompactDollars(p.routineCareCost)} weighted annual baseline` },
+        { label: 'Annual ART tiers', value: SCENARIO_ORDER.map((s) => formatAnnualCostInput(p.artDrugCosts[s])).join(' / ') },
+        { label: 'Routine care', value: `${formatAnnualCostInput(p.routineCareCost)} weighted annual baseline` },
         { label: 'Discount rate', value: formatPercent(p.discountRate) },
-        { label: 'Model draws', value: ryanWhiteCostingMetadata.simulationDraws.toLocaleString('en-US') },
+        { label: 'Model simulations', value: ryanWhiteCostingMetadata.simulationDraws.toLocaleString('en-US') },
       ],
-      note: 'Displayed 95% intervals are the 2.5th-97.5th percentiles across model draws at a fixed ART-price tier. Funding is deterministic under the current input convention.',
+      note: 'Displayed 95% intervals are the 2.5th–97.5th percentiles across epidemiologic model simulations at a fixed ART-price tier. Funding is deterministic under the current input convention.',
     },
     {
       title: 'Accounting and interpretation',
@@ -2012,16 +2016,6 @@ export default function RyanWhiteCostingApp() {
       />
 
       <ModelReview />
-
-      <footer className="mx-auto w-full max-w-full px-5 py-12 sm:max-w-6xl sm:px-6">
-        <p className="text-xs leading-relaxed text-slate-400">
-          {ryanWhiteCostingMetadata.modeledJurisdictionCount}{' '}modeled jurisdictions, including DC. Funding benchmarks are
-          fixed jurisdiction inputs; care-cost intervals are computed after per-simulation cumulative costing. Figures
-          use the latest provided model artifact. The opening ledger responds to the budget window; jurisdiction,
-          context, and price-sensitivity comparisons use the paper&apos;s 2035 endpoint. The selected ART-price tier applies
-          page-wide except where the equal-weight pooled row is explicitly labeled.
-        </p>
-      </footer>
     </div>
   );
 }

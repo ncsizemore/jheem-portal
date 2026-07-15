@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Newsreader } from 'next/font/google';
+import Footer from '@/components/Footer';
 import RyanWhiteCostingApp from './RyanWhiteCostingApp';
 
 // Editorial display serif — used for the hero and section titles. Body/UI stay
@@ -20,8 +21,11 @@ export const metadata: Metadata = {
 
 export default function RyanWhiteCostingPage() {
   return (
-    <div className={`${serif.variable} w-full min-w-0 max-w-full overflow-x-hidden`}>
-      <RyanWhiteCostingApp />
-    </div>
+    <>
+      <div className={`${serif.variable} w-full min-w-0 max-w-full overflow-x-hidden`}>
+        <RyanWhiteCostingApp />
+      </div>
+      <Footer />
+    </>
   );
 }
