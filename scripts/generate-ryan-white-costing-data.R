@@ -1,8 +1,8 @@
 # Generate display-ready data for the Ryan White ADAP costing MVP.
 #
-# The exporter intentionally avoids sourcing the draft analysis script. It keeps
-# the same core costing logic, but fixes known implementation issues and writes
-# small artifacts for the frontend.
+# The exporter intentionally avoids sourcing the analysis and supplement scripts.
+# It reproduces their computational definitions from pinned inputs and writes
+# small, display-ready artifacts for the frontend.
 
 required_packages <- c("jsonlite")
 missing_packages <- required_packages[!(required_packages %in% installed.packages()[, "Package"])]
@@ -34,11 +34,18 @@ repo_root <- normalizePath(get_arg("--repo-root", getwd()), mustWork = TRUE)
 rdata_path <- get_arg("--rdata", Sys.getenv("RYAN_WHITE_COSTING_RDATA", unset = ""))
 funding_csv_path <- get_arg(
   "--funding-csv",
-  Sys.getenv("RYAN_WHITE_COSTING_FUNDING_CSV", unset = "")
+  Sys.getenv(
+    "RYAN_WHITE_COSTING_FUNDING_CSV",
+    unset = file.path(repo_root, "scripts", "data", "ryan-white-costing-funding.csv")
+  )
 )
 jurisdiction_context_csv_path <- get_arg(
   "--jurisdiction-context-csv",
   file.path(repo_root, "scripts", "data", "ryan-white-costing-jurisdiction-context.csv")
+)
+art_price_csv_path <- get_arg(
+  "--art-price-csv",
+  file.path(repo_root, "scripts", "data", "ryan-white-costing-art-price-tiers.csv")
 )
 
 if (!nzchar(rdata_path)) {
@@ -59,6 +66,7 @@ cat("===========================================\n\n")
 cat(sprintf("RData:       %s\n", rdata_path))
 cat(sprintf("Funding CSV: %s\n", funding_csv_path))
 cat(sprintf("Context CSV: %s\n", jurisdiction_context_csv_path))
+cat(sprintf("ART prices:  %s\n", art_price_csv_path))
 cat(sprintf("Repo root:   %s\n\n", repo_root))
 
 if (!file.exists(rdata_path)) {
@@ -70,10 +78,14 @@ if (!file.exists(funding_csv_path)) {
 if (!file.exists(jurisdiction_context_csv_path)) {
   stop(sprintf("Jurisdiction context CSV not found: %s", jurisdiction_context_csv_path))
 }
+if (!file.exists(art_price_csv_path)) {
+  stop(sprintf("ART price CSV not found: %s", art_price_csv_path))
+}
 
 rdata_path <- normalizePath(rdata_path, mustWork = TRUE)
 funding_csv_path <- normalizePath(funding_csv_path, mustWork = TRUE)
 jurisdiction_context_csv_path <- normalizePath(jurisdiction_context_csv_path, mustWork = TRUE)
+art_price_csv_path <- normalizePath(art_price_csv_path, mustWork = TRUE)
 
 sha256_file <- function(path) {
   sha256sum <- Sys.which("sha256sum")
@@ -114,7 +126,7 @@ load(rdata_path, envir = data_env)
 cat("Loaded RData object.\n")
 flush.console()
 
-required_objects <- c("total.results", "total.incidence", "total.new")
+required_objects <- c("total.results", "total.incidence", "total.new", "all.parameters")
 missing_objects <- required_objects[!vapply(
   required_objects,
   exists,
@@ -129,6 +141,7 @@ if (length(missing_objects) > 0) {
 total_results <- get("total.results", envir = data_env)
 total_incidence <- get("total.incidence", envir = data_env)
 total_new <- get("total.new", envir = data_env)
+all_parameters <- get("all.parameters", envir = data_env)
 dim_names <- dimnames(total_results)
 
 required_dim_names <- c("year", "sim", "outcome", "location", "intervention")
@@ -218,6 +231,23 @@ if (any(is.na(jurisdiction_context$medicaid_expansion))) {
 }
 context_by_location <- split(jurisdiction_context, jurisdiction_context$location)
 
+art_price_tiers <- read.csv(art_price_csv_path, stringsAsFactors = FALSE)
+required_art_price_cols <- c("scenario", "annual_art_cost_2026")
+missing_art_price_cols <- setdiff(required_art_price_cols, names(art_price_tiers))
+if (length(missing_art_price_cols) > 0) {
+  stop(sprintf("ART price CSV missing columns: %s", paste(missing_art_price_cols, collapse = ", ")))
+}
+art_price_tiers$scenario <- trimws(as.character(art_price_tiers$scenario))
+art_price_tiers$annual_art_cost_2026 <- as.numeric(art_price_tiers$annual_art_cost_2026)
+required_cost_scenarios <- c("low", "median", "high")
+if (!setequal(art_price_tiers$scenario, required_cost_scenarios)) {
+  stop("ART price CSV must contain exactly low, median, and high scenarios")
+}
+if (any(!is.finite(art_price_tiers$annual_art_cost_2026)) ||
+    any(art_price_tiers$annual_art_cost_2026 <= 0)) {
+  stop("ART price CSV contains invalid annual ART costs")
+}
+
 # Economic assumptions from the draft script.
 discount_rate <- 0.03
 inflation_rate_drug <- 0.054
@@ -233,21 +263,20 @@ cd4_weights <- c("CD4 >500" = 0.54, "CD4 200-500" = 0.37, "CD4 <200" = 0.09)
 cd4_cost_on_art <- c("CD4 >500" = 1650, "CD4 200-500" = 2290, "CD4 <200" = 16800)
 cost_on_art_wtd <- sum(cd4_weights * cd4_cost_on_art)
 
-cost_drug <- c(low = 18500, median = 33000, high = 47400)
+cost_drug <- setNames(
+  art_price_tiers$annual_art_cost_2026[
+    match(required_cost_scenarios, art_price_tiers$scenario)
+  ],
+  required_cost_scenarios
+)
 
-pi_reengage <- 0.86
+pi_reengage <- 0.87
 lambda_reengage <- 1.2
 horizon_years <- 10
 
 f_cum <- function(t) pi_reengage * (1 - exp(-lambda_reengage * t))
 year_offset <- 0:horizon_years
 f_cumulative <- f_cum(year_offset)
-incr_return <- f_cumulative - c(0, head(f_cumulative, -1))
-# End-of-year fraction still off ART. This is 1 - F(t), not the draft
-# script's start-of-year person-time convention 1 - F(t - 1). Using the
-# end-of-year stock makes the three mechanism categories mutually exclusive
-# and exactly exhaustive of cumulative excess diagnoses.
-still_offart_end_of_year <- 1 - f_cumulative
 
 cpi_2023 <- 549.084
 cpi_2026 <- 591.677
@@ -332,6 +361,68 @@ excess_infections <- infections_adap - infections_noint
 suppression_2025 <- total_results["2025", , "suppression", output_locations, "noint", drop = TRUE]
 diagnosed_2025 <- total_results["2025", , "diagnosed.prevalence", output_locations, "noint", drop = TRUE]
 care_fraction_2025 <- suppression_2025 / diagnosed_2025
+adap_suppression_2025 <- total_results[
+  "2025", , "adap.suppression", output_locations, "noint", drop = TRUE
+]
+adap_share_suppressed_2025 <- adap_suppression_2025 / suppression_2025
+
+parameter_dim_names <- dimnames(all_parameters)
+required_parameter_dim_names <- c("parameter", "simulation", "location", "intervention")
+if (!identical(names(parameter_dim_names), required_parameter_dim_names)) {
+  stop(
+    sprintf(
+      "Unexpected all.parameters dimensions. Expected %s, got %s",
+      paste(required_parameter_dim_names, collapse = ", "),
+      paste(names(parameter_dim_names), collapse = ", ")
+    )
+  )
+}
+required_loss_parameters <- c(
+  "lose.adap.expansion.effect",
+  "lose.adap.nonexpansion.effect"
+)
+missing_loss_parameters <- setdiff(required_loss_parameters, parameter_dim_names$parameter)
+if (length(missing_loss_parameters) > 0) {
+  stop(sprintf(
+    "all.parameters is missing required ADAP-loss parameters: %s",
+    paste(missing_loss_parameters, collapse = ", ")
+  ))
+}
+if (!all(modeled_states %in% parameter_dim_names$location)) {
+  stop("all.parameters is missing one or more modeled jurisdictions")
+}
+if (!("adap.100.end.26" %in% parameter_dim_names$intervention)) {
+  stop("all.parameters is missing the adap.100.end.26 intervention")
+}
+
+expansion_loss <- all_parameters[
+  "lose.adap.expansion.effect", , modeled_states, "adap.100.end.26", drop = TRUE
+]
+nonexpansion_loss <- all_parameters[
+  "lose.adap.nonexpansion.effect", , modeled_states, "adap.100.end.26", drop = TRUE
+]
+medicaid_expansion_by_state <- setNames(
+  jurisdiction_context$medicaid_expansion,
+  jurisdiction_context$location
+)
+fraction_adap_losing_suppression <- expansion_loss
+for (state in modeled_states) {
+  if (!isTRUE(medicaid_expansion_by_state[[state]])) {
+    fraction_adap_losing_suppression[, state] <- nonexpansion_loss[, state]
+  }
+}
+fraction_adap_losing_suppression <- pmin(
+  pmax(fraction_adap_losing_suppression, 0),
+  1
+)
+
+state_care_fraction_2025 <- care_fraction_2025[, modeled_states, drop = FALSE]
+state_adap_share_suppressed_2025 <- adap_share_suppressed_2025[, modeled_states, drop = FALSE]
+adap_disruption_multiplier <- 1 -
+  state_adap_share_suppressed_2025 * fraction_adap_losing_suppression
+adap_disruption_multiplier <- pmin(pmax(adap_disruption_multiplier, 0), 1)
+care_fraction_post_adap <- state_care_fraction_2025 * adap_disruption_multiplier
+care_fraction_post_adap <- pmin(pmax(care_fraction_post_adap, 0), 1)
 
 negative_excess_diagnoses_count <- sum(excess_diagnoses < 0, na.rm = TRUE)
 negative_excess_diagnoses_share <- negative_excess_diagnoses_count / length(excess_diagnoses)
@@ -466,19 +557,30 @@ compute_location <- function(location) {
   location_idx <- match(location, output_locations)
   diagnosis_excess <- excess_diagnoses[, , location_idx, drop = TRUE]
   infection_excess <- excess_infections[, , location_idx, drop = TRUE]
-  care_fraction <- care_fraction_2025[, location_idx]
+  care_fraction <- care_fraction_post_adap[, location]
+  disruption_multiplier <- adap_disruption_multiplier[, location]
 
   immediate_starts <- sweep(diagnosis_excess, 2, care_fraction, "*")
   not_starting_now <- diagnosis_excess - immediate_starts
 
   delayed_starts <- matrix(0, nrow = length(years), ncol = length(dim_names$sim))
+  offart_person_years <- matrix(0, nrow = length(years), ncol = length(dim_names$sim))
+  adjusted_f_cumulative <- outer(f_cumulative, disruption_multiplier, "*")
+  adjusted_increment <- adjusted_f_cumulative -
+    rbind(rep(0, ncol(adjusted_f_cumulative)), head(adjusted_f_cumulative, -1))
+  still_offart_beginning <- 1 -
+    rbind(rep(0, ncol(adjusted_f_cumulative)), head(adjusted_f_cumulative, -1))
   for (index_i in seq_along(years)) {
     for (offset_i in seq_along(year_offset)) {
       offset <- year_offset[[offset_i]]
       target_i <- index_i + offset
-      if (offset >= 1 && target_i <= length(years)) {
-        delayed_starts[target_i, ] <- delayed_starts[target_i, ] +
-          not_starting_now[index_i, ] * incr_return[[offset_i]]
+      if (target_i <= length(years)) {
+        if (offset >= 1) {
+          delayed_starts[target_i, ] <- delayed_starts[target_i, ] +
+            not_starting_now[index_i, ] * adjusted_increment[offset_i, ]
+        }
+        offart_person_years[target_i, ] <- offart_person_years[target_i, ] +
+          not_starting_now[index_i, ] * still_offart_beginning[offset_i, ]
       }
     }
   }
@@ -489,26 +591,12 @@ compute_location <- function(location) {
   cumulative_excess_diagnoses <- apply(diagnosis_excess, 2, cumsum)
   cumulative_excess_infections <- apply(infection_excess, 2, cumsum)
 
-  # Mechanism decomposition: excess diagnoses to date are either active on ART
-  # (having started immediately or after re-engagement) or still off ART.
+  # These mechanism series follow Ryan's revised start-path definitions. The
+  # off-ART measure is person-time at the beginning of each interval; it is not
+  # an end-of-year stock and therefore is not expected to close arithmetically
+  # with the two cumulative active-on-ART series.
   active_from_immediate <- apply(immediate_starts, 2, cumsum)
   active_from_delayed <- apply(delayed_starts, 2, cumsum)
-
-  offart_stock <- matrix(0, nrow = length(years), ncol = length(dim_names$sim))
-  for (index_i in seq_along(years)) {
-    for (offset_i in seq_along(year_offset)) {
-      offset <- year_offset[[offset_i]]
-      target_i <- index_i + offset
-      if (target_i <= length(years)) {
-        offart_stock[target_i, ] <- offart_stock[target_i, ] +
-          not_starting_now[index_i, ] * still_offart_end_of_year[[offset_i]]
-      }
-    }
-  }
-
-  mechanism_closure_max_abs_diff <- max(abs(
-    active_from_immediate + active_from_delayed + offart_stock - cumulative_excess_diagnoses
-  ), na.rm = TRUE)
 
   cumulative_costs <- setNames(vector("list", length(cost_drug)), names(cost_drug))
   for (scenario in names(cost_drug)) {
@@ -558,7 +646,7 @@ compute_location <- function(location) {
       mechanism = list(
         activeOnArtImmediate = round(mean(active_from_immediate[year_i, ], na.rm = TRUE), 1),
         activeOnArtReengaged = round(mean(active_from_delayed[year_i, ], na.rm = TRUE), 1),
-        offArtExcess = round(mean(offart_stock[year_i, ], na.rm = TRUE), 1)
+        offArtExcess = round(mean(offart_person_years[year_i, ], na.rm = TRUE), 1)
       )
     )
 
@@ -612,21 +700,199 @@ compute_location <- function(location) {
     series = series,
     finalYear = final_year,
     pooledFinalYear = pooled_final_year,
-    validation = list(mechanismClosureMaxAbsDiff = mechanism_closure_max_abs_diff)
+    raw = list(
+      cumulativeCosts = cumulative_costs,
+      cumulativePersonYearsOnArt = cumulative_person_years_on_art,
+      activeFromImmediate = active_from_immediate,
+      activeFromDelayed = active_from_delayed,
+      offArtPersonYears = offart_person_years
+    )
   )
 }
 
 cat("Computing per-simulation paths and summaries...\n")
-location_results <- setNames(lapply(output_locations, compute_location), output_locations)
+location_results <- setNames(lapply(modeled_states, compute_location), modeled_states)
+
+sum_state_matrix <- function(accessor) {
+  Reduce(
+    "+",
+    lapply(modeled_states, function(state) accessor(location_results[[state]]$raw))
+  )
+}
+
+national_cumulative_costs <- setNames(
+  lapply(names(cost_drug), function(scenario) {
+    sum_state_matrix(function(raw) raw$cumulativeCosts[[scenario]])
+  }),
+  names(cost_drug)
+)
+national_cumulative_person_years <- sum_state_matrix(
+  function(raw) raw$cumulativePersonYearsOnArt
+)
+national_active_from_immediate <- sum_state_matrix(
+  function(raw) raw$activeFromImmediate
+)
+national_active_from_delayed <- sum_state_matrix(
+  function(raw) raw$activeFromDelayed
+)
+national_offart_person_years <- sum_state_matrix(
+  function(raw) raw$offArtPersonYears
+)
+
+total_location_idx <- match("Total", output_locations)
+national_cumulative_excess_diagnoses <- apply(
+  excess_diagnoses[, , total_location_idx, drop = TRUE],
+  2,
+  cumsum
+)
+national_cumulative_excess_infections <- apply(
+  excess_infections[, , total_location_idx, drop = TRUE],
+  2,
+  cumsum
+)
+
+national_bootstrap_draws <- function(year_i, B = 100000, seed = 123) {
+  set.seed(seed)
+  cost_totals <- numeric(B)
+  net_totals <- numeric(B)
+
+  for (state in sort(modeled_states)) {
+    state_raw <- location_results[[state]]$raw
+    state_pooled_cost <- c(
+      state_raw$cumulativeCosts$low[year_i, ],
+      state_raw$cumulativeCosts$median[year_i, ],
+      state_raw$cumulativeCosts$high[year_i, ]
+    )
+    state_adap <- funding_by_location[[state]]$cumulativeAdap[[year_i]]
+    state_pooled_net <- state_pooled_cost - state_adap
+
+    # Match ADAP_Supp_tables_figures.R: each jurisdiction is sampled
+    # independently, and cost and net totals use independent bootstrap samples.
+    cost_totals <- cost_totals + sample(state_pooled_cost, B, replace = TRUE)
+    net_totals <- net_totals + sample(state_pooled_net, B, replace = TRUE)
+  }
+
+  list(cost = cost_totals, net = net_totals)
+}
+
+cat("Computing independently bootstrapped pooled national paths...\n")
+national_pooled_draws <- lapply(seq_along(years), national_bootstrap_draws)
+
+build_national_point <- function(year_i, include_ratios = FALSE) {
+  funding <- funding_by_location[["Total"]]
+  care_values <- list(
+    low = national_cumulative_costs$low[year_i, ],
+    median = national_cumulative_costs$median[year_i, ],
+    high = national_cumulative_costs$high[year_i, ]
+  )
+  net_vs_adap <- list(
+    low = care_values$low - funding$cumulativeAdap[[year_i]],
+    median = care_values$median - funding$cumulativeAdap[[year_i]],
+    high = care_values$high - funding$cumulativeAdap[[year_i]]
+  )
+  net_vs_total_rwhap <- list(
+    low = care_values$low - funding$cumulativeTotalRwhap[[year_i]],
+    median = care_values$median - funding$cumulativeTotalRwhap[[year_i]],
+    high = care_values$high - funding$cumulativeTotalRwhap[[year_i]]
+  )
+  pooled_draws <- national_pooled_draws[[year_i]]
+
+  point <- list(
+    year = years[[year_i]],
+    cumulativeCareCost = scenario_values(care_values, digits = 0),
+    cumulativeAdapSpendingAvoided = round(funding$cumulativeAdap[[year_i]], 0),
+    cumulativeTotalRwhapSpendingAvoided = round(funding$cumulativeTotalRwhap[[year_i]], 0),
+    cumulativeNetCostVsAdap = scenario_values(net_vs_adap, digits = 0),
+    cumulativeNetCostVsTotalRwhap = scenario_values(net_vs_total_rwhap, digits = 0),
+    cumulativeExcessNewDiagnoses = q_value(
+      national_cumulative_excess_diagnoses[year_i, ],
+      digits = 1
+    ),
+    cumulativeExcessInfections = q_value(
+      national_cumulative_excess_infections[year_i, ],
+      digits = 1
+    ),
+    cumulativePersonYearsOnArt = q_value(
+      national_cumulative_person_years[year_i, ],
+      digits = 1
+    ),
+    negativeExcessDiagnosesShare = round(mean(
+      excess_diagnoses[year_i, , total_location_idx] < 0,
+      na.rm = TRUE
+    ), 6),
+    negativeExcessInfectionsShare = round(mean(
+      excess_infections[year_i, , total_location_idx] < 0,
+      na.rm = TRUE
+    ), 6),
+    pooledCumulativeCareCost = q_value(pooled_draws$cost, digits = 0),
+    pooledCumulativeNetCostVsAdap = q_value(pooled_draws$net, digits = 0),
+    mechanism = list(
+      activeOnArtImmediate = round(mean(national_active_from_immediate[year_i, ], na.rm = TRUE), 1),
+      activeOnArtReengaged = round(mean(national_active_from_delayed[year_i, ], na.rm = TRUE), 1),
+      offArtExcess = round(mean(national_offart_person_years[year_i, ], na.rm = TRUE), 1)
+    )
+  )
+
+  if (include_ratios) {
+    ratio_vs_adap <- lapply(
+      net_vs_adap,
+      function(values) values / funding$cumulativeAdap[[year_i]]
+    )
+    ratio_vs_total_rwhap <- lapply(
+      net_vs_total_rwhap,
+      function(values) values / funding$cumulativeTotalRwhap[[year_i]]
+    )
+    point$cumulativeNetCostRatioVsAdap <- scenario_values(ratio_vs_adap, digits = 3)
+    point$cumulativeNetCostRatioVsTotalRwhap <- scenario_values(
+      ratio_vs_total_rwhap,
+      digits = 3
+    )
+    point$cumulativeNetCostVsAdapQuantiles <- scenario_quantile_curves(
+      net_vs_adap,
+      digits = 0
+    )
+    point$cumulativeCareCostQuantiles <- scenario_quantile_curves(
+      care_values,
+      digits = 0
+    )
+    point$shareNetCostPositiveVsAdap <- scenario_positive_shares(
+      net_vs_adap,
+      digits = 6
+    )
+  }
+
+  point
+}
+
+national_series <- lapply(seq_along(years), build_national_point, include_ratios = FALSE)
+national_final_year <- build_national_point(length(years), include_ratios = TRUE)
+national_pooled_final_draws <- national_pooled_draws[[length(years)]]
+national_funding_final <- funding_by_location[["Total"]]$cumulativeAdap[[length(years)]]
+national_pooled_final_year <- list(
+  cumulativeCareCost = q_value(national_pooled_final_draws$cost, digits = 0),
+  cumulativeCareCostQuantiles = q_curve(national_pooled_final_draws$cost, digits = 0),
+  cumulativeNetCostVsAdap = q_value(national_pooled_final_draws$net, digits = 0),
+  cumulativeNetCostVsAdapQuantiles = q_curve(national_pooled_final_draws$net, digits = 0),
+  cumulativeNetCostRatioVsAdap = q_value(
+    national_pooled_final_draws$net / national_funding_final,
+    digits = 3
+  ),
+  shareNetCostPositiveVsAdap = round(mean(national_pooled_final_draws$net > 0), 6)
+)
+location_results[["Total"]] <- list(
+  series = national_series,
+  finalYear = national_final_year,
+  pooledFinalYear = national_pooled_final_year
+)
 
 state_final_net <- vapply(
   modeled_states,
-  function(state) location_results[[state]]$finalYear$cumulativeNetCostVsAdap$median$median,
+  function(state) location_results[[state]]$pooledFinalYear$cumulativeNetCostVsAdap$median,
   numeric(1)
 )
 state_final_ratio <- vapply(
   modeled_states,
-  function(state) location_results[[state]]$finalYear$cumulativeNetCostRatioVsAdap$median$median,
+  function(state) location_results[[state]]$pooledFinalYear$cumulativeNetCostRatioVsAdap$median,
   numeric(1)
 )
 net_ranks <- rank(-state_final_net, ties.method = "min")
@@ -644,42 +910,41 @@ state_summaries <- lapply(modeled_states, function(state) {
   )
 })
 
-mechanism_closure_max_abs_diff <- max(vapply(
-  location_results,
-  function(result) result$validation$mechanismClosureMaxAbsDiff,
-  numeric(1)
-))
-
 generator_path <- file.path(repo_root, "scripts", "generate-ryan-white-costing-data.R")
 
 metadata <- list(
-  dataContractVersion = "2.1.0",
+  dataContractVersion = "2.2.0",
   generatedAt = format(Sys.time(), "%Y-%m-%dT%H:%M:%SZ", tz = "UTC"),
   sourceArtifacts = list(
     rData = artifact_provenance(rdata_path),
     fundingCsv = artifact_provenance(funding_csv_path),
     jurisdictionContextCsv = artifact_provenance(jurisdiction_context_csv_path),
+    artPriceCsv = artifact_provenance(art_price_csv_path),
     generator = artifact_provenance(generator_path)
+  ),
+  analysisSource = list(
+    repository = "tfojo1/jheem_analyses",
+    commit = "54293cee49a6b596ecbe1a8034fccf9af6d15d9b",
+    analysisScript = "applications/ryan_white/Ryan_white_costing/cost_saving_analysis.R",
+    supplementScript = "applications/ryan_white/Ryan_white_costing/ADAP_Supp_tables_figures.R",
+    artPriceScript = "applications/ryan_white/Ryan_white_costing/FSS_pricing_2026_pulldown.R"
   ),
   horizon = list(startYear = 2026, endYear = 2035),
   simulationDraws = length(dim_names$sim),
   intervalLevel = "p025_p975",
   defaultCostScenario = "median",
-  # Which estimand the UI treats as the headline: "pooled" or a scenario id.
-  # Stays "median" until Ryan confirms the pooled convention as primary;
-  # flipping it is a one-line regeneration, not a rework.
-  primaryEstimand = "median",
+  primaryEstimand = "pooled",
   pooledConvention = list(
     description = paste(
-      "Pooled values combine all three ART drug-cost scenarios with all",
-      "simulation draws into one distribution, matching ADAP_supplemental_tables.R;",
-      "the drug-cost scenario is treated as an additional source of uncertainty."
+      "Pooled jurisdiction values combine equal numbers of draws from all three",
+      "ART-price tiers and all model simulations. The price tier is therefore",
+      "treated as an additional source of uncertainty."
     ),
     nationalTotal = paste(
-      "Modeled-total pooled and per-scenario summaries use the RData Total location",
-      "(within-simulation sum across modeled jurisdictions). The draft supplemental",
-      "table instead bootstraps jurisdictions independently; the web convention",
-      "is explicitly the within-simulation sum."
+      "The pooled modeled-jurisdiction total independently bootstraps each",
+      "jurisdiction's equal-weight pooled distribution (100,000 draws; seed 123),",
+      "matching ADAP_Supp_tables_figures.R. Fixed-tier sensitivity totals sum",
+      "jurisdictions within each model simulation."
     )
   ),
   defaultFocusJurisdiction = "FL",
@@ -731,12 +996,14 @@ metadata <- list(
     "Negative per-simulation excess infections and diagnoses are preserved and reported as diagnostics, not floored.",
     "Funding comparators are deterministic under the current CSV inputs.",
     "Net-cost uncertainty is driven by modeled care-cost uncertainty, with deterministic funding offsets.",
-    "Pooled cost summaries treat the drug-cost scenario as an additional source of uncertainty (all scenarios x simulations in one distribution).",
+    "Pooled cost summaries give equal weight to each ART-price tier and model simulation.",
+    "Pooled modeled-jurisdiction cost totals independently bootstrap jurisdiction distributions (100,000 draws; seed 123), matching the supplement.",
     "Baseline counts are medians across 2025 no-intervention simulations; manuscript context ratios are means of per-simulation ratios.",
     "ADAP spending per client uses the mean 2025 no-intervention client count to reproduce the manuscript context analysis.",
     "Urbanicity uses county-level 2020 Census urban shares weighted by 2021 diagnosed HIV prevalence.",
     "Sexual transmission rate is the manuscript-defined numerator divided within simulation by diagnosed prevalence minus viral suppression.",
-    "Mechanism series report means of mutually exclusive end-of-year stocks; components close to cumulative excess diagnoses within simulation."
+    "Immediate initiation and later return to care use state- and draw-specific ADAP-disruption multipliers from all.parameters.",
+    "Off-ART mechanism values are person-time at the beginning of each interval, matching the revised analysis script; they are not an end-of-year stock."
   )),
   deterministicFields = json_array(c(
     "cumulativeAdapSpendingAvoided",
@@ -749,7 +1016,11 @@ metadata <- list(
     cd4Weights = as.list(cd4_weights),
     artDrugCosts = as.list(cost_drug),
     routineCareCost = round(cost_on_art_wtd_2026, 2),
-    immediateStartCareFractionDescription = "Per simulation/location, immediate starts equal excess new diagnoses multiplied by the 2025 no-intervention suppression divided by diagnosed prevalence."
+    immediateStartCareFractionDescription = paste(
+      "Per simulation and jurisdiction, immediate starts equal excess new diagnoses",
+      "multiplied by the 2025 care fraction after applying the sampled",
+      "ADAP-disruption multiplier."
+    )
   ),
   validation = list(
     totalEqualsJurisdictionSum = total_validation$passed,
@@ -758,7 +1029,6 @@ metadata <- list(
     incidenceArrayMaxAbsDiff = incidence_array_max_abs_diff,
     diagnosisArrayMatchesTotalResults = isTRUE(diagnosis_array_max_abs_diff < 1e-10),
     diagnosisArrayMaxAbsDiff = diagnosis_array_max_abs_diff,
-    mechanismClosureMaxAbsDiff = mechanism_closure_max_abs_diff,
     missingFundingLocations = json_array(missing_funding_locations),
     extraFundingLocations = json_array(extra_funding_locations),
     negativeExcessDiagnosesCount = negative_excess_diagnoses_count,
@@ -776,7 +1046,8 @@ summary_data <- list(
   states = state_summaries,
   sensitivity = list(
     costScenarios = json_array(names(cost_drug)),
-    primaryScenario = "median"
+    primaryScenario = "median",
+    primaryEstimand = "pooled"
   )
 )
 
@@ -806,7 +1077,6 @@ cat("\nValidation summary:\n")
 cat(sprintf("  Total equals jurisdiction sum: %s (max abs diff %.8f)\n", total_validation$passed, total_validation$max_abs_diff))
 cat(sprintf("  Incidence array matches total.results: %s (max abs diff %.8f)\n", incidence_array_max_abs_diff < 1e-10, incidence_array_max_abs_diff))
 cat(sprintf("  Diagnosis array matches total.results: %s (max abs diff %.8f)\n", diagnosis_array_max_abs_diff < 1e-10, diagnosis_array_max_abs_diff))
-cat(sprintf("  Mechanism closure max abs diff: %.8f\n", mechanism_closure_max_abs_diff))
 cat(sprintf("  Extra funding locations excluded: %s\n", paste(extra_funding_locations, collapse = ", ")))
 cat(sprintf("  Negative excess diagnoses count/share: %d / %.6f\n", negative_excess_diagnoses_count, negative_excess_diagnoses_share))
 cat(sprintf("  Negative excess infections count/share: %d / %.6f\n", negative_excess_infections_count, negative_excess_infections_share))

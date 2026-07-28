@@ -107,13 +107,21 @@ export interface StateCostingSummary {
 }
 
 export interface RyanWhiteCostingMetadata {
-  dataContractVersion: '2.1.0';
+  dataContractVersion: '2.2.0';
   generatedAt: string;
   sourceArtifacts: {
     rData: ArtifactProvenance;
     fundingCsv: ArtifactProvenance;
     jurisdictionContextCsv: ArtifactProvenance;
+    artPriceCsv: ArtifactProvenance;
     generator: ArtifactProvenance;
+  };
+  analysisSource: {
+    repository: string;
+    commit: string;
+    analysisScript: string;
+    supplementScript: string;
+    artPriceScript: string;
   };
   horizon: {
     startYear: number;
@@ -164,7 +172,6 @@ export interface RyanWhiteCostingMetadata {
     incidenceArrayMaxAbsDiff: number;
     diagnosisArrayMatchesTotalResults: boolean;
     diagnosisArrayMaxAbsDiff: number;
-    mechanismClosureMaxAbsDiff: number;
     missingFundingLocations: string[];
     extraFundingLocations: string[];
     negativeExcessDiagnosesCount: number;
@@ -196,6 +203,7 @@ export interface RyanWhiteCostingSummary {
   sensitivity: {
     costScenarios: CostScenarioId[];
     primaryScenario: CostScenarioId;
+    primaryEstimand: 'pooled' | CostScenarioId;
   };
 }
 

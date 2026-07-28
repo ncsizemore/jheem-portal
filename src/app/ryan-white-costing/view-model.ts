@@ -144,6 +144,7 @@ export const SCENARIO_SHORT_LABELS: Record<CostScenarioId, string> = {
 };
 
 export const SCENARIO_ORDER: CostScenarioId[] = ['low', 'median', 'high'];
+export const ESTIMAND_ORDER: EstimandId[] = ['pooled', ...SCENARIO_ORDER];
 
 export const MAP_METRICS: MapMetricConfig[] = [
   {
@@ -180,6 +181,18 @@ export function scenarioCurve(values: ScenarioQuantileCurves, scenario: CostScen
 
 export function scenarioShare(values: ScenarioShares, scenario: CostScenarioId): number {
   return values[scenario];
+}
+
+export function estimandCare(point: AnnualCostPoint, estimand: EstimandId): QuantileValue {
+  return estimand === 'pooled'
+    ? point.pooledCumulativeCareCost
+    : scenarioMetric(point.cumulativeCareCost, estimand);
+}
+
+export function estimandNet(point: AnnualCostPoint, estimand: EstimandId): QuantileValue {
+  return estimand === 'pooled'
+    ? point.pooledCumulativeNetCostVsAdap
+    : scenarioMetric(point.cumulativeNetCostVsAdap, estimand);
 }
 
 export function formatBillions(value: number): string {
@@ -276,10 +289,17 @@ export function headlineAt(point: AnnualCostPoint, estimand: EstimandId): Headli
 }
 
 export const ESTIMAND_LABELS: Record<EstimandId, string> = {
-  pooled: 'Pooled across drug-cost scenarios',
+  pooled: 'Equal-weight pooled result',
   low: 'Low drug-cost scenario',
   median: 'Median drug-cost scenario',
   high: 'High drug-cost scenario',
+};
+
+export const ESTIMAND_SHORT_LABELS: Record<EstimandId, string> = {
+  pooled: 'Pooled',
+  low: 'Low',
+  median: 'Median',
+  high: 'High',
 };
 
 // One row of the uncertainty decomposition: the pooled distribution mixes
@@ -427,12 +447,12 @@ function driverRowFrom(
   state: string,
   displayName: string,
   point: AnnualCostPoint,
-  scenario: CostScenarioId,
+  estimand: EstimandId,
   crossoverYear: number | null,
   shareNetPositive2035: number
 ): DriverRow {
-  const care = scenarioMetric(point.cumulativeCareCost, scenario);
-  const net = scenarioMetric(point.cumulativeNetCostVsAdap, scenario);
+  const care = estimandCare(point, estimand);
+  const net = estimandNet(point, estimand);
   const adap = point.cumulativeAdapSpendingAvoided;
 
   return {
@@ -457,7 +477,7 @@ function driverRowFrom(
 export function buildDriverRows(
   series: RyanWhiteCostingSeries | null,
   states: StateCostingSummary[],
-  scenario: CostScenarioId,
+  estimand: EstimandId,
   horizon: number,
   crossovers: StateCrossover[]
 ): DriverRow[] {
@@ -469,9 +489,11 @@ export function buildDriverRows(
       item.state,
       stateName(item.state),
       point,
-      scenario,
+      estimand,
       crossoverByState.get(item.state) ?? null,
-      item.finalYear.shareNetCostPositiveVsAdap[scenario]
+      estimand === 'pooled'
+        ? item.pooledFinalYear.shareNetCostPositiveVsAdap
+        : item.finalYear.shareNetCostPositiveVsAdap[estimand]
     );
   });
 }
@@ -479,18 +501,20 @@ export function buildDriverRows(
 export function buildNationalDriverRow(
   series: RyanWhiteCostingSeries | null,
   summary: RyanWhiteCostingSummary,
-  scenario: CostScenarioId,
+  estimand: EstimandId,
   horizon: number
 ): DriverRow {
   const point = pointForYear(series?.national ?? [], horizon) ?? summary.national.finalYear;
-  const crossover = crossoverForPoints(series?.national ?? [], scenario);
+  const crossover = crossoverForPoints(series?.national ?? [], estimand);
   return driverRowFrom(
     'Total',
     'Modeled-jurisdiction total',
     point,
-    scenario,
+    estimand,
     crossover?.year ?? null,
-    summary.national.finalYear.shareNetCostPositiveVsAdap[scenario]
+    estimand === 'pooled'
+      ? summary.national.pooledFinalYear.shareNetCostPositiveVsAdap
+      : summary.national.finalYear.shareNetCostPositiveVsAdap[estimand]
   );
 }
 
@@ -660,29 +684,28 @@ export interface StateCrossover {
 
 export function buildStateCrossovers(
   series: RyanWhiteCostingSeries | null,
-  scenario: CostScenarioId
+  estimand: EstimandId
 ): StateCrossover[] {
   if (!series) return [];
   return Object.entries(series.states).map(([state, points]) => {
-    const crossover = crossoverForPoints(points, scenario);
+    const crossover = crossoverForPoints(points, estimand);
     const final = points[points.length - 1];
     return {
       state,
       stateName: stateName(state),
       crossoverYear: crossover?.year ?? null,
-      perDollarFinal:
-        scenarioMetric(final.cumulativeCareCost, scenario).median / final.cumulativeAdapSpendingAvoided,
+      perDollarFinal: estimandCare(final, estimand).median / final.cumulativeAdapSpendingAvoided,
     };
   });
 }
 
 export function buildTrajectoryData(
   points: AnnualCostPoint[],
-  scenario: CostScenarioId
+  estimand: EstimandId
 ): CostTrajectoryPoint[] {
   return points.map((point) => {
-    const care = scenarioMetric(point.cumulativeCareCost, scenario);
-    const net = scenarioMetric(point.cumulativeNetCostVsAdap, scenario);
+    const care = estimandCare(point, estimand);
+    const net = estimandNet(point, estimand);
 
     return {
       year: point.year,
@@ -700,15 +723,24 @@ export function buildTrajectoryData(
 
 export function buildRankedStates(
   states: StateCostingSummary[],
-  scenario: CostScenarioId
+  estimand: EstimandId
 ): RankedStatePoint[] {
   return states
     .map((item) => {
       const final = item.finalYear;
-      const care = scenarioMetric(final.cumulativeCareCost, scenario);
-      const net = scenarioMetric(final.cumulativeNetCostVsAdap, scenario);
-      const netQuantiles = scenarioCurve(final.cumulativeNetCostVsAdapQuantiles, scenario);
-      const careQuantiles = scenarioCurve(final.cumulativeCareCostQuantiles, scenario);
+      const pooled = item.pooledFinalYear;
+      const care =
+        estimand === 'pooled' ? pooled.cumulativeCareCost : scenarioMetric(final.cumulativeCareCost, estimand);
+      const net =
+        estimand === 'pooled' ? pooled.cumulativeNetCostVsAdap : scenarioMetric(final.cumulativeNetCostVsAdap, estimand);
+      const netQuantiles =
+        estimand === 'pooled'
+          ? pooled.cumulativeNetCostVsAdapQuantiles
+          : scenarioCurve(final.cumulativeNetCostVsAdapQuantiles, estimand);
+      const careQuantiles =
+        estimand === 'pooled'
+          ? pooled.cumulativeCareCostQuantiles
+          : scenarioCurve(final.cumulativeCareCostQuantiles, estimand);
       return {
         state: item.state,
         stateName: stateName(item.state),
@@ -720,10 +752,16 @@ export function buildRankedStates(
         netCost: net.median,
         netLower: net.lower,
         netUpper: net.upper,
-        netRatio: scenarioMetric(final.cumulativeNetCostRatioVsAdap, scenario).median,
+        netRatio:
+          estimand === 'pooled'
+            ? pooled.cumulativeNetCostRatioVsAdap.median
+            : scenarioMetric(final.cumulativeNetCostRatioVsAdap, estimand).median,
         netQuantiles,
         careQuantiles,
-        shareNetPositive: scenarioShare(final.shareNetCostPositiveVsAdap, scenario),
+        shareNetPositive:
+          estimand === 'pooled'
+            ? pooled.shareNetCostPositiveVsAdap
+            : scenarioShare(final.shareNetCostPositiveVsAdap, estimand),
         crossesZero: net.lower <= 0 && net.upper >= 0,
         boundedPositive: net.lower > 0,
         excessDiagnoses: final.cumulativeExcessNewDiagnoses.median,
@@ -736,10 +774,10 @@ export function buildRankedStates(
 
 export function buildRatioLeaders(
   states: StateCostingSummary[],
-  scenario: CostScenarioId,
+  estimand: EstimandId,
   count = 10
 ): RankedStatePoint[] {
-  return buildRankedStates(states, scenario)
+  return buildRankedStates(states, estimand)
     .sort((a, b) => b.netRatio - a.netRatio)
     .slice(0, count);
 }

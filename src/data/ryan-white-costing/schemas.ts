@@ -205,8 +205,8 @@ function requireOutcomeDefinition(value: unknown, label: string): void {
 
 export function validateRyanWhiteCostingMetadata(value: unknown): RyanWhiteCostingMetadata {
   requireRecord(value, 'metadata');
-  if (value.dataContractVersion !== '2.1.0') {
-    throw new Error('metadata.dataContractVersion must be 2.1.0');
+  if (value.dataContractVersion !== '2.2.0') {
+    throw new Error('metadata.dataContractVersion must be 2.2.0');
   }
   requireString(value.generatedAt, 'metadata.generatedAt');
   requireRecord(value.sourceArtifacts, 'metadata.sourceArtifacts');
@@ -216,7 +216,17 @@ export function validateRyanWhiteCostingMetadata(value: unknown): RyanWhiteCosti
     value.sourceArtifacts.jurisdictionContextCsv,
     'metadata.sourceArtifacts.jurisdictionContextCsv'
   );
+  requireArtifactProvenance(value.sourceArtifacts.artPriceCsv, 'metadata.sourceArtifacts.artPriceCsv');
   requireArtifactProvenance(value.sourceArtifacts.generator, 'metadata.sourceArtifacts.generator');
+  requireRecord(value.analysisSource, 'metadata.analysisSource');
+  requireString(value.analysisSource.repository, 'metadata.analysisSource.repository');
+  requireString(value.analysisSource.commit, 'metadata.analysisSource.commit');
+  if (!/^[0-9a-f]{40}$/.test(value.analysisSource.commit as string)) {
+    throw new Error('metadata.analysisSource.commit must be a full Git commit SHA');
+  }
+  requireString(value.analysisSource.analysisScript, 'metadata.analysisSource.analysisScript');
+  requireString(value.analysisSource.supplementScript, 'metadata.analysisSource.supplementScript');
+  requireString(value.analysisSource.artPriceScript, 'metadata.analysisSource.artPriceScript');
   requireStringArray(value.modeledJurisdictions, 'metadata.modeledJurisdictions');
   requireNumber(value.modeledJurisdictionCount, 'metadata.modeledJurisdictionCount');
   requireStringArray(value.excludedFundingLocations, 'metadata.excludedFundingLocations');
@@ -225,6 +235,12 @@ export function validateRyanWhiteCostingMetadata(value: unknown): RyanWhiteCosti
   requireNumber(value.horizon.startYear, 'metadata.horizon.startYear');
   requireNumber(value.horizon.endYear, 'metadata.horizon.endYear');
   requireNumber(value.simulationDraws, 'metadata.simulationDraws');
+  if (!['pooled', ...COST_SCENARIOS].includes(value.primaryEstimand as never)) {
+    throw new Error('metadata.primaryEstimand must be pooled, low, median, or high');
+  }
+  requireRecord(value.pooledConvention, 'metadata.pooledConvention');
+  requireString(value.pooledConvention.description, 'metadata.pooledConvention.description');
+  requireString(value.pooledConvention.nationalTotal, 'metadata.pooledConvention.nationalTotal');
   requireRecord(value.outcomeDefinitions, 'metadata.outcomeDefinitions');
   requireOutcomeDefinition(value.outcomeDefinitions.infections, 'metadata.outcomeDefinitions.infections');
   requireOutcomeDefinition(value.outcomeDefinitions.diagnoses, 'metadata.outcomeDefinitions.diagnoses');
@@ -252,7 +268,6 @@ export function validateRyanWhiteCostingMetadata(value: unknown): RyanWhiteCosti
     'metadata.validation.diagnosisArrayMatchesTotalResults'
   );
   requireNumber(value.validation.diagnosisArrayMaxAbsDiff, 'metadata.validation.diagnosisArrayMaxAbsDiff');
-  requireNumber(value.validation.mechanismClosureMaxAbsDiff, 'metadata.validation.mechanismClosureMaxAbsDiff');
   requireStringArray(value.validation.missingFundingLocations, 'metadata.validation.missingFundingLocations');
   requireStringArray(value.validation.extraFundingLocations, 'metadata.validation.extraFundingLocations');
   requireNumber(value.validation.negativeExcessDiagnosesCount, 'metadata.validation.negativeExcessDiagnosesCount');
@@ -278,6 +293,10 @@ export function validateRyanWhiteCostingSummary(value: unknown): RyanWhiteCostin
   });
   requireRecord(value.sensitivity, 'summary.sensitivity');
   requireArray(value.sensitivity.costScenarios, 'summary.sensitivity.costScenarios');
+  requireString(value.sensitivity.primaryEstimand, 'summary.sensitivity.primaryEstimand');
+  if (!['pooled', ...COST_SCENARIOS].includes(value.sensitivity.primaryEstimand as never)) {
+    throw new Error('summary.sensitivity.primaryEstimand must be pooled, low, median, or high');
+  }
 
   return value as unknown as RyanWhiteCostingSummary;
 }

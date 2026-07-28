@@ -12,7 +12,9 @@ const series = readJson(path.join(repoRoot, 'public/data/ryan-white-costing/seri
 const scenarios = ['low', 'median', 'high'];
 const expectedYears = range(metadata.horizon.startYear, metadata.horizon.endYear);
 
-assert(metadata.dataContractVersion === '2.1.0', 'unexpected data contract version');
+assert(metadata.dataContractVersion === '2.2.0', 'unexpected data contract version');
+assert(metadata.primaryEstimand === 'pooled', 'pooled results are not the primary estimand');
+assert(summary.sensitivity.primaryEstimand === 'pooled', 'summary primary estimand is not pooled');
 assert(metadata.simulationDraws === 1000, 'expected 1,000 simulation draws');
 assert(
   metadata.modeledJurisdictionCount === metadata.modeledJurisdictions.length,
@@ -35,13 +37,22 @@ assert(
     sha256File(path.join(repoRoot, 'scripts/data/ryan-white-costing-jurisdiction-context.csv')),
   'jurisdiction context provenance hash does not match the checked-in CSV'
 );
+assert(
+  metadata.sourceArtifacts.artPriceCsv.sha256 ===
+    sha256File(path.join(repoRoot, 'scripts/data/ryan-white-costing-art-price-tiers.csv')),
+  'ART price provenance hash does not match the checked-in CSV'
+);
+assert(
+  metadata.sourceArtifacts.fundingCsv.sha256 ===
+    sha256File(path.join(repoRoot, 'scripts/data/ryan-white-costing-funding.csv')),
+  'funding provenance hash does not match the checked-in CSV'
+);
 
 const validation = metadata.validation;
 assert(validation.totalEqualsJurisdictionSum, 'RData Total does not equal the jurisdiction sum');
 assert(validation.totalEqualsJurisdictionSumMaxAbsDiff <= 1e-6, 'RData Total closure exceeds tolerance');
 assert(validation.incidenceArrayMatchesTotalResults, 'total.incidence disagrees with total.results incidence');
 assert(validation.diagnosisArrayMatchesTotalResults, 'total.new disagrees with total.results new diagnoses');
-assert(validation.mechanismClosureMaxAbsDiff <= 1e-6, 'mechanism categories do not close');
 assert(validation.missingFundingLocations.length === 0, 'modeled jurisdictions are missing funding data');
 assert(validation.extraFundingLocations.length === 0, 'funding data contains unmodeled locations');
 
@@ -78,9 +89,11 @@ for (const jurisdiction of summary.states) {
     typeof jurisdiction.baselineContext.medicaidExpansion === 'boolean',
     `${jurisdiction.state} Medicaid expansion status is invalid`
   );
+  validatePooledFinal(jurisdiction.pooledFinalYear, jurisdiction.finalYear, jurisdiction.state);
 }
 
 const nationalFinal = summary.national.finalYear;
+validatePooledFinal(summary.national.pooledFinalYear, nationalFinal, 'national');
 assert(
   nationalFinal.cumulativeExcessInfections.median !== nationalFinal.cumulativeExcessNewDiagnoses.median,
   'national infections and diagnoses are incorrectly identical'
@@ -136,6 +149,8 @@ function validateSeries(label, points, finalSummary) {
         );
       }
     }
+    validateQuantile(point.pooledCumulativeCareCost, `${label} ${point.year} pooled care`);
+    validateQuantile(point.pooledCumulativeNetCostVsAdap, `${label} ${point.year} pooled net`);
   }
 
   const finalPoint = points.at(-1);
@@ -157,6 +172,23 @@ function validateSeries(label, points, finalSummary) {
     const netPerDollar = finalSummary.cumulativeNetCostRatioVsAdap[scenario].median;
     assertNear(grossPerDollar, netPerDollar + 1, 0.002, `${label} ${scenario} gross/net ratio identity failed`);
   }
+}
+
+function validatePooledFinal(pooled, final, label) {
+  validateQuantile(pooled.cumulativeCareCost, `${label} pooled care`);
+  validateQuantile(pooled.cumulativeNetCostVsAdap, `${label} pooled net`);
+  validateQuantile(pooled.cumulativeNetCostRatioVsAdap, `${label} pooled ratio`);
+  assert(
+    pooled.shareNetCostPositiveVsAdap >= 0 && pooled.shareNetCostPositiveVsAdap <= 1,
+    `${label} pooled positive share is outside 0-1`
+  );
+  const expectedRatio = pooled.cumulativeNetCostVsAdap.median / final.cumulativeAdapSpendingAvoided;
+  assertNear(
+    pooled.cumulativeNetCostRatioVsAdap.median,
+    expectedRatio,
+    0.002,
+    `${label} pooled net ratio identity failed`
+  );
 }
 
 function validateQuantile(value, label) {

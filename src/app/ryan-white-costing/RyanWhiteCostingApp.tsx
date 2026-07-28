@@ -20,7 +20,6 @@ import {
   ryanWhiteCostingMetadata,
   ryanWhiteCostingSummary,
   type BaselineContext,
-  type CostScenarioId,
   type RyanWhiteCostingSeries,
 } from '@/data/ryan-white-costing';
 import {
@@ -50,10 +49,12 @@ import {
   HorizonProfile,
   HORIZON_MAX,
   HORIZON_MIN,
+  ESTIMAND_LABELS,
+  ESTIMAND_ORDER,
+  ESTIMAND_SHORT_LABELS,
   LocationKey,
   pointForYear,
   ReviewCard,
-  SCENARIO_LABELS,
   SCENARIO_ORDER,
   SCENARIO_SHORT_LABELS,
   seriesForLocation,
@@ -202,15 +203,15 @@ function TrajTip({ active, payload, label }: TipProps) {
 function AnalysisNavigation({
   horizon,
   onHorizon,
-  scenario,
-  onScenario,
+  estimand,
+  onEstimand,
   activeSection,
   ready,
 }: {
   horizon: number;
   onHorizon: (year: number) => void;
-  scenario: CostScenarioId;
-  onScenario: (scenario: CostScenarioId) => void;
+  estimand: EstimandId;
+  onEstimand: (estimand: EstimandId) => void;
   activeSection: AnalysisSectionId;
   ready: boolean;
 }) {
@@ -290,23 +291,23 @@ function AnalysisNavigation({
     </label>
   );
 
-  const priceControl = (compact = false) => (
-    <div className="flex items-center gap-1" role="group" aria-label="Drug-price assumption">
-      {!compact && <span className="mr-1 text-xs font-medium text-slate-500">ART price</span>}
-      {SCENARIO_ORDER.map((item) => (
+  const reportingControl = (compact = false) => (
+    <div className="flex items-center gap-1" role="group" aria-label="Reporting view">
+      {!compact && <span className="mr-1 text-xs font-medium text-slate-500">Results</span>}
+      {ESTIMAND_ORDER.map((item) => (
         <button
           key={item}
           type="button"
-          onClick={() => onScenario(item)}
-          aria-pressed={scenario === item}
+          onClick={() => onEstimand(item)}
+          aria-pressed={estimand === item}
           className={cx(
             'rounded-full px-2 py-1 font-mono text-[0.7rem] font-medium transition-colors',
-            scenario === item
+            estimand === item
               ? 'bg-slate-900 text-white'
               : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900'
           )}
         >
-          {SCENARIO_SHORT_LABELS[item]}
+          {ESTIMAND_SHORT_LABELS[item]}
         </button>
       ))}
     </div>
@@ -333,7 +334,7 @@ function AnalysisNavigation({
         </nav>
         <div className="flex flex-shrink-0 items-center gap-4 border-l border-slate-200 pl-5">
           {horizonSelect('analysis-window-desktop')}
-          {priceControl()}
+          {reportingControl()}
         </div>
       </div>
 
@@ -352,14 +353,14 @@ function AnalysisNavigation({
           <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-xs text-slate-600 [&::-webkit-details-marker]:hidden">
             <span>
               Headline through <span className="font-mono font-semibold text-slate-900">{horizon}</span>
-              {' '}· <span className="font-semibold text-slate-900">{SCENARIO_SHORT_LABELS[scenario]}</span> ART price
+              {' '}· <span className="font-semibold text-slate-900">{ESTIMAND_SHORT_LABELS[estimand]}</span> results
             </span>
             <span className="font-medium text-slate-500 group-open:hidden">Change assumptions</span>
             <span className="hidden font-medium text-slate-500 group-open:inline">Close</span>
           </summary>
           <div className="mt-2 flex flex-wrap items-center gap-4 border-t border-slate-100 pt-2">
             {horizonSelect('analysis-window-mobile')}
-            {priceControl(true)}
+            {reportingControl(true)}
           </div>
         </details>
       </div>
@@ -379,7 +380,7 @@ function CascadeHero({
   share,
 }: {
   headline: HeadlineValues;
-  estimand: CostScenarioId;
+  estimand: EstimandId;
   horizon: number;
   share: number | null;
 }) {
@@ -404,7 +405,10 @@ function CascadeHero({
             </p>
 
             <p className="mt-7 text-pretty text-xl leading-relaxed text-slate-800 sm:text-2xl">
-              Under the {SCENARIO_SHORT_LABELS[estimand].toLowerCase()} drug-cost assumption and through {horizon},
+              {estimand === 'pooled'
+                ? 'Using equal-weight pooled ART-price results'
+                : `Under the ${SCENARIO_SHORT_LABELS[estimand].toLowerCase()} drug-cost assumption`}{' '}
+              through {horizon},
               projected downstream care costs reach{' '}
               <strong className="font-semibold" style={{ color: NAVY }}>{formatCompactDollars(headline.care.median)}</strong>,
               compared with{' '}
@@ -472,7 +476,13 @@ function CascadeHero({
             <p className="mt-4 max-w-4xl text-pretty text-xs leading-relaxed text-slate-600 sm:text-sm">
               Net-cost 95% interval {formatCompactDollars(headline.net.lower)} to{' '}
               {formatCompactDollars(headline.net.upper)}
-              {share !== null ? <>; {formatPercent(share)} of simulations are above zero</> : null}. The comparison
+              {share !== null ? (
+                <>
+                  ; {formatPercent(share)} of{' '}
+                  {estimand === 'pooled' ? 'independently bootstrapped pooled draws' : 'simulation draws'} are above
+                  zero
+                </>
+              ) : null}. The comparison
               includes a restricted set of downstream HIV care costs and is not a federal budget score.
             </p>
           </div>
@@ -516,8 +526,8 @@ function CascadeChain({ headline, horizon }: { headline: HeadlineValues; horizon
         How the model connects ADAP elimination to downstream cost
       </h2>
       <p className="mt-2 max-w-3xl text-sm leading-relaxed text-slate-600">
-        Displayed outcomes are cumulative 2026-{horizon} medians across 1,000 simulations; avoided program spending
-        enters in the final accounting comparison.
+        Health outcomes are cumulative 2026-{horizon} medians across 1,000 simulations; care costs use the selected
+        reporting view, and avoided program spending enters in the final accounting comparison.
       </p>
 
       <ol
@@ -590,13 +600,13 @@ function CascadeChain({ headline, horizon }: { headline: HeadlineValues; horizon
 // -----------------------------------------------------------------------------
 function UncertaintyDecomposition({
   rows,
-  scenario,
-  onScenario,
+  estimand,
+  onEstimand,
   horizon,
 }: {
   rows: DecompositionRow[];
-  scenario: CostScenarioId;
-  onScenario: (s: CostScenarioId) => void;
+  estimand: EstimandId;
+  onEstimand: (value: EstimandId) => void;
   horizon: number;
 }) {
   const [hoveredRow, setHoveredRow] = useState<EstimandId | null>(null);
@@ -634,12 +644,12 @@ function UncertaintyDecomposition({
           {lowRow ? formatCompactDollars(lowRow.net.median) : 'the low-tier estimate'} under the low ART-price tier to{' '}
           {highRow ? formatCompactDollars(highRow.net.median) : 'the high-tier estimate'} under the high tier.
           {allScenarioIntervalsIncludeZero && <> The 95% simulation interval includes zero in all three tiers.</>}{' '}
-          Select a tier to update the app.
+          Select a reporting view to update the app.
         </SectionHead>
 
         <div className="mt-10 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
           {scenarioRows.map((row) => {
-            const isSel = !row.isPooled && row.id === scenario;
+            const isSel = row.id === estimand;
             const isActive = hoveredRow ? hoveredRow === row.id : isSel;
             const rowInner = (
               <>
@@ -695,7 +705,7 @@ function UncertaintyDecomposition({
               <button
                 key={row.id}
                 type="button"
-                onClick={() => onScenario(row.id as CostScenarioId)}
+                onClick={() => onEstimand(row.id)}
                 onMouseEnter={() => setHoveredRow(row.id)}
                 onMouseLeave={() => setHoveredRow(null)}
                 onFocus={() => setHoveredRow(row.id)}
@@ -712,12 +722,33 @@ function UncertaintyDecomposition({
             <>
               <div className="border-b border-slate-200 bg-slate-50 px-4 py-3 text-xs leading-relaxed text-slate-500 sm:px-5">
                 <span className="font-semibold text-slate-700">Combined reporting summary.</span>{' '}
-                Equal numbers of draws from each price tier are mixed with model-simulation variation. This is not a
-                fourth price assumption or a probability-weighted forecast.
+                Equal numbers of draws from each price tier are mixed with model-simulation variation; the modeled
+                total independently bootstraps jurisdictions. This is not a fourth price assumption or a
+                probability-weighted forecast.
               </div>
-              <div className="grid gap-4 bg-slate-50/50 px-4 py-5 text-left sm:grid-cols-[210px_minmax(0,1fr)_190px] sm:items-center sm:gap-6 sm:px-5">
+              <button
+                type="button"
+                onClick={() => onEstimand('pooled')}
+                onMouseEnter={() => setHoveredRow('pooled')}
+                onMouseLeave={() => setHoveredRow(null)}
+                onFocus={() => setHoveredRow('pooled')}
+                onBlur={() => setHoveredRow(null)}
+                aria-pressed={estimand === 'pooled'}
+                aria-label={`${pooledRow.label}. Median net cost ${formatCompactDollars(pooledRow.net.median)}; 95% interval ${formatCompactDollars(pooledRow.net.lower)} to ${formatCompactDollars(pooledRow.net.upper)}. Select pooled results.`}
+                className={cx(
+                  'grid w-full gap-4 bg-slate-50/50 px-4 py-5 text-left transition-colors sm:grid-cols-[210px_minmax(0,1fr)_190px] sm:items-center sm:gap-6 sm:px-5',
+                  estimand === 'pooled'
+                    ? 'shadow-[inset_3px_0_0_#002D72]'
+                    : 'hover:bg-slate-100/70'
+                )}
+              >
                 <div className="min-w-0 sm:pl-1">
-                  <p className="text-sm font-semibold text-slate-900">{pooledRow.label}</p>
+                  <p className="text-sm font-semibold text-slate-900">
+                    {pooledRow.label}
+                    {estimand === 'pooled' && (
+                      <span className="ml-2 text-xs font-normal text-slate-500">selected</span>
+                    )}
+                  </p>
                   <p className="mt-0.5 text-[0.7rem] text-slate-400">{pooledRow.detail}</p>
                   <p className="mt-2 text-xs text-slate-500">
                     <span className="font-mono font-semibold tabular-nums text-slate-800">
@@ -750,7 +781,7 @@ function UncertaintyDecomposition({
                     </p>
                   )}
                 </div>
-              </div>
+              </button>
             </>
           )}
         </div>
@@ -815,7 +846,7 @@ function SplitBand({
 function JurisdictionRatioPlot({
   rows,
   horizonYear,
-  scenario,
+  estimand,
   selected,
   hovered,
   onSelect,
@@ -823,7 +854,7 @@ function JurisdictionRatioPlot({
 }: {
   rows: DriverRow[];
   horizonYear: number;
-  scenario: CostScenarioId;
+  estimand: EstimandId;
   selected: LocationKey;
   hovered: string | null;
   onSelect: (state: string) => void;
@@ -846,8 +877,8 @@ function JurisdictionRatioPlot({
             Net cost relative to ADAP spending avoided (NCER)
           </h3>
           <p className="mt-1 text-sm leading-relaxed text-slate-500">
-            Median and 95% simulation interval at the fixed {horizonYear} endpoint under the{' '}
-            {SCENARIO_LABELS[scenario].toLowerCase()} assumption. Jurisdictions are ordered by median NCER.
+            Median and 95% interval at the fixed {horizonYear} endpoint using the{' '}
+            {ESTIMAND_LABELS[estimand].toLowerCase()}. Jurisdictions are ordered by median NCER.
           </p>
         </div>
         <div className="flex flex-wrap gap-x-4 gap-y-2 text-xs text-slate-500" aria-label="Simulation interval legend">
@@ -1576,8 +1607,14 @@ function ModelReview() {
       items: [
         { label: 'Excess infections', value: ryanWhiteCostingMetadata.outcomeDefinitions.infections.description },
         { label: 'Excess diagnoses', value: ryanWhiteCostingMetadata.outcomeDefinitions.diagnoses.description },
-        { label: 'Immediate ART', value: 'Scaled to each jurisdiction\'s baseline suppressed share among diagnosed PWH' },
-        { label: 'Delayed engagement', value: '60% within one year; 86% within five years after diagnosis' },
+        {
+          label: 'Immediate ART',
+          value: 'Baseline care fraction reduced by the sampled state-specific ADAP disruption',
+        },
+        {
+          label: 'Delayed engagement',
+          value: 'Unadjusted 61% by year one and 87% eventual return, reduced by the same disruption multiplier',
+        },
       ],
       note: 'Infections and diagnoses are distinct. The cost ledger begins only after an excess incident case is diagnosed, engages in care, and starts ART.',
     },
@@ -1589,7 +1626,7 @@ function ModelReview() {
         { label: 'Discount rate', value: formatPercent(p.discountRate) },
         { label: 'Model simulations', value: ryanWhiteCostingMetadata.simulationDraws.toLocaleString('en-US') },
       ],
-      note: 'Displayed 95% intervals are the 2.5th–97.5th percentiles across epidemiologic model simulations at a fixed ART-price tier. Funding is deterministic under the current input convention.',
+      note: 'The primary display pools equal numbers of draws from all three ART-price tiers; its modeled-total interval independently bootstraps jurisdictions. Fixed-tier views isolate epidemiologic model uncertainty. Funding is deterministic.',
     },
     {
       title: 'Accounting and interpretation',
@@ -1652,6 +1689,8 @@ function ModelReview() {
                 ['Funding SHA-256', ryanWhiteCostingMetadata.sourceArtifacts.fundingCsv.sha256],
                 ['Context input', ryanWhiteCostingMetadata.sourceArtifacts.jurisdictionContextCsv.fileName],
                 ['Context SHA-256', ryanWhiteCostingMetadata.sourceArtifacts.jurisdictionContextCsv.sha256],
+                ['ART-price input', ryanWhiteCostingMetadata.sourceArtifacts.artPriceCsv.fileName],
+                ['Pipeline commit', ryanWhiteCostingMetadata.analysisSource.commit],
               ].map(([label, value]) => (
                 <div key={label} className="min-w-0">
                   <dt className="text-[0.68rem] font-semibold uppercase tracking-wide text-slate-400">{label}</dt>
@@ -1660,8 +1699,9 @@ function ModelReview() {
               ))}
             </dl>
             <p className="mt-4 text-xs leading-relaxed text-slate-500">
-              {ryanWhiteCostingMetadata.fundingAdjustment.description} Modeled-total summaries use the within-simulation
-              jurisdiction sum stored in the RData Total location; generated values are checked against source arrays.
+              {ryanWhiteCostingMetadata.fundingAdjustment.description}{' '}
+              {ryanWhiteCostingMetadata.pooledConvention.nationalTotal} Health outcomes retain the modeled
+              within-simulation jurisdiction sum.
             </p>
           </details>
         </Reveal>
@@ -1674,7 +1714,7 @@ function ModelReview() {
 // Page
 // -----------------------------------------------------------------------------
 export default function RyanWhiteCostingApp() {
-  const [scenario, setScenario] = useState<CostScenarioId>(ryanWhiteCostingSummary.sensitivity.primaryScenario);
+  const [estimand, setEstimand] = useState<EstimandId>(ryanWhiteCostingSummary.sensitivity.primaryEstimand);
   const [location, setLocation] = useState<LocationKey>('FL');
   const [horizon, setHorizon] = useState<number>(HORIZON_MAX);
   const [hovered, setHovered] = useState<string | null>(null);
@@ -1683,11 +1723,11 @@ export default function RyanWhiteCostingApp() {
   const [activeSection, setActiveSection] = useState<AnalysisSectionId>(ANALYSIS_SECTIONS[0].id);
   const urlHydrated = useRef(false);
 
-  const defaultScenario = ryanWhiteCostingSummary.sensitivity.primaryScenario;
+  const defaultEstimand = ryanWhiteCostingSummary.sensitivity.primaryEstimand;
   const defaultState: LocationKey = 'FL';
   const modeledJurisdictions = useMemo(() => new Set(ryanWhiteCostingSummary.states.map((item) => item.state)), []);
 
-  // Shareable app state: read ?through/&state/&scenario once on mount, then
+  // Shareable app state: read ?through/&state/&view once on mount, then
   // mirror changes back with replaceState (no history spam, no server round trip).
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -1695,8 +1735,10 @@ export default function RyanWhiteCostingApp() {
     if (Number.isInteger(through) && through >= HORIZON_MIN && through <= HORIZON_MAX) setHorizon(through);
     const state = params.get('state');
     if (state && (state === 'Total' || modeledJurisdictions.has(state))) setLocation(state);
-    const urlScenario = params.get('scenario');
-    if (urlScenario && (SCENARIO_ORDER as string[]).includes(urlScenario)) setScenario(urlScenario as CostScenarioId);
+    const urlEstimand = params.get('view') ?? params.get('scenario');
+    if (urlEstimand && (ESTIMAND_ORDER as string[]).includes(urlEstimand)) {
+      setEstimand(urlEstimand as EstimandId);
+    }
     urlHydrated.current = true;
   }, [modeledJurisdictions]);
 
@@ -1705,10 +1747,10 @@ export default function RyanWhiteCostingApp() {
     const params = new URLSearchParams();
     if (horizon !== HORIZON_MAX) params.set('through', String(horizon));
     if (location !== defaultState) params.set('state', location);
-    if (scenario !== defaultScenario) params.set('scenario', scenario);
+    if (estimand !== defaultEstimand) params.set('view', estimand);
     const query = params.toString();
     window.history.replaceState(null, '', query ? `?${query}` : window.location.pathname);
-  }, [horizon, location, scenario, defaultState, defaultScenario]);
+  }, [horizon, location, estimand, defaultState, defaultEstimand]);
 
   useEffect(() => {
     let cancelled = false;
@@ -1753,13 +1795,15 @@ export default function RyanWhiteCostingApp() {
   // loads (or if the URL preset a horizon), fall back to the 2035 summary.
   const nationalPoint = pointForYear(series?.national ?? [], horizon) ?? nationalFinal;
   const atFullHorizon = nationalPoint.year === HORIZON_MAX;
-  const headline = useMemo(() => headlineAt(nationalPoint, scenario), [nationalPoint, scenario]);
+  const headline = useMemo(() => headlineAt(nationalPoint, estimand), [nationalPoint, estimand]);
   const horizonProfile = useMemo(
-    () => buildHorizonProfile(series?.national ?? [], scenario),
-    [series, scenario]
+    () => buildHorizonProfile(series?.national ?? [], estimand),
+    [series, estimand]
   );
   const share = atFullHorizon
-    ? nationalFinal.shareNetCostPositiveVsAdap[scenario]
+    ? estimand === 'pooled'
+      ? ryanWhiteCostingSummary.national.pooledFinalYear.shareNetCostPositiveVsAdap
+      : nationalFinal.shareNetCostPositiveVsAdap[estimand]
     : null;
   const decompositionRows = useMemo(
     () =>
@@ -1771,31 +1815,31 @@ export default function RyanWhiteCostingApp() {
   );
 
   const nationalTrajectory = useMemo(
-    () => buildTrajectoryData(seriesForLocation(series, 'Total'), scenario),
-    [series, scenario]
+    () => buildTrajectoryData(seriesForLocation(series, 'Total'), estimand),
+    [series, estimand]
   );
   const selectedTrajectoryLocation = location === 'Total' ? defaultState : location;
   const selectedTrajectory = useMemo(
-    () => buildTrajectoryData(seriesForLocation(series, selectedTrajectoryLocation), scenario),
-    [series, selectedTrajectoryLocation, scenario]
+    () => buildTrajectoryData(seriesForLocation(series, selectedTrajectoryLocation), estimand),
+    [series, selectedTrajectoryLocation, estimand]
   );
   const selectedTrajectoryCrossover = useMemo(
-    () => crossoverForPoints(seriesForLocation(series, selectedTrajectoryLocation), scenario),
-    [series, selectedTrajectoryLocation, scenario]
+    () => crossoverForPoints(seriesForLocation(series, selectedTrajectoryLocation), estimand),
+    [series, selectedTrajectoryLocation, estimand]
   );
-  const stateCrossovers = useMemo(() => buildStateCrossovers(series, scenario), [series, scenario]);
+  const stateCrossovers = useMemo(() => buildStateCrossovers(series, estimand), [series, estimand]);
   const nationalCrossover = useMemo(
-    () => crossoverForPoints(series?.national ?? [], scenario),
-    [series, scenario]
+    () => crossoverForPoints(series?.national ?? [], estimand),
+    [series, estimand]
   );
 
   const driverRows = useMemo(
-    () => buildDriverRows(series, ryanWhiteCostingSummary.states, scenario, HORIZON_MAX, stateCrossovers),
-    [series, scenario, stateCrossovers]
+    () => buildDriverRows(series, ryanWhiteCostingSummary.states, estimand, HORIZON_MAX, stateCrossovers),
+    [series, estimand, stateCrossovers]
   );
   const nationalDriverRow = useMemo(
-    () => buildNationalDriverRow(series, ryanWhiteCostingSummary, scenario, HORIZON_MAX),
-    [series, scenario]
+    () => buildNationalDriverRow(series, ryanWhiteCostingSummary, estimand, HORIZON_MAX),
+    [series, estimand]
   );
   const selectedDriver =
     location === 'Total' ? nationalDriverRow : driverRows.find((row) => row.state === location) ?? nationalDriverRow;
@@ -1811,7 +1855,7 @@ export default function RyanWhiteCostingApp() {
     <div className="min-h-screen w-full min-w-0 max-w-full overflow-x-hidden bg-white text-slate-900">
       <CascadeHero
         headline={headline}
-        estimand={scenario}
+        estimand={estimand}
         horizon={nationalPoint.year}
         share={share}
       />
@@ -1819,8 +1863,8 @@ export default function RyanWhiteCostingApp() {
       <AnalysisNavigation
         horizon={horizon}
         onHorizon={setHorizon}
-        scenario={scenario}
-        onScenario={setScenario}
+        estimand={estimand}
+        onEstimand={setEstimand}
         activeSection={activeSection}
         ready={series !== null}
       />
@@ -1843,8 +1887,8 @@ export default function RyanWhiteCostingApp() {
               eyebrow="Over time"
               title="How does the accounting balance change over the projection window?"
             >
-              Cumulative downstream HIV care costs and ADAP spending avoided under the{' '}
-              {SCENARIO_LABELS[scenario].toLowerCase()}{' '}assumption.
+              Cumulative downstream HIV care costs and ADAP spending avoided using the{' '}
+              {ESTIMAND_LABELS[estimand].toLowerCase()}.
               {horizonProfile?.crossoverYear != null && (
                 <> The modeled-jurisdiction median reaches break-even around{' '}
                   <span className="font-semibold text-slate-700">{horizonProfile.crossoverYear}</span>.
@@ -1915,8 +1959,8 @@ export default function RyanWhiteCostingApp() {
               title="How do projected cost consequences vary across jurisdictions?"
             >
               NCER describes net downstream care cost relative to ADAP spending avoided: zero is break-even, while
-              1.00 means $1 in net cost for each $1 avoided. At the fixed 2035 endpoint under the selected price
-              assumption, {intervalsCrossingZero} of {driverRows.length} jurisdiction intervals include zero,
+              1.00 means $1 in net cost for each $1 avoided. At the fixed 2035 endpoint in the selected reporting
+              view, {intervalsCrossingZero} of {driverRows.length} jurisdiction intervals include zero,
               indicating uncertainty in the direction of net cost for most jurisdictions.
             </SectionHead>
 
@@ -1925,7 +1969,7 @@ export default function RyanWhiteCostingApp() {
                 <JurisdictionRatioPlot
                   rows={driverRows}
                   horizonYear={HORIZON_MAX}
-                  scenario={scenario}
+                  estimand={estimand}
                   selected={location}
                   hovered={hovered}
                   onSelect={setLocation}
@@ -1972,7 +2016,7 @@ export default function RyanWhiteCostingApp() {
               or identify causal effects.
             </SectionHead>
             <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-2 border-y border-slate-200 py-3 text-xs text-slate-500">
-              <span>Fixed 2035 endpoint · {SCENARIO_LABELS[scenario]} · n = {driverRows.length}</span>
+              <span>Fixed 2035 endpoint · {ESTIMAND_LABELS[estimand]} · n = {driverRows.length}</span>
               <span className="inline-flex items-center gap-1.5">
                 <span className="h-2.5 w-2.5 rounded-full" style={{ background: EXPANSION }} /> Medicaid expansion
               </span>
@@ -2010,8 +2054,8 @@ export default function RyanWhiteCostingApp() {
 
       <UncertaintyDecomposition
         rows={decompositionRows}
-        scenario={scenario}
-        onScenario={setScenario}
+        estimand={estimand}
+        onEstimand={setEstimand}
         horizon={HORIZON_MAX}
       />
 
