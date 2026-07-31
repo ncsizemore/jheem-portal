@@ -1,6 +1,11 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // The portal does not use next/image. Keep the optional image optimizer disabled while Next.js
+  // pins Sharp 0.34.x; see docs/DEPENDENCY-SECURITY.md.
+  images: {
+    unoptimized: true,
+  },
   // Add security headers
   async headers() {
     return [
