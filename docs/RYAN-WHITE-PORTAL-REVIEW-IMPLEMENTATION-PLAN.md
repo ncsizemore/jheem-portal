@@ -114,6 +114,23 @@
   approval.
 - **Phases 4–5:** Not yet started.
 
+### Independent engineering audit checkpoint — 2026-07-31
+
+The completed release is accepted: no rollback is indicated, and the production evidence supports
+the corrected scientific timing, cache isolation, and guided-workflow behavior. The review should
+not yet be closed, however. A fresh-eyes engineering pass found a bounded set of control-plane,
+reproducibility, dependency, and automated-assurance risks that should be remediated before adding
+the calibration surface.
+
+The revised order is:
+
+1. complete **Phase 3.5 — Control-plane and reproducibility remediation**;
+2. begin **Phase 4 — Model-aware calibration presentation**;
+3. complete **Phase 5 — Integrated QA and release**.
+
+Content-owner terminology review and the remaining interaction/accessibility polish may proceed in
+parallel with Phase 3.5, but they do not replace its engineering gates.
+
 ---
 
 ## 1. Why this work needs a plan
@@ -288,6 +305,75 @@ mouse or map interaction.
 **Exit gate:** A domain-informed but first-time visitor can describe the scenario they are about to
 run before pressing **Simulate**.
 
+### Phase 3.5 — Control-plane and reproducibility remediation
+
+This is a focused hardening phase, not a redesign of the completed model correction or guided
+workflow. Keep each change independently reviewable and avoid coupling it to calibration feature
+work.
+
+#### Dependency security and enforced checks
+
+- Upgrade Next.js from the affected `16.2.3` release to a current patched compatible release and
+  refresh the lockfile.
+- Resolve or explicitly disposition remaining production dependency advisories.
+- Replace the obsolete Next.js lint command with a supported ESLint invocation.
+- Add mandatory CI for unit tests, type checking, linting, and a production build. Add a small
+  browser suite for critical custom-simulation journeys rather than attempting broad coverage in
+  the first CI change.
+
+**Exit gate:** A clean install has no unresolved high-severity production advisory without a
+documented, reviewed exception, and every portal change is gated by tests, type checking, linting,
+and a production build.
+
+#### Explicit launch, abuse resistance, and exact run identity
+
+- Opening, crawling, or previewing a result URL may check cache/status but must not create a new
+  simulation. New computation requires an explicit user action.
+- Add rate limiting appropriate to an unauthenticated endpoint that can dispatch long-running
+  compute. Enforce JSON content type and a bounded request body; retain origin/challenge controls
+  as defense-in-depth options if observed abuse warrants them.
+- Define one canonical request identity from model ID, normalized location, normalized scenario
+  parameters, and the versioned run contract.
+- Use that identity for deduplication, status lookup, workflow concurrency, and validation of a
+  supplied run ID. Do not treat two scenarios as equivalent merely because they share a location.
+- Test simultaneous identical requests, simultaneous different scenarios for one location, stale
+  run IDs, cached results, failure, and retry.
+
+**Exit gate:** Passive navigation cannot spend compute; repeated identical submissions converge on
+one run; distinct scenarios cannot inherit one another's status; and abusive request bursts are
+bounded.
+
+#### Versioned cache and result provenance contract
+
+- Include the model/container release, immutable image digest, input or simset release, backend
+  configuration revision, result schema/aggregator version, timing contract, location, and scenario
+  parameters in reconstructable result provenance.
+- Version cache identity by a stable run contract so a new model, data, timing, or schema release
+  cannot silently reuse an incompatible object.
+- Validate delivered metadata against the portal's expected contract before presenting a result;
+  fail safely or show a clear incompatibility state rather than applying a confident but incorrect
+  label.
+- Replace cross-repository reads from moving default branches with immutable commits, releases, or
+  a versioned contract artifact. Minimize the backend workflow's dependency on a full portal
+  checkout for aggregation.
+
+**Exit gate:** A result can be traced to immutable model/data/configuration inputs, incompatible
+cache entries cannot be reused, and rebuilding an unchanged release cannot silently consume a
+different cross-repository contract.
+
+#### Documentation and workspace hygiene
+
+- Update the custom-simulation security document to reflect the implemented portal-owned email
+  notification path and response headers, while retaining genuinely open hardening work.
+- Remove or correct workflow comments that describe a status-object mechanism no longer in use.
+- Review action-version runtime warnings and update action majors where supported.
+- Before feature work, preserve unrelated costing and component changes on their own branch or
+  commit, synchronize clean portal/backend worktrees with their authoritative default branches,
+  and avoid mixing workspace cleanup with product changes.
+
+**Exit gate:** Operational documentation describes the deployed system, and Phase 4 starts from
+clean, synchronized worktrees without disturbing unrelated user changes.
+
 ### Phase 4 — Add model-aware calibration presentation
 
 - Inventory calibration targets and posterior-fit artifacts for each deployed model/release.
@@ -342,6 +428,8 @@ target data, and posterior ensemble it represents.
    Vercel production deployment passed for `56b1b82a`; public live-data city, CROI state, scenario
    timeline, keyboard-dismissal, and cached-custom-result checks passed. The backend write-backed
    and cache-isolation smokes are complete as recorded above.
+8. Complete Phase 3.5 hardening as independently reviewable releases before deploying the Phase 4
+   calibration surface.
 
 The former unsafe legacy-pin state is resolved in PR #21. Keep the executable timing transport,
 cache isolation, and compatible released pins together during final merge/deployment so a result
@@ -381,10 +469,14 @@ None of these open content decisions should block the Phase 1 numerical correcti
 | Timing | MSA 2025 configuration; AJPH 2025 configuration; CROI 2026.5 configuration |
 | Numerical regression | Existing MSA/AJPH goldens; corrected CROI golden; no CROI effect in 2025 |
 | Workflow | Successful run, cached result, failure, retry, email result link |
+| Request identity | Identical concurrent request; different scenarios at one location; stale/mismatched run ID |
+| Abuse controls | Explicit launch only; rate-limit boundary; content type; oversized/malformed body |
+| Provenance/cache | Model and data release; image digest; timing/config/schema revision; incompatible cache rejection |
 | Responsive UI | 390 px, 768 px, 1024 px, and wide desktop |
 | Accessibility | Keyboard-only selection, visible focus, labeled controls, non-map location path |
 | Content | Scenario timeline, fixed assumptions, study period, output horizon, model release |
 | Calibration | Model/release/location identity and target provenance |
+| Automation | Clean install, dependency audit, unit tests, type check, lint, build, critical browser journeys |
 
 ---
 
@@ -393,8 +485,15 @@ None of these open content decisions should block the Phase 1 numerical correcti
 The review is complete when:
 
 - no deployed custom simulation uses timing inherited accidentally from another model;
-- every simulation result carries enough metadata to reconstruct its timing and model release;
+- passive page loads cannot launch new simulation compute;
+- request identity, concurrency, and rate limiting prevent accidental cross-scenario status reuse and
+  bound unauthenticated compute dispatch;
+- every simulation result carries enough metadata to reconstruct immutable model, data, timing,
+  configuration, and schema inputs;
+- incompatible cache entries are rejected rather than silently relabeled;
 - users understand the scenario before running or interpreting it;
 - the shared explorers work across supported screen sizes and input methods;
 - calibration evidence is tied to the correct model and release;
-- cross-repository goldens and portal regression tests protect these properties in future releases.
+- cross-repository dependencies are pinned to reproducible contracts; and
+- mandatory CI, cross-repository goldens, and portal regression tests protect these properties in
+  future releases.
