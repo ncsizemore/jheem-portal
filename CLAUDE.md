@@ -185,7 +185,7 @@ User-specified parameters trigger on-demand R simulations via GitHub Actions. Re
 
 **Email notifications:** User optionally provides email at trigger time. Portal stashes `{email, url}` in Upstash Redis. Workflow calls `/api/custom-sim/notify` (Bearer-auth'd) on success. Portal drains queue and sends via Resend. Email never transits the workflow (privacy: no PII in GHA logs/inputs).
 
-**Security:** Location whitelist (regex + membership), email format validation, auto-trigger guard on client, Upstash forensic logging on all API requests. Workflow uses `env:` blocks for all inputs (no shell injection). See `docs/CUSTOM-SIM-SECURITY-HARDENING.md`.
+**Security:** Shared links are lookup-only; launch requires an explicit action, exact versioned request identity, atomic Upstash rate limits and dispatch reservation, strict body/parameter validation, and PII-minimized forensic logging. Workflow inputs use `env:` blocks (no shell injection). See `docs/CUSTOM-SIM-RUN-CONTRACT.md` and `docs/CUSTOM-SIM-SECURITY-HARDENING.md`.
 
 **Supported models:** All 4 (MSA, AJPH, CROI, CDC Testing). Config-driven via `models.json` `customSimulation` block.
 

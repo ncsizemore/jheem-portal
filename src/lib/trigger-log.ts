@@ -23,11 +23,9 @@
  *   the list to MAX_ENTRIES. The list self-prunes; we won't run out
  *   of Redis quota even under sustained traffic.
  *
- * - **PII awareness**: trigger bodies contain user emails. Access to
- *   the Redis instance is gated by the Upstash REST token (Vercel env
- *   var, never committed). No portal route reads from Redis without
- *   auth (in fact, no portal route reads from Redis at all yet —
- *   inspection happens via the Upstash dashboard).
+ * - **PII minimization**: call sites log an allowlisted request summary.
+ *   Email addresses are represented only by an `emailProvided` boolean;
+ *   raw addresses must never be written to this forensic log.
  */
 
 import { Redis } from '@upstash/redis';
