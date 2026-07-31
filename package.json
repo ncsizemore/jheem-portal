@@ -11,7 +11,7 @@
     "start": "next start",
     "lint": "next lint",
     "audit:production": "node scripts/audit-production-dependencies.mjs",
-    "test": "node --experimental-strip-types --test scripts/test-custom-simulation-url.mjs scripts/test-production-audit-policy.mjs",
+    "test": "node --experimental-strip-types --test scripts/test-custom-simulation-url.mjs scripts/test-custom-simulation-control-plane.mjs scripts/test-production-audit-policy.mjs",
     "test:custom-sim-url": "node --experimental-strip-types --test scripts/test-custom-simulation-url.mjs",
     "typecheck": "tsc --noEmit",
     "validate:ryan-white-costing": "node scripts/validate-ryan-white-costing-data.mjs",

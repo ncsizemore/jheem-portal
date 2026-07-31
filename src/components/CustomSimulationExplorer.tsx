@@ -126,24 +126,22 @@ export default function CustomSimulationExplorer({
     startedAt,
     simulationProgress,
     runSimulation,
+    resumeSimulation,
     reset,
   } = useCustomSimulation();
 
-  // Auto-trigger only if user arrived with URL params (shared link / return visit).
-  // Only fire if the URL location is actually one we support — without this check,
-  // anyone can craft a link with ?loc=<anything> and a click would trigger a workflow
-  // run on page load. The API also rejects bad locations server-side, but bailing here
-  // avoids the wasted round trip and the (harmless) error toast.
+  // A shared link may resume an existing run or load a cached result, but must
+  // never launch compute merely because a person or crawler opened the page.
   const initialUrlHadLoc = useRef(searchParams.get('loc') !== null);
-  const [autoTriggered, setAutoTriggered] = useState(false);
+  const [initialLookupComplete, setInitialLookupComplete] = useState(false);
   useEffect(() => {
-    if (!autoTriggered && initialUrlHadLoc.current && selectedLocation && simStatus === 'idle') {
-      setAutoTriggered(true);
+    if (!initialLookupComplete && initialUrlHadLoc.current && selectedLocation && simStatus === 'idle') {
+      setInitialLookupComplete(true);
       const isKnownLocation = locations.some((l) => l.code === selectedLocation);
       if (!isKnownLocation) return;
-      runSimulation(config.id, selectedLocation, parameters);
+      resumeSimulation(config.id, selectedLocation, parameters);
     }
-  }, [autoTriggered, selectedLocation, simStatus, runSimulation, parameters, config.id, locations]);
+  }, [initialLookupComplete, selectedLocation, simStatus, resumeSimulation, parameters, config.id, locations]);
 
   // Extract available options from loaded data
   // scenarioData is the raw data keyed by scenario > outcome > statistic > facet
@@ -313,6 +311,7 @@ export default function CustomSimulationExplorer({
                     const newParams = { ...parameters, [param.id]: Number(e.target.value) };
                     setParameters(newParams);
                     updateUrl(selectedLocation, newParams);
+                    reset();
                   }}
                   className="w-full accent-blue-600"
                 />

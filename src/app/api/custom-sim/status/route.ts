@@ -1,23 +1,17 @@
-/**
- * API route: Custom Simulation Status
- *
- * GET /api/custom-sim/status?model={id}&loc={location}&key={scenarioKey}[&runId={id}]
- *
- * Checks simulation progress via the GitHub Actions API.
- * - If data already exists on CloudFront: returns { status: "complete", dataUrl }
- * - If a matching workflow run is found: returns step-level progress
- * - If no run found: returns { status: "not_found" }
- *
- * When runId is provided, fetches that specific run directly (efficient).
- * Otherwise, searches recent runs by matching the run-name pattern.
- */
+/** Exact-identity status endpoint for custom simulations. */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { Redis } from '@upstash/redis';
 import { getModelConfig } from '@/config/model-configs';
 import { logTrigger, buildEntry } from '@/lib/trigger-log';
+import { buildCustomSimulationScenarioKey } from '@/utils/customSimulationScenario';
+import { normalizeCustomSimulationParameters } from '@/utils/customSimulationInput';
+import {
+  buildCustomSimulationRequestId,
+  buildCustomSimulationRunTitle,
+  isCanonicalCustomSimulationScenarioKey,
+} from '@/utils/customSimulationRequest';
 
-// --- Upstash Redis for simulation progress ---
 let redisClient: Redis | null = null;
 function getRedis(): Redis | null {
   if (redisClient) return redisClient;
@@ -43,32 +37,28 @@ async function getRedisProgress(modelId: string, location: string, scenarioKey: 
   if (!redis) return null;
   try {
     const data = await redis.get<RedisProgress>(`progress:${modelId}:${location}:${scenarioKey}`);
-    if (data && typeof data.phase === 'string') return data;
-    return null;
+    return data && typeof data.phase === 'string' ? data : null;
   } catch {
     return null;
   }
 }
 
-// Portal model ID → backend model ID (same mapping as route.ts).
-// The workflow writes progress keys using the backend ID.
 const BACKEND_MODEL_ID_MAP: Record<string, string> = {
   'ryan-white': 'ryan-white-msa',
 };
-
 const GITHUB_API = 'https://api.github.com';
 const GITHUB_REPO = 'ncsizemore/jheem-backend';
 const WORKFLOW_FILE = 'run-custom-sim.yml';
-
-// Same format whitelist as the trigger route. See notes there.
+const WORKFLOW_PATH_PREFIX = `.github/workflows/${WORKFLOW_FILE}@`;
 const LOCATION_FORMAT = /^[A-Z]{2}$|^C\.\d+$/;
+const RUN_ID_FORMAT = /^\d+$/;
+const PUBLICATION_GRACE_MS = 10 * 60 * 1000;
 
-/** Map GitHub Actions step names to user-facing phases.
- *  Multiple workflow steps can map to the same phase (e.g., all setup → 'preparing'). */
 const PROGRESS_STEPS: Record<string, { label: string; phase: string }> = {
   'Checkout jheem-backend (for config)': { label: 'Initializing workflow...', phase: 'preparing' },
   'Load model configuration': { label: 'Loading model configuration...', phase: 'preparing' },
   'Configure AWS credentials': { label: 'Configuring credentials...', phase: 'preparing' },
+  'Check for an already-published result': { label: 'Checking for existing results...', phase: 'preparing' },
   'Download base simset from GitHub Release': { label: 'Downloading base simulation data...', phase: 'preparing' },
   'Login to GitHub Container Registry': { label: 'Pulling simulation container...', phase: 'preparing' },
   'Checkout jheem-portal (for aggregation scripts)': { label: 'Preparing data pipeline...', phase: 'preparing' },
@@ -84,40 +74,35 @@ interface StepInfo {
   name: string;
   status: string;
   conclusion: string | null;
-  number: number;
   started_at: string | null;
+}
+
+interface WorkflowRun {
+  id: number;
+  display_title: string;
+  status: string;
+  conclusion: string | null;
+  event: string;
+  path?: string;
+  run_started_at: string | null;
   completed_at: string | null;
 }
 
-
 async function githubFetch(path: string, token: string) {
   const response = await fetch(`${GITHUB_API}${path}`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      Accept: 'application/vnd.github.v3+json',
-    },
+    headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json' },
+    cache: 'no-store',
   });
-  if (!response.ok) {
-    throw new Error(`GitHub API error: ${response.status}`);
-  }
+  if (!response.ok) throw new Error(`GitHub API error: ${response.status}`);
   return response.json();
 }
 
-
-
 function getProgressFromSteps(steps: StepInfo[]) {
-  const activeStep = steps.find((s) => s.status === 'in_progress');
-  const completedSteps = steps.filter((s) => s.status === 'completed' && s.conclusion === 'success');
-  const failedStep = steps.find((s) => s.conclusion === 'failure');
+  const activeStep = steps.find((step) => step.status === 'in_progress');
+  const completedSteps = steps.filter((step) => step.status === 'completed' && step.conclusion === 'success');
+  const failedStep = steps.find((step) => step.conclusion === 'failure');
 
-  if (failedStep) {
-    return {
-      phase: 'failed',
-      label: `Failed at: ${failedStep.name}`,
-      stepName: failedStep.name,
-    };
-  }
-
+  if (failedStep) return { phase: 'failed', label: `Failed at: ${failedStep.name}`, stepName: failedStep.name };
   if (activeStep) {
     const progress = PROGRESS_STEPS[activeStep.name];
     return {
@@ -127,39 +112,134 @@ function getProgressFromSteps(steps: StepInfo[]) {
       startedAt: activeStep.started_at,
     };
   }
-
-  // No active step — might be in a brief gap between steps.
-  // Look at the NEXT pending step (the one about to run) rather than the
-  // last completed step, so we never regress to an earlier phase.
   if (completedSteps.length > 0) {
-    const lastCompletedIdx = steps.findIndex(
-      (s) => s.name === completedSteps[completedSteps.length - 1].name
-    );
-    // Find next non-completed step
-    const nextStep = steps.slice(lastCompletedIdx + 1).find(
-      (s) => s.status !== 'completed'
-    );
-    if (nextStep) {
-      const progress = PROGRESS_STEPS[nextStep.name];
-      if (progress) {
-        return {
-          phase: progress.phase,
-          label: progress.label,
-          stepName: nextStep.name,
-        };
-      }
-    }
-    // Fallback: use last completed step
     const last = completedSteps[completedSteps.length - 1];
-    const progress = PROGRESS_STEPS[last.name];
+    const lastIndex = steps.findIndex((step) => step.name === last.name);
+    const next = steps.slice(lastIndex + 1).find((step) => step.status !== 'completed');
+    const progress = next ? PROGRESS_STEPS[next.name] : PROGRESS_STEPS[last.name];
     return {
       phase: progress?.phase ?? 'running',
       label: progress?.label ?? `Completed: ${last.name}`,
-      stepName: last.name,
+      stepName: next?.name ?? last.name,
     };
   }
-
   return { phase: 'queued', label: 'Waiting to start...', stepName: null };
+}
+
+function isExpectedWorkflow(run: WorkflowRun): boolean {
+  return run.event === 'workflow_dispatch' &&
+    (run.path === undefined || run.path === `.github/workflows/${WORKFLOW_FILE}` || run.path.startsWith(WORKFLOW_PATH_PREFIX));
+}
+
+function matchesLegacyRunTitle(
+  title: string,
+  backendModelId: string,
+  location: string,
+  scenarioKey: string,
+  customSimulation: NonNullable<ReturnType<typeof getModelConfig>>['customSimulation'],
+): boolean {
+  if (!customSimulation) return false;
+  const prefixes = [
+    `custom-sim: legacy:${backendModelId}:${location}:`,
+    `custom-sim: ${backendModelId} ${location} `,
+  ];
+  const prefix = prefixes.find((candidate) => title.startsWith(candidate));
+  if (!prefix) return false;
+  try {
+    const rawParameters: unknown = JSON.parse(title.slice(prefix.length));
+    const normalized = normalizeCustomSimulationParameters(customSimulation, rawParameters);
+    return normalized.ok &&
+      buildCustomSimulationScenarioKey(customSimulation, normalized.parameters) === scenarioKey;
+  } catch {
+    return false;
+  }
+}
+
+function isExpectedRun(
+  run: WorkflowRun,
+  expectedTitle: string,
+  legacy: {
+    allowed: boolean;
+    backendModelId: string;
+    location: string;
+    scenarioKey: string;
+    customSimulation: NonNullable<ReturnType<typeof getModelConfig>>['customSimulation'];
+  },
+): boolean {
+  if (!isExpectedWorkflow(run)) return false;
+  return run.display_title === expectedTitle ||
+    (legacy.allowed && matchesLegacyRunTitle(
+      run.display_title,
+      legacy.backendModelId,
+      legacy.location,
+      legacy.scenarioKey,
+      legacy.customSimulation,
+    ));
+}
+
+async function cacheExists(dataUrl: string): Promise<boolean> {
+  try {
+    return (await fetch(dataUrl, { method: 'HEAD', cache: 'no-store' })).ok;
+  } catch {
+    return false;
+  }
+}
+
+async function responseForRun(
+  run: WorkflowRun,
+  githubToken: string,
+  backendModelId: string,
+  location: string,
+  scenarioKey: string,
+  dataUrl: string,
+) {
+  if (run.status === 'completed') {
+    if (run.conclusion === 'success') {
+      if (await cacheExists(dataUrl)) return NextResponse.json({ status: 'complete', dataUrl });
+
+      const completedAt = run.completed_at ? Date.parse(run.completed_at) : Date.now();
+      if (Number.isFinite(completedAt) && Date.now() - completedAt > PUBLICATION_GRACE_MS) {
+        return NextResponse.json({
+          status: 'failed',
+          error: 'The simulation finished, but its published result is unavailable. Please try again.',
+        });
+      }
+      return NextResponse.json({
+        status: 'running',
+        runId: run.id,
+        phase: 'finalizing',
+        label: 'Finalizing publication — results almost ready...',
+        startedAt: run.run_started_at,
+      });
+    }
+
+    const jobsData = await githubFetch(`/repos/${GITHUB_REPO}/actions/runs/${run.id}/jobs`, githubToken);
+    const steps: StepInfo[] = jobsData.jobs?.[0]?.steps ?? [];
+    const failedStep = steps.find((step) => step.conclusion === 'failure');
+    return NextResponse.json({
+      status: 'failed',
+      error: failedStep ? `Failed at: ${failedStep.name}` : 'Simulation failed',
+    });
+  }
+
+  const jobsData = await githubFetch(`/repos/${GITHUB_REPO}/actions/runs/${run.id}/jobs`, githubToken);
+  const steps: StepInfo[] = jobsData.jobs?.[0]?.steps ?? [];
+  const progress = getProgressFromSteps(steps);
+  const redisProgress = progress.phase === 'simulating' || progress.phase === 'processing'
+    ? await getRedisProgress(backendModelId, location, scenarioKey)
+    : null;
+
+  return NextResponse.json({
+    status: 'running',
+    runId: run.id,
+    ...progress,
+    ...(redisProgress && {
+      phase: redisProgress.phase,
+      label: redisProgress.message ?? progress.label,
+      simulationProgress: redisProgress,
+    }),
+    startedAt: run.run_started_at,
+  });
 }
 
 export async function GET(request: NextRequest) {
@@ -168,158 +248,80 @@ export async function GET(request: NextRequest) {
     const modelId = searchParams.get('model');
     const location = searchParams.get('loc');
     const scenarioKey = searchParams.get('key');
+    const suppliedRequestId = searchParams.get('requestId');
     const runId = searchParams.get('runId');
 
-    // Condensed status log: just the query params, no body. Status
-    // polls run every ~10s during a sim so volume is high (~30-60 per
-    // legit run); we keep entries small. Anyone scraping this endpoint
-    // for runIds or fishing for run state will still show up in logs.
-    logTrigger(
-      buildEntry(request, 'status', {
-        query: {
-          model: modelId ?? '',
-          loc: location ?? '',
-          key: scenarioKey ?? '',
-          ...(runId ? { runId } : {}),
-        },
-      })
-    );
+    logTrigger(buildEntry(request, 'status', {
+      query: {
+        model: modelId ?? '', loc: location ?? '', key: scenarioKey ?? '',
+        ...(suppliedRequestId ? { requestId: suppliedRequestId } : {}),
+        ...(runId ? { runId } : {}),
+      },
+    }));
 
     if (!modelId || !location || !scenarioKey) {
-      return NextResponse.json(
-        { error: 'Missing required params: model, loc, key' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Missing required params: model, loc, key' }, { status: 400 });
     }
-
     const config = getModelConfig(modelId);
-    if (!config) {
-      return NextResponse.json({ error: `Unknown model: ${modelId}` }, { status: 400 });
+    if (!config?.customSimulation) {
+      return NextResponse.json({ error: `Unknown or unsupported model: ${modelId}` }, { status: 400 });
     }
-
     if (!LOCATION_FORMAT.test(location) || !config.locations.includes(location)) {
       return NextResponse.json({ error: 'Invalid location' }, { status: 400 });
     }
+    if (!isCanonicalCustomSimulationScenarioKey(config.customSimulation, scenarioKey)) {
+      return NextResponse.json({ error: 'Invalid scenario key' }, { status: 400 });
+    }
 
-    // The workflow writes Redis keys using the backend model ID
     const backendModelId = BACKEND_MODEL_ID_MAP[modelId] || modelId;
+    const expectedRequestId = buildCustomSimulationRequestId(backendModelId, location, scenarioKey);
+    const expectedTitle = buildCustomSimulationRunTitle(expectedRequestId);
+    const legacyMatch = {
+      allowed: suppliedRequestId === null,
+      backendModelId,
+      location,
+      scenarioKey,
+      customSimulation: config.customSimulation,
+    };
+    if (suppliedRequestId && suppliedRequestId !== expectedRequestId) {
+      return NextResponse.json({ error: 'Request identity does not match the simulation' }, { status: 409 });
+    }
+    if (runId && (!RUN_ID_FORMAT.test(runId) || !Number.isSafeInteger(Number(runId)))) {
+      return NextResponse.json({ error: 'Invalid run ID' }, { status: 400 });
+    }
 
     const dataUrl = `${config.dataUrl}/custom/${location}/${scenarioKey}.json`;
+    if (await cacheExists(dataUrl)) return NextResponse.json({ status: 'complete', dataUrl });
 
-    // --- Check if data already exists on CloudFront ---
-    const cacheCheck = await fetch(dataUrl, { method: 'HEAD' });
-    if (cacheCheck.ok) {
-      return NextResponse.json({
-        status: 'complete',
-        dataUrl,
-      });
-    }
-
-    // --- Check GitHub Actions for run status ---
     const githubToken = process.env.GITHUB_TOKEN;
     if (!githubToken) {
-      return NextResponse.json(
-        { error: 'Server configuration error: missing GitHub token' },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: 'Server configuration error: missing GitHub token' }, { status: 500 });
     }
 
-    // If we have a specific run ID, check it directly
     if (runId) {
       try {
-        const run = await githubFetch(`/repos/${GITHUB_REPO}/actions/runs/${runId}`, githubToken);
-
-        if (run.status === 'completed') {
-          if (run.conclusion === 'success') {
-            // Run finished — data should be on CloudFront now
-            return NextResponse.json({ status: 'complete', dataUrl });
-          }
-          // Run failed
-          const jobsData = await githubFetch(`/repos/${GITHUB_REPO}/actions/runs/${runId}/jobs`, githubToken);
-          const steps: StepInfo[] = jobsData.jobs?.[0]?.steps ?? [];
-          const failedStep = steps.find((s: StepInfo) => s.conclusion === 'failure');
-          return NextResponse.json({
-            status: 'failed',
-            error: failedStep ? `Failed at: ${failedStep.name}` : 'Simulation failed',
-          });
+        const run = await githubFetch(`/repos/${GITHUB_REPO}/actions/runs/${runId}`, githubToken) as WorkflowRun;
+        if (!isExpectedRun(run, expectedTitle, legacyMatch)) {
+          return NextResponse.json({ error: 'Run ID does not match the requested simulation' }, { status: 409 });
         }
-
-        // Run still in progress — get step details
-        const jobsData = await githubFetch(`/repos/${GITHUB_REPO}/actions/runs/${runId}/jobs`, githubToken);
-        const job = jobsData.jobs?.[0];
-        const steps: StepInfo[] = job?.steps ?? [];
-        const progress = getProgressFromSteps(steps);
-
-        // Check Redis for fine-grained progress (covers loading, simulating,
-        // extracting, uploading — all sub-phases within the "Run custom
-        // simulation" GHA step that the step-level API can't distinguish).
-        const redisProgress = (progress.phase === 'simulating' || progress.phase === 'processing')
-          ? await getRedisProgress(backendModelId, location, scenarioKey)
-          : null;
-
-        return NextResponse.json({
-          status: 'running',
-          runId: Number(runId),
-          ...progress,
-          // Redis progress overrides GHA step-level phase when available
-          ...(redisProgress && {
-            phase: redisProgress.phase,
-            label: redisProgress.message ?? progress.label,
-            simulationProgress: redisProgress,
-          }),
-          startedAt: run.run_started_at,
-        });
-      } catch {
-        // Run ID invalid or API error — fall through to search
+        return responseForRun(run, githubToken, backendModelId, location, scenarioKey, dataUrl);
+      } catch (error) {
+        console.warn('Direct custom-simulation run lookup failed; recovering by exact title:', error);
       }
     }
 
-    // --- Search for matching run by display_title ---
-    // run-name format: "custom-sim: {location} {parameters_json}"
     const runsData = await githubFetch(
-      `/repos/${GITHUB_REPO}/actions/workflows/${WORKFLOW_FILE}/runs?per_page=10&event=workflow_dispatch`,
-      githubToken
+      `/repos/${GITHUB_REPO}/actions/workflows/${WORKFLOW_FILE}/runs?per_page=100&event=workflow_dispatch`,
+      githubToken,
     );
+    const matchingRun = runsData.workflow_runs?.find(
+      (run: WorkflowRun) => isExpectedRun(run, expectedTitle, legacyMatch),
+    ) as WorkflowRun | undefined;
+    if (!matchingRun) return NextResponse.json({ status: 'not_found' });
 
-    const matchingRun = runsData.workflow_runs?.find((run: { display_title: string; status: string }) => {
-      // Match runs that contain the location in their display title
-      return run.display_title.includes(location) &&
-        (run.status === 'in_progress' || run.status === 'queued');
-    });
-
-    if (!matchingRun) {
-      return NextResponse.json({ status: 'not_found' });
-    }
-
-    // Found a matching run — get step details
-    const jobsData = await githubFetch(
-      `/repos/${GITHUB_REPO}/actions/runs/${matchingRun.id}/jobs`,
-      githubToken
-    );
-    const job = jobsData.jobs?.[0];
-    const steps: StepInfo[] = job?.steps ?? [];
-    const progress = getProgressFromSteps(steps);
-
-    const redisProgress = (progress.phase === 'simulating' || progress.phase === 'processing')
-      ? await getRedisProgress(backendModelId, location, scenarioKey)
-      : null;
-
-    return NextResponse.json({
-      status: 'running',
-      runId: matchingRun.id,
-      ...progress,
-      ...(redisProgress && {
-        phase: redisProgress.phase,
-        label: redisProgress.message ?? progress.label,
-        simulationProgress: redisProgress,
-      }),
-      startedAt: matchingRun.run_started_at,
-    });
+    return responseForRun(matchingRun, githubToken, backendModelId, location, scenarioKey, dataUrl);
   } catch (error) {
     console.error('Custom sim status error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Simulation status is temporarily unavailable' }, { status: 503 });
   }
 }

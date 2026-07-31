@@ -1,5 +1,12 @@
 # Custom Simulation Security Hardening
 
+> **2026-07-31 follow-up:** The remaining public control-plane findings are now
+> addressed by the versioned run contract in `CUSTOM-SIM-RUN-CONTRACT.md`:
+> shared links are lookup-only, launch and active-run email enrollment are
+> rate-limited, request bodies are bounded JSON, matching is exact, and GitHub
+> workflow concurrency plus an S3 preflight prevents duplicate compute. The
+> sections below retain the original incident record and historical decisions.
+
 ## Context
 
 Triggered by investigation of an unexplained failed GHA run for location
@@ -40,12 +47,17 @@ and `typeof === 'string'` respectively).
 ## Other Findings
 
 2. **No rate limiting** on `/api/custom-sim`. Amplifiable cost/quota abuse.
+   **Remediated 2026-07-31.**
 3. **Email field acts as open relay** for phishing via portal-branded HTML
    to any attacker-chosen address.
+   **Remediated:** email no longer enters GHA; active-run enrollment and new
+   launches share bounded per-client/global limits.
 4. **Client-side auto-trigger** in `CustomSimulationExplorer.tsx` fires
    `runSimulation` on page load if a `loc` query param is present — no
    membership check against the locations list. Combined with Finding 1,
    a link click becomes an RCE vector.
+   **Remediated 2026-07-31:** URL arrival is lookup-only; missing `action`
+   also defaults to lookup server-side.
 5. **`location` becomes a filesystem/S3 path** in multiple places
    (output dir, aggregation script arg, S3 destination key). Classical
    path traversal risk after the shell injection is closed.
@@ -79,7 +91,7 @@ Audit of related workflows:
   urgency. **Deferred** as a follow-up commit after the higher-priority
   portal-side fixes ship.
 
-### 2. Whitelist `location` server-side in the API route — HIGH
+### 2. Whitelist `location` server-side in the API route — HIGH ✅ DONE
 File: `jheem-portal/src/app/api/custom-sim/route.ts`
 
 Two-layer check:
@@ -88,18 +100,18 @@ Two-layer check:
 
 Reject with 400 on either failure.
 
-### 3. Validate `email` format in the API route — HIGH
+### 3. Validate `email` format in the API route — HIGH ✅ DONE
 File: `jheem-portal/src/app/api/custom-sim/route.ts`
 
 Standard RFC-ish regex. Reject on failure.
 
-### 4. Client-side location validation in auto-trigger — MEDIUM
+### 4. Client-side location validation in auto-trigger — MEDIUM ✅ SUPERSEDED
 File: `jheem-portal/src/components/CustomSimulationExplorer.tsx` (~line 102)
 
-Don't fire `runSimulation` unless `selectedLocation` is in the
-`locations` prop.
+The initial membership guard shipped first. It is now superseded by a stronger
+invariant: page load calls lookup, never `runSimulation`.
 
-### 5. Log trigger attempts outside Vercel's 1-hour retention — MEDIUM
+### 5. Log trigger attempts outside Vercel's 1-hour retention — MEDIUM ✅ DONE
 Upstash Redis list or Discord webhook from `/api/custom-sim`. Capture
 IP, UA, Origin, body. If another suspicious trigger happens, we'll have
 forensics instead of another dead-end investigation.
@@ -112,9 +124,12 @@ Verify the key is scoped to `s3://jheem-data-production/portal/*` +
 `cloudfront:CreateInvalidation` on the one distribution. Tighten if
 broader. Protects blast radius if Finding 1 ever recurs via new code.
 
-### Deferred (nice-to-have, not this pass)
+### Deferred at the time (subsequently addressed)
 
-- Rate limiting on `/api/custom-sim` (Upstash rate limiter, ~5/hour/IP).
+- Rate limiting on `/api/custom-sim` — completed 2026-07-31 with atomic
+  per-client/global fixed windows and an exact-request dispatch reservation.
+- JSON content-type enforcement and a 4 KiB streaming body cap — completed
+  2026-07-31.
 - Origin/Referer check on API route (raises bar against trivial curl).
 
 ## Investigation: Has Anything Been Damaged?
@@ -288,7 +303,8 @@ ride the public Actions feed, revisit.
 - UX refinement (copy-link on email row, URL display) — resume after.
 - Redis progress feature — resume after (and now bundled with the
   Finding 5 Upstash Redis work).
-- Rate limiting and Origin checks — track as follow-ups (see backlog).
+- Origin checks remain optional defense-in-depth; rate limiting and bounded JSON
+  parsing are complete.
 
 ## Parked Hardening Backlog
 
@@ -296,16 +312,13 @@ These were discussed at the end of the security pass and deliberately
 deferred. Recorded here so we don't lose them. Rough order of
 value-per-effort, not strict priority.
 
-1. **Rate limiting on `/api/custom-sim`** — ~30 lines with
-   `@upstash/ratelimit` (Upstash already provisioned for Finding 5).
-   Sliding window, ~5 triggers/hour/IP. Single highest-value item
-   remaining. Does not prevent determined distributed abuse, but
-   caps damage from any single source.
+1. **Rate limiting on `/api/custom-sim` — COMPLETE (2026-07-31).**
+   Implemented directly against the existing Upstash client using an atomic
+   Lua fixed window: 6 launches/hour/client and 30/hour portal-wide by default,
+   both configurable. New compute fails closed if protection is unavailable.
 
-2. **Content-Type enforcement + request body size cap** — reject
-   anything that isn't `application/json`, reject bodies > 2KB. ~10
-   lines. Makes fuzzers / malformed clients fail fast with 415/413
-   before any code runs.
+2. **Content-Type enforcement + request body size cap — COMPLETE
+   (2026-07-31).** JSON-only with a 4 KiB streaming cap and 415/413 failures.
 
 3. **Origin allowlist as defense-in-depth** — reject POSTs whose
    `Origin` isn't `https://jheem.org` (plus localhost for dev). ~5
@@ -365,18 +378,10 @@ deeper inspection.
 
 ### Things I'd actually worry about
 
-**1. User-submitted emails are in GHA `workflow_dispatch` input
-metadata.** When the portal triggers the workflow, `inputs.email` is
-visible in the run's "Run workflow" UI and in the job logs' "Set up
-job" step. Anyone with read access to `jheem-backend` can see every
-email address that has ever been submitted. Right now that's just you
-(the repo is private). If the repo ever goes public again, past
-emails become public. This is a legitimate privacy concern worth
-addressing before re-publicizing.
-*Possible mitigations:* redact email from `run-name:`; consider
-hashing emails at the portal API before forwarding to the workflow
-(store real address only in the Upstash trigger log and in Resend,
-not in GHA); or commit to never re-publicizing `jheem-backend`.
+**1. User-submitted emails in GHA metadata — RESOLVED.** Email now remains in
+the portal's bounded Upstash notification queue; it never enters workflow
+inputs or the forensic trigger log. The authenticated completion callback
+drains the queue through Resend.
 
 **2. Secret scanning on git history has never been done.** We
 confirmed `.env*` is in `.gitignore` and `git ls-files` shows no
