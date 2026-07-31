@@ -6,9 +6,14 @@ import {
   isCanonicalCustomSimulationScenarioKey,
 } from '../src/utils/customSimulationRequest.ts';
 import {
+  CUSTOM_SIMULATION_PARAMETER_MAX,
+  CUSTOM_SIMULATION_PARAMETER_MIN,
+  CUSTOM_SIMULATION_PARAMETER_STEP,
+  normalizeCustomSimulationParameterValue,
   normalizeCustomSimulationParameters,
   parseCustomSimulationAction,
 } from '../src/utils/customSimulationInput.ts';
+import { selectCustomSimulationProgress } from '../src/utils/customSimulationProgress.ts';
 
 const customSimulation = {
   cacheKeyPrefix: 't2026',
@@ -50,6 +55,62 @@ test('rejects unknown, fractional, and out-of-range parameters', () => {
   assert.equal(normalizeCustomSimulationParameters(customSimulation, { surprise: 1 }).ok, false);
   assert.equal(normalizeCustomSimulationParameters(customSimulation, { adap_loss: 10.5 }).ok, false);
   assert.equal(normalizeCustomSimulationParameters(customSimulation, { adap_loss: 101 }).ok, false);
+});
+
+test('shares the whole-percentage parameter contract with URL controls', () => {
+  assert.equal(CUSTOM_SIMULATION_PARAMETER_MIN, 0);
+  assert.equal(CUSTOM_SIMULATION_PARAMETER_MAX, 100);
+  assert.equal(CUSTOM_SIMULATION_PARAMETER_STEP, 1);
+  assert.equal(normalizeCustomSimulationParameterValue(1), 1);
+  assert.equal(normalizeCustomSimulationParameterValue(2.6), 3);
+  assert.equal(normalizeCustomSimulationParameterValue(-5), 0);
+  assert.equal(normalizeCustomSimulationParameterValue(105), 100);
+  assert.equal(normalizeCustomSimulationParameterValue(Number.NaN), null);
+});
+
+test('allows progress to restart with new units when the phase changes', () => {
+  assert.deepEqual(
+    selectCustomSimulationProgress(
+      { phase: 'simulating', percent: 86, simsComplete: 69, simsTotal: 80 },
+      { phase: 'extracting', percent: 2, filesComplete: 3, filesTotal: 140 },
+      'simulating',
+      'extracting',
+    ),
+    { phase: 'extracting', percent: 2, filesComplete: 3, filesTotal: 140 },
+  );
+});
+
+test('prevents percentage regression within one progress phase', () => {
+  const previous = { phase: 'simulating', percent: 86, simsComplete: 69, simsTotal: 80 };
+  assert.equal(
+    selectCustomSimulationProgress(
+      previous,
+      { phase: 'simulating', percent: 80, simsComplete: 64, simsTotal: 80 },
+      'simulating',
+      'simulating',
+    ),
+    previous,
+  );
+});
+
+test('clears stale detail when the workflow advances without new fine-grained progress', () => {
+  assert.equal(
+    selectCustomSimulationProgress(
+      { phase: 'simulating', percent: 100, simsComplete: 80, simsTotal: 80 },
+      null,
+      'simulating',
+      'extracting',
+    ),
+    null,
+  );
+});
+
+test('retains accepted detail when a later status poll regresses', () => {
+  const previous = { phase: 'extracting', percent: 40, filesComplete: 56, filesTotal: 140 };
+  assert.equal(
+    selectCustomSimulationProgress(previous, null, 'extracting', 'extracting'),
+    previous,
+  );
 });
 
 test('validates canonical scenario keys exactly', () => {

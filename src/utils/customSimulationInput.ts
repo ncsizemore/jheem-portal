@@ -2,6 +2,18 @@ import type { CustomSimulationConfig } from '@/config/model-configs';
 
 export type CustomSimulationAction = 'lookup' | 'launch';
 
+export const CUSTOM_SIMULATION_PARAMETER_MIN = 0;
+export const CUSTOM_SIMULATION_PARAMETER_MAX = 100;
+export const CUSTOM_SIMULATION_PARAMETER_STEP = 1;
+
+export function normalizeCustomSimulationParameterValue(value: unknown): number | null {
+  if (typeof value !== 'number' || !Number.isFinite(value)) return null;
+  return Math.round(Math.min(
+    CUSTOM_SIMULATION_PARAMETER_MAX,
+    Math.max(CUSTOM_SIMULATION_PARAMETER_MIN, value),
+  ));
+}
+
 export function parseCustomSimulationAction(value: unknown): CustomSimulationAction | null {
   // Safe compatibility default: stale clients may omit action, but an omitted
   // action must never launch compute merely by opening a shared URL.
@@ -34,8 +46,11 @@ export function normalizeCustomSimulationParameters(
     if (typeof raw !== 'number' || !Number.isFinite(raw) || !Number.isInteger(raw)) {
       return { ok: false, error: `${definition.id} must be a whole number from 0 to 100` };
     }
-    if (raw < 0 || raw > 100) {
-      return { ok: false, error: `${definition.id} must be between 0 and 100` };
+    if (raw < CUSTOM_SIMULATION_PARAMETER_MIN || raw > CUSTOM_SIMULATION_PARAMETER_MAX) {
+      return {
+        ok: false,
+        error: `${definition.id} must be between ${CUSTOM_SIMULATION_PARAMETER_MIN} and ${CUSTOM_SIMULATION_PARAMETER_MAX}`,
+      };
     }
     parameters[definition.id] = raw;
   }

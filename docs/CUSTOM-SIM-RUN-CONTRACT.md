@@ -26,7 +26,15 @@ run_title  = custom-sim: <request_id>
   bounded finalizing period.
 - Trigger bodies must be JSON and no larger than 4 KiB. Unknown parameters,
   fractions, and values outside 0–100 are rejected rather than silently coerced.
+- Parameter values are whole percentages from 0 through 100. URL parsing and
+  range controls use the same one-percentage-point step accepted by the API and
+  backend, so shared links never expose a different value than the visible UI.
 - Raw email addresses are excluded from forensic trigger logs.
+
+Fine-grained percentages are monotonic only within their workflow phase. When
+the workflow moves from simulation counts to extraction file counts, the detail
+bar resets to the new phase rather than retaining a numerically larger but stale
+percentage from the previous phase.
 
 ## Launch protection
 

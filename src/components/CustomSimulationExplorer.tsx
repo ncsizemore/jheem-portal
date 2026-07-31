@@ -15,6 +15,12 @@ import { useCustomSimulation } from '@/hooks/useCustomSimulation';
 import { useAnalysisState } from '@/hooks/useAnalysisState';
 import { transformPlotData } from '@/utils/transformPlotData';
 import { mergeCustomSimulationQuery } from '@/utils/customSimulationUrl';
+import {
+  CUSTOM_SIMULATION_PARAMETER_MAX,
+  CUSTOM_SIMULATION_PARAMETER_MIN,
+  CUSTOM_SIMULATION_PARAMETER_STEP,
+  normalizeCustomSimulationParameterValue,
+} from '@/utils/customSimulationInput';
 import { formatLagYears, formatModelTime } from '@/utils/modelTimeline';
 import AnalysisResults from '@/components/analysis/AnalysisResults';
 import SimulationProgress from '@/components/SimulationProgress';
@@ -72,8 +78,7 @@ export default function CustomSimulationExplorer({
     for (const p of paramConfig) {
       const urlVal = searchParams.get(p.keyPrefix);
       if (urlVal !== null) {
-        const num = Number(urlVal);
-        values[p.id] = isFinite(num) ? Math.round(Math.min(100, Math.max(0, num))) : p.default;
+        values[p.id] = normalizeCustomSimulationParameterValue(Number(urlVal)) ?? p.default;
       } else {
         values[p.id] = p.default;
       }
@@ -303,9 +308,9 @@ export default function CustomSimulationExplorer({
                 <input
                   id={`custom-parameter-${param.id}`}
                   type="range"
-                  min={0}
-                  max={100}
-                  step={5}
+                  min={CUSTOM_SIMULATION_PARAMETER_MIN}
+                  max={CUSTOM_SIMULATION_PARAMETER_MAX}
+                  step={CUSTOM_SIMULATION_PARAMETER_STEP}
                   value={parameters[param.id]}
                   onChange={(e) => {
                     const newParams = { ...parameters, [param.id]: Number(e.target.value) };
@@ -316,8 +321,8 @@ export default function CustomSimulationExplorer({
                   className="w-full accent-blue-600"
                 />
                 <div className="flex justify-between text-xs text-slate-400 mt-0.5">
-                  <span>0{param.unit}</span>
-                  <span>100{param.unit}</span>
+                  <span>{CUSTOM_SIMULATION_PARAMETER_MIN}{param.unit}</span>
+                  <span>{CUSTOM_SIMULATION_PARAMETER_MAX}{param.unit}</span>
                 </div>
                 {PARAMETER_HELP[param.id] && (
                   <p className="mt-2 text-xs leading-relaxed text-slate-500">
