@@ -93,10 +93,11 @@
   historical source or tags.
 - **Phase 2:** Shared analysis controls now reflow at narrow widths, inputs have programmatic labels,
   toggle state is exposed to assistive technology, popovers support Escape, and both maps have a
-  direct non-map location selector. TypeScript and the production portal build pass. A live-data map
-  visual check remains open because the remote summary feed is unavailable in the local browser
-  session.
-- **Phase 3:** Core guided workflows and structured pre-run timelines are implemented locally.
+  direct non-map location selector. TypeScript and the production portal build pass. The public-site
+  browser smoke loaded all 31 city and 30 CROI state choices, entered analysis through both direct
+  selectors, rendered charts, and verified Escape dismissal for display options.
+- **Phase 3:** Core guided workflows and structured pre-run timelines are deployed in
+  [jheem-portal#13](https://github.com/ncsizemore/jheem-portal/pull/13), merged as `56b1b82a`.
   Model descriptions now flow through the shared configuration, pre-run controls follow the
   location/scenario/outcome/stratification sequence, and custom simulations explain their fixed
   assumptions, parameter meaning, background runtime, and review summary. Eight focused URL,
@@ -106,8 +107,11 @@
   375-pixel layout without horizontal overflow. It also found and repaired a model-selector split
   brain in which local UI state could change while the address bar retained the prior model; model
   links now make the URL authoritative and intentionally clear the old scenario before a different
-  model can run. Final terminology for the three suppression-loss inputs still requires
-  model/content-owner approval.
+  model can run. The production browser pass verified the MSA brief-interruption stop, resume, and
+  recovery dates; the CROI July/October 2026 cessation timing and January 2029/2030 interruption
+  recovery; and immediate loading of Alabama's cached `t2026-a50-o30-r40` custom result without an
+  alert. Final terminology for the three suppression-loss inputs still requires model/content-owner
+  approval.
 - **Phases 4–5:** Not yet started.
 
 ---
@@ -333,8 +337,11 @@ target data, and posterior ensemble it represents.
    skipping result upload. The controlled write-backed cache-isolation smoke and metadata repair
    rerun are complete; the versioned production result is available and the legacy key remains
    absent.
-7. Deploy portal copy/workflow changes that describe the corrected CROI timing, then run production
-   custom-simulation and cache-isolation smoke tests.
+7. **Completed 2026-07-30:** Deployed the portal guidance, timing disclosure, URL-state fixes, and
+   accessible/responsive controls through [jheem-portal#13](https://github.com/ncsizemore/jheem-portal/pull/13).
+   Vercel production deployment passed for `56b1b82a`; public live-data city, CROI state, scenario
+   timeline, keyboard-dismissal, and cached-custom-result checks passed. The backend write-backed
+   and cache-isolation smokes are complete as recorded above.
 
 The former unsafe legacy-pin state is resolved in PR #21. Keep the executable timing transport,
 cache isolation, and compatible released pins together during final merge/deployment so a result
