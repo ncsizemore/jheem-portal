@@ -73,7 +73,7 @@ See [jheem-backend](https://github.com/ncsizemore/jheem-backend) for the step-by
 
 - **Framework:** Next.js 16, TypeScript 5
 - **Styling:** Tailwind CSS 4
-- **Visualization:** Recharts, Plotly.js
+- **Visualization:** Recharts
 - **Mapping:** Mapbox GL JS, react-map-gl
 
 ## License

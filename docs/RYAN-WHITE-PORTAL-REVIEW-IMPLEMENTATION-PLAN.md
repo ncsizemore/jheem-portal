@@ -325,6 +325,14 @@ work.
 documented, reviewed exception, and every portal change is gated by tests, type checking, linting,
 and a production build.
 
+**Progress — 2026-07-31:** Next.js is updated to `16.2.12`; PostCSS is constrained to a patched
+8.x release; unused Plotly packages and their vulnerable production build chain are removed; and
+the remaining unreachable optional Sharp finding is recorded with an enforced configuration
+control and removal trigger in `docs/DEPENDENCY-SECURITY.md`. The production build and focused
+Ryan White regressions pass. Lint modernization and mandatory CI remain open and should be delivered
+as a separate change because the Next.js 16 rules expose pre-existing cross-application React
+findings that require focused remediation rather than a blanket severity downgrade.
+
 #### Explicit launch, abuse resistance, and exact run identity
 
 - Opening, crawling, or previewing a result URL may check cache/status but must not create a new

@@ -192,7 +192,7 @@ User-specified parameters trigger on-demand R simulations via GitHub Actions. Re
 ## Tech Stack
 
 **Frontend:** Next.js 16, TypeScript 5, Tailwind CSS 4
-**Visualization:** Recharts, Plotly.js
+**Visualization:** Recharts
 **Mapping:** Mapbox GL JS, react-map-gl
 **Workflows:** GitHub Actions (reusable template)
 **Storage:** S3 + CloudFront
