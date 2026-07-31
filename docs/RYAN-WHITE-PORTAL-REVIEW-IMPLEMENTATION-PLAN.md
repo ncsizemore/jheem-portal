@@ -1,0 +1,393 @@
+# Ryan White Portal Review and Remediation Plan
+
+**Status:** In progress  
+**Created:** 2026-07-29  
+**Scope:** Ryan White city and state explorers, custom simulations, calibration presentation, and the shared portal components they depend on
+
+### Progress snapshot — 2026-07-30
+
+- **Phase 0:** Implemented and covered by AJPH/CROI URL regression tests.
+- **Phase 1:** Model timing contract, shared-engine validation, workflow transport, cache isolation,
+  result metadata, container defaults, and portal disclosure are implemented. Reconciled backend
+  [jheem-backend#21](https://github.com/ncsizemore/jheem-backend/pull/21) merged as `c07ebece`
+  with executable timing transport, CROI cache isolation, mirrored workflow defaults, and the four
+  released production pins. Expanded PR validation passed in
+  [run 30572114348](https://github.com/ncsizemore/jheem-backend/actions/runs/30572114348),
+  post-merge `master` validation passed in
+  [run 30572306019](https://github.com/ncsizemore/jheem-backend/actions/runs/30572306019),
+  and the local container-to-backend contract passed 66 checks with two intentional skips. A
+  production-configuration CROI dry-run for Alabama passed in
+  [run 30572846978](https://github.com/ncsizemore/jheem-backend/actions/runs/30572846978):
+  it used CROI `2.3.0`, intervention `2026.5`, lag `0.25`, simulation `2026–2036`, reporting
+  `2026–2031`, and scenario key `t2026-a50-o30-r40`; aggregation completed and S3/CloudFront upload
+  was explicitly skipped. Dry-run progress telemetry was written to Redis under the versioned key.
+  The first controlled write-backed smoke
+  [run 30575379534](https://github.com/ncsizemore/jheem-backend/actions/runs/30575379534)
+  successfully published that versioned key while the legacy `a50-o30-r40` key remained absent,
+  proving cache isolation. Inspection of the delivered object found that the timing contract was
+  missing because the workflow's portal checkout used deployed `main`, whose aggregator did not yet
+  contain the local metadata change. Backend
+  [jheem-backend#25](https://github.com/ncsizemore/jheem-backend/pull/25), merged as `597b5ea0`,
+  now embeds and verifies `metadata.custom_simulation` after aggregation and before publication,
+  removing that cross-repository deployment-order dependency. Post-merge validation passed in
+  [run 30577599349](https://github.com/ncsizemore/jheem-backend/actions/runs/30577599349).
+  Repair [run 30577631730](https://github.com/ncsizemore/jheem-backend/actions/runs/30577631730)
+  then overwrote the same versioned object, passed model execution, metadata verification, S3
+  upload, and CloudFront invalidation, and left the legacy key absent. The CDN-delivered JSON
+  contains the exact CROI contract (`2026.5` intervention, `0.25`-year lag, `2026–2036` simulation,
+  `2026–2031` reporting, and `t2026` cache prefix), 132 source files, and only the expected
+  `t2026-a50-o30-r40` scenario/data key.
+  Canonical container work is
+  merged in [jheem-containers#14](https://github.com/ncsizemore/jheem-containers/pull/14), which now
+  builds a candidate base first and injects its immutable digest into every downstream model before
+  testing. The full candidate review found CROI baseline and observations unchanged, no intervention
+  divergence through 2025, and the expected effect beginning in the 2026 annual interval. MSA and
+  AJPH remain bit-for-bit identical to their prior goldens, CROI perturbation passed, and CDC passed
+  its complete gate. The corrected CROI golden is now active while the prior production artifact is
+  retained as a historical reference. The final candidate-base cascade passed in full:
+  [run 30540195304](https://github.com/ncsizemore/jheem-containers/actions/runs/30540195304).
+  The post-merge `main` cascade is
+  [run 30549853543](https://github.com/ncsizemore/jheem-containers/actions/runs/30549853543);
+  its base-cascade classification prevented tag promotion, but its cross-repository contract exposed
+  that backend `master` does not yet publish the timing metadata used during feature-branch
+  validation. Merged metadata-only bridge
+  [jheem-backend#22](https://github.com/ncsizemore/jheem-backend/pull/22) adds the
+  contract plus its validator without changing workflow execution, caching, or image pins.
+  Backend `master` validation passed, and non-promoting full container
+  [run 30550724551](https://github.com/ncsizemore/jheem-containers/actions/runs/30550724551)
+  passed the cross-repository contract, candidate base test, and all four exact-digest model gates;
+  both promotion jobs were skipped. The explicit `base-v1.7.0` release
+  [run 30555134258](https://github.com/ncsizemore/jheem-containers/actions/runs/30555134258)
+  then passed the contract, base test, and all four downstream model gates. It promoted only the
+  base tags (`1.7.0`, `1.7`, and `latest`); model promotion was skipped as designed. All three base
+  tags resolve to the tested OCI index digest
+  `sha256:a76a92ca41d38c3d7d5f77f79efd2e2fe754f8ee97be6b69aec0ea949c1282c3`.
+  Release-preparation
+  [jheem-containers#15](https://github.com/ncsizemore/jheem-containers/pull/15) pins all four
+  downstream models to that base version and digest. Its first run exposed and then repaired a
+  GitHub Actions transitive-skip defect that had allowed model builds to pass while their full
+  behavior gates were skipped whenever the base build was intentionally omitted. Corrected
+  [run 30560008410](https://github.com/ncsizemore/jheem-containers/actions/runs/30560008410),
+  attempt 2, passed all four model builds and all four smoke/golden/perturbation suites; both
+  promotion jobs were skipped. PR #15 merged as `7eaebfee`; merged-state
+  [run 30565962207](https://github.com/ncsizemore/jheem-containers/actions/runs/30565962207)
+  repeated all four full gates and promoted the tested model digests to `latest`. Explicit release
+  workflows then passed and published MSA `1.1.0`
+  ([run 30568530711](https://github.com/ncsizemore/jheem-containers/actions/runs/30568530711)),
+  AJPH `1.1.0`
+  ([run 30568558212](https://github.com/ncsizemore/jheem-containers/actions/runs/30568558212)),
+  CROI `2.3.0`
+  ([run 30568563875](https://github.com/ncsizemore/jheem-containers/actions/runs/30568563875)),
+  and CDC Testing `2.1.3`
+  ([run 30568569535](https://github.com/ncsizemore/jheem-containers/actions/runs/30568569535)).
+  Exact and minor-version registry tags were verified against each workflow's tested digest.
+  Backend `master` now pins the released model versions.
+- **Container migration closeout:** The monorepo had already published `latest`, while production
+  remained on legacy-built semver pins and all five legacy workflows could still publish competing
+  mutable tags. Merged changes now retire publishing in
+  [base](https://github.com/ncsizemore/jheem-base/pull/1),
+  [MSA](https://github.com/ncsizemore/jheem-ryan-white-msa-container/pull/1),
+  [AJPH](https://github.com/ncsizemore/jheem-ryan-white-ajph-container/pull/1),
+  [CROI](https://github.com/ncsizemore/jheem-ryan-white-croi-container/pull/1), and
+  [CDC Testing](https://github.com/ncsizemore/jheem-cdc-testing-container/pull/1) without removing
+  historical source or tags.
+- **Phase 2:** Shared analysis controls now reflow at narrow widths, inputs have programmatic labels,
+  toggle state is exposed to assistive technology, popovers support Escape, and both maps have a
+  direct non-map location selector. TypeScript and the production portal build pass. A live-data map
+  visual check remains open because the remote summary feed is unavailable in the local browser
+  session.
+- **Phase 3:** Core guided workflows and structured pre-run timelines are implemented locally.
+  Model descriptions now flow through the shared configuration, pre-run controls follow the
+  location/scenario/outcome/stratification sequence, and custom simulations explain their fixed
+  assumptions, parameter meaning, background runtime, and review summary. Eight focused URL,
+  cache-key, and timeline regressions pass; full TypeScript and production builds pass, including
+  backend configuration sync and all 22 routes. The local browser pass verified AJPH query
+  restoration, CROI timing disclosure, the exact `model=croi&loc=AL` URL/share-link state, and a
+  375-pixel layout without horizontal overflow. It also found and repaired a model-selector split
+  brain in which local UI state could change while the address bar retained the prior model; model
+  links now make the URL authoritative and intentionally clear the old scenario before a different
+  model can run. Final terminology for the three suppression-loss inputs still requires
+  model/content-owner approval.
+- **Phases 4–5:** Not yet started.
+
+---
+
+## 1. Why this work needs a plan
+
+What began as a content and interaction-design review exposed a scientific-behavior defect in the
+CROI custom-simulation path. The work now spans several independently deployed repositories:
+
+| Repository | Responsibility in this work |
+|---|---|
+| `jheem_analyses` | Model-owner source of truth for intervention assumptions and reporting periods |
+| `jheem-containers` | Canonical shared engine, model images, candidate-base cascade, and release gate |
+| `jheem-backend` | Model configuration and workflow orchestration |
+| Legacy base/CROI/AJPH/MSA/CDC repositories | Historical source and tags only; publishing retired |
+| `jheem-portal` | User workflow, scientific context, results presentation, and accessibility |
+
+This plan separates scientific correctness from UX improvements, records which source is
+authoritative for each decision, and defines deployment gates so that a polished interface cannot
+mask an incorrect simulation.
+
+---
+
+## 2. Confirmed findings
+
+### 2.1 State custom-simulation URLs
+
+The portal concatenated new query parameters onto a route that already contained `?model=...`,
+producing malformed share and history URLs. The location could be lost on reload and a CROI route
+could fall back to AJPH.
+
+**Status:** Fixed locally with a shared URL-merging utility and regression tests.
+
+### 2.2 CROI custom-simulation timing
+
+The model-owner code and the exact `jheem_analyses` revision pinned by the CROI container establish:
+
+- anchor year: 2026;
+- intervention begins July 1, 2026 (`2026.5`);
+- suppression loss is applied after a three-month lag (`0.25`);
+- the CROI study/reporting period is 2026–2031;
+- the underlying simulation retains a longer computational horizon.
+
+The shared custom Ryan White engine instead hardcodes a July 2025 intervention and a 2025–2035
+run. The backend configuration records CROI's 2026 start year but does not pass model-specific
+timing into the custom-simulation container.
+
+**Ownership:** Shared-engine/backend integration defect, not a model-owner-code defect and not a
+numerical calculation performed by the portal.
+
+### 2.3 Product and design issues
+
+- Direct explorer routes provide too little scientific and scenario context.
+- Pre-run and custom workflows expose controls without first explaining the decisions being made.
+- Custom simulations do not clearly state that they model permanent cessation only.
+- Desktop controls do not adapt adequately to narrow screens.
+- Map interaction and control labeling need an accessibility pass.
+- Calibration evidence is not presented alongside the model that it supports.
+
+---
+
+## 3. Prioritization principles
+
+1. **Scientific correctness before interface polish.**
+2. **One model contract, not model-ID conditionals scattered across workflows and R scripts.**
+3. **Model-owner code defines assumptions; backend configuration transports them; the portal
+   explains them.**
+4. **Study period and computational horizon are separate concepts and must be labeled separately.**
+5. **Pre-run and custom simulation are related but not identical workflows.** Named paper scenarios
+   should not be presented as though they are interchangeable with the custom permanent-cessation
+   parameterization.
+6. **Calibration is model- and location-specific.** Do not publish a generic calibration page that
+   can imply support for a different model, geography, or release.
+
+---
+
+## 4. Recommended implementation order
+
+### Phase 0 — Contain known portal defects
+
+- Complete the state custom-simulation URL fix.
+- Cover AJPH and CROI model/location/parameter combinations with regression tests.
+- Verify reload, back/forward navigation, share links, and emailed result links.
+
+**Exit gate:** Model selection and all scenario parameters survive a copied URL and a clean reload.
+
+### Phase 1 — Correct and harden custom-simulation timing
+
+#### Backend model contract
+
+Extend each Ryan White model's `customSimulation` configuration with explicit fields such as:
+
+```json
+{
+  "interventionType": "permanent_cessation",
+  "timing": {
+    "interventionStartTime": 2026.5,
+    "lossLagYears": 0.25,
+    "simulationStartYear": 2026,
+    "simulationEndYear": 2036,
+    "reportingStartYear": 2026,
+    "reportingEndYear": 2031
+  }
+}
+```
+
+The exact values differ by model. The schema should reject incomplete timing configuration for a
+custom-enabled model rather than silently applying a shared default.
+
+#### Workflow and engine
+
+- Read timing from the selected model configuration in `run-custom-sim.yml`.
+- Pass it to the model container as validated environment variables.
+- Make `simple_ryan_white.R` consume and validate those values.
+- Remove the fixed `2025.5`, `2025`, and `2035` assumptions from the shared script.
+- Log the resolved timing and include it in generated result metadata.
+
+#### Runtime validation
+
+- Rebuild the CROI model container on the corrected base.
+- Generate a new CROI custom golden artifact.
+- Assert that CROI custom and baseline results do not diverge in 2025.
+- Assert that the configured intervention becomes active during 2026.
+- Re-run MSA and AJPH goldens to detect unintended behavior changes.
+- Verify the production workflow end to end for at least one CROI state.
+
+#### Portal disclosure
+
+Show, before submission:
+
+- intervention start date;
+- lag before suppression changes;
+- intervention type (permanent cessation);
+- study/reporting period;
+- longer exploratory output horizon, if displayed.
+
+**Exit gate:** Timing is selected by model configuration, recorded in output metadata, validated by
+goldens, and visible to the user.
+
+**Containment rule:** If the corrected CROI runtime cannot be deployed in the same release cycle,
+temporarily remove the CROI custom option. A warning is insufficient for a known numerical-timing
+error.
+
+### Phase 2 — Repair the shared explorer foundation
+
+- Replace fixed desktop layouts with responsive control regions.
+- Establish a consistent control order: location, scenario, outcome, stratification.
+- Add programmatic labels, keyboard behavior, focus treatment, and non-map location selection.
+- Ensure maps are supplementary rather than the only way to select a geography.
+- Improve loading, empty, unavailable, and error states.
+- Test shared changes against MSA, AJPH, CROI, and CDC Testing to prevent cross-model regressions.
+
+**Exit gate:** Core explorer tasks work at desktop and mobile widths and can be completed without a
+mouse or map interaction.
+
+### Phase 3 — Add scientific context and guided workflows
+
+#### Pre-run explorers
+
+- Add a concise model-purpose statement.
+- Explain the named scenarios and their timelines before users choose one.
+- Present the workflow as four clearly numbered decisions without turning it into a blocking wizard:
+  location, scenario, outcome, stratification.
+- Distinguish baseline, interruption, resumption, and post-resumption periods in copy and charts.
+
+#### Custom simulations
+
+- Explain what is customizable and what remains fixed.
+- Define ADAP, OAHS, and other Ryan White support parameters in plain language.
+- Show a scenario summary for review before simulation submission.
+- Explain runtime, caching, email delivery, and result persistence.
+- Keep the result explorer available on the same page after completion.
+
+**Exit gate:** A domain-informed but first-time visitor can describe the scenario they are about to
+run before pressing **Simulate**.
+
+### Phase 4 — Add model-aware calibration presentation
+
+- Inventory calibration targets and posterior-fit artifacts for each deployed model/release.
+- Define a versioned calibration manifest keyed by model ID, release, location, outcome, and target.
+- Generate calibration outputs from the same pinned model artifacts used by the portal.
+- Add a calibration entry point to each relevant model page.
+- Borrow the useful GMHA interaction patterns, while preserving the Ryan White portal's component
+  system and avoiding a one-off embedded app.
+- Clearly distinguish calibration/fit years from projection years.
+
+**Exit gate:** Every displayed calibration result identifies the exact model release, geography,
+target data, and posterior ensemble it represents.
+
+### Phase 5 — Integrated QA and release
+
+- Desktop and mobile visual regression pass.
+- Keyboard and screen-reader-oriented interaction review.
+- Color contrast and non-color encoding review.
+- URL, navigation, email-link, cache, and failure-recovery tests.
+- Scientific copy review against the pinned analysis code.
+- Production smoke test for every Ryan White model and workflow.
+- Record image digests, model/data releases, and deployment versions.
+
+#### Required deployment order
+
+1. Merge the five legacy publisher-retirement PRs so only the monorepo can write current package
+   tags.
+2. Publish backend-owned timing metadata and its validator without enabling runtime transport or
+   changing cache keys/image pins. This lets container `main` validate against backend `master`
+   without changing production execution.
+3. Merge the canonical container change. A base change on `main` must remain unpromoted until the
+   explicit base release gate passes.
+4. **Completed 2026-07-30:** Published `base-v1.7.0`; the full gated cascade passed and promoted
+   only `jheem-base:1.7.0`, `1.7`, and `latest`, all at immutable digest
+   `sha256:a76a92ca41d38c3d7d5f77f79efd2e2fe754f8ee97be6b69aec0ea949c1282c3`.
+5. **Completed 2026-07-30:** [jheem-containers#15](https://github.com/ncsizemore/jheem-containers/pull/15)
+   updated every downstream model to base `1.7.0` at its immutable digest and repaired the model-only
+   workflow gate. The corrected PR and merged-state four-model gates passed. Explicit release tags
+   published MSA `1.1.0`, AJPH `1.1.0`, CROI `2.3.0`, and CDC Testing `2.1.3`; every exact and
+   minor-version tag was verified against its release-tested digest.
+6. **Completed 2026-07-30:** Reconciled [jheem-backend#21](https://github.com/ncsizemore/jheem-backend/pull/21)
+   with the metadata bridge, updated canonical and mirrored workflow pins to MSA `1.1.0`, AJPH
+   `1.1.0`, CROI `2.3.0`, and CDC Testing `2.1.3`, and added pin-drift validation. Backend CI and
+   the container-to-backend contract passed. The PR merged with timing transport, cache isolation,
+   and compatible pins together; post-merge `master` validation passed. The released CROI
+   production-configuration dry-run passed with the expected timing metadata and `t2026` key while
+   skipping result upload. The controlled write-backed cache-isolation smoke and metadata repair
+   rerun are complete; the versioned production result is available and the legacy key remains
+   absent.
+7. Deploy portal copy/workflow changes that describe the corrected CROI timing, then run production
+   custom-simulation and cache-isolation smoke tests.
+
+The former unsafe legacy-pin state is resolved in PR #21. Keep the executable timing transport,
+cache isolation, and compatible released pins together during final merge/deployment so a result
+cannot be labeled with the corrected contract while running a legacy image.
+
+---
+
+## 5. Decisions made and decisions still open
+
+### Recommended decisions
+
+- Treat 2026–2031 as the CROI study/reporting period.
+- Preserve the longer computational output when useful, but label years after 2031 as exploratory
+  projections rather than part of the CROI analysis period.
+- Configure CROI custom cessation to begin July 1, 2026 with the model's three-month loss lag.
+- Keep the custom tool scoped to permanent cessation until temporary-interruption timing is
+  deliberately implemented and validated.
+- Generate explanatory timeline copy from structured model metadata wherever possible.
+
+### Still requires model/content-owner review
+
+- Final plain-language definitions for the three suppression-loss inputs.
+- Whether exploratory post-2031 results should be shown by default or behind an expanded range.
+- Which calibration targets are appropriate for public display and whether any require
+  methodological caveats.
+- Publication-ready citations and acknowledgement language for the CROI analysis.
+
+None of these open content decisions should block the Phase 1 numerical correction.
+
+---
+
+## 6. Test matrix
+
+| Area | Required coverage |
+|---|---|
+| URL state | AJPH and CROI; location only; parameters; copied URL; reload; back/forward |
+| Timing | MSA 2025 configuration; AJPH 2025 configuration; CROI 2026.5 configuration |
+| Numerical regression | Existing MSA/AJPH goldens; corrected CROI golden; no CROI effect in 2025 |
+| Workflow | Successful run, cached result, failure, retry, email result link |
+| Responsive UI | 390 px, 768 px, 1024 px, and wide desktop |
+| Accessibility | Keyboard-only selection, visible focus, labeled controls, non-map location path |
+| Content | Scenario timeline, fixed assumptions, study period, output horizon, model release |
+| Calibration | Model/release/location identity and target provenance |
+
+---
+
+## 7. Definition of done
+
+The review is complete when:
+
+- no deployed custom simulation uses timing inherited accidentally from another model;
+- every simulation result carries enough metadata to reconstruct its timing and model release;
+- users understand the scenario before running or interpreting it;
+- the shared explorers work across supported screen sizes and input methods;
+- calibration evidence is tied to the correct model and release;
+- cross-repository goldens and portal regression tests protect these properties in future releases.

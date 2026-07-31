@@ -32,9 +32,12 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { createWriteStream } from 'fs';
+import { createRequire } from 'node:module';
 
 // big-json for streaming large JSON objects
-const bigJson = require('big-json');
+const bigJson = createRequire(import.meta.url)('big-json') as {
+  createStringifyStream(options: { body: unknown }): NodeJS.ReadableStream;
+};
 
 interface PlotDataFile {
   sim: unknown[] | null;
@@ -67,6 +70,17 @@ interface AggregatedData {
     facets: string[];
     generation_time: string;
     file_count: number;
+    custom_simulation?: {
+      model_id: string;
+      intervention_type: string;
+      intervention_start_time: number;
+      loss_lag_years: number;
+      simulation_start_year: number;
+      simulation_end_year: number;
+      reporting_start_year: number;
+      reporting_end_year: number;
+      cache_key_prefix?: string;
+    };
   };
   data: Record<
     string,
@@ -173,6 +187,16 @@ function aggregateCityData(inputDir: string): AggregatedData {
     console.log(`  Processed: ${scenario}/${outcome}/${statistic}/${facet}`);
   }
 
+  let customSimulationMetadata: AggregatedData['metadata']['custom_simulation'];
+  const customSimulationMetadataJson = process.env.CUSTOM_SIMULATION_METADATA;
+  if (customSimulationMetadataJson) {
+    try {
+      customSimulationMetadata = JSON.parse(customSimulationMetadataJson);
+    } catch {
+      throw new Error('CUSTOM_SIMULATION_METADATA must be valid JSON');
+    }
+  }
+
   return {
     metadata: {
       city,
@@ -183,6 +207,7 @@ function aggregateCityData(inputDir: string): AggregatedData {
       facets: Array.from(facets).sort(),
       generation_time: new Date().toISOString(),
       file_count: fileCount,
+      ...(customSimulationMetadata && { custom_simulation: customSimulationMetadata }),
     },
     data,
   };

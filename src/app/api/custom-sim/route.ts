@@ -19,6 +19,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getModelConfig } from '@/config/model-configs';
 import { logTrigger, buildEntry } from '@/lib/trigger-log';
 import { stashNotify, buildReturnUrl } from '@/lib/notify';
+import { buildCustomSimulationScenarioKey } from '@/utils/customSimulationScenario';
 
 const GITHUB_API = 'https://api.github.com';
 const GITHUB_REPO = 'ncsizemore/jheem-backend';
@@ -44,18 +45,6 @@ const EMAIL_MAX_LENGTH = 254;
 const BACKEND_MODEL_ID_MAP: Record<string, string> = {
   'ryan-white': 'ryan-white-msa',
 };
-
-function deriveScenarioKey(
-  config: NonNullable<ReturnType<typeof getModelConfig>>,
-  parameters: Record<string, number>
-): string {
-  const customSim = config.customSimulation;
-  if (!customSim) throw new Error(`Model ${config.id} does not support custom simulations`);
-
-  return customSim.parameters
-    .map((p) => `${p.keyPrefix}${parameters[p.id] ?? p.default}`)
-    .join('-');
-}
 
 export async function POST(request: NextRequest) {
   let body: Record<string, unknown> = {};
@@ -144,7 +133,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const scenarioKey = deriveScenarioKey(config, validatedParams);
+    const scenarioKey = buildCustomSimulationScenarioKey(config.customSimulation, validatedParams);
     const dataUrl = `${config.dataUrl}/custom/${location}/${scenarioKey}.json`;
 
     // --- Check cache: does this result already exist on CloudFront? ---

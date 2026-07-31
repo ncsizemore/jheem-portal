@@ -4,7 +4,7 @@
  * DisplayOptionsPopover - Chart display options dropdown
  */
 
-import { useState } from 'react';
+import { useEffect, useId, useState } from 'react';
 import type { ChartDisplayOptions } from '@/types/native-plotting';
 
 interface DisplayOptionsPopoverProps {
@@ -17,11 +17,25 @@ export default function DisplayOptionsPopover({
   onChange,
 }: DisplayOptionsPopoverProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const popoverId = useId();
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setIsOpen(false);
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen]);
 
   return (
     <div className="relative">
       <button
+        type="button"
         onClick={() => setIsOpen(!isOpen)}
+        aria-expanded={isOpen}
+        aria-controls={isOpen ? popoverId : undefined}
+        aria-haspopup="dialog"
         className={`flex items-center gap-1.5 px-2.5 py-1.5 text-sm rounded-md transition-colors
           ${isOpen
             ? 'bg-slate-200 text-slate-700'
@@ -39,9 +53,10 @@ export default function DisplayOptionsPopover({
         <>
           <div
             className="fixed inset-0 z-40"
+            aria-hidden="true"
             onClick={() => setIsOpen(false)}
           />
-          <div className="absolute right-0 top-full mt-1 bg-white rounded-lg shadow-lg border border-slate-200 py-2 z-50 min-w-[160px]">
+          <div id={popoverId} role="group" aria-label="Chart display options" className="absolute right-0 top-full mt-1 bg-white rounded-lg shadow-lg border border-slate-200 py-2 z-50 min-w-[160px]">
             <div className="px-3 py-1.5 border-b border-slate-100 mb-1">
               <p className="text-xs font-medium text-slate-400 uppercase tracking-wide">Show on chart</p>
             </div>
