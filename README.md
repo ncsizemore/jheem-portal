@@ -18,7 +18,7 @@ The Johns Hopkins Epidemiological and Economic Model (JHEEM) portal provides int
 
 ### Prerequisites
 
-- Node.js 18+
+- Node.js 20.9+ (CI uses Node.js 24)
 - npm
 
 ### Setup
@@ -26,7 +26,7 @@ The Johns Hopkins Epidemiological and Economic Model (JHEEM) portal provides int
 ```bash
 git clone https://github.com/ncsizemore/jheem-portal.git
 cd jheem-portal
-npm install
+npm ci
 ```
 
 ### Running locally
@@ -43,7 +43,9 @@ Open http://localhost:3000
 npm run build
 ```
 
-This syncs configuration from `jheem-backend/models.json` before building.
+The build uses the committed model configuration pinned to an immutable backend revision. See
+[`docs/MODEL-CONFIG-SYNC.md`](docs/MODEL-CONFIG-SYNC.md) for the deliberate update and verification
+workflow.
 
 ## Architecture
 
@@ -65,9 +67,9 @@ See `CLAUDE.md` for detailed architecture documentation.
 
 See [jheem-backend](https://github.com/ncsizemore/jheem-backend) for the step-by-step guide. In brief:
 
-1. Add config to `models.json` (jheem-backend)
-2. Create thin workflow wrapper (~40 lines)
-3. Create route page in portal (~30 lines)
+1. Add and merge config in `models.json` (jheem-backend)
+2. Pin that backend commit and run `npm run sync-config` in the portal
+3. Create the thin workflow wrapper and portal route
 
 ## Tech Stack
 

@@ -333,6 +333,14 @@ Ryan White regressions pass. Lint modernization and mandatory CI remain open and
 as a separate change because the Next.js 16 rules expose pre-existing cross-application React
 findings that require focused remediation rather than a blanket severity downgrade.
 
+**Reproducibility and CI progress — 2026-07-31:** The portal now pins its generated model
+configuration to immutable backend commit `597b5ea0`, commits deterministic generated output, and
+keeps ordinary install/build paths independent of backend availability. The new CI baseline uses
+immutable action revisions and gates pull requests on the pinned-config check, 12 focused
+regressions, TypeScript, all-route production build, and a tested production-audit policy. Lint
+modernization and critical browser journeys remain separate follow-ups; the CI baseline does not
+weaken the newly exposed React rules to manufacture a clean result.
+
 #### Explicit launch, abuse resistance, and exact run identity
 
 - Opening, crawling, or previewing a result URL may check cache/status but must not create a new

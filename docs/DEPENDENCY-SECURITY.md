@@ -40,7 +40,8 @@ linting begins to process untrusted paths or content.
 
 ## Audit policy
 
-- Run `npm audit --omit=dev` for production dependency review.
+- Run `npm run audit:production` for the enforced production dependency review. Its allowlist is
+  covered by pass/fail regression tests and contains only the documented Sharp advisory above.
 - A critical production finding blocks release.
 - A high production finding must be fixed or recorded here with reachability evidence, compensating
   controls, an owner-visible removal trigger, and a review date.

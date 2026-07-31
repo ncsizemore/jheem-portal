@@ -5,18 +5,23 @@
  * the portal's model-configs.ts file, ensuring a single source of truth.
  *
  * Usage:
- *   npx tsx scripts/sync-config.ts
+ *   npm run sync-config
  *
  * Environment variables:
  *   JHEEM_CONFIG_PATH - Local path to models.json (for local development)
- *                       If not set, fetches from GitHub main branch
+ *                       If not set, fetches the immutable GitHub revision in
+ *                       config/backend-model-config-source.json
+ *   JHEEM_CONFIG_REF  - Optional Git ref override for deliberate local testing
  *
  * Example:
- *   # Use GitHub (default, for CI/production)
- *   npx tsx scripts/sync-config.ts
+ *   # Use the pinned GitHub revision (default)
+ *   npm run sync-config
+ *
+ *   # Verify the committed generated file without rewriting it
+ *   npm run verify-config
  *
  *   # Use local file (for development)
- *   JHEEM_CONFIG_PATH=/path/to/jheem-backend/.github/config/models.json npx tsx scripts/sync-config.ts
+ *   JHEEM_CONFIG_PATH=/path/to/jheem-backend/.github/config/models.json npm run sync-config
  */
 
 import * as fs from 'fs';
@@ -26,18 +31,40 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Public unauthenticated raw URL (fallback when no token is set and the
-// repo is public).
-const GITHUB_RAW_URL =
-  'https://raw.githubusercontent.com/ncsizemore/jheem-backend/master/.github/config/models.json';
-
-// Authenticated GitHub Contents API URL — works for both public and
-// private repos when GITHUB_TOKEN is set in the env. Required during
-// the period jheem-backend is private; will keep working after.
-const GITHUB_API_URL =
-  'https://api.github.com/repos/ncsizemore/jheem-backend/contents/.github/config/models.json?ref=master';
-
 const OUTPUT_PATH = path.join(__dirname, '../src/config/model-configs.ts');
+const SOURCE_DESCRIPTOR_PATH = path.join(
+  __dirname,
+  '../config/backend-model-config-source.json'
+);
+
+interface SourceDescriptor {
+  repository: string;
+  ref: string;
+  path: string;
+}
+
+function loadSourceDescriptor(): SourceDescriptor {
+  const descriptor = JSON.parse(
+    fs.readFileSync(SOURCE_DESCRIPTOR_PATH, 'utf-8')
+  ) as SourceDescriptor;
+
+  if (!descriptor.repository || !descriptor.ref || !descriptor.path) {
+    throw new Error(
+      `Incomplete backend config source descriptor: ${SOURCE_DESCRIPTOR_PATH}`
+    );
+  }
+
+  if (!/^[0-9a-f]{40}$/i.test(descriptor.ref)) {
+    throw new Error(
+      'Backend config source ref must be a full immutable Git commit SHA.'
+    );
+  }
+
+  return {
+    ...descriptor,
+    ref: process.env.JHEEM_CONFIG_REF || descriptor.ref,
+  };
+}
 
 // Model ID mapping: models.json key → portal key (for backwards compatibility)
 const MODEL_ID_MAP: Record<string, string> = {
@@ -236,14 +263,27 @@ ${scenarios},
 };`;
 }
 
-async function fetchConfig(): Promise<SourceConfig> {
+interface FetchedConfig {
+  config: SourceConfig;
+  sourceLabel: string;
+}
+
+async function fetchConfig(): Promise<FetchedConfig> {
   const localPath = process.env.JHEEM_CONFIG_PATH;
 
   if (localPath) {
     console.log(`📂 Reading from local file: ${localPath}`);
     const content = fs.readFileSync(localPath, 'utf-8');
-    return JSON.parse(content);
+    return {
+      config: JSON.parse(content),
+      sourceLabel: `local file ${path.resolve(localPath)}`,
+    };
   }
+
+  const source = loadSourceDescriptor();
+  const rawUrl = `https://raw.githubusercontent.com/${source.repository}/${source.ref}/${source.path}`;
+  const apiUrl = `https://api.github.com/repos/${source.repository}/contents/${source.path}?ref=${encodeURIComponent(source.ref)}`;
+  const sourceLabel = `https://github.com/${source.repository}/blob/${source.ref}/${source.path}`;
 
   // Prefer the authenticated Contents API when a token is available
   // (works for both public and private repos). Fall back to the
@@ -251,8 +291,8 @@ async function fetchConfig(): Promise<SourceConfig> {
   // dev case for a public repo.
   const token = process.env.GITHUB_TOKEN;
   if (token) {
-    console.log(`🌐 Fetching from GitHub API: ${GITHUB_API_URL}`);
-    const response = await fetch(GITHUB_API_URL, {
+    console.log(`🌐 Fetching pinned config from GitHub API: ${sourceLabel}`);
+    const response = await fetch(apiUrl, {
       headers: {
         Authorization: `Bearer ${token}`,
         // The "raw" media type returns the file body directly instead
@@ -264,18 +304,18 @@ async function fetchConfig(): Promise<SourceConfig> {
     if (!response.ok) {
       throw new Error(`Failed to fetch config (API): ${response.status} ${response.statusText}`);
     }
-    return response.json();
+    return { config: await response.json(), sourceLabel };
   }
 
-  console.log(`🌐 Fetching from GitHub (unauthenticated raw): ${GITHUB_RAW_URL}`);
-  const response = await fetch(GITHUB_RAW_URL);
+  console.log(`🌐 Fetching pinned config from GitHub: ${sourceLabel}`);
+  const response = await fetch(rawUrl);
   if (!response.ok) {
     throw new Error(`Failed to fetch config: ${response.status} ${response.statusText}`);
   }
-  return response.json();
+  return { config: await response.json(), sourceLabel };
 }
 
-function generateFile(config: SourceConfig): string {
+function generateFile(config: SourceConfig, sourceLabel: string): string {
   const models: Array<{ id: string; model: SourceModel }> = [];
 
   // Extract models (skip special keys and placeholder models)
@@ -309,11 +349,10 @@ function generateFile(config: SourceConfig): string {
  *
  * ⚠️  AUTO-GENERATED FILE - DO NOT EDIT DIRECTLY
  *
- * This file is generated by scripts/sync-config.ts from:
- * https://github.com/ncsizemore/jheem-backend/blob/master/.github/config/models.json
+ * This file is generated by scripts/sync-config.ts from the immutable source:
+ * ${sourceLabel}
  *
- * To update, run: npx tsx scripts/sync-config.ts
- * Generated: ${new Date().toISOString()}
+ * To update, run: npm run sync-config
  */
 
 export interface ScenarioConfig {
@@ -418,8 +457,25 @@ async function main() {
   console.log('🔄 Syncing model configuration...\n');
 
   try {
-    const config = await fetchConfig();
-    const output = generateFile(config);
+    const checkOnly = process.argv.includes('--check');
+    const { config, sourceLabel } = await fetchConfig();
+    const output = generateFile(config, sourceLabel);
+
+    if (checkOnly) {
+      if (!fs.existsSync(OUTPUT_PATH)) {
+        throw new Error(`Generated config is missing: ${OUTPUT_PATH}`);
+      }
+
+      const committedOutput = fs.readFileSync(OUTPUT_PATH, 'utf-8');
+      if (committedOutput !== output) {
+        throw new Error(
+          'Generated model config is stale. Run npm run sync-config and commit the result.'
+        );
+      }
+
+      console.log(`✅ Verified ${OUTPUT_PATH}`);
+      return;
+    }
 
     // Ensure directory exists
     const dir = path.dirname(OUTPUT_PATH);

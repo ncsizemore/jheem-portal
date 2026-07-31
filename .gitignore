@@ -52,9 +52,6 @@ public/data/*
 # Generated data from batch plots
 generated-data/
 
-# Generated config (synced from jheem-backend/models.json)
-src/config/model-configs.ts
-
 # Session notes (ephemeral, not permanent docs)
 .claude-sessions/
 SESSION_SUMMARY_*.md

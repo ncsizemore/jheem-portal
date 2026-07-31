@@ -128,8 +128,9 @@ jheem-simulations          jheem-*-container
 ### Configuration
 | File | Purpose |
 |------|---------|
-| `src/config/model-configs.ts` | Generated from models.json (don't edit) |
-| `scripts/sync-config.ts` | Syncs models.json → model-configs.ts (authenticated GitHub API) |
+| `src/config/model-configs.ts` | Committed generated config from the pinned backend revision (don't edit) |
+| `config/backend-model-config-source.json` | Immutable backend config source revision |
+| `scripts/sync-config.ts` | Explicitly syncs or verifies models.json → model-configs.ts |
 | `src/data/states.ts` | State coordinates |
 | `src/data/cities.ts` | MSA coordinates |
 
@@ -153,7 +154,8 @@ jheem-simulations          jheem-*-container
 
 ### Config-Driven Design
 - `models.json` in jheem-backend is the single source of truth
-- Portal syncs at build time via `scripts/sync-config.ts`
+- Portal commits the generated projection and pins the exact backend revision; install/build are
+  network-independent, while CI verifies the committed projection against the pin
 - Adding new models = JSON config + thin workflow + route page
 - **Why:** Before this, config was scattered across 4+ locations causing sync bugs. Single source eliminates drift.
 
@@ -203,9 +205,10 @@ User-specified parameters trigger on-demand R simulations via GitHub Actions. Re
 
 ## Adding a New Model
 
-1. Add config to `models.json` (jheem-backend)
-2. Create thin workflow wrapper (~40 lines)
-3. Create route page (~30 lines)
-4. Run workflow to generate data
+1. Add and merge config in `models.json` (jheem-backend)
+2. Update `config/backend-model-config-source.json` and run `npm run sync-config`
+3. Create thin workflow wrapper (~40 lines)
+4. Create route page (~30 lines)
+5. Run workflow to generate data
 
 See jheem-backend for detailed guide.
