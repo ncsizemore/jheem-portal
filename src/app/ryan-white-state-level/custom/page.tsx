@@ -1,7 +1,8 @@
 'use client';
 
-import { Suspense, useMemo, useState, useCallback } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { Suspense, useMemo } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { ajphStateLevelConfig, croiStateLevelConfig } from '@/config/model-configs';
 import CustomSimulationExplorer from '@/components/CustomSimulationExplorer';
 import { STATE_CODE_TO_NAME } from '@/data/states';
@@ -13,15 +14,7 @@ const MODEL_OPTIONS = [
 
 function CustomSimulationPage() {
   const searchParams = useSearchParams();
-  const router = useRouter();
-
-  const initialModel = MODEL_OPTIONS.find(m => m.id === searchParams.get('model')) ?? MODEL_OPTIONS[0];
-  const [activeModel, setActiveModel] = useState(initialModel);
-
-  const handleModelChange = useCallback((model: typeof MODEL_OPTIONS[number]) => {
-    setActiveModel(model);
-    router.replace(`/ryan-white-state-level/custom?model=${model.id}`, { scroll: false });
-  }, [router]);
+  const activeModel = MODEL_OPTIONS.find(m => m.id === searchParams.get('model')) ?? MODEL_OPTIONS[0];
 
   const locations = useMemo(() => {
     return activeModel.config.locations
@@ -36,21 +29,22 @@ function CustomSimulationPage() {
       locations={locations}
       basePath={`/ryan-white-state-level/custom?model=${activeModel.id}`}
       modelSelector={
-        <div className="flex items-center gap-2 mb-6">
-          <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">Model:</span>
-          <div className="flex gap-1">
+        <div className="flex flex-wrap items-center gap-2 mb-6">
+          <span id="custom-model-label" className="text-xs font-medium text-slate-500 uppercase tracking-wide">Model</span>
+          <div className="flex flex-wrap gap-1" role="group" aria-labelledby="custom-model-label">
             {MODEL_OPTIONS.map((model) => (
-              <button
+              <Link
                 key={model.id}
-                onClick={() => handleModelChange(model)}
-                className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all ${
+                href={`/ryan-white-state-level/custom?model=${model.id}`}
+                aria-current={activeModel.id === model.id ? 'page' : undefined}
+                className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1 ${
                   activeModel.id === model.id
                     ? 'bg-blue-600 text-white'
                     : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                 }`}
               >
                 {model.label}
-              </button>
+              </Link>
             ))}
           </div>
         </div>
@@ -58,8 +52,10 @@ function CustomSimulationPage() {
     >
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-slate-800">Custom Simulations</h1>
-        <p className="text-slate-500 mt-1">
-          Explore custom Ryan White funding scenarios by adjusting suppression loss parameters.
+        <p className="text-slate-500 mt-2 max-w-3xl leading-relaxed">
+          Create a permanent-cessation scenario that is not included in the pre-run explorer.
+          Choose a state and specify how strongly the loss of three Ryan White service groups
+          affects viral suppression, then submit the model to run in the background.
         </p>
       </div>
     </CustomSimulationExplorer>

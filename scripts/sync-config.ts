@@ -52,6 +52,12 @@ interface SourceScenario {
   id: string;
   label: string;
   description: string;
+  timeline?: {
+    serviceInterruptionStartTime: number;
+    suppressionEffectStartTime: number;
+    serviceResumeTime?: number;
+    suppressionRecoveryEndTime?: number;
+  };
   filePatterns?: string[];
 }
 
@@ -64,8 +70,20 @@ interface SourceCustomSimParameter {
   unit: string;
 }
 
+interface SourceCustomSimulationTiming {
+  interventionStartTime: number;
+  lossLagYears: number;
+  simulationStartYear: number;
+  simulationEndYear: number;
+  reportingStartYear: number;
+  reportingEndYear: number;
+}
+
 interface SourceCustomSimulation {
   simulationScript: string;
+  interventionType?: string;
+  timing?: SourceCustomSimulationTiming;
+  cacheKeyPrefix?: string;
   parameters: SourceCustomSimParameter[];
   facets: string[];
   statistics: string[];
@@ -131,10 +149,13 @@ function toVariableName(modelId: string): string {
 }
 
 function generateScenarioCode(scenario: SourceScenario): string {
+  const timelineCode = scenario.timeline
+    ? `\n      timeline: ${JSON.stringify(scenario.timeline)},`
+    : '';
   return `    {
       id: '${scenario.id}',
       label: '${scenario.label}',
-      description: '${scenario.description.replace(/'/g, "\\'")}',
+      description: '${scenario.description.replace(/'/g, "\\'")}',${timelineCode}
     }`;
 }
 
@@ -158,10 +179,20 @@ function generateModelCode(modelId: string, model: SourceModel): string {
       )
       .join(',\n');
 
+    const interventionTypeCode = model.customSimulation.interventionType
+      ? `    interventionType: '${model.customSimulation.interventionType}',\n`
+      : '';
+    const timingCode = model.customSimulation.timing
+      ? `    timing: ${JSON.stringify(model.customSimulation.timing)},\n`
+      : '';
+    const cacheKeyPrefixCode = model.customSimulation.cacheKeyPrefix
+      ? `    cacheKeyPrefix: '${model.customSimulation.cacheKeyPrefix}',\n`
+      : '';
+
     customSimCode = `
 
   customSimulation: {
-    parameters: [
+${interventionTypeCode}${timingCode}${cacheKeyPrefixCode}    parameters: [
 ${params},
     ],
   },`;
@@ -174,6 +205,7 @@ ${params},
   id: '${modelId}',
   name: '${model.displayName}',
   shortName: '${model.shortName}',
+  description: '${(model.description ?? '').replace(/'/g, "\\'")}',
 
   geographyType: '${model.geographyType}',
   geographyLabel: '${model.geographyLabel}',
@@ -288,6 +320,12 @@ export interface ScenarioConfig {
   id: string;
   label: string;
   description: string;
+  timeline?: {
+    serviceInterruptionStartTime: number;
+    suppressionEffectStartTime: number;
+    serviceResumeTime?: number;
+    suppressionRecoveryEndTime?: number;
+  };
 }
 
 export interface CustomSimParameter {
@@ -299,6 +337,16 @@ export interface CustomSimParameter {
 }
 
 export interface CustomSimulationConfig {
+  interventionType?: string;
+  timing?: {
+    interventionStartTime: number;
+    lossLagYears: number;
+    simulationStartYear: number;
+    simulationEndYear: number;
+    reportingStartYear: number;
+    reportingEndYear: number;
+  };
+  cacheKeyPrefix?: string;
   parameters: CustomSimParameter[];
 }
 
@@ -307,6 +355,7 @@ export interface ModelConfig {
   id: string;
   name: string;
   shortName: string;
+  description: string;
 
   // Geography
   geographyType: 'city' | 'state';

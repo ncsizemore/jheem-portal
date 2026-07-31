@@ -9,11 +9,13 @@
  * Used by both MSA and state-level custom simulation pages.
  */
 
-import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
+import { useState, useMemo, useCallback, useEffect, useId, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useCustomSimulation } from '@/hooks/useCustomSimulation';
 import { useAnalysisState } from '@/hooks/useAnalysisState';
 import { transformPlotData } from '@/utils/transformPlotData';
+import { mergeCustomSimulationQuery } from '@/utils/customSimulationUrl';
+import { formatLagYears, formatModelTime } from '@/utils/modelTimeline';
 import AnalysisResults from '@/components/analysis/AnalysisResults';
 import SimulationProgress from '@/components/SimulationProgress';
 import type { FacetPanel } from '@/types/native-plotting';
@@ -33,6 +35,12 @@ interface CustomSimulationExplorerProps {
   modelSelector?: React.ReactNode; // Optional model toggle rendered between header and parameters
 }
 
+const PARAMETER_HELP: Record<string, string> = {
+  adap_loss: 'Modeled proportional reduction in viral suppression among people receiving AIDS Drug Assistance Program support.',
+  oahs_loss: 'Modeled proportional reduction in viral suppression among people receiving outpatient or ambulatory health services.',
+  other_loss: 'Modeled proportional reduction in viral suppression among people receiving other Ryan White-supported services represented in the model.',
+};
+
 export default function CustomSimulationExplorer({
   config,
   locations,
@@ -43,6 +51,8 @@ export default function CustomSimulationExplorer({
 }: CustomSimulationExplorerProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const locationSelectId = useId();
+  const emailInputId = useId();
 
   const placeholder = locationPlaceholder ?? `Select a ${config.geographyLabel?.toLowerCase() ?? 'location'}...`;
 
@@ -89,7 +99,7 @@ export default function CustomSimulationExplorer({
   // Sync state changes back to URL
   const updateUrl = useCallback((loc: string, params: Record<string, number>) => {
     const qs = buildQueryString(loc, params);
-    router.replace(`${basePath}${qs ? `?${qs}` : ''}`, { scroll: false });
+    router.replace(mergeCustomSimulationQuery(basePath, qs), { scroll: false });
   }, [buildQueryString, router, basePath]);
 
   // Full absolute share URL, used by the "return to this link later" widget.
@@ -102,7 +112,7 @@ export default function CustomSimulationExplorer({
   }, []);
   const shareUrl = useMemo(() => {
     const qs = buildQueryString(selectedLocation, parameters);
-    return `${origin}${basePath}${qs ? `?${qs}` : ''}`;
+    return `${origin}${mergeCustomSimulationQuery(basePath, qs)}`;
   }, [origin, basePath, buildQueryString, selectedLocation, parameters]);
 
   // Custom simulation hook
@@ -221,10 +231,11 @@ export default function CustomSimulationExplorer({
   const scenarioDescription = useMemo(() => {
     return paramConfig.map((p) => `${p.label} ${parameters[p.id]}${p.unit}`).join(', ');
   }, [paramConfig, parameters]);
+  const timing = config.customSimulation?.timing;
 
   return (
     <div className="flex-1 w-full bg-slate-50 overflow-y-auto">
-      <div className="max-w-6xl mx-auto px-6 py-8">
+      <div className="max-w-6xl mx-auto px-4 py-6 sm:px-6 sm:py-8">
         {children}
 
         {modelSelector}
@@ -237,8 +248,9 @@ export default function CustomSimulationExplorer({
 
           {/* Location */}
           <div className="mb-6">
-            <label className="block text-sm font-medium text-slate-600 mb-1.5">Location</label>
+            <label htmlFor={locationSelectId} className="block text-sm font-semibold text-slate-700 mb-1.5">1 Location</label>
             <select
+              id={locationSelectId}
               value={selectedLocation}
               onChange={(e) => {
                 const loc = e.target.value;
@@ -257,17 +269,41 @@ export default function CustomSimulationExplorer({
             </select>
           </div>
 
+          {timing && (
+            <div className="mb-6 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-slate-700">
+              <p className="text-xs font-semibold uppercase tracking-wide text-blue-700">2 Fixed scenario</p>
+              <p className="mt-1 font-medium text-slate-900">
+                Permanent cessation beginning {formatModelTime(timing.interventionStartTime)}
+              </p>
+              <p className="mt-1 leading-relaxed">
+                Suppression changes are modeled after a lag of {formatLagYears(timing.lossLagYears)}.
+                The engine runs from {timing.simulationStartYear} to {timing.simulationEndYear};
+                the study reporting period is {timing.reportingStartYear}&ndash;{timing.reportingEndYear}.
+                These dates cannot be changed in this tool.
+              </p>
+            </div>
+          )}
+
           {/* Parameter sliders */}
+          <div className="mb-3">
+            <h3 className="text-sm font-semibold text-slate-700">3 Suppression impact</h3>
+            <p className="mt-1 text-sm leading-relaxed text-slate-500">
+              Set the modeled proportional loss of viral suppression for each service group if
+              Ryan White support ends. These values describe the scenario; they are not estimates
+              of current program performance.
+            </p>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
             {paramConfig.map((param) => (
               <div key={param.id}>
                 <div className="flex items-baseline justify-between mb-1.5">
-                  <label className="text-sm font-medium text-slate-600">{param.label}</label>
-                  <span className="text-sm font-semibold text-slate-800">
+                  <label htmlFor={`custom-parameter-${param.id}`} className="text-sm font-medium text-slate-600">{param.label}</label>
+                  <output htmlFor={`custom-parameter-${param.id}`} className="text-sm font-semibold text-slate-800">
                     {parameters[param.id]}{param.unit}
-                  </span>
+                  </output>
                 </div>
                 <input
+                  id={`custom-parameter-${param.id}`}
                   type="range"
                   min={0}
                   max={100}
@@ -284,6 +320,11 @@ export default function CustomSimulationExplorer({
                   <span>0{param.unit}</span>
                   <span>100{param.unit}</span>
                 </div>
+                {PARAMETER_HELP[param.id] && (
+                  <p className="mt-2 text-xs leading-relaxed text-slate-500">
+                    {PARAMETER_HELP[param.id]}
+                  </p>
+                )}
               </div>
             ))}
           </div>
@@ -334,10 +375,12 @@ export default function CustomSimulationExplorer({
                     aria-label="Disable email notification"
                   />
                   <input
+                    id={emailInputId}
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="your@email.com"
+                    aria-label="Email address for simulation notification"
                     className="flex-1 sm:w-64 px-3 py-2 border border-slate-300 rounded-lg text-sm text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
@@ -356,8 +399,17 @@ export default function CustomSimulationExplorer({
           </div>
 
           {/* Run button */}
-          <div className="flex items-center gap-3">
+          <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">4 Review and run</p>
+            <p className="mt-1 mb-3 text-sm leading-relaxed text-slate-700">
+              {selectedLocation
+                ? `${locationName}: ${scenarioDescription}.`
+                : `Choose a location, then review this scenario: ${scenarioDescription}.`}
+              {' '}The simulation runs in the background; you may keep this page open, return to its
+              link, or request an email notification.
+            </p>
             <button
+              type="button"
               onClick={handleRun}
               disabled={!selectedLocation || isRunning}
               className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors text-sm"
@@ -376,9 +428,10 @@ export default function CustomSimulationExplorer({
           </div>
 
           {simError && (
-            <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700 flex items-center justify-between">
+            <div role="alert" className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700 flex items-center justify-between">
               <span>{simError}</span>
               <button
+                type="button"
                 onClick={handleRun}
                 className="ml-4 px-3 py-1 bg-red-100 hover:bg-red-200 text-red-700 font-medium rounded-md transition-colors text-xs flex-shrink-0"
               >
@@ -398,7 +451,7 @@ export default function CustomSimulationExplorer({
               simulationProgress={simulationProgress}
             />
           ) : (
-            <div className="bg-white rounded-xl border border-slate-200 p-12 shadow-sm">
+            <div aria-live="polite" aria-busy="true" className="bg-white rounded-xl border border-slate-200 p-8 sm:p-12 shadow-sm">
               <div className="text-center">
                 <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
                 <p className="text-slate-700 text-lg font-medium">

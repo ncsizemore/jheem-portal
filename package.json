@@ -7,6 +7,7 @@
     "build": "npm run sync-config && next build",
     "start": "next start",
     "lint": "next lint",
+    "test:custom-sim-url": "node --experimental-strip-types --test scripts/test-custom-simulation-url.mjs",
     "validate:ryan-white-costing": "node scripts/validate-ryan-white-costing-data.mjs",
     "sync-config": "npx tsx scripts/sync-config.ts",
     "postinstall": "npm run sync-config"

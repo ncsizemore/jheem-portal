@@ -20,6 +20,7 @@ import { useAnalysisState } from '@/hooks/useAnalysisState';
 import AnalysisResults from '@/components/analysis/AnalysisResults';
 import LocationSwitcher from '@/components/analysis/LocationSwitcher';
 import { transformPlotData } from '@/utils/transformPlotData';
+import { describeScenarioTimeline } from '@/utils/modelTimeline';
 import type { ModelConfig } from '@/config/model-configs';
 import type { PlotDataFile, FacetPanel } from '@/types/native-plotting';
 
@@ -105,6 +106,11 @@ export default function AnalysisView({
     return Object.fromEntries(config.scenarios.map(s => [s.id, s.label]));
   }, [config.scenarios]);
 
+  const selectedScenarioTimeline = useMemo(() => {
+    const scenario = config.scenarios.find(item => item.id === selectedScenario);
+    return scenario ? describeScenarioTimeline(scenario) : null;
+  }, [config.scenarios, selectedScenario]);
+
   // Get plot data
   const plotData: PlotDataFile | null = useMemo(() => {
     if (locationData && selectedScenario && selectedOutcome && selectedStatistic && selectedFacet) {
@@ -140,12 +146,13 @@ export default function AnalysisView({
     >
       {/* Header: Location + Scenarios */}
       <div className="bg-white border-b border-slate-200 flex-shrink-0">
-        <div className="px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+        <div className="px-3 py-3 sm:px-4 flex flex-col items-stretch gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex items-center gap-3 min-w-0">
             {/* Back to map button */}
             <button
+              type="button"
               onClick={onBackToMap}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+              className="flex items-center gap-1.5 px-2 py-1.5 sm:px-3 text-sm font-medium text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
               title="Back to map"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -154,29 +161,36 @@ export default function AnalysisView({
               <span>Map</span>
             </button>
 
-            <div className="w-px h-6 bg-slate-200" />
+            <div className="hidden sm:block w-px h-6 bg-slate-200" aria-hidden="true" />
 
             {/* Location switcher */}
-            <LocationSwitcher
-              currentLocation={currentLocation}
-              locationCode={locationCode}
-              availableLocations={availableLocations}
-              geographyLabelPlural={config.geographyLabelPlural}
-              onLocationChange={handleLocationChange}
-            />
+            <div className="min-w-0">
+              <span className="block text-[10px] font-semibold uppercase tracking-wide text-slate-400">
+                1 Location
+              </span>
+              <LocationSwitcher
+                currentLocation={currentLocation}
+                locationCode={locationCode}
+                availableLocations={availableLocations}
+                geographyLabelPlural={config.geographyLabelPlural}
+                onLocationChange={handleLocationChange}
+              />
+            </div>
           </div>
 
           {/* Scenario tabs */}
           {availableScenarios.length > 0 && (
-            <div className="flex items-center gap-3">
-              <span className="text-xs font-medium text-slate-400">Scenario:</span>
-              <div className="flex items-center gap-3">
-                <div className="flex gap-1">
+            <div className="flex flex-col items-start gap-1.5 lg:max-w-[65%] xl:flex-row xl:items-center xl:gap-3">
+              <span id="analysis-scenario-label" className="text-xs font-semibold text-slate-500">2 Scenario</span>
+              <div className="flex min-w-0 flex-col items-start gap-1.5 xl:flex-row xl:items-center xl:gap-3">
+                <div className="flex flex-wrap gap-1" role="group" aria-labelledby="analysis-scenario-label">
                   {availableScenarios.map(scenario => (
                     <button
                       key={scenario.id}
+                      type="button"
+                      aria-pressed={selectedScenario === scenario.id}
                       onClick={() => setSelectedScenario(scenario.id)}
-                      className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all
+                      className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1
                         ${selectedScenario === scenario.id
                           ? 'bg-blue-600 text-white'
                           : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
@@ -187,9 +201,10 @@ export default function AnalysisView({
                   ))}
                 </div>
                 {selectedScenario && scenarioDescriptions[selectedScenario] && (
-                  <span className="text-xs text-slate-500 italic">
-                    {scenarioDescriptions[selectedScenario]}
-                  </span>
+                  <div className="text-xs leading-relaxed text-slate-500 xl:max-w-md">
+                    <p>{scenarioDescriptions[selectedScenario]}</p>
+                    {selectedScenarioTimeline && <p className="mt-0.5">{selectedScenarioTimeline}</p>}
+                  </div>
                 )}
               </div>
             </div>

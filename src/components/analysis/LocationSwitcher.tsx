@@ -9,7 +9,7 @@
  * - Keyboard accessible
  */
 
-import { useState, useRef, useEffect, useMemo } from 'react';
+import { useState, useRef, useEffect, useId, useMemo } from 'react';
 
 export interface Location {
   code: string;
@@ -34,6 +34,8 @@ export default function LocationSwitcher({
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const triggerButtonRef = useRef<HTMLButtonElement>(null);
+  const dropdownId = useId();
 
   // Filtered locations for search
   const filteredLocations = useMemo(() => {
@@ -52,6 +54,20 @@ export default function LocationSwitcher({
     }
   }, [isOpen]);
 
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsOpen(false);
+        triggerButtonRef.current?.focus();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen]);
+
   const handleSelect = (loc: Location) => {
     setIsOpen(false);
     if (loc.code !== locationCode) {
@@ -62,8 +78,13 @@ export default function LocationSwitcher({
   return (
     <div className="relative">
       <button
+        ref={triggerButtonRef}
+        type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="text-left group flex items-center gap-2 hover:bg-slate-50 rounded-lg px-2 py-1 -mx-2 -my-1 transition-colors"
+        aria-expanded={isOpen}
+        aria-haspopup="listbox"
+        aria-controls={isOpen ? dropdownId : undefined}
+        className="text-left group flex items-center gap-2 hover:bg-slate-50 rounded-lg px-2 py-1 -mx-2 -my-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
       >
         <div>
           <h1 className="font-semibold text-slate-900 text-lg leading-tight group-hover:text-blue-600 transition-colors">
@@ -90,9 +111,13 @@ export default function LocationSwitcher({
         <>
           <div
             className="fixed inset-0 z-40"
+            aria-hidden="true"
             onClick={() => setIsOpen(false)}
           />
-          <div className="absolute top-full left-0 mt-1 bg-white rounded-lg shadow-lg border border-slate-200 z-50 min-w-[280px]">
+          <div
+            id={dropdownId}
+            className="absolute top-full left-0 mt-1 bg-white rounded-lg shadow-lg border border-slate-200 z-50 min-w-[min(280px,calc(100vw-2rem))]"
+          >
             {/* Search input */}
             <div className="p-2 border-b border-slate-100">
               <div className="relative">
@@ -108,13 +133,16 @@ export default function LocationSwitcher({
                   ref={searchInputRef}
                   type="text"
                   placeholder={`Search ${geographyLabelPlural.toLowerCase()}...`}
+                  aria-label={`Search ${geographyLabelPlural.toLowerCase()}`}
                   value={searchTerm}
                   onChange={e => setSearchTerm(e.target.value)}
                   className="w-full pl-8 pr-8 py-1.5 text-sm border border-slate-200 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                 />
                 {searchTerm && (
                   <button
+                    type="button"
                     onClick={() => setSearchTerm('')}
+                    aria-label="Clear location search"
                     className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -126,7 +154,7 @@ export default function LocationSwitcher({
             </div>
 
             {/* Location list */}
-            <div className="max-h-64 overflow-y-auto">
+            <div className="max-h-64 overflow-y-auto" role="listbox" aria-label={geographyLabelPlural}>
               {filteredLocations.length === 0 ? (
                 <div className="px-3 py-4 text-center">
                   <p className="text-sm text-slate-500">No {geographyLabelPlural.toLowerCase()} match &quot;{searchTerm}&quot;</p>
@@ -135,6 +163,9 @@ export default function LocationSwitcher({
                 filteredLocations.map(loc => (
                   <button
                     key={loc.code}
+                    type="button"
+                    role="option"
+                    aria-selected={loc.code === locationCode}
                     onClick={() => handleSelect(loc)}
                     className={`w-full text-left px-3 py-2 text-sm hover:bg-slate-50 transition-colors flex items-center justify-between
                       ${loc.code === locationCode ? 'bg-blue-50 text-blue-700' : 'text-slate-700'}`}

@@ -20,6 +20,17 @@ export interface AggregatedLocationData {
     facets: string[];
     generation_time: string;
     file_count: number;
+    custom_simulation?: {
+      model_id: string;
+      intervention_type: string;
+      intervention_start_time: number;
+      loss_lag_years: number;
+      simulation_start_year: number;
+      simulation_end_year: number;
+      reporting_start_year: number;
+      reporting_end_year: number;
+      cache_key_prefix?: string;
+    };
   };
   data: Record<
     string, // scenario

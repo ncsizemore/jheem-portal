@@ -27,8 +27,10 @@ export default function CustomSimulationPage() {
       >
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-slate-800">Custom Simulations</h1>
-          <p className="text-slate-500 mt-1">
-            Explore custom Ryan White funding scenarios by adjusting suppression loss parameters.
+          <p className="text-slate-500 mt-2 max-w-3xl leading-relaxed">
+            Create a permanent-cessation scenario that is not included in the pre-run explorer.
+            Choose a city and specify how strongly the loss of three Ryan White service groups
+            affects viral suppression, then submit the model to run in the background.
           </p>
         </div>
       </CustomSimulationExplorer>

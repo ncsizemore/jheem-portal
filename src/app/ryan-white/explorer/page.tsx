@@ -224,7 +224,7 @@ export default function ExploreV2() {
           {/* Loading state for city summaries */}
           {citySummariesLoading && (
             <div className="absolute inset-0 flex items-center justify-center bg-slate-50 z-50">
-              <div className="text-center">
+              <div className="text-center" role="status" aria-live="polite">
                 <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
                 <p className="text-slate-700 text-lg">Loading cities...</p>
               </div>
@@ -243,6 +243,7 @@ export default function ExploreV2() {
                 <h2 className="text-slate-800 text-xl font-bold mb-2">Unable to Load Data</h2>
                 <p className="text-slate-500 mb-4">{citySummariesError}</p>
                 <button
+                  type="button"
                   onClick={() => window.location.reload()}
                   className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
                 >
@@ -276,6 +277,8 @@ export default function ExploreV2() {
                   anchor="center"
                 >
                   <button
+                    type="button"
+                    aria-label={`Explore ${city.name}`}
                     onClick={() => handleCityClick(city)}
                     onMouseEnter={(e) => handleMarkerMouseEnter(city, e)}
                     onMouseLeave={handleMarkerMouseLeave}
@@ -321,11 +324,14 @@ export default function ExploreV2() {
           </Map>
 
           {/* Info panel */}
-          <div className="absolute top-4 left-4 w-80">
+          <div className="absolute top-3 left-3 right-3 sm:top-4 sm:left-4 sm:right-auto sm:w-80">
             <div className="bg-white/95 backdrop-blur-md border border-slate-200 rounded-xl overflow-hidden shadow-lg">
               {/* Header row - always visible */}
               <button
+                type="button"
                 onClick={() => setInstructionsCollapsed(prev => !prev)}
+                aria-expanded={!instructionsCollapsed}
+                aria-controls="city-explorer-instructions"
                 className="w-full px-4 py-3 flex items-center justify-between hover:bg-slate-50 transition-colors"
               >
                 <h1 className="text-slate-800 font-semibold text-sm">
@@ -343,6 +349,7 @@ export default function ExploreV2() {
 
               {/* Collapsible content */}
               <motion.div
+                id="city-explorer-instructions"
                 initial={false}
                 animate={{
                   height: instructionsCollapsed ? 0 : 'auto',
@@ -352,14 +359,17 @@ export default function ExploreV2() {
                 className="overflow-hidden"
               >
                 <div className="px-4 pb-4 border-t border-slate-100">
-                  {/* How to use */}
+                  <p className="mt-3 text-sm leading-relaxed text-slate-600">
+                    {MODEL_CONFIG.description}. The pre-run scenarios estimate how changes in
+                    Ryan White services could affect future epidemiologic outcomes.
+                  </p>
                   <div className="mt-3 space-y-2.5">
                     <div className="flex items-start gap-2.5">
                       <div className="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 mt-0.5">
                         <span className="text-blue-600 text-xs font-medium">1</span>
                       </div>
                       <p className="text-slate-600 text-sm">
-                        <span className="text-slate-800 font-medium">Hover</span> a city to preview key metrics and projected impact
+                        <span className="text-slate-800 font-medium">Choose a location</span> with the selector below or the map
                       </p>
                     </div>
                     <div className="flex items-start gap-2.5">
@@ -367,7 +377,7 @@ export default function ExploreV2() {
                         <span className="text-blue-600 text-xs font-medium">2</span>
                       </div>
                       <p className="text-slate-600 text-sm">
-                        <span className="text-slate-800 font-medium">Click</span> to open full analysis with interactive charts
+                        <span className="text-slate-800 font-medium">Choose a scenario</span> and review its interruption timeline
                       </p>
                     </div>
                     <div className="flex items-start gap-2.5">
@@ -375,12 +385,32 @@ export default function ExploreV2() {
                         <span className="text-blue-600 text-xs font-medium">3</span>
                       </div>
                       <p className="text-slate-600 text-sm">
-                        <span className="text-slate-800 font-medium">Compare</span> scenarios and explore breakdowns by age, sex, and race
+                        <span className="text-slate-800 font-medium">Choose an outcome</span> and stratification in the results view
                       </p>
                     </div>
                   </div>
                 </div>
               </motion.div>
+
+              <div className="px-4 py-3 border-t border-slate-100">
+                <label htmlFor="city-explorer-location" className="block text-xs font-medium text-slate-600 mb-1.5">
+                  Choose a city
+                </label>
+                <select
+                  id="city-explorer-location"
+                  value=""
+                  onChange={(event) => {
+                    const city = availableCities.find(item => item.code === event.target.value);
+                    if (city) handleCityClick(city);
+                  }}
+                  className="w-full rounded-md border border-slate-300 bg-white px-2.5 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Select a city to explore…</option>
+                  {availableCities.map(city => (
+                    <option key={city.code} value={city.code}>{city.name}</option>
+                  ))}
+                </select>
+              </div>
 
               {/* Legend - always visible */}
               <div className="px-4 py-2.5 border-t border-slate-100 flex items-center gap-4 text-xs text-slate-500">
@@ -445,6 +475,15 @@ export default function ExploreV2() {
                 onMouseEnter={cancelHideTimeout}
                 onMouseLeave={startHideTimeout}
                 onClick={() => hoveredCity && handleCityClick(hoveredCity)}
+                onKeyDown={(event) => {
+                  if ((event.key === 'Enter' || event.key === ' ') && hoveredCity) {
+                    event.preventDefault();
+                    handleCityClick(hoveredCity);
+                  }
+                }}
+                role="button"
+                tabIndex={0}
+                aria-label={`Explore ${hoveredCity.name}`}
               >
                 <div className="bg-white/98 backdrop-blur-md border border-slate-200 rounded-xl p-3 min-w-[240px] hover:bg-slate-50 transition-colors shadow-lg">
                   {/* Header - single line */}

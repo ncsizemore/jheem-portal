@@ -13,7 +13,7 @@
  *   - Single chart, faceted grid, and table rendering
  */
 
-import { useState, useCallback, useRef, useMemo } from 'react';
+import { useState, useCallback, useRef, useId, useMemo } from 'react';
 import NativeSimulationChart from '@/components/NativeSimulationChart';
 import DisplayOptionsPopover from '@/components/analysis/DisplayOptionsPopover';
 import { exportToCsv } from '@/utils/exportCsv';
@@ -83,6 +83,9 @@ export default function AnalysisResults({
   const [viewMode, setViewMode] = useState<'chart' | 'table'>('chart');
   const [exportingPng, setExportingPng] = useState(false);
   const chartContainerRef = useRef<HTMLDivElement>(null);
+  const outcomeSelectId = useId();
+  const statisticSelectId = useId();
+  const breakdownLabelId = useId();
 
   const [displayOptions, setDisplayOptions] = useState<ChartDisplayOptions>({
     showConfidenceInterval: true,
@@ -141,15 +144,16 @@ export default function AnalysisResults({
   return (
     <>
       {/* Controls bar */}
-      <div className="px-4 py-2 bg-slate-50 border-b border-slate-200 flex items-center justify-between flex-wrap gap-2 flex-shrink-0">
-        <div className="flex items-center gap-4">
+      <div className="px-3 py-3 sm:px-4 bg-slate-50 border-b border-slate-200 flex flex-col items-stretch gap-3 xl:flex-row xl:items-center xl:justify-between flex-shrink-0">
+        <div className="flex flex-wrap items-end gap-3 sm:gap-4">
           {/* Outcome selector */}
-          <div className="flex items-center gap-2">
-            <label className="text-xs font-medium text-slate-500">Outcome:</label>
+          <div className="flex min-w-[12rem] flex-1 flex-col gap-1 sm:min-w-0 sm:flex-none sm:flex-row sm:items-center sm:gap-2">
+            <label htmlFor={outcomeSelectId} className="text-xs font-semibold text-slate-500">3 Outcome</label>
             <select
+              id={outcomeSelectId}
               value={selectedOutcome}
               onChange={e => setSelectedOutcome(e.target.value)}
-              className="border border-slate-300 rounded-md px-2 py-1 text-sm bg-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="min-w-0 border border-slate-300 rounded-md px-2 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               {availableOutcomes.map(o => (
                 <option key={o} value={o}>{displayName(o)}</option>
@@ -158,12 +162,13 @@ export default function AnalysisResults({
           </div>
 
           {/* Statistic selector */}
-          <div className="flex items-center gap-2">
-            <label className="text-xs font-medium text-slate-500">Statistic:</label>
+          <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-2">
+            <label htmlFor={statisticSelectId} className="text-xs font-medium text-slate-500">Summary</label>
             <select
+              id={statisticSelectId}
               value={selectedStatistic}
               onChange={e => setSelectedStatistic(e.target.value)}
-              className="border border-slate-300 rounded-md px-2 py-1 text-sm bg-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="border border-slate-300 rounded-md px-2 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               {availableStatistics.map(s => (
                 <option key={s} value={s}>{formatOptionLabel(s)}</option>
@@ -172,18 +177,20 @@ export default function AnalysisResults({
           </div>
 
           {/* Facet dimension toggles */}
-          <div className="flex items-center gap-2">
-            <label className="text-xs font-medium text-slate-500">Breakdown:</label>
-            <div className="flex items-center gap-1">
+          <div className="flex flex-col gap-1">
+            <span id={breakdownLabelId} className="text-xs font-semibold text-slate-500">4 Stratification</span>
+            <div className="flex flex-wrap items-center gap-1" role="group" aria-labelledby={breakdownLabelId}>
               {(['age', 'sex', 'race', 'risk'] as const).map(dim => (
                 <button
                   key={dim}
+                  type="button"
+                  aria-pressed={facetDimensions[dim]}
                   onClick={() => {
                     toggleFacetDimension(dim);
                     setShowAllFacets(false);
                   }}
                   disabled={!availableFacetDimensions[dim]}
-                  className={`px-2.5 py-1 text-sm font-medium rounded-md transition-all capitalize
+                  className={`px-2.5 py-1.5 text-sm font-medium rounded-md transition-all capitalize focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1
                     ${facetDimensions[dim]
                       ? 'bg-blue-600 text-white'
                       : availableFacetDimensions[dim]
@@ -199,12 +206,14 @@ export default function AnalysisResults({
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {/* View mode toggle */}
           <div className="flex items-center border border-slate-200 rounded-md overflow-hidden">
             <button
+              type="button"
+              aria-pressed={viewMode === 'chart'}
               onClick={() => setViewMode('chart')}
-              className={`flex items-center gap-1 px-2.5 py-1 text-sm transition-colors
+              className={`flex items-center gap-1 px-2.5 py-1.5 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500
                 ${viewMode === 'chart'
                   ? 'bg-blue-600 text-white'
                   : 'bg-white text-slate-600 hover:bg-slate-50'}`}
@@ -215,8 +224,10 @@ export default function AnalysisResults({
               <span>Chart</span>
             </button>
             <button
+              type="button"
+              aria-pressed={viewMode === 'table'}
               onClick={() => setViewMode('table')}
-              className={`flex items-center gap-1 px-2.5 py-1 text-sm transition-colors
+              className={`flex items-center gap-1 px-2.5 py-1.5 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500
                 ${viewMode === 'table'
                   ? 'bg-blue-600 text-white'
                   : 'bg-white text-slate-600 hover:bg-slate-50'}`}
@@ -231,6 +242,7 @@ export default function AnalysisResults({
           {/* Export buttons */}
           <div className="flex items-center gap-1">
             <button
+              type="button"
               onClick={handleExportCSV}
               disabled={!chartPanels.length}
               className="flex items-center gap-1.5 px-2.5 py-1.5 text-sm text-slate-500 hover:bg-slate-100 hover:text-slate-700 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -242,6 +254,7 @@ export default function AnalysisResults({
               <span>CSV</span>
             </button>
             <button
+              type="button"
               onClick={handleExportPNG}
               disabled={!chartPanels.length || viewMode === 'table' || exportingPng}
               className="flex items-center gap-1.5 px-2.5 py-1.5 text-sm text-slate-500 hover:bg-slate-100 hover:text-slate-700 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -267,7 +280,7 @@ export default function AnalysisResults({
       </div>
 
       {/* Chart/Table area */}
-      <div className="flex-1 min-h-0 overflow-y-auto p-6">
+      <div className="flex-1 min-h-0 overflow-y-auto p-3 sm:p-6">
         {chartPanels.length === 0 ? (
           <div className="flex items-center justify-center h-full">
             <p className="text-slate-500">Select options to view data</p>
@@ -277,6 +290,9 @@ export default function AnalysisResults({
           <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
+                <caption className="sr-only">
+                  {outcomeLabel} results for {locationName || 'the selected location'}
+                </caption>
                 <thead className="bg-slate-50 border-b border-slate-200">
                   <tr>
                     {isFaceted && <th className="px-4 py-3 text-left font-medium text-slate-700">Group</th>}
