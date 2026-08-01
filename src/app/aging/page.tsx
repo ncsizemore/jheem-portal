@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, useMemo, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import Footer from '@/components/Footer';
@@ -19,120 +19,125 @@ import { exportToCSV } from '@/utils/csvExport';
 // View mode type
 type ViewMode = 'state' | 'race' | 'sex';
 
+interface InitialSelections {
+  viewMode: ViewMode;
+  selectedStateNames: string[];
+  selectedRaces: RaceCategory[];
+  selectedSexCategories: SexCategory[];
+  normalized: boolean;
+  yearRange: [number, number];
+}
+
+function limitStates(
+  states: string[],
+  viewMode: ViewMode,
+  races: RaceCategory[],
+  sexCategories: SexCategory[],
+): string[] {
+  const categoryCount = viewMode === 'race'
+    ? races.length
+    : viewMode === 'sex'
+      ? sexCategories.length
+      : 0;
+  if (categoryCount === 0) return states;
+  return states.slice(0, Math.floor(25 / categoryCount));
+}
+
+function parseInitialSelections(searchParams: { get(name: string): string | null }): InitialSelections {
+  const urlView = searchParams.get('view');
+  const viewMode: ViewMode = urlView === 'race' || urlView === 'sex' || urlView === 'state'
+    ? urlView
+    : 'state';
+
+  const stateCodes = (searchParams.get('states') || '')
+    .split(',')
+    .filter((code) => isValidStateCode(code));
+  const selectedStateNames = stateCodes.length > 0
+    ? stateCodes.map((code) => getStateName(code))
+    : ['California', 'Texas'];
+
+  const races = (searchParams.get('races') || '').split(',').filter(
+    (race): race is RaceCategory => race in RACE_CATEGORIES,
+  );
+  const selectedRaces: RaceCategory[] = races.length > 0
+    ? races
+    : ['black', 'hispanic', 'other'];
+
+  const sexCategories = (searchParams.get('sex') || '').split(',').filter(
+    (sex): sex is SexCategory => sex in SEX_CATEGORIES,
+  );
+  const selectedSexCategories: SexCategory[] = sexCategories.length > 0
+    ? sexCategories
+    : ['msm', 'non_msm'];
+
+  const [start, end] = (searchParams.get('years') || '').split('-').map(Number);
+  const yearRange: [number, number] = Number.isFinite(start)
+    && Number.isFinite(end)
+    && start >= 2025
+    && end <= 2040
+    && start <= end
+    ? [start, end]
+    : [2025, 2040];
+
+  return {
+    viewMode,
+    selectedStateNames: limitStates(
+      selectedStateNames,
+      viewMode,
+      selectedRaces,
+      selectedSexCategories,
+    ),
+    selectedRaces,
+    selectedSexCategories,
+    normalized: searchParams.get('normalized') === 'true',
+    yearRange,
+  };
+}
+
 // Multi-state comparison component (inner, uses useSearchParams)
 function MultiStateComparisonInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const initialSelections = useMemo(() => parseInitialSelections(searchParams), [searchParams]);
 
   // Initialize state from URL or defaults
-  const [viewMode, setViewMode] = useState<ViewMode>('state');
-  const [selectedStateNames, setSelectedStateNames] = useState<string[]>(['California', 'Texas']);
-  const [selectedRaces, setSelectedRaces] = useState<RaceCategory[]>(['black', 'hispanic', 'other']);
-  const [selectedSexCategories, setSelectedSexCategories] = useState<SexCategory[]>(['msm', 'non_msm']);
-  const [normalized, setNormalized] = useState(false);
-  const [yearRange, setYearRange] = useState<[number, number]>([2025, 2040]);
-  const [isInitialized, setIsInitialized] = useState(false);
+  const [viewMode, setViewMode] = useState<ViewMode>(() => initialSelections.viewMode);
+  const [selectedStateNames, setSelectedStateNames] = useState<string[]>(() => initialSelections.selectedStateNames);
+  const [selectedRaces, setSelectedRaces] = useState<RaceCategory[]>(() => initialSelections.selectedRaces);
+  const [selectedSexCategories, setSelectedSexCategories] = useState<SexCategory[]>(() => initialSelections.selectedSexCategories);
+  const [normalized, setNormalized] = useState(() => initialSelections.normalized);
+  const [yearRange, setYearRange] = useState<[number, number]>(() => initialSelections.yearRange);
 
   // Track export status for visual feedback
   type ExportStatus = 'idle' | 'exporting' | 'success' | 'error';
   const [exportStatus, setExportStatus] = useState<ExportStatus>('idle');
 
-  // Parse URL params on mount
-  useEffect(() => {
-    if (isInitialized) return;
+  const handleViewModeChange = (nextViewMode: ViewMode) => {
+    setViewMode(nextViewMode);
+    setSelectedStateNames((states) => limitStates(
+      states,
+      nextViewMode,
+      selectedRaces,
+      selectedSexCategories,
+    ));
+  };
 
-    // Parse view mode
-    const urlView = searchParams.get('view');
-    if (urlView === 'race' || urlView === 'sex' || urlView === 'state') {
-      setViewMode(urlView);
-    }
+  const handleStateChange = (states: string[]) => {
+    setSelectedStateNames(limitStates(states, viewMode, selectedRaces, selectedSexCategories));
+  };
 
-    // Parse states (comma-separated state codes, convert to names)
-    const urlStates = searchParams.get('states');
-    if (urlStates) {
-      const stateCodes = urlStates.split(',').filter(code => isValidStateCode(code));
-      if (stateCodes.length > 0) {
-        const stateNames = stateCodes.map(code => getStateName(code));
-        setSelectedStateNames(stateNames);
-      }
-    }
+  const handleRacesChange = (races: RaceCategory[]) => {
+    setSelectedRaces(races);
+    setSelectedStateNames((states) => limitStates(states, viewMode, races, selectedSexCategories));
+  };
 
-    // Parse races (comma-separated race categories)
-    const urlRaces = searchParams.get('races');
-    if (urlRaces) {
-      const races = urlRaces.split(',').filter(
-        (race): race is RaceCategory => race in RACE_CATEGORIES
-      );
-      if (races.length > 0) {
-        setSelectedRaces(races);
-      }
-    }
-
-    // Parse sex categories (comma-separated)
-    const urlSex = searchParams.get('sex');
-    if (urlSex) {
-      const sexCategories = urlSex.split(',').filter(
-        (sex): sex is SexCategory => sex in SEX_CATEGORIES
-      );
-      if (sexCategories.length > 0) {
-        setSelectedSexCategories(sexCategories);
-      }
-    }
-
-    // Parse normalized (boolean)
-    const urlNormalized = searchParams.get('normalized');
-    if (urlNormalized === 'true') {
-      setNormalized(true);
-    }
-
-    // Parse year range (format: "2025-2035")
-    const urlYears = searchParams.get('years');
-    if (urlYears) {
-      const [start, end] = urlYears.split('-').map(Number);
-      if (!isNaN(start) && !isNaN(end) && start >= 2025 && end <= 2040 && start <= end) {
-        setYearRange([start, end]);
-      }
-    }
-
-    setIsInitialized(true);
-  }, [searchParams, isInitialized]);
-
-  // Auto-truncate states when switching to race/sex view if over limit
-  useEffect(() => {
-    if (!isInitialized) return;
-
-    if (viewMode === 'race') {
-      const maxStates = Math.floor(25 / selectedRaces.length);
-      if (selectedStateNames.length > maxStates) {
-        // Keep first N states, truncate the rest
-        const truncatedStates = selectedStateNames.slice(0, maxStates);
-        setSelectedStateNames(truncatedStates);
-
-        // Development-only logging
-        if (process.env.NODE_ENV === 'development') {
-          console.log(`Truncated states from ${selectedStateNames.length} to ${maxStates} for race view`);
-        }
-      }
-    } else if (viewMode === 'sex') {
-      const maxStates = Math.floor(25 / selectedSexCategories.length);
-      if (selectedStateNames.length > maxStates) {
-        // Keep first N states, truncate the rest
-        const truncatedStates = selectedStateNames.slice(0, maxStates);
-        setSelectedStateNames(truncatedStates);
-
-        // Development-only logging
-        if (process.env.NODE_ENV === 'development') {
-          console.log(`Truncated states from ${selectedStateNames.length} to ${maxStates} for sex view`);
-        }
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [viewMode, selectedRaces.length, selectedSexCategories.length, isInitialized]);
+  const handleSexCategoriesChange = (sexCategories: SexCategory[]) => {
+    setSelectedSexCategories(sexCategories);
+    setSelectedStateNames((states) => limitStates(states, viewMode, selectedRaces, sexCategories));
+  };
 
   // Update URL when state changes
   useEffect(() => {
-    if (!isInitialized) return; // Don't update URL until we've parsed it once
-
     const params = new URLSearchParams();
 
     // Add view mode
@@ -164,7 +169,7 @@ function MultiStateComparisonInner() {
 
     // Update URL without scroll or reload
     router.replace(`?${params.toString()}`, { scroll: false });
-  }, [viewMode, selectedStateNames, selectedRaces, selectedSexCategories, normalized, yearRange, isInitialized, router]);
+  }, [viewMode, selectedStateNames, selectedRaces, selectedSexCategories, normalized, yearRange, router]);
 
   // Listen for export status events from MultiStateChartGrid
   useEffect(() => {
@@ -193,7 +198,7 @@ function MultiStateComparisonInner() {
           Breakdown:
         </span>
         <button
-          onClick={() => setViewMode('state')}
+          onClick={() => handleViewModeChange('state')}
           title="View overall state-level aging trends without demographic breakdowns"
           className={`group px-5 py-2.5 rounded-xl font-semibold text-sm transition-all duration-300 ${
             viewMode === 'state'
@@ -204,7 +209,7 @@ function MultiStateComparisonInner() {
           Overall
         </button>
         <button
-          onClick={() => setViewMode('race')}
+          onClick={() => handleViewModeChange('race')}
           title="Compare aging trends across racial/ethnic groups (Black, Hispanic, Other)"
           className={`group px-5 py-2.5 rounded-xl font-semibold text-sm transition-all duration-300 ${
             viewMode === 'race'
@@ -215,7 +220,7 @@ function MultiStateComparisonInner() {
           By Race
         </button>
         <button
-          onClick={() => setViewMode('sex')}
+          onClick={() => handleViewModeChange('sex')}
           title="Compare aging trends by transmission category: MSM (Men who have Sex with Men) vs Non-MSM populations"
           className={`group px-5 py-2.5 rounded-xl font-semibold text-sm transition-all duration-300 ${
             viewMode === 'sex'
@@ -256,7 +261,7 @@ function MultiStateComparisonInner() {
         <div className="lg:w-[38%] bg-gray-50 rounded-lg p-3 border border-gray-200">
           <StateSelector
             selectedStates={selectedStateNames}
-            onStateChange={setSelectedStateNames}
+            onStateChange={handleStateChange}
             maxStates={25}
           />
         </div>
@@ -387,9 +392,9 @@ function MultiStateComparisonInner() {
         <ErrorBoundary>
           <ByRaceView
             selectedStateNames={selectedStateNames}
-            onStateChange={setSelectedStateNames}
+            onStateChange={handleStateChange}
             selectedRaces={selectedRaces}
-            onRacesChange={setSelectedRaces}
+            onRacesChange={handleRacesChange}
             normalized={normalized}
             onNormalizedChange={setNormalized}
             yearRange={yearRange}
@@ -403,9 +408,9 @@ function MultiStateComparisonInner() {
         <ErrorBoundary>
           <BySexView
             selectedStateNames={selectedStateNames}
-            onStateChange={setSelectedStateNames}
+            onStateChange={handleStateChange}
             selectedSexCategories={selectedSexCategories}
-            onSexCategoriesChange={setSelectedSexCategories}
+            onSexCategoriesChange={handleSexCategoriesChange}
             normalized={normalized}
             onNormalizedChange={setNormalized}
             yearRange={yearRange}

@@ -8,7 +8,7 @@
  * - Default value initialization from config
  */
 
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import type { ModelConfig } from '@/config/model-configs';
 
 export type FacetDimension = 'age' | 'sex' | 'race' | 'risk';
@@ -79,21 +79,46 @@ export function useAnalysisState({
   const [selectedScenario, setSelectedScenario] = useState<string>('');
   const [selectedOutcome, setSelectedOutcome] = useState<string>('');
   const [selectedStatistic, setSelectedStatistic] = useState<string>('');
-  const [selectedFacet, setSelectedFacet] = useState<string>('');
-
   // Facet dimension toggles
   const [facetDimensions, setFacetDimensions] = useState<FacetDimensionState>(INITIAL_FACET_STATE);
+
+  const resolvedScenario = selectedScenario || (isDataLoaded
+    ? config.scenarios.find((scenario) => availableOptions.scenarios.includes(scenario.id))?.id
+      || availableOptions.scenarios[0]
+      || ''
+    : '');
+  const resolvedOutcome = selectedOutcome || (isDataLoaded
+    ? (availableOptions.outcomes.includes(config.defaults.outcome)
+        ? config.defaults.outcome
+        : availableOptions.outcomes[0] || '')
+    : '');
+  const resolvedStatistic = selectedStatistic || (isDataLoaded
+    ? (availableOptions.statistics.includes(config.defaults.statistic)
+        ? config.defaults.statistic
+        : availableOptions.statistics[0] || '')
+    : '');
 
   // Get the set of facet keys available for the current outcome/statistic.
   const availableFacetKeys = useMemo(() => {
     // Try per-outcome lookup
-    if (scenarioData && selectedOutcome && selectedStatistic) {
-      const statData = scenarioData[selectedOutcome]?.[selectedStatistic];
+    if (scenarioData && resolvedOutcome && resolvedStatistic) {
+      const statData = scenarioData[resolvedOutcome]?.[resolvedStatistic];
       if (statData) return new Set(Object.keys(statData) as string[]);
     }
     // Fallback: global facet list
     return new Set(availableOptions.facets);
-  }, [availableOptions.facets, scenarioData, selectedOutcome, selectedStatistic]);
+  }, [availableOptions.facets, scenarioData, resolvedOutcome, resolvedStatistic]);
+
+  const effectiveFacetDimensions = useMemo(() => {
+    const activeDims = (Object.entries(facetDimensions) as Array<[FacetDimension, boolean]>)
+      .filter(([, active]) => active)
+      .map(([dimension]) => dimension)
+      .sort();
+    const key = activeDims.length === 0 ? 'none' : activeDims.join('+');
+    return key !== 'none' && !availableFacetKeys.has(key)
+      ? INITIAL_FACET_STATE
+      : facetDimensions;
+  }, [availableFacetKeys, facetDimensions]);
 
   // Compute which facet dimensions can be toggled given the current selection.
   // A dimension is available if toggling it would produce a facet key that exists in the data.
@@ -103,71 +128,52 @@ export function useAnalysisState({
 
     for (const dim of allDims) {
       // Build the facet key that would result from toggling this dimension
-      const hypothetical = { ...facetDimensions, [dim]: !facetDimensions[dim] };
+      const hypothetical = { ...effectiveFacetDimensions, [dim]: !effectiveFacetDimensions[dim] };
       const activeDims = allDims.filter(d => hypothetical[d]).sort();
       const key = activeDims.length === 0 ? 'none' : activeDims.join('+');
       dims[dim] = availableFacetKeys.has(key);
     }
     return dims;
-  }, [availableFacetKeys, facetDimensions]);
+  }, [availableFacetKeys, effectiveFacetDimensions]);
 
   // Compute facet key from toggled dimensions
   const computedFacetKey = useMemo(() => {
-    const activeDims = Object.entries(facetDimensions)
+    const activeDims = Object.entries(effectiveFacetDimensions)
       .filter(([, active]) => active)
       .map(([dim]) => dim)
       .sort();
     return activeDims.length === 0 ? 'none' : activeDims.join('+');
-  }, [facetDimensions]);
+  }, [effectiveFacetDimensions]);
 
-  // When available facet keys change (e.g., outcome switch), reset dimensions
-  // if the current combo is no longer valid.
-  useEffect(() => {
-    const activeDims = (['age', 'sex', 'race', 'risk'] as FacetDimension[]).filter(d => facetDimensions[d]).sort();
-    const currentKey = activeDims.length === 0 ? 'none' : activeDims.join('+');
-    if (currentKey !== 'none' && !availableFacetKeys.has(currentKey)) {
-      setFacetDimensions(INITIAL_FACET_STATE);
-    }
-  // Only trigger on facet key changes, not on facetDimensions changes
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [availableFacetKeys]);
-
-  // Sync selectedFacet with computed key
-  useEffect(() => {
-    if (availableFacetKeys.has(computedFacetKey)) {
-      setSelectedFacet(computedFacetKey);
-    } else if (computedFacetKey !== 'none' && availableFacetKeys.size > 0) {
-      // Requested facet combination not available, fall back
-      setSelectedFacet(availableFacetKeys.has('none') ? 'none' : [...availableFacetKeys][0]);
-    }
-  }, [computedFacetKey, availableFacetKeys]);
-
-  // Set defaults when data loads
-  useEffect(() => {
-    if (isDataLoaded) {
-      if (availableOptions.scenarios.length && !selectedScenario) {
-        // Use first scenario from config that's available in data
-        const availableScenario = config.scenarios.find(s => availableOptions.scenarios.includes(s.id));
-        setSelectedScenario(availableScenario?.id || availableOptions.scenarios[0]);
-      }
-      if (availableOptions.outcomes.length && !selectedOutcome) {
-        const defaultOutcome = availableOptions.outcomes.includes(config.defaults.outcome)
-          ? config.defaults.outcome
-          : availableOptions.outcomes[0];
-        setSelectedOutcome(defaultOutcome);
-      }
-      if (availableOptions.statistics.length && !selectedStatistic) {
-        const defaultStat = availableOptions.statistics.includes(config.defaults.statistic)
-          ? config.defaults.statistic
-          : availableOptions.statistics[0];
-        setSelectedStatistic(defaultStat);
-      }
-    }
-  }, [isDataLoaded, config, availableOptions, selectedScenario, selectedOutcome, selectedStatistic]);
+  const selectedFacet = availableFacetKeys.has(computedFacetKey)
+    ? computedFacetKey
+    : computedFacetKey !== 'none' && availableFacetKeys.size > 0
+      ? (availableFacetKeys.has('none') ? 'none' : [...availableFacetKeys][0])
+      : '';
 
   // Toggle handler for facet dimensions
   const toggleFacetDimension = useCallback((dim: FacetDimension) => {
-    setFacetDimensions(prev => ({ ...prev, [dim]: !prev[dim] }));
+    setFacetDimensions((previous) => {
+      const activeDims = (Object.entries(previous) as Array<[FacetDimension, boolean]>)
+        .filter(([, active]) => active)
+        .map(([dimension]) => dimension)
+        .sort();
+      const key = activeDims.length === 0 ? 'none' : activeDims.join('+');
+      const base = key !== 'none' && !availableFacetKeys.has(key)
+        ? INITIAL_FACET_STATE
+        : previous;
+      return { ...base, [dim]: !base[dim] };
+    });
+  }, [availableFacetKeys]);
+
+  const selectOutcome = useCallback((outcome: string) => {
+    setSelectedOutcome(outcome);
+    setFacetDimensions(INITIAL_FACET_STATE);
+  }, []);
+
+  const selectStatistic = useCallback((statistic: string) => {
+    setSelectedStatistic(statistic);
+    setFacetDimensions(INITIAL_FACET_STATE);
   }, []);
 
   // Reset facet dimensions
@@ -184,15 +190,15 @@ export function useAnalysisState({
   }, []);
 
   return {
-    selectedScenario,
-    selectedOutcome,
-    selectedStatistic,
+    selectedScenario: resolvedScenario,
+    selectedOutcome: resolvedOutcome,
+    selectedStatistic: resolvedStatistic,
     selectedFacet,
-    facetDimensions,
+    facetDimensions: effectiveFacetDimensions,
     availableFacetDimensions,
     setSelectedScenario,
-    setSelectedOutcome,
-    setSelectedStatistic,
+    setSelectedOutcome: selectOutcome,
+    setSelectedStatistic: selectStatistic,
     toggleFacetDimension,
     resetFacetDimensions,
     resetSelections,

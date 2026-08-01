@@ -7,7 +7,7 @@
  * Works for both city-level (MSA) and state-level data - just pass the appropriate dataUrl.
  */
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback } from 'react';
 import type { PlotDataFile } from '@/types/native-plotting';
 
 export interface AggregatedLocationData {
@@ -98,12 +98,8 @@ export function useLocationData(options: UseLocationDataOptions = {}): UseLocati
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Store dataBaseUrl in ref to use in callbacks without causing re-renders
-  const dataBaseUrlRef = useRef(dataBaseUrl);
-  dataBaseUrlRef.current = dataBaseUrl;
-
   const loadLocation = useCallback(async (code: string) => {
-    const baseUrl = dataBaseUrlRef.current;
+    const baseUrl = dataBaseUrl;
     const cacheKey = `${baseUrl}:${code}`;
 
     // Check cache first
@@ -163,7 +159,7 @@ export function useLocationData(options: UseLocationDataOptions = {}): UseLocati
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [dataBaseUrl]);
 
   const getPlotData = useCallback(
     (

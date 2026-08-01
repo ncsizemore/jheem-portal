@@ -104,21 +104,22 @@ export function useStateSummaries(dataUrl?: string): UseStateSummariesReturn {
   const effectiveUrl = dataUrl || DEFAULT_DATA_URL;
   const cached = summariesCache[effectiveUrl];
 
-  const [summaries, setSummaries] = useState<StateSummaries | null>(cached || null);
-  const [loading, setLoading] = useState(!cached);
-  const [error, setError] = useState<string | null>(null);
+  const [result, setResult] = useState<{ url: string; data: StateSummaries | null }>({
+    url: cached ? effectiveUrl : '',
+    data: cached || null,
+  });
+  const [requestState, setRequestState] = useState<{
+    url: string;
+    loading: boolean;
+    error: string | null;
+  }>({ url: effectiveUrl, loading: !cached, error: null });
 
   useEffect(() => {
-    // Use cache if available for this URL
-    if (summariesCache[effectiveUrl]) {
-      setSummaries(summariesCache[effectiveUrl]);
-      setLoading(false);
-      return;
-    }
+    if (summariesCache[effectiveUrl]) return;
+    let cancelled = false;
 
     const fetchSummaries = async () => {
-      setLoading(true);
-      setError(null);
+      setRequestState({ url: effectiveUrl, loading: true, error: null });
 
       try {
         const response = await fetch(`${effectiveUrl}/state-summaries.json`, {
@@ -137,16 +138,37 @@ export function useStateSummaries(dataUrl?: string): UseStateSummariesReturn {
         }
 
         summariesCache[effectiveUrl] = data;
-        setSummaries(data);
+        if (!cancelled) setResult({ url: effectiveUrl, data });
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load state summaries');
+        if (!cancelled) {
+          setRequestState({
+            url: effectiveUrl,
+            loading: false,
+            error: err instanceof Error ? err.message : 'Failed to load state summaries',
+          });
+        }
       } finally {
-        setLoading(false);
+        if (!cancelled) {
+          setRequestState((previous) => previous.url === effectiveUrl
+            ? { ...previous, loading: false }
+            : previous);
+        }
       }
     };
 
     fetchSummaries();
+    return () => {
+      cancelled = true;
+    };
   }, [effectiveUrl]);
+
+  const summaries = cached || (result.url === effectiveUrl ? result.data : null);
+  const loading = cached
+    ? false
+    : requestState.url === effectiveUrl
+      ? requestState.loading
+      : true;
+  const error = requestState.url === effectiveUrl ? requestState.error : null;
 
   const getStateByCode = (code: string): StateSummary | null => {
     return summaries?.states[code] || null;

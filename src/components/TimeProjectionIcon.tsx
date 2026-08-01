@@ -1,7 +1,13 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo } from 'react';
+
+const PROJECTION_PATHS = {
+  path1: [42, 51, 39, 55],
+  path2: [53, 41, 56, 45],
+  path3: [47, 57, 43, 52],
+};
 
 export default function TimeProjectionIcon() {
   // Generate uncertainty cone vertices
@@ -29,29 +35,7 @@ export default function TimeProjectionIcon() {
     }));
   }, []);
 
-  // Generate random path variations for dynamic movement
-  // Use deterministic initial values to avoid hydration mismatch
-  const [randomPaths, setRandomPaths] = useState({
-    path1: [45, 45, 45, 45],
-    path2: [48, 48, 48, 48],
-    path3: [50, 50, 50, 50],
-  });
-
-  // Generate random paths after component mounts (client-side only)
-  useEffect(() => {
-    const generatePath = (baseTop: number, baseBottom: number) => {
-      return Array.from({ length: 4 }).map(() => {
-        const y = baseTop + Math.random() * (baseBottom - baseTop);
-        return Math.round(y);
-      });
-    };
-
-    setRandomPaths({
-      path1: generatePath(32, 60),
-      path2: generatePath(35, 58),
-      path3: generatePath(38, 62),
-    });
-  }, []);
+  const randomPaths = PROJECTION_PATHS;
 
   return (
     <div className="w-full h-full">

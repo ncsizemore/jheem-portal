@@ -9,7 +9,7 @@
  * Used by both MSA and state-level custom simulation pages.
  */
 
-import { useState, useMemo, useCallback, useEffect, useId, useRef } from 'react';
+import { useState, useMemo, useCallback, useEffect, useId, useRef, useSyncExternalStore } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useCustomSimulation } from '@/hooks/useCustomSimulation';
 import { useAnalysisState } from '@/hooks/useAnalysisState';
@@ -26,6 +26,10 @@ import AnalysisResults from '@/components/analysis/AnalysisResults';
 import SimulationProgress from '@/components/SimulationProgress';
 import type { FacetPanel } from '@/types/native-plotting';
 import type { ModelConfig } from '@/config/model-configs';
+
+const subscribeToOrigin = () => () => undefined;
+const getBrowserOrigin = () => window.location.origin;
+const getServerOrigin = () => '';
 
 interface Location {
   code: string;
@@ -108,13 +112,9 @@ export default function CustomSimulationExplorer({
   }, [buildQueryString, router, basePath]);
 
   // Full absolute share URL, used by the "return to this link later" widget.
-  // Origin is captured from window after mount — it's not available during
-  // the initial SSR pass, so before hydration we fall back to a path-only
-  // string (briefly invisible on the first frame, no flash of wrong content).
-  const [origin, setOrigin] = useState('');
-  useEffect(() => {
-    if (typeof window !== 'undefined') setOrigin(window.location.origin);
-  }, []);
+  // The empty server snapshot keeps hydration stable; the browser snapshot
+  // supplies the origin without a state-setting mount effect.
+  const origin = useSyncExternalStore(subscribeToOrigin, getBrowserOrigin, getServerOrigin);
   const shareUrl = useMemo(() => {
     const qs = buildQueryString(selectedLocation, parameters);
     return `${origin}${mergeCustomSimulationQuery(basePath, qs)}`;

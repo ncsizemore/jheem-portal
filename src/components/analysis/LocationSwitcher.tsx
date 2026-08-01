@@ -49,7 +49,6 @@ export default function LocationSwitcher({
   // Auto-focus search input when dropdown opens
   useEffect(() => {
     if (isOpen) {
-      setSearchTerm('');
       setTimeout(() => searchInputRef.current?.focus(), 50);
     }
   }, [isOpen]);
@@ -75,12 +74,17 @@ export default function LocationSwitcher({
     }
   };
 
+  const handleToggle = () => {
+    if (!isOpen) setSearchTerm('');
+    setIsOpen((open) => !open);
+  };
+
   return (
     <div className="relative">
       <button
         ref={triggerButtonRef}
         type="button"
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={handleToggle}
         aria-expanded={isOpen}
         aria-haspopup="listbox"
         aria-controls={isOpen ? dropdownId : undefined}

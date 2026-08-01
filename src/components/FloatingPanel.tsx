@@ -20,7 +20,7 @@ interface FloatingPanelProps {
 }
 
 export default function FloatingPanel({ city, onClose, onPlotSelect }: FloatingPanelProps) {
-  const [selectedScenario, setSelectedScenario] = useState<string>('');
+  const [scenarioSelection, setScenarioSelection] = useState({ cityCode: '', scenario: '' });
   const [availablePlots, setAvailablePlots] = useState<PlotMetadata[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -42,25 +42,21 @@ export default function FloatingPanel({ city, onClose, onPlotSelect }: FloatingP
       .join(' ');
   };
 
-  // Reset state when city changes
-  useEffect(() => {
-    if (city) {
-      setSelectedScenario('');
-      setAvailablePlots([]);
-      setError(null);
-    }
-  }, [city]);
+  const selectedScenario = city?.code === scenarioSelection.cityCode
+    ? scenarioSelection.scenario
+    : '';
 
   // Fetch available plots when scenario is selected
   useEffect(() => {
     if (!city || !selectedScenario) {
-      setAvailablePlots([]);
       return;
     }
+    let cancelled = false;
 
     const fetchPlots = async () => {
       setLoading(true);
       setError(null);
+      setAvailablePlots([]);
 
       try {
         const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -72,19 +68,22 @@ export default function FloatingPanel({ city, onClose, onPlotSelect }: FloatingP
         }
 
         const data = await response.json();
-        setAvailablePlots(data.plots || []);
+        if (!cancelled) setAvailablePlots(data.plots || []);
 
       } catch (err) {
         if (process.env.NODE_ENV === 'development') {
           console.error('Error fetching plots:', err);
         }
-        setError(err instanceof Error ? err.message : 'Failed to fetch plots');
+        if (!cancelled) setError(err instanceof Error ? err.message : 'Failed to fetch plots');
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
 
     fetchPlots();
+    return () => {
+      cancelled = true;
+    };
   }, [city, selectedScenario]);
 
   if (!city) return null;
@@ -139,7 +138,7 @@ export default function FloatingPanel({ city, onClose, onPlotSelect }: FloatingP
               {city.availableScenarios?.map((scenario) => (
                 <button
                   key={scenario}
-                  onClick={() => setSelectedScenario(scenario)}
+                  onClick={() => setScenarioSelection({ cityCode: city.code, scenario })}
                   className={`w-full text-left p-4 rounded-xl border-2 transition-all duration-200 ${
                     selectedScenario === scenario
                       ? 'border-blue-500 bg-blue-50 shadow-md'
