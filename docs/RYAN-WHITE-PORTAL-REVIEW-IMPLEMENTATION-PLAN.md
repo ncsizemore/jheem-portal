@@ -1,6 +1,6 @@
 # Ryan White Portal Review and Remediation Plan
 
-**Status:** In progress — Phase 3.5 closeout
+**Status:** In progress — Phase 3.5 closeout; browser-automation PR open
 **Created:** 2026-07-29  
 **Scope:** Ryan White city and state explorers, custom simulations, calibration presentation, and the shared portal components they depend on
 
@@ -130,10 +130,11 @@
   [#18](https://github.com/ncsizemore/jheem-portal/pull/18) then repaired the two bounded findings
   from that validation: cross-phase progress detail and one-percentage-point slider semantics.
   Pull-request and post-merge CI and Vercel production deployment passed. Portal
-  [#20](https://github.com/ncsizemore/jheem-portal/pull/20) implements the lint/React closeout gate
-  and is pending review and deployment. After that gate, Phase 3.5 remains open only for automated
-  critical browser journeys, supported backend action runtime upgrades, and final documentation
-  closeout.
+  [#20](https://github.com/ncsizemore/jheem-portal/pull/20) merged the lint/React closeout gate;
+  its post-merge Portal CI passed. Portal
+  [#21](https://github.com/ncsizemore/jheem-portal/pull/21) adds the bounded critical-browser gate
+  and is pending review. Phase 3.5 then remains open only for supported backend action runtime
+  upgrades and final documentation closeout.
 - **Phases 4–5:** Not yet started.
 
 ### Independent engineering audit checkpoint — 2026-07-31
@@ -166,8 +167,9 @@ No further control-plane redesign is indicated before calibration work. The boun
 is:
 
 1. merge portal PR #20, which modernizes linting, remediates the exposed React findings, and adds
-   zero-warning lint to mandatory CI;
-2. add a small automated browser suite for the critical custom-simulation journeys;
+   zero-warning lint to mandatory CI — **complete**;
+2. add a small automated browser suite for the critical custom-simulation journeys — **implemented
+   in portal PR #21; pending review**;
 3. upgrade supported backend GitHub Actions runtimes and clear stale workflow commentary;
 4. mark Phase 3.5 complete after the closeout gates pass, then inventory calibration artifacts for
    Phase 4.
@@ -400,7 +402,18 @@ lint to CI, and automate the critical browser journeys already exercised manuall
 replaces the removed framework command with zero-warning ESLint 9, resolves all 16 React correctness
 errors and seven warnings without weakening rules, and adds lint to mandatory CI. TypeScript, 22
 focused tests, the production dependency policy, all 22 production routes, and local URL/hydration
-browser checks pass. The costing route remains statically generated.
+browser checks pass. The costing route remains statically generated. PR #20 is merged and its
+post-merge Portal CI passed.
+
+**Browser-automation closeout — 2026-08-01:** Portal PR #21 pins Playwright, adds its Chromium
+runtime and three critical custom-simulation journeys to mandatory CI, and intercepts every custom
+simulation request so the test suite cannot dispatch backend compute. It verifies exact shared-link
+restoration and lookup-only behavior, the explicit Run-button launch boundary, and fail-closed
+handling of unknown location codes. The first run exposed a client inconsistency: an unknown URL
+location skipped lookup but still enabled Run. The portal now canonicalizes that input to no
+selection and checks known-location membership again at launch. All three browser journeys, the 22
+focused tests, pinned-config verification, TypeScript, zero-warning lint, the production dependency
+policy, and all 22 production routes pass locally. PR #21 is pending review and CI.
 
 #### Explicit launch, abuse resistance, and exact run identity
 
