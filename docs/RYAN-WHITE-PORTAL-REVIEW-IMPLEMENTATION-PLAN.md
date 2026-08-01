@@ -413,7 +413,8 @@ handling of unknown location codes. The first run exposed a client inconsistency
 location skipped lookup but still enabled Run. The portal now canonicalizes that input to no
 selection and checks known-location membership again at launch. All three browser journeys, the 22
 focused tests, pinned-config verification, TypeScript, zero-warning lint, the production dependency
-policy, and all 22 production routes pass locally. PR #21 is pending review and CI.
+policy, and all 22 production routes pass locally. PR #21 is pending review; its mandatory Portal
+CI and Vercel preview passed.
 
 #### Explicit launch, abuse resistance, and exact run identity
 
