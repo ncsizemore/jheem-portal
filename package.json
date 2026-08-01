@@ -12,6 +12,7 @@
     "lint": "eslint . --max-warnings=0",
     "audit:production": "node scripts/audit-production-dependencies.mjs",
     "test": "node --experimental-strip-types --test scripts/test-custom-simulation-url.mjs scripts/test-custom-simulation-control-plane.mjs scripts/test-production-audit-policy.mjs",
+    "test:browser": "playwright test",
     "test:custom-sim-url": "node --experimental-strip-types --test scripts/test-custom-simulation-url.mjs",
     "typecheck": "tsc --noEmit",
     "validate:ryan-white-costing": "node scripts/validate-ryan-white-costing-data.mjs",
@@ -34,6 +35,7 @@
     "recharts": "^3.2.1"
   },
   "devDependencies": {
+    "@playwright/test": "1.62.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",

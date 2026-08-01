@@ -72,9 +72,15 @@ export default function CustomSimulationExplorer({
     [config.customSimulation?.parameters]
   );
 
+  // Treat URL input like any other untrusted input. Unknown location codes are
+  // not valid selections and must never enable lookup or launch actions.
+  const initialUrlLocation = searchParams.get('loc') ?? '';
+
   // Initialize state from URL query params (fall back to defaults)
   const [selectedLocation, setSelectedLocation] = useState<string>(() => {
-    return searchParams.get('loc') ?? '';
+    return locations.some((location) => location.code === initialUrlLocation)
+      ? initialUrlLocation
+      : '';
   });
 
   const [parameters, setParameters] = useState<Record<string, number>>(() => {
@@ -137,16 +143,14 @@ export default function CustomSimulationExplorer({
 
   // A shared link may resume an existing run or load a cached result, but must
   // never launch compute merely because a person or crawler opened the page.
-  const initialUrlHadLoc = useRef(searchParams.get('loc') !== null);
+  const initialUrlHadKnownLoc = useRef(selectedLocation !== '');
   const [initialLookupComplete, setInitialLookupComplete] = useState(false);
   useEffect(() => {
-    if (!initialLookupComplete && initialUrlHadLoc.current && selectedLocation && simStatus === 'idle') {
+    if (!initialLookupComplete && initialUrlHadKnownLoc.current && selectedLocation && simStatus === 'idle') {
       setInitialLookupComplete(true);
-      const isKnownLocation = locations.some((l) => l.code === selectedLocation);
-      if (!isKnownLocation) return;
       resumeSimulation(config.id, selectedLocation, parameters);
     }
-  }, [initialLookupComplete, selectedLocation, simStatus, resumeSimulation, parameters, config.id, locations]);
+  }, [initialLookupComplete, selectedLocation, simStatus, resumeSimulation, parameters, config.id]);
 
   // Extract available options from loaded data
   // scenarioData is the raw data keyed by scenario > outcome > statistic > facet
@@ -203,8 +207,10 @@ export default function CustomSimulationExplorer({
     return plotData ? transformPlotData(plotData) : [];
   }, [plotData]);
 
+  const selectedLocationIsKnown = locations.some((location) => location.code === selectedLocation);
+
   const handleRun = () => {
-    if (!selectedLocation) return;
+    if (!selectedLocationIsKnown) return;
     const emailToSend = notifyByEmail && email.trim() ? email.trim() : undefined;
     runSimulation(config.id, selectedLocation, parameters, emailToSend);
   };
@@ -406,7 +412,7 @@ export default function CustomSimulationExplorer({
           <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">4 Review and run</p>
             <p className="mt-1 mb-3 text-sm leading-relaxed text-slate-700">
-              {selectedLocation
+              {selectedLocationIsKnown
                 ? `${locationName}: ${scenarioDescription}.`
                 : `Choose a location, then review this scenario: ${scenarioDescription}.`}
               {' '}The simulation runs in the background; you may keep this page open, return to its
@@ -415,7 +421,7 @@ export default function CustomSimulationExplorer({
             <button
               type="button"
               onClick={handleRun}
-              disabled={!selectedLocation || isRunning}
+              disabled={!selectedLocationIsKnown || isRunning}
               className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors text-sm"
             >
               {isRunning ? (
