@@ -43,6 +43,12 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Install browser runtime
+        run: npx playwright install --with-deps chromium
+
+      - name: Run critical browser journeys
+        run: npm run test:browser
+
       - name: Build production portal
         run: npm run build
 
