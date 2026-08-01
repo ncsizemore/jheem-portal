@@ -1,11 +1,14 @@
 # Custom Simulation Security Hardening
 
-> **2026-07-31 follow-up:** The remaining public control-plane findings are now
+> **2026-08-01 closeout:** The remaining public control-plane findings are now
 > addressed by the versioned run contract in `CUSTOM-SIM-RUN-CONTRACT.md`:
 > shared links are lookup-only, launch and active-run email enrollment are
 > rate-limited, request bodies are bounded JSON, matching is exact, and GitHub
 > workflow concurrency plus an S3 preflight prevents duplicate compute. The
-> sections below retain the original incident record and historical decisions.
+> controlled production run and identical relaunch verified those properties
+> end to end. The sections below retain the original incident record and
+> historical decisions; their deferred defense-in-depth items are not open
+> findings in the Ryan White release plan.
 
 ## Context
 
@@ -202,6 +205,12 @@ PAT rotation (Finding 6) is still recommended as cheap insurance. ECR
       CloudFront path exercised successfully with the private backend
       repo, Upstash logging active, and all validation in place.
       Confirmed no mystery follow-up within the test window.
+- [x] **Versioned control-plane validation**: production run
+      `30651896230` completed through the portal, backend, model, S3,
+      CloudFront, and cached return path. An identical launch converged on the
+      same run ID, published metadata matched the expected run contract, and
+      portal PR #18 repaired the two bounded UI findings observed during the
+      test.
 - [ ] **Follow-up**: Refactor `_generate-data-template.yml` to env: pattern
 - [ ] **Housekeeping**: Cleanup stale ECR/plots/dynamo perms from
       `jheem-github-actions` (Task #14)
