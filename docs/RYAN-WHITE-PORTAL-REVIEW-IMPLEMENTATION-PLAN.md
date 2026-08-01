@@ -129,9 +129,11 @@
   the expected contract. Portal
   [#18](https://github.com/ncsizemore/jheem-portal/pull/18) then repaired the two bounded findings
   from that validation: cross-phase progress detail and one-percentage-point slider semantics.
-  Pull-request and post-merge CI and Vercel production deployment passed. Phase 3.5 remains open
-  only for lint/React remediation, automated critical browser journeys, supported backend action
-  runtime upgrades, and final documentation closeout.
+  Pull-request and post-merge CI and Vercel production deployment passed. Portal
+  [#20](https://github.com/ncsizemore/jheem-portal/pull/20) implements the lint/React closeout gate
+  and is pending review and deployment. After that gate, Phase 3.5 remains open only for automated
+  critical browser journeys, supported backend action runtime upgrades, and final documentation
+  closeout.
 - **Phases 4–5:** Not yet started.
 
 ### Independent engineering audit checkpoint — 2026-07-31
@@ -163,7 +165,8 @@ cached return path, and phase-aware progress behavior now protected by regressio
 No further control-plane redesign is indicated before calibration work. The bounded closeout order
 is:
 
-1. modernize linting, remediate the exposed React findings, and add lint to mandatory CI;
+1. merge portal PR #20, which modernizes linting, remediates the exposed React findings, and adds
+   zero-warning lint to mandatory CI;
 2. add a small automated browser suite for the critical custom-simulation journeys;
 3. upgrade supported backend GitHub Actions runtimes and clear stale workflow commentary;
 4. mark Phase 3.5 complete after the closeout gates pass, then inventory calibration artifacts for
@@ -389,9 +392,15 @@ weaken the newly exposed React rules to manufacture a clean result.
 
 **Deployed status — 2026-08-01:** Portal PRs #15 and #16 are deployed. Pull-request and `main`
 checks enforce the pinned configuration, focused regressions, TypeScript, all-route production
-build, and the documented production-audit policy. The remaining exit-gate work is deliberately
-narrow: replace the obsolete lint command, remediate the real React findings, add lint to CI, and
-automate the critical browser journeys already exercised manually.
+build, and the documented production-audit policy. At that checkpoint, the remaining exit-gate work
+was deliberately narrow: replace the obsolete lint command, remediate the real React findings, add
+lint to CI, and automate the critical browser journeys already exercised manually.
+
+**Lint closeout — 2026-08-01:** Portal PR #20 aligns the flat configuration with Next.js 16.2.12,
+replaces the removed framework command with zero-warning ESLint 9, resolves all 16 React correctness
+errors and seven warnings without weakening rules, and adds lint to mandatory CI. TypeScript, 22
+focused tests, the production dependency policy, all 22 production routes, and local URL/hydration
+browser checks pass. The costing route remains statically generated.
 
 #### Explicit launch, abuse resistance, and exact run identity
 
