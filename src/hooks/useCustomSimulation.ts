@@ -2,18 +2,12 @@
 
 import { useState, useCallback, useRef } from 'react';
 import type { AggregatedLocationData } from './useCityData';
+import {
+  selectCustomSimulationProgress,
+  type CustomSimulationProgress as SimulationProgress,
+} from '@/utils/customSimulationProgress';
 
 export type CustomSimStatus = 'idle' | 'checking' | 'running' | 'loading' | 'complete' | 'error';
-
-interface SimulationProgress {
-  phase: string;
-  message?: string;
-  percent?: number;
-  simsComplete?: number;
-  simsTotal?: number;
-  filesComplete?: number;
-  filesTotal?: number;
-}
 
 interface CustomSimState {
   status: CustomSimStatus;
@@ -173,14 +167,20 @@ export function useCustomSimulation() {
         setState((previous) => {
           const nextPhase = statusData.phase ?? previous.phase;
           const nextProgress = statusData.simulationProgress ?? null;
-          const simulationProgress = nextProgress &&
-            (!previous.simulationProgress || (nextProgress.percent ?? 0) >= (previous.simulationProgress.percent ?? 0))
-            ? nextProgress
-            : previous.simulationProgress;
+          const phaseForward = isPhaseForward(previous.phase, nextPhase);
+          const acceptedPhase = phaseForward
+            ? nextPhase
+            : previous.phase;
+          const simulationProgress = selectCustomSimulationProgress(
+            previous.simulationProgress,
+            phaseForward ? nextProgress : null,
+            previous.phase,
+            acceptedPhase,
+          );
           return {
             ...previous,
             phaseMessage: statusData.label ?? previous.phaseMessage,
-            phase: isPhaseForward(previous.phase, nextPhase) ? nextPhase : previous.phase,
+            phase: acceptedPhase,
             startedAt: statusData.startedAt ?? previous.startedAt,
             simulationProgress,
           };
