@@ -1,6 +1,6 @@
 # Custom-simulation control-plane contract
 
-**Status:** implementation unit in progress  
+**Status:** deployed and production-validated
 **Canonical execution contract:** `jheem-backend/docs/custom-simulation-run-contract.md`
 
 The portal treats model configuration, normalized parameters, and the backend

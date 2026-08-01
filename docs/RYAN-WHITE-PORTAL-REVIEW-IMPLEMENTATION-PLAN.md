@@ -1,10 +1,10 @@
 # Ryan White Portal Review and Remediation Plan
 
-**Status:** In progress  
+**Status:** In progress — Phase 3.5 closeout
 **Created:** 2026-07-29  
 **Scope:** Ryan White city and state explorers, custom simulations, calibration presentation, and the shared portal components they depend on
 
-### Progress snapshot — 2026-07-30
+### Progress snapshot — 2026-08-01
 
 - **Phase 0:** Implemented and covered by AJPH/CROI URL regression tests.
 - **Phase 1:** Model timing contract, shared-engine validation, workflow transport, cache isolation,
@@ -112,6 +112,26 @@
   recovery; and immediate loading of Alabama's cached `t2026-a50-o30-r40` custom result without an
   alert. Final terminology for the three suppression-loss inputs still requires model/content-owner
   approval.
+- **Phase 3.5:** The high-risk control-plane and reproducibility work is deployed. Portal
+  [#15](https://github.com/ncsizemore/jheem-portal/pull/15) established the patched dependency
+  baseline and documented the remaining time-bounded advisories; portal
+  [#16](https://github.com/ncsizemore/jheem-portal/pull/16) pinned generated model configuration to
+  immutable backend revision `597b5ea0` and added mandatory tests, type checking, production build,
+  configuration-drift verification, and production dependency audit. Backend
+  [#26](https://github.com/ncsizemore/jheem-backend/pull/26) and portal
+  [#17](https://github.com/ncsizemore/jheem-portal/pull/17) deployed the versioned request identity,
+  exact run matching, duplicate suppression, explicit-launch rule, bounded inputs, fail-closed
+  launch rate limiting, finalizing state, and reconstructable result metadata. Controlled
+  production run
+  [30651896230](https://github.com/ncsizemore/jheem-backend/actions/runs/30651896230)
+  completed end to end in 11 minutes 56 seconds; an identical relaunch converged on the same run,
+  the CloudFront result and return-link cache were available, and the published metadata matched
+  the expected contract. Portal
+  [#18](https://github.com/ncsizemore/jheem-portal/pull/18) then repaired the two bounded findings
+  from that validation: cross-phase progress detail and one-percentage-point slider semantics.
+  Pull-request and post-merge CI and Vercel production deployment passed. Phase 3.5 remains open
+  only for lint/React remediation, automated critical browser journeys, supported backend action
+  runtime upgrades, and final documentation closeout.
 - **Phases 4–5:** Not yet started.
 
 ### Independent engineering audit checkpoint — 2026-07-31
@@ -130,6 +150,27 @@ The revised order is:
 
 Content-owner terminology review and the remaining interaction/accessibility polish may proceed in
 parallel with Phase 3.5, but they do not replace its engineering gates.
+
+### Phase 3.5 closeout checkpoint — 2026-08-01
+
+The control-plane release is accepted and production-validated. Passive navigation is lookup-only;
+new computation requires an explicit launch; identical submissions share one canonical request and
+workflow; different scenarios retain distinct identities; cache completion requires the delivered
+object; and launch abuse is bounded by atomic client, global, and per-request controls. The
+production validation also confirmed the exact title, duplicate behavior, published provenance,
+cached return path, and phase-aware progress behavior now protected by regression tests.
+
+No further control-plane redesign is indicated before calibration work. The bounded closeout order
+is:
+
+1. modernize linting, remediate the exposed React findings, and add lint to mandatory CI;
+2. add a small automated browser suite for the critical custom-simulation journeys;
+3. upgrade supported backend GitHub Actions runtimes and clear stale workflow commentary;
+4. mark Phase 3.5 complete after the closeout gates pass, then inventory calibration artifacts for
+   Phase 4.
+
+Model-owner terminology approval may proceed in parallel. It is a content-release dependency, not
+a reason to reopen the corrected execution architecture.
 
 ---
 
@@ -160,7 +201,8 @@ The portal concatenated new query parameters onto a route that already contained
 producing malformed share and history URLs. The location could be lost on reload and a CROI route
 could fall back to AJPH.
 
-**Status:** Fixed locally with a shared URL-merging utility and regression tests.
+**Status:** Resolved and deployed in portal PR #13 with a shared URL-merging utility and
+regression tests.
 
 ### 2.2 CROI custom-simulation timing
 
@@ -178,6 +220,9 @@ timing into the custom-simulation container.
 
 **Ownership:** Shared-engine/backend integration defect, not a model-owner-code defect and not a
 numerical calculation performed by the portal.
+
+**Status:** Resolved through the released container/backend timing contract and production-validated
+as recorded in the Phase 1 snapshot above.
 
 ### 2.3 Product and design issues
 
@@ -329,9 +374,10 @@ and a production build.
 8.x release; unused Plotly packages and their vulnerable production build chain are removed; and
 the remaining unreachable optional Sharp finding is recorded with an enforced configuration
 control and removal trigger in `docs/DEPENDENCY-SECURITY.md`. The production build and focused
-Ryan White regressions pass. Lint modernization and mandatory CI remain open and should be delivered
-as a separate change because the Next.js 16 rules expose pre-existing cross-application React
-findings that require focused remediation rather than a blanket severity downgrade.
+Ryan White regressions pass. Lint modernization was separated from the initial mandatory CI
+baseline because the Next.js 16 rules expose pre-existing cross-application React findings that
+require focused remediation rather than a blanket severity downgrade. The baseline excluding lint
+was subsequently delivered in portal PR #16.
 
 **Reproducibility and CI progress — 2026-07-31:** The portal now pins its generated model
 configuration to immutable backend commit `597b5ea0`, commits deterministic generated output, and
@@ -340,6 +386,12 @@ immutable action revisions and gates pull requests on the pinned-config check, 1
 regressions, TypeScript, all-route production build, and a tested production-audit policy. Lint
 modernization and critical browser journeys remain separate follow-ups; the CI baseline does not
 weaken the newly exposed React rules to manufacture a clean result.
+
+**Deployed status — 2026-08-01:** Portal PRs #15 and #16 are deployed. Pull-request and `main`
+checks enforce the pinned configuration, focused regressions, TypeScript, all-route production
+build, and the documented production-audit policy. The remaining exit-gate work is deliberately
+narrow: replace the obsolete lint command, remediate the real React findings, add lint to CI, and
+automate the critical browser journeys already exercised manually.
 
 #### Explicit launch, abuse resistance, and exact run identity
 
@@ -359,6 +411,12 @@ weaken the newly exposed React rules to manufacture a clean result.
 one run; distinct scenarios cannot inherit one another's status; and abusive request bursts are
 bounded.
 
+**Deployed status — 2026-08-01:** Backend PR #26 and portal PR #17 satisfy this gate. Controlled
+production run 30651896230 used canonical title
+`custom-sim: v1:ryan-white-msa:C.12580:a1-o2-r3`; the identical relaunch returned the same run ID
+without dispatching duplicate compute. Portal PR #18 preserves exact whole-percentage inputs and
+resets fine-grained detail when workflow progress changes units across phases.
+
 #### Versioned cache and result provenance contract
 
 - Include the model/container release, immutable image digest, input or simset release, backend
@@ -377,6 +435,12 @@ bounded.
 cache entries cannot be reused, and rebuilding an unchanged release cannot silently consume a
 different cross-repository contract.
 
+**Deployed status — 2026-08-01:** The released backend and portal use the versioned `v1` request
+identity, versioned scenario/cache keys, immutable portal configuration source, deterministic
+object naming, and published custom-simulation metadata. The controlled production result passed
+metadata verification before publication and was retrieved through the CloudFront and portal
+cache paths without falling back to a legacy key.
+
 #### Documentation and workspace hygiene
 
 - Update the custom-simulation security document to reflect the implemented portal-owned email
@@ -389,6 +453,12 @@ different cross-repository contract.
 
 **Exit gate:** Operational documentation describes the deployed system, and Phase 4 starts from
 clean, synchronized worktrees without disturbing unrelated user changes.
+
+**Closeout status — 2026-08-01:** The portal security and run-contract documents describe the
+portal-owned notification path, fail-closed rate limits, exact request identity, and delivered-object
+completion semantics. Phase 3.5 work has used an isolated clean worktree so unrelated costing work
+remains untouched. Supported backend action-runtime upgrades and stale workflow commentary remain
+the final operational-hygiene unit.
 
 ### Phase 4 — Add model-aware calibration presentation
 
@@ -444,8 +514,11 @@ target data, and posterior ensemble it represents.
    Vercel production deployment passed for `56b1b82a`; public live-data city, CROI state, scenario
    timeline, keyboard-dismissal, and cached-custom-result checks passed. The backend write-backed
    and cache-isolation smokes are complete as recorded above.
-8. Complete Phase 3.5 hardening as independently reviewable releases before deploying the Phase 4
-   calibration surface.
+8. **Core controls completed 2026-08-01:** Portal PRs #15–#18 and backend PR #26 delivered the
+   dependency/CI baseline, reproducible configuration, exact request identity, launch protection,
+   duplicate suppression, delivered-result completion, progress repair, and production validation.
+   Complete the bounded lint, browser-automation, action-runtime, and documentation closeout before
+   deploying the Phase 4 calibration surface.
 
 The former unsafe legacy-pin state is resolved in PR #21. Keep the executable timing transport,
 cache isolation, and compatible released pins together during final merge/deployment so a result
