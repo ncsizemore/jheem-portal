@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
+import { useSearchParams } from 'next/navigation';
 import {
   Area,
   CartesianGrid,
@@ -31,6 +32,7 @@ import {
   buildStateCrossovers,
   buildTrajectoryData,
   CONTEXT_AXES,
+  type ContextAxis,
   ContextAxisId,
   CostTrajectoryPoint,
   Crossover,
@@ -46,7 +48,6 @@ import {
   formatPerDollar,
   HeadlineValues,
   headlineAt,
-  HorizonProfile,
   HORIZON_MAX,
   HORIZON_MIN,
   ESTIMAND_LABELS,
@@ -70,7 +71,6 @@ const TEAL = '#0f766e'; // net offset (data)
 const RUST = '#b45309'; // net cost (data)
 const INK = '#0f172a'; // slate-900
 const MUTED = '#64748b'; // slate-500
-const GRID = '#dbe5f0';
 const EXPANSION = '#2e6b75';
 const NON_EXPANSION = '#a8cdd1';
 const EASE = [0.22, 1, 0.36, 1] as const;
@@ -84,6 +84,10 @@ const ANALYSIS_SECTIONS = [
   { id: 'robustness', label: 'Price sensitivity' },
   { id: 'methods', label: 'Methods' },
 ] as const;
+
+const DEFAULT_ESTIMAND = ryanWhiteCostingSummary.sensitivity.primaryEstimand;
+const DEFAULT_STATE: LocationKey = 'FL';
+const MODELED_JURISDICTIONS = new Set(ryanWhiteCostingSummary.states.map((item) => item.state));
 
 type AnalysisSectionId = (typeof ANALYSIS_SECTIONS)[number]['id'];
 
@@ -154,6 +158,29 @@ interface TipProps {
   active?: boolean;
   label?: string | number;
   payload?: Array<{ dataKey?: string; value?: number; stroke?: string; payload?: unknown }>;
+}
+
+function HeterogeneityTip({
+  active,
+  payload,
+  axis,
+}: TipProps & { axis: ContextAxis }) {
+  if (!active || !payload?.length || !payload[0].payload) return null;
+  const point = payload[0].payload as HeterogeneityPoint;
+  return (
+    <div className="rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 shadow-md">
+      <p className="text-sm font-semibold text-slate-900">{point.stateName}</p>
+      <p className="mt-1 font-mono text-xs tabular-nums text-slate-500">
+        {axis.shortLabel} {axis.format(point.x)} · Median NCER {formatNcer(point.ratio)}
+      </p>
+      <p className="font-mono text-xs tabular-nums text-slate-500">
+        ADAP avoided {formatCompactDollars(point.adap)}
+      </p>
+      <p className="text-xs text-slate-500">
+        {point.medicaidExpansion ? 'Medicaid expansion' : 'Medicaid non-expansion'}
+      </p>
+    </div>
+  );
 }
 
 function TrajTip({ active, payload, label }: TipProps) {
@@ -1318,21 +1345,6 @@ function HeterogeneityExplorer({
     );
   };
 
-  const HetTip = ({ active: tipActive, payload }: TipProps) => {
-    if (!tipActive || !payload?.length || !payload[0].payload) return null;
-    const p = payload[0].payload as unknown as HeterogeneityPoint;
-    return (
-      <div className="rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 shadow-md">
-        <p className="text-sm font-semibold text-slate-900">{p.stateName}</p>
-        <p className="mt-1 font-mono text-xs tabular-nums text-slate-500">
-          {axis.shortLabel} {axis.format(p.x)} · Median NCER {formatNcer(p.ratio)}
-        </p>
-        <p className="font-mono text-xs tabular-nums text-slate-500">ADAP avoided {formatCompactDollars(p.adap)}</p>
-        <p className="text-xs text-slate-500">{p.medicaidExpansion ? 'Medicaid expansion' : 'Medicaid non-expansion'}</p>
-      </div>
-    );
-  };
-
   return (
     <div className="min-w-0">
       <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
@@ -1380,7 +1392,7 @@ function HeterogeneityExplorer({
                 stroke="#94a3b8"
                 strokeDasharray="5 5"
               />
-              <Tooltip content={<HetTip />} cursor={{ strokeDasharray: '3 3', stroke: '#cbd5e1' }} />
+              <Tooltip content={<HeterogeneityTip axis={axis} />} cursor={{ strokeDasharray: '3 3', stroke: '#cbd5e1' }} />
               <Scatter data={points} shape={renderDot} isAnimationActive={false} />
             </ScatterChart>
           </ResponsiveContainer>
@@ -1714,43 +1726,40 @@ function ModelReview() {
 // Page
 // -----------------------------------------------------------------------------
 export default function RyanWhiteCostingApp() {
-  const [estimand, setEstimand] = useState<EstimandId>(ryanWhiteCostingSummary.sensitivity.primaryEstimand);
-  const [location, setLocation] = useState<LocationKey>('FL');
-  const [horizon, setHorizon] = useState<number>(HORIZON_MAX);
+  const searchParams = useSearchParams();
+  const initialState = useMemo(() => ({
+    through: searchParams.get('through') || undefined,
+    state: searchParams.get('state') || undefined,
+    estimand: searchParams.get('view') || searchParams.get('scenario') || undefined,
+  }), [searchParams]);
+  const [estimand, setEstimand] = useState<EstimandId>(() =>
+    initialState.estimand && (ESTIMAND_ORDER as string[]).includes(initialState.estimand)
+      ? initialState.estimand as EstimandId
+      : DEFAULT_ESTIMAND);
+  const [location, setLocation] = useState<LocationKey>(() =>
+    initialState.state && (initialState.state === 'Total' || MODELED_JURISDICTIONS.has(initialState.state))
+      ? initialState.state as LocationKey
+      : DEFAULT_STATE);
+  const [horizon, setHorizon] = useState<number>(() => {
+    const through = Number(initialState.through);
+    return Number.isInteger(through) && through >= HORIZON_MIN && through <= HORIZON_MAX
+      ? through
+      : HORIZON_MAX;
+  });
   const [hovered, setHovered] = useState<string | null>(null);
   const [series, setSeries] = useState<RyanWhiteCostingSeries | null>(null);
   const [seriesError, setSeriesError] = useState<string | null>(null);
   const [activeSection, setActiveSection] = useState<AnalysisSectionId>(ANALYSIS_SECTIONS[0].id);
-  const urlHydrated = useRef(false);
-
-  const defaultEstimand = ryanWhiteCostingSummary.sensitivity.primaryEstimand;
-  const defaultState: LocationKey = 'FL';
-  const modeledJurisdictions = useMemo(() => new Set(ryanWhiteCostingSummary.states.map((item) => item.state)), []);
-
-  // Shareable app state: read ?through/&state/&view once on mount, then
-  // mirror changes back with replaceState (no history spam, no server round trip).
+  // The client-side query snapshot initializes the Suspense boundary's first
+  // render; subsequent changes mirror back without history spam.
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const through = Number(params.get('through'));
-    if (Number.isInteger(through) && through >= HORIZON_MIN && through <= HORIZON_MAX) setHorizon(through);
-    const state = params.get('state');
-    if (state && (state === 'Total' || modeledJurisdictions.has(state))) setLocation(state);
-    const urlEstimand = params.get('view') ?? params.get('scenario');
-    if (urlEstimand && (ESTIMAND_ORDER as string[]).includes(urlEstimand)) {
-      setEstimand(urlEstimand as EstimandId);
-    }
-    urlHydrated.current = true;
-  }, [modeledJurisdictions]);
-
-  useEffect(() => {
-    if (!urlHydrated.current) return;
     const params = new URLSearchParams();
     if (horizon !== HORIZON_MAX) params.set('through', String(horizon));
-    if (location !== defaultState) params.set('state', location);
-    if (estimand !== defaultEstimand) params.set('view', estimand);
+    if (location !== DEFAULT_STATE) params.set('state', location);
+    if (estimand !== DEFAULT_ESTIMAND) params.set('view', estimand);
     const query = params.toString();
     window.history.replaceState(null, '', query ? `?${query}` : window.location.pathname);
-  }, [horizon, location, estimand, defaultState, defaultEstimand]);
+  }, [horizon, location, estimand]);
 
   useEffect(() => {
     let cancelled = false;
@@ -1818,7 +1827,7 @@ export default function RyanWhiteCostingApp() {
     () => buildTrajectoryData(seriesForLocation(series, 'Total'), estimand),
     [series, estimand]
   );
-  const selectedTrajectoryLocation = location === 'Total' ? defaultState : location;
+  const selectedTrajectoryLocation = location === 'Total' ? DEFAULT_STATE : location;
   const selectedTrajectory = useMemo(
     () => buildTrajectoryData(seriesForLocation(series, selectedTrajectoryLocation), estimand),
     [series, selectedTrajectoryLocation, estimand]

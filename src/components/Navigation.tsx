@@ -1,20 +1,18 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Navigation() {
+  const pathname = usePathname();
+  return <NavigationForPath key={pathname} pathname={pathname} />;
+}
+
+function NavigationForPath({ pathname }: { pathname: string }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [modelsDropdownOpen, setModelsDropdownOpen] = useState(false);
-  const pathname = usePathname();
-
-  // Close mobile menu when route changes
-  useEffect(() => {
-    setMobileMenuOpen(false);
-    setModelsDropdownOpen(false);
-  }, [pathname]);
 
   // Check if we should show Ryan White submenu
   const showRyanWhiteSubmenu = pathname === '/ryan-white' ||

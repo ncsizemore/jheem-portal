@@ -9,7 +9,7 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint . --max-warnings=0",
     "audit:production": "node scripts/audit-production-dependencies.mjs",
     "test": "node --experimental-strip-types --test scripts/test-custom-simulation-url.mjs scripts/test-custom-simulation-control-plane.mjs scripts/test-production-audit-policy.mjs",
     "test:custom-sim-url": "node --experimental-strip-types --test scripts/test-custom-simulation-url.mjs",
@@ -34,14 +34,13 @@
     "recharts": "^3.2.1"
   },
   "devDependencies": {
-    "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "big-json": "^3.2.0",
     "eslint": "^9",
-    "eslint-config-next": "15.3.2",
+    "eslint-config-next": "16.2.12",
     "tailwindcss": "^4",
     "tsx": "4.23.1",
     "typescript": "^5"

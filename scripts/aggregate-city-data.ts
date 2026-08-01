@@ -88,29 +88,6 @@ interface AggregatedData {
   >;
 }
 
-function parseFilename(filename: string): {
-  outcome: string;
-  statistic: string;
-  facet: string;
-} | null {
-  // Pattern: {outcome}_{statistic}_{facet}.json
-  // Examples:
-  //   incidence_mean.and.interval_unfaceted.json
-  //   testing_individual.simulation_facet_age.json
-  //   diagnosed.prevalence_mean.and.interval_facet_sex.json
-
-  const match = filename.match(
-    /^(.+?)_(mean\.and\.interval|median\.and\.interval|individual\.simulation)_(unfaceted|facet_\w+)\.json$/
-  );
-
-  if (!match) return null;
-
-  const [, outcome, statistic, facetPart] = match;
-  const facet = facetPart === 'unfaceted' ? 'none' : facetPart.replace('facet_', '');
-
-  return { outcome, statistic, facet };
-}
-
 function findJsonFiles(dir: string): string[] {
   const results: string[] = [];
   const entries = fs.readdirSync(dir, { withFileTypes: true });
@@ -151,7 +128,7 @@ function aggregateCityData(inputDir: string): AggregatedData {
     let plotData: PlotDataFile;
     try {
       plotData = JSON.parse(content);
-    } catch (e) {
+    } catch {
       console.warn(`Skipping invalid JSON: ${filePath}`);
       continue;
     }

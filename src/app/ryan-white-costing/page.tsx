@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Newsreader } from 'next/font/google';
+import { Suspense } from 'react';
 import Footer from '@/components/Footer';
 import RyanWhiteCostingApp from './RyanWhiteCostingApp';
 
@@ -23,7 +24,9 @@ export default function RyanWhiteCostingPage() {
   return (
     <>
       <div className={`${serif.variable} w-full min-w-0 max-w-full overflow-x-hidden`}>
-        <RyanWhiteCostingApp />
+        <Suspense fallback={<div className="min-h-screen bg-slate-50" aria-hidden="true" />}>
+          <RyanWhiteCostingApp />
+        </Suspense>
       </div>
       <Footer />
     </>

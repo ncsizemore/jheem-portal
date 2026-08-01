@@ -142,15 +142,16 @@ export const useAvailableCities = (): UseAvailableCitiesReturn => {
  * This now uses cached data from the initial discovery call
  */
 export const useCityData = (cityCode: string) => {
-  const [scenarios, setScenarios] = useState<string[]>([]);
+  const [scenarioResult, setScenarioResult] = useState<{ cityCode: string; scenarios: string[] }>({
+    cityCode: '',
+    scenarios: [],
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!cityCode) {
-      setScenarios([]);
-      return;
-    }
+    if (!cityCode) return;
+    let cancelled = false;
 
     // In the future, this could use cached data from useAvailableCities
     // For now, keeping the existing implementation for compatibility
@@ -188,19 +189,27 @@ export const useCityData = (cityCode: string) => {
         );
 
         const availableScenarios = results.filter((s): s is ScenarioType => s !== null);
-        setScenarios(availableScenarios);
+        if (!cancelled) setScenarioResult({ cityCode, scenarios: availableScenarios });
       } catch (err) {
         if (process.env.NODE_ENV === 'development') {
           console.error('Error fetching city data:', err);
         }
-        setError(err instanceof Error ? err.message : 'Failed to fetch city data');
+        if (!cancelled) setError(err instanceof Error ? err.message : 'Failed to fetch city data');
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
 
     fetchCityData();
+    return () => {
+      cancelled = true;
+    };
   }, [cityCode]);
 
-  return { scenarios, loading, error };
+  const scenarios = scenarioResult.cityCode === cityCode ? scenarioResult.scenarios : [];
+  return {
+    scenarios,
+    loading: cityCode ? loading : false,
+    error: cityCode ? error : null,
+  };
 };

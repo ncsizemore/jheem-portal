@@ -112,7 +112,6 @@ interface StateSummaries {
 }
 
 // Configuration
-const CURRENT_YEAR = 2024;  // Year for "current" status metrics
 const DEFAULT_START_YEAR = 2026;  // Default intervention start year
 const DEFAULT_END_YEAR = 2031;    // Default projection end year (5-year window)
 const DATA_DIR = path.join(__dirname, '../public/data');
@@ -169,30 +168,6 @@ function extractMetric(
         upper: point['value.upper'] ?? point.value,
       };
     }
-  }
-  return null;
-}
-
-function extractCessationMetric(
-  stateData: StateDataFile,
-  outcome: string,
-  year: number
-): { value: number; lower: number; upper: number } | null {
-  // For cessation, we need to look at the cessation scenario's intervention values
-  const outcomeData = stateData.data['cessation']?.[outcome]?.['mean.and.interval']?.none?.sim;
-  if (!outcomeData) return null;
-
-  // Find the non-baseline (intervention) value
-  const point = outcomeData.find(
-    (d) => d.year === year && d.simset !== 'Baseline'
-  );
-
-  if (point) {
-    return {
-      value: point.value,
-      lower: point['value.lower'] ?? point.value,
-      upper: point['value.upper'] ?? point.value,
-    };
   }
   return null;
 }
