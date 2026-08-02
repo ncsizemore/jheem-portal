@@ -1,10 +1,10 @@
 # Ryan White Portal Review and Remediation Plan
 
-**Status:** In progress — Phase 3.5 closeout; browser-automation PR open
+**Status:** Phase 3.5 complete — Phase 4 calibration inventory is next
 **Created:** 2026-07-29  
 **Scope:** Ryan White city and state explorers, custom simulations, calibration presentation, and the shared portal components they depend on
 
-### Progress snapshot — 2026-08-01
+### Progress snapshot — 2026-08-02
 
 - **Phase 0:** Implemented and covered by AJPH/CROI URL regression tests.
 - **Phase 1:** Model timing contract, shared-engine validation, workflow transport, cache isolation,
@@ -132,9 +132,13 @@
   Pull-request and post-merge CI and Vercel production deployment passed. Portal
   [#20](https://github.com/ncsizemore/jheem-portal/pull/20) merged the lint/React closeout gate;
   its post-merge Portal CI passed. Portal
-  [#21](https://github.com/ncsizemore/jheem-portal/pull/21) adds the bounded critical-browser gate
-  and is pending review. Phase 3.5 then remains open only for supported backend action runtime
-  upgrades and final documentation closeout.
+  [#21](https://github.com/ncsizemore/jheem-portal/pull/21) deployed the bounded critical-browser
+  gate; post-merge Portal CI and Vercel deployment passed, and the public custom-simulation route
+  returned HTTP 200. Backend [#27](https://github.com/ncsizemore/jheem-backend/pull/27) then pinned
+  all active external actions to supported Node 24 releases and enforced the workflow policy.
+  Backend [#28](https://github.com/ncsizemore/jheem-backend/pull/28) removed the sole unused
+  vulnerable production dependency and added a zero-high/critical production-audit gate. Both
+  backend post-merge validations passed. Phase 3.5 is complete.
 - **Phases 4–5:** Not yet started.
 
 ### Independent engineering audit checkpoint — 2026-07-31
@@ -154,7 +158,7 @@ The revised order is:
 Content-owner terminology review and the remaining interaction/accessibility polish may proceed in
 parallel with Phase 3.5, but they do not replace its engineering gates.
 
-### Phase 3.5 closeout checkpoint — 2026-08-01
+### Phase 3.5 closeout checkpoint — 2026-08-02
 
 The control-plane release is accepted and production-validated. Passive navigation is lookup-only;
 new computation requires an explicit launch; identical submissions share one canonical request and
@@ -168,11 +172,14 @@ is:
 
 1. merge portal PR #20, which modernizes linting, remediates the exposed React findings, and adds
    zero-warning lint to mandatory CI — **complete**;
-2. add a small automated browser suite for the critical custom-simulation journeys — **implemented
-   in portal PR #21; pending review**;
-3. upgrade supported backend GitHub Actions runtimes and clear stale workflow commentary;
-4. mark Phase 3.5 complete after the closeout gates pass, then inventory calibration artifacts for
-   Phase 4.
+2. add a small automated browser suite for the critical custom-simulation journeys — **complete in
+   portal PR #21**;
+3. audit active workflow commentary, remove the obsolete portal-postinstall/token explanation, and
+   upgrade supported backend GitHub Actions runtimes — **complete in backend PR #27**;
+4. clear the adjacent unused production dependency and enforce the audit — **complete in backend
+   PR #28**;
+5. mark Phase 3.5 complete, then inventory calibration artifacts for Phase 4 — **complete; Phase 4
+   inventory is next**.
 
 Model-owner terminology approval may proceed in parallel. It is a content-release dependency, not
 a reason to reopen the corrected execution architecture.
@@ -413,8 +420,10 @@ handling of unknown location codes. The first run exposed a client inconsistency
 location skipped lookup but still enabled Run. The portal now canonicalizes that input to no
 selection and checks known-location membership again at launch. All three browser journeys, the 22
 focused tests, pinned-config verification, TypeScript, zero-warning lint, the production dependency
-policy, and all 22 production routes pass locally. PR #21 is pending review; its mandatory Portal
-CI and Vercel preview passed.
+policy, and all 22 production routes pass locally. PR #21 merged as `67b7790`; post-merge
+[Portal CI 30716319717](https://github.com/ncsizemore/jheem-portal/actions/runs/30716319717)
+and Vercel deployment passed, and the
+[public custom-simulation route](https://jheem.org/ryan-white/custom) returned HTTP 200.
 
 #### Explicit launch, abuse resistance, and exact run identity
 
@@ -477,11 +486,21 @@ cache paths without falling back to a legacy key.
 **Exit gate:** Operational documentation describes the deployed system, and Phase 4 starts from
 clean, synchronized worktrees without disturbing unrelated user changes.
 
-**Closeout status — 2026-08-01:** The portal security and run-contract documents describe the
+**Closeout status — 2026-08-02:** The portal security and run-contract documents describe the
 portal-owned notification path, fail-closed rate limits, exact request identity, and delivered-object
 completion semantics. Phase 3.5 work has used an isolated clean worktree so unrelated costing work
-remains untouched. Supported backend action-runtime upgrades and stale workflow commentary remain
-the final operational-hygiene unit.
+remains untouched. Backend PR #27 pins all 15 active external action uses to reviewed immutable
+Node 24 release commits, upgrades workflow toolchains from EOL Node 20 to Node 24 LTS, removes the
+obsolete portal-postinstall token explanation and unnecessary token exposure, and enforces those
+rules across all seven active workflows. The audit found no active status-object commentary
+remaining. Archived workflows remain inert and intentionally unchanged. Post-merge
+[validation 30725343524](https://github.com/ncsizemore/jheem-backend/actions/runs/30725343524)
+passed. Backend PR #28 removes the unused `react-simple-maps` production dependency and its D3/React
+graph, adds an enforced high/critical production audit, and reduces production audit findings to
+zero. Post-merge
+[validation 30725435203](https://github.com/ncsizemore/jheem-backend/actions/runs/30725435203)
+passed. Remaining npm findings are confined to legacy development tooling and belong to a separate
+non-runtime maintenance backlog. The Phase 3.5 engineering and documentation gates are complete.
 
 ### Phase 4 — Add model-aware calibration presentation
 
