@@ -1,10 +1,10 @@
 # Ryan White Portal Review and Remediation Plan
 
-**Status:** Phase 3.5 complete — Phase 4 calibration inventory is next
+**Status:** Phase 4 inventory complete — source-contract closeout is next
 **Created:** 2026-07-29  
 **Scope:** Ryan White city and state explorers, custom simulations, calibration presentation, and the shared portal components they depend on
 
-### Progress snapshot — 2026-08-02
+### Progress snapshot — 2026-08-11
 
 - **Phase 0:** Implemented and covered by AJPH/CROI URL regression tests.
 - **Phase 1:** Model timing contract, shared-engine validation, workflow transport, cache isolation,
@@ -139,7 +139,13 @@
   Backend [#28](https://github.com/ncsizemore/jheem-backend/pull/28) removed the sole unused
   vulnerable production dependency and added a zero-high/critical production-audit gate. Both
   backend post-merge validations passed. Phase 3.5 is complete.
-- **Phases 4–5:** Not yet started.
+- **Phase 4:** Artifact and target inventory is complete in
+  [`RYAN-WHITE-CALIBRATION-ARTIFACT-INVENTORY.md`](./RYAN-WHITE-CALIBRATION-ARTIFACT-INVENTORY.md).
+  Existing production bundles already contain reusable baseline summaries and observations, but
+  they lack release-level calibration provenance. The deployed MSA artifact has 80 intentionally
+  thinned draws, while state releases have 1,000. Portal UI implementation is therefore gated on a
+  versioned observed-data artifact, target/revision attestation, and a decision to publish the full
+  MSA posterior or disclose 80 draws. Phase 5 has not started.
 
 ### Independent engineering audit checkpoint — 2026-07-31
 
@@ -505,6 +511,7 @@ non-runtime maintenance backlog. The Phase 3.5 engineering and documentation gat
 ### Phase 4 — Add model-aware calibration presentation
 
 - Inventory calibration targets and posterior-fit artifacts for each deployed model/release.
+  **Complete; see the Phase 4 artifact inventory.**
 - Define a versioned calibration manifest keyed by model ID, release, location, outcome, and target.
 - Generate calibration outputs from the same pinned model artifacts used by the portal.
 - Add a calibration entry point to each relevant model page.
@@ -514,6 +521,22 @@ non-runtime maintenance backlog. The Phase 3.5 engineering and documentation gat
 
 **Exit gate:** Every displayed calibration result identifies the exact model release, geography,
 target data, and posterior ensemble it represents.
+
+#### Phase 4 implementation checkpoint — 2026-08-11
+
+Proceed in four bounded units:
+
+1. close the source contract with the model owner: public target allowlist, generating-revision
+   attestation, versioned observed-data manager, and full-MSA-posterior decision;
+2. adapt the existing container extraction path to emit deterministic baseline-only
+   `jheem-calibration/v1` artifacts and publish them immutably;
+3. pin and validate the manifest in backend model configuration, then build the schema-validated,
+   lazy portal surface; and
+4. complete numerical, cross-model, failure-state, accessibility, responsive, and production QA.
+
+Do not begin the visual surface by reusing scenario files directly. They repeat baseline and
+observed data, omit the scientific provenance needed by the exit gate, and do not distinguish the
+MSA 80-draw delivery ensemble from the 1,000-draw state ensembles.
 
 ### Phase 5 — Integrated QA and release
 
@@ -586,6 +609,13 @@ cannot be labeled with the corrected contract while running a legacy image.
 - Whether exploratory post-2031 results should be shown by default or behind an expanded range.
 - Which calibration targets are appropriate for public display and whether any require
   methodological caveats.
+- Whether the public calibration surface covers the inherited EHE fit, the Ryan White service fit,
+  or two clearly labeled groups; presence in current plot data is not sufficient to call a series
+  an active target.
+- Which analysis revision generated each released posterior and which versioned data-manager
+  artifact supplies its observed targets.
+- Whether to publish the full 1,000-draw MSA baseline for calibration or explicitly present the
+  released 80-draw web ensemble.
 - Publication-ready citations and acknowledgement language for the CROI analysis.
 
 None of these open content decisions should block the Phase 1 numerical correction.
