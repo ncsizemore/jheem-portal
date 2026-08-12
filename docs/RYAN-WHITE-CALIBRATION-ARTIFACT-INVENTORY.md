@@ -1,7 +1,7 @@
 # Ryan White Calibration Artifact Inventory and Delivery Contract
 
 **Status:** Phase 4 inventory and provenance investigation complete; delivery contract ready for
-implementation, with one optional historical recovery
+implementation; historical-manager recovery attempted and documented
 
 **Reviewed:** 2026-08-11
 
@@ -195,14 +195,18 @@ It must not be substituted silently for the historical fitting manager.
 Git commit `64725fb7188cf0317d2a708599a0df412f4894fa` preserves the original March 2025
 fitting-manager metadata and private OneDrive object reference. That reference remained unchanged
 through the AJPH runtime revision and changed only with the March 2026 rebuild. An unauthenticated
-retrieval returned HTTP 401. Recovering the old bytes through an authenticated Hopkins session
-would cheaply improve the archive, but it is not required to export the deployed display
-observations or the released posterior ensembles.
+retrieval returned HTTP 401. An authenticated retrieval on 2026-08-12 succeeded, but the old sharing
+URL served the **current March 2026 manager**, not a historical version: the downloaded bytes had
+SHA-256 `cc227cb9bdf43d9948f97db54d9c2652f034c4b780a8515cb57c99ea6f735188`, and the
+embedded creation/modification dates were `2026-03-16 11:42:34 CDT` and
+`2026-03-16 11:46:08 CDT`. The preserved URL therefore addresses a mutable SharePoint file rather
+than an immutable object version. No historical snapshot or lineage was embedded in the R6 manager.
 
 Delivery requirement: archive the exact web manager used by the exporter in immutable internal
 storage, publish its digest/source/coverage metadata, and publish only the derived observations if
-the manager itself cannot be public. If the historical fitting manager is recovered, record its
-digest and coverage without overwriting the current manager or treating it as a new model release.
+the manager itself cannot be public. Treat the exact historical fitting-manager bytes as unavailable
+unless a distinct SharePoint version-history entry, backup, or archive copy is discovered; do not
+infer them from the current bytes served by the old URL.
 
 ### 2. MSA has a full epidemic posterior, but not a recoverable full Ryan White service fit
 
@@ -267,10 +271,11 @@ generated.
   into an exact historical claim.
 - Archive the April 2025 web/display manager immutably, subject to data-sharing constraints.
 
-### Attempt now if inexpensive, but do not block delivery
+### Attempted; no longer open delivery work
 
-- Retrieve the March 2025 fitting manager through an authenticated Hopkins session, rename it so it
-  cannot overwrite the current manager, and record its digest and internal metadata.
+- The authenticated March 2025-link recovery was attempted on 2026-08-12. It returned the current
+  March 2026 manager byte-for-byte, confirming that the sharing link is mutable and closing this
+  route without recovering the historical artifact.
 - If a clearly labeled full historical fitted MSA artifact is discovered in an existing archive,
   inventory it; do not launch a replacement calibration run as a provenance repair.
 
@@ -368,7 +373,7 @@ expose draw-level data as a separate artifact if scientifically useful.
 
 ## Ownership and implementation order
 
-### Unit 4A — Record the source contract and optional historical recovery
+### Unit 4A — Record the source contract and historical gap
 
 Owner: engineering, followed by focused scientific review.
 
@@ -378,8 +383,8 @@ Owner: engineering, followed by focused scientific review.
    April 2025 web-manager digest, and provenance-confidence fields.
 3. Archive the exact web/display manager and publish source/coverage metadata subject to its
    redistribution constraints.
-4. If readily accessible, recover and checksum the preserved March 2025 fitting manager through an
-   authenticated session. Record failure or success; do not block Unit 4B on it.
+4. Record that the authenticated historical-manager link returned the current March 2026 artifact;
+   the exact March 2025 bytes remain unavailable and do not block Unit 4B.
 5. Record the absent full fitted MSA posterior and unknown historical generator revision explicitly;
    do not manufacture replacements or attestations.
 

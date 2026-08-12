@@ -148,7 +148,9 @@
   thinned city draws and 1,000 state draws. The exact web/display manager and digest are identified,
   the target allowlist can be derived from the likelihood/review code, and representative packaging
   lineage is reconstructed. Engineering may proceed without an open-ended model-owner questionnaire.
-  One authenticated historical-manager recovery is useful but non-blocking. Phase 5 has not started.
+  The authenticated historical-manager recovery was attempted on 2026-08-12; the old SharePoint URL
+  served the current March 2026 artifact, confirming that the link is mutable and leaving the exact
+  March 2025 bytes unavailable but non-blocking. Phase 5 has not started.
 
 ### Independent engineering audit checkpoint — 2026-07-31
 
@@ -532,7 +534,7 @@ Proceed in four bounded units:
 
 1. record the engineering source contract: two-stage target registry, verified release assets and
    digests, stage-specific sample counts, exact web/display-manager identity, provenance-confidence
-   fields, and the non-blocking historical-manager recovery attempt;
+   fields, and the completed historical-manager recovery result;
 2. adapt the existing container extraction path to emit deterministic, stage-aware, baseline-only
    `jheem-calibration/v1` artifacts and publish them immutably;
 3. pin and validate the manifest in backend model configuration, then build the schema-validated,
