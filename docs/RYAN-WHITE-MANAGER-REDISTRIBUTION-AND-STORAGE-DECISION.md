@@ -1,6 +1,6 @@
 # Ryan White Manager Redistribution and Storage Decision
 
-**Status:** Engineering disposition recorded; public manager-file release deferred
+**Status:** Controlled repository architecture selected; archive publication pending
 
 **Reviewed:** 2026-08-12
 
@@ -20,20 +20,52 @@ the manager binaries remains subject to institutional or source-owner confirmati
    syphilis-manager releases demonstrate build mechanics, but their release notes do not provide a
    source-by-source redistribution-rights manifest and are not sufficient precedent for this
    decision.
-2. **Archive both exact byte streams in access-controlled, versioned storage.** The archive record
+2. **Use a private `CIPHER-Epi/jheem-data-managers` repository as the canonical operational
+   manager-artifact store, subject to institutional data-classification confirmation.** Store
+   manager binaries as immutable, versioned GitHub Release assets rather than ordinary Git blobs or
+   Git LFS objects. The repository is deliberately scoped to data managers; simulation/posterior
+   sets, raw restricted inputs, and unrelated application artifacts remain elsewhere.
+3. **Archive both exact byte streams in access-controlled, versioned storage.** The archive record
    must include the original and canonical filenames, digest, byte size, embedded creation and
    modification dates, scientific role, source inventory, provenance confidence, access policy,
    and redistribution status.
-3. **Publish the compatibility reports, provenance metadata, target/source registry, and minimal
+4. **Publish the compatibility reports, provenance metadata, target/source registry, and minimal
    derived calibration payloads.** Do not publish the general-purpose serialized manager merely to
    make the exporter reproducible.
-4. **Revisit a full-manager public release only after a source-by-source rights review.** At minimum,
+5. **Revisit a full-manager public release only after a source-by-source rights review.** At minimum,
    this requires documented NASTAD reuse permission or terms, a CDC suppression/re-release check,
    an AIDSVu/IQVIA scope and attribution check for any included PrEP data, and a machine-readable
    license/source manifest shipped with the artifact.
 
 This preserves the exact research artifacts without creating a new public redistribution event
 whose scope is broader than the portal needs.
+
+## Selected repository architecture
+
+`CIPHER-Epi/jheem-data-managers` is the intended stable publication boundary for versioned JHEEM
+data-manager artifacts. It should not become the universal home for every large or binary research
+artifact.
+
+- Build definitions remain with the source code that owns them unless a future data-engineering
+  reorganization deliberately moves them. For example, the syphilis pipeline may continue building
+  in `jheem_analyses` while eventually promoting a validated output into the central manager
+  repository.
+- Every canonical manager release is immutable and versioned. A reviewed registry or channel file
+  may map a name such as `stable` to an immutable release and digest; production consumers pin the
+  exact release and SHA-256 rather than depending on a delete-and-recreate `latest` release.
+- Each release includes the manager asset, `manifest.json`, `SHA256SUMS`, provenance and validation
+  reports, source repository and commit, workflow-run identity when applicable, build-input
+  identities, data classification, and redistribution status.
+- Cross-repository CI publication is a later security unit. It should use a narrowly scoped GitHub
+  App or equivalent organization-managed credential and a separately reviewed promotion gate. It
+  is not required to archive the two historical Ryan White managers.
+- JHU-managed storage may hold a periodic cold disaster-recovery copy. GitHub Releases remain the
+  engineering system of record; a personal OneDrive or mutable shared link does not.
+
+The immediate implementation remains conservative: create the private repository and its release
+contract, confirm the two manager files are permitted in that private organization-controlled
+location, then publish the exact verified byte streams as controlled immutable releases. Migrating
+the existing syphilis release flow is intentionally deferred until this pattern has been exercised.
 
 ## Evidence
 
@@ -105,9 +137,10 @@ manager dates and source coverage, and be signed or checksummed with the artifac
 system should provide immutable object versions, access logs, retention, and restore/version-history
 behavior; a mutable shared-file URL is not enough.
 
-Acceptable implementations include JHU-approved versioned object storage or a tightly controlled
-private release repository. The existing public `jheem_analyses` repository is not the controlled
-archive. Do not put these binaries in ordinary Git history.
+The selected operational implementation is the private `CIPHER-Epi/jheem-data-managers` release
+repository described above, with an optional JHU-managed cold backup. The existing public
+`jheem_analyses` repository is not the controlled archive. Do not put these binaries in ordinary Git
+history.
 
 ## Public delivery contract
 

@@ -576,13 +576,24 @@ The bounded order from here is:
    [`RYAN-WHITE-MANAGER-REDISTRIBUTION-AND-STORAGE-DECISION.md`](./RYAN-WHITE-MANAGER-REDISTRIBUTION-AND-STORAGE-DECISION.md)**;
 2. choose immutable controlled storage and decide whether either manager may be a GitHub Release
    asset, with a digest-only/public-derived-data fallback when redistribution is not established —
-   **complete: controlled archive plus public minimal derived artifacts; no public manager release
-   without source-rights review**;
+   **architecture selected: use private `CIPHER-Epi/jheem-data-managers` immutable releases plus
+   public minimal derived artifacts; repository creation, private-location data-classification
+   confirmation, and archival publication remain pending; no public manager release without
+   source-rights review**;
 3. commit the release-specific target registry, explicitly excluding the legacy `adap.clients`
    overlay and representing the corrected target only where a valid observed-manager binding is
-   available;
-4. proceed to the deterministic exporter, manifest, backend binding, portal surface, and integrated
-   QA in Units 4B–4D.
+   available — **complete in `jheem-containers` PR #16**;
+4. merge the manager-compatibility, portal-provenance, and target-registry PRs in dependency order,
+   then remove their merged temporary worktrees and synchronize the repositories' default-branch
+   checkouts without disturbing the dirty primary portal checkout;
+5. bootstrap the private `CIPHER-Epi/jheem-data-managers` repository with the archive schema,
+   registry, immutable-release convention, access policy, and verification workflow; confirm the
+   two managers' private-location data classification and publish their exact verified byte streams
+   as controlled releases;
+6. proceed to the deterministic exporter, manifest, backend binding, portal surface, and integrated
+   QA in Units 4B–4D; and
+7. treat central publication of future CI-built managers—beginning with a later syphilis promotion
+   pilot—as a separate platform unit, not a prerequisite for the Ryan White calibration surface.
 
 ### Phase 5 — Integrated QA and release
 
