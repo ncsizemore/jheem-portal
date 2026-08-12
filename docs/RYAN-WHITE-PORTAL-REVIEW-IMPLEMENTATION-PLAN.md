@@ -1,10 +1,12 @@
 # Ryan White Portal Review and Remediation Plan
 
-**Status:** Phase 4 inventory complete — source-contract closeout is next
+**Status:** Phase 4 source investigation, manager compatibility, and redistribution disposition
+complete — controlled archival and the release-specific target registry are next
+
 **Created:** 2026-07-29  
 **Scope:** Ryan White city and state explorers, custom simulations, calibration presentation, and the shared portal components they depend on
 
-### Progress snapshot — 2026-08-11
+### Progress snapshot — 2026-08-12
 
 - **Phase 0:** Implemented and covered by AJPH/CROI URL regression tests.
 - **Phase 1:** Model timing contract, shared-engine validation, workflow transport, cache isolation,
@@ -141,11 +143,21 @@
   backend post-merge validations passed. Phase 3.5 is complete.
 - **Phase 4:** Artifact and target inventory is complete in
   [`RYAN-WHITE-CALIBRATION-ARTIFACT-INVENTORY.md`](./RYAN-WHITE-CALIBRATION-ARTIFACT-INVENTORY.md).
-  Existing production bundles already contain reusable baseline summaries and observations, but
-  they lack release-level calibration provenance. The deployed MSA artifact has 80 intentionally
-  thinned draws, while state releases have 1,000. Portal UI implementation is therefore gated on a
-  versioned observed-data artifact, target/revision attestation, and a decision to publish the full
-  MSA posterior or disclose 80 draws. Phase 5 has not started.
+  A subsequent read-only NAS, model-code, data-manager, and release investigation established a
+  two-stage source contract: immutable EHE releases provide 1,000-draw epidemic baselines for MSA
+  and state geographies; the deployed Ryan White service-fit ensembles contain 80 deliberately
+  thinned city draws and 1,000 state draws. The exact web/display manager and digest are identified,
+  the target allowlist can be derived from the likelihood/review code, and representative packaging
+  lineage is reconstructed. Engineering may proceed without an open-ended model-owner questionnaire.
+  The authenticated historical-manager recovery was attempted on 2026-08-12; the old SharePoint URL
+  served the current March 2026 artifact, confirming that the link is mutable and leaving the exact
+  March 2025 bytes unavailable but non-blocking. A hash-gated comparison now establishes exact or
+  additive compatibility for the shared display targets, and independently reproduces the newer
+  manager's five ADAP-derived target formulas. It deliberately does not claim whole-manager or
+  historical-posterior identity. The same pass also confirmed a legacy deployed metadata defect:
+  older simsets map `adap.clients` observations to `non.adap.clients`, producing a duplicated ADAP
+  overlay; model source corrected the mapping on 2026-01-09, but existing released artifacts still
+  carry the old metadata. Phase 5 has not started.
 
 ### Independent engineering audit checkpoint — 2026-07-31
 
@@ -184,8 +196,7 @@ is:
    upgrade supported backend GitHub Actions runtimes — **complete in backend PR #27**;
 4. clear the adjacent unused production dependency and enforce the audit — **complete in backend
    PR #28**;
-5. mark Phase 3.5 complete, then inventory calibration artifacts for Phase 4 — **complete; Phase 4
-   inventory is next**.
+5. mark Phase 3.5 complete, then inventory calibration artifacts for Phase 4 — **complete**.
 
 Model-owner terminology approval may proceed in parallel. It is a content-release dependency, not
 a reason to reopen the corrected execution architecture.
@@ -511,7 +522,8 @@ non-runtime maintenance backlog. The Phase 3.5 engineering and documentation gat
 ### Phase 4 — Add model-aware calibration presentation
 
 - Inventory calibration targets and posterior-fit artifacts for each deployed model/release.
-  **Complete; see the Phase 4 artifact inventory.**
+  **Complete, including the follow-up source/provenance investigation; see the Phase 4 artifact
+  inventory.**
 - Define a versioned calibration manifest keyed by model ID, release, location, outcome, and target.
 - Generate calibration outputs from the same pinned model artifacts used by the portal.
 - Add a calibration entry point to each relevant model page.
@@ -520,23 +532,68 @@ non-runtime maintenance backlog. The Phase 3.5 engineering and documentation gat
 - Clearly distinguish calibration/fit years from projection years.
 
 **Exit gate:** Every displayed calibration result identifies the exact model release, geography,
-target data, and posterior ensemble it represents.
+calibration stage, target data, posterior ensemble and sample count it represents; reconstructed or
+unknown historical provenance is labeled honestly rather than silently promoted to verified.
 
 #### Phase 4 implementation checkpoint — 2026-08-11
 
 Proceed in four bounded units:
 
-1. close the source contract with the model owner: public target allowlist, generating-revision
-   attestation, versioned observed-data manager, and full-MSA-posterior decision;
-2. adapt the existing container extraction path to emit deterministic baseline-only
+1. record the engineering source contract: two-stage target registry, verified release assets and
+   digests, stage-specific sample counts, exact web/display-manager identity, provenance-confidence
+   fields, and the completed historical-manager recovery result;
+2. adapt the existing container extraction path to emit deterministic, stage-aware, baseline-only
    `jheem-calibration/v1` artifacts and publish them immutably;
 3. pin and validate the manifest in backend model configuration, then build the schema-validated,
    lazy portal surface; and
-4. complete numerical, cross-model, failure-state, accessibility, responsive, and production QA.
+4. complete numerical, cross-model, failure-state, accessibility, responsive, production, and
+   focused scientific-copy QA.
 
 Do not begin the visual surface by reusing scenario files directly. They repeat baseline and
 observed data, omit the scientific provenance needed by the exit gate, and do not distinguish the
-MSA 80-draw delivery ensemble from the 1,000-draw state ensembles.
+1,000-draw EHE epidemic baseline from the 80-draw MSA or 1,000-draw state Ryan White service-fit
+ensembles. Do not rerun a replacement 1,000-draw MSA service fit and present it as provenance for
+the deployed model.
+
+#### Phase 4 manager-compatibility checkpoint — 2026-08-12
+
+The manager comparison and candidate-derived-target validation are implemented as a deterministic,
+hash-gated `jheem_analyses` unit. The April 2025 display manager and March 2026 full manager have
+unchanged shared values for `non.adap.clients`, `oahs.clients`, `oahs.suppression`, and
+`adap.proportion`; `adap.suppression` is additive; and `diagnosed.prevalence` is unchanged on its
+shared cells while the newer manager fills additional coverage. All five checked ADAP-derived
+targets reproduce their documented formulas with zero mismatches.
+
+This evidence supports target-specific reuse, not silent substitution of the March 2026 manager as
+the historical fitting manager. In particular, `adap.clients` is candidate-only relative to the
+display manager. A production overlay that shows it equal to `non.adap.clients` reflects the old
+simset's incorrect `corresponding.observed.outcome` metadata, not historical numeric equivalence.
+
+The bounded order from here is:
+
+1. review redistribution constraints for the April 2025 display manager and March 2026 full
+   manager — **complete; see
+   [`RYAN-WHITE-MANAGER-REDISTRIBUTION-AND-STORAGE-DECISION.md`](./RYAN-WHITE-MANAGER-REDISTRIBUTION-AND-STORAGE-DECISION.md)**;
+2. choose immutable controlled storage and decide whether either manager may be a GitHub Release
+   asset, with a digest-only/public-derived-data fallback when redistribution is not established —
+   **architecture selected: use private `CIPHER-Epi/jheem-data-managers` immutable releases plus
+   public minimal derived artifacts; repository creation, private-location data-classification
+   confirmation, and archival publication remain pending; no public manager release without
+   source-rights review**;
+3. commit the release-specific target registry, explicitly excluding the legacy `adap.clients`
+   overlay and representing the corrected target only where a valid observed-manager binding is
+   available — **complete in `jheem-containers` PR #16**;
+4. merge the manager-compatibility, portal-provenance, and target-registry PRs in dependency order,
+   then remove their merged temporary worktrees and synchronize the repositories' default-branch
+   checkouts without disturbing the dirty primary portal checkout;
+5. bootstrap the private `CIPHER-Epi/jheem-data-managers` repository with the archive schema,
+   registry, immutable-release convention, access policy, and verification workflow; confirm the
+   two managers' private-location data classification and publish their exact verified byte streams
+   as controlled releases;
+6. proceed to the deterministic exporter, manifest, backend binding, portal surface, and integrated
+   QA in Units 4B–4D; and
+7. treat central publication of future CI-built managers—beginning with a later syphilis promotion
+   pilot—as a separate platform unit, not a prerequisite for the Ryan White calibration surface.
 
 ### Phase 5 — Integrated QA and release
 
@@ -603,19 +660,14 @@ cannot be labeled with the corrected contract while running a legacy image.
   deliberately implemented and validated.
 - Generate explanatory timeline copy from structured model metadata wherever possible.
 
-### Still requires model/content-owner review
+### Still requires focused model/content-owner review
 
 - Final plain-language definitions for the three suppression-loss inputs.
 - Whether exploratory post-2031 results should be shown by default or behind an expanded range.
-- Which calibration targets are appropriate for public display and whether any require
-  methodological caveats.
-- Whether the public calibration surface covers the inherited EHE fit, the Ryan White service fit,
-  or two clearly labeled groups; presence in current plot data is not sufficient to call a series
-  an active target.
-- Which analysis revision generated each released posterior and which versioned data-manager
-  artifact supplies its observed targets.
-- Whether to publish the full 1,000-draw MSA baseline for calibration or explicitly present the
-  released 80-draw web ensemble.
+- Plain-language labels, denominator/geographic-construction explanations, and methodological
+  caveats for the release-specific target registry after representative panels exist.
+- Source and ensemble disclosure copy for the two labeled groups: 1,000-draw EHE epidemic baseline
+  fit, and Ryan White service fit using 80 city or 1,000 state draws.
 - Publication-ready citations and acknowledgement language for the CROI analysis.
 
 None of these open content decisions should block the Phase 1 numerical correction.
@@ -636,7 +688,7 @@ None of these open content decisions should block the Phase 1 numerical correcti
 | Responsive UI | 390 px, 768 px, 1024 px, and wide desktop |
 | Accessibility | Keyboard-only selection, visible focus, labeled controls, non-map location path |
 | Content | Scenario timeline, fixed assumptions, study period, output horizon, model release |
-| Calibration | Model/release/location identity and target provenance |
+| Calibration | Model/release/location/stage identity; target and manager provenance; asset digest; actual sample count; verified/reconstructed/unknown confidence |
 | Automation | Clean install, dependency audit, unit tests, type check, lint, build, critical browser journeys |
 
 ---
@@ -654,7 +706,8 @@ The review is complete when:
 - incompatible cache entries are rejected rather than silently relabeled;
 - users understand the scenario before running or interpreting it;
 - the shared explorers work across supported screen sizes and input methods;
-- calibration evidence is tied to the correct model and release;
+- calibration evidence is tied to the correct model, release, geography, fit stage, target registry,
+  observed-data identity, and stage-specific posterior count;
 - cross-repository dependencies are pinned to reproducible contracts; and
 - mandatory CI, cross-repository goldens, and portal regression tests protect these properties in
   future releases.
