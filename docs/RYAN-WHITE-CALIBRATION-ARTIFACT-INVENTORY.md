@@ -1,9 +1,9 @@
 # Ryan White Calibration Artifact Inventory and Delivery Contract
 
-**Status:** Phase 4 inventory and provenance investigation complete; delivery contract ready for
-implementation; historical-manager recovery attempted and documented
+**Status:** Phase 4 inventory, provenance investigation, and manager-compatibility unit complete;
+redistribution and immutable-storage decision next
 
-**Reviewed:** 2026-08-11
+**Reviewed:** 2026-08-12
 
 **Scope:** `ryan-white-msa`, `ryan-white-state-ajph`, and `ryan-white-state-croi`
 
@@ -40,7 +40,8 @@ This inventory used clean worktrees and the following revisions:
 |---|---:|---|
 | `jheem-portal` | `9bbf7844fe07e20d4441e25b8b5f3002a68c0f39` | Current portal loaders, charts, and generated model config |
 | `jheem-backend` | `1717d9cddfc807a7754d4e73d494572959130a2e` | Product/runtime model manifest |
-| `jheem_analyses` | `8fa915fac7322cdcb5ba57135fa001ed4365b463` | Current model-owner source |
+| `jheem_analyses` | `fef88b515295254946cf4e26fd1585b9a4dcebff` | Current model-owner source used as the compatibility-tool base |
+| Manager-compatibility implementation | `13193a9e703a8672c05182afb800401ca961f27c` | Hash-gated comparison, candidate-derived-target validation, tests, and deterministic report |
 | `jheem-containers` | `7eaebfee90d34f3815f101408f1e59e10905be81` | Current canonical container `main` and production build manifest |
 | `jheem-simulations` | `3ef5c66` | Immutable simulation-release catalog and asset digests; release tags do not identify generating analysis code |
 | Group-site GMHA reference | `04c8eb5032b6feea27a485a7b7d0a718ddbf3181` | Calibration interaction and loading reference |
@@ -117,6 +118,15 @@ The portal already transforms and renders the `obs` array. A public Baltimore bu
 this review contained HRSA Ryan White observations through 2023, NASTAD ADAP observations through
 2022 where available, and several inherited CDC/EHE observation families. The AJPH and CROI Alabama
 bundles expose the same observed Ryan White slices for their shared baseline.
+
+One of those inherited overlays is demonstrably wrong in the released artifacts. In the inspected
+MSA simset, `outcome.metadata[["adap.clients"]]$corresponding.observed.outcome` is
+`non.adap.clients`; representative AJPH and CROI production payloads consequently emit the same
+observations under both labels. Model source changed that metadata to `adap.clients` in commit
+`e986be4f42f48ee8045f3530d1eeaa279052c022` on January 9, 2026, after the relevant fitted artifacts
+had been generated. The duplicated production overlay is therefore a legacy display-mapping defect,
+not evidence that ADAP and non-ADAP client counts are equivalent. A calibration exporter must reject
+or override this stale mapping through its release-specific registry rather than copying it.
 
 This is valuable reuse, but it is not a suitable long-term calibration artifact:
 
@@ -208,6 +218,29 @@ the manager itself cannot be public. Treat the exact historical fitting-manager 
 unless a distinct SharePoint version-history entry, backup, or archive copy is discovered; do not
 infer them from the current bytes served by the old URL.
 
+### 1a. Manager compatibility is target-specific and now machine-checked
+
+The hash-gated comparison in `jheem_analyses` commit
+`13193a9e703a8672c05182afb800401ca961f27c` compares every estimate array by named dimension and
+shared cell, emits deterministic JSON and Markdown, and fails closed when required target contracts
+or candidate-derived formulas do not pass. For the April 2025 display manager versus March 2026
+full manager:
+
+- `non.adap.clients`, `oahs.clients`, `oahs.suppression`, and `adap.proportion` are identical on the
+  compared structures and values;
+- `adap.suppression` is additive, retaining all shared values;
+- `diagnosed.prevalence` is compatible on overlap, with no changed shared values or candidate gaps;
+- `adap.clients` and the ADAP-derived diagnosed-prevalence outcomes are candidate-only because the
+  display manager does not carry them; and
+- all five checked candidate-derived target families reproduce the owner processing formulas with
+  zero mismatches.
+
+Decision: the newer manager can support corrected, target-specific derived exports after an
+explicit observed-manager binding and redistribution/storage decision. This does not make it the
+historical fitting manager and does not validate candidate-only values against unavailable March
+2025 bytes. The required target registry must encode that distinction rather than exposing a single
+whole-manager compatibility flag.
+
 ### 2. MSA has a full epidemic posterior, but not a recoverable full Ryan White service fit
 
 `ehe-msa-v1.0.0` supplies the full 1,000-draw upstream EHE posterior. The Ryan White preparation
@@ -270,6 +303,15 @@ generated.
 - Preserve confidence honestly: `verified`, `reconstructed`, or `unknown`; do not convert inference
   into an exact historical claim.
 - Archive the April 2025 web/display manager immutably, subject to data-sharing constraints.
+- Reject the released `adap.clients` observation mapping and bind corrected exports explicitly to a
+  manager that actually contains `adap.clients`.
+
+### Completed evidence work
+
+- The manager comparison, derived-target validations, deterministic reports, checksum gate, and
+  regression tests are implemented in the isolated `jheem_analyses` compatibility unit.
+- The duplicated production `adap.clients` overlay is traced to stale serialized simset metadata;
+  the corresponding model-source correction is identified exactly.
 
 ### Attempted; no longer open delivery work
 
@@ -377,15 +419,21 @@ expose draw-level data as a separate artifact if scientifically useful.
 
 Owner: engineering, followed by focused scientific review.
 
-1. Commit the release-specific two-stage target registry derived from the likelihood registrations
-   and owner-side review script.
-2. Record the verified EHE and Ryan White releases/assets, digests, stage-specific sample counts,
+1. Land the hash-gated manager comparison and candidate-derived-target validation. **Implemented;
+   pending cross-repository review/merge.**
+2. Review manager redistribution constraints, select immutable controlled storage, and decide
+   whether manager files may be GitHub Release assets or require digest-only metadata plus public
+   derived payloads.
+3. Commit the release-specific two-stage target registry derived from the likelihood registrations
+   and owner-side review script. Exclude the legacy `adap.clients` overlay and bind any corrected
+   ADAP client target to a manager that contains the actual series.
+4. Record the verified EHE and Ryan White releases/assets, digests, stage-specific sample counts,
    April 2025 web-manager digest, and provenance-confidence fields.
-3. Archive the exact web/display manager and publish source/coverage metadata subject to its
+5. Archive the exact web/display manager and publish source/coverage metadata subject to its
    redistribution constraints.
-4. Record that the authenticated historical-manager link returned the current March 2026 artifact;
+6. Record that the authenticated historical-manager link returned the current March 2026 artifact;
    the exact March 2025 bytes remain unavailable and do not block Unit 4B.
-5. Record the absent full fitted MSA posterior and unknown historical generator revision explicitly;
+7. Record the absent full fitted MSA posterior and unknown historical generator revision explicitly;
    do not manufacture replacements or attestations.
 
 **Exit gate:** every intended public panel is tied to a released posterior asset, observed-data

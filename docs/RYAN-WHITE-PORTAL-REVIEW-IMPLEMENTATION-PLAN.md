@@ -1,11 +1,12 @@
 # Ryan White Portal Review and Remediation Plan
 
-**Status:** Phase 4 source investigation complete — calibration contract and exporter are next
+**Status:** Phase 4 source investigation and manager-compatibility unit complete — redistribution,
+storage, and the calibration contract are next
 
 **Created:** 2026-07-29  
 **Scope:** Ryan White city and state explorers, custom simulations, calibration presentation, and the shared portal components they depend on
 
-### Progress snapshot — 2026-08-11
+### Progress snapshot — 2026-08-12
 
 - **Phase 0:** Implemented and covered by AJPH/CROI URL regression tests.
 - **Phase 1:** Model timing contract, shared-engine validation, workflow transport, cache isolation,
@@ -150,7 +151,13 @@
   lineage is reconstructed. Engineering may proceed without an open-ended model-owner questionnaire.
   The authenticated historical-manager recovery was attempted on 2026-08-12; the old SharePoint URL
   served the current March 2026 artifact, confirming that the link is mutable and leaving the exact
-  March 2025 bytes unavailable but non-blocking. Phase 5 has not started.
+  March 2025 bytes unavailable but non-blocking. A hash-gated comparison now establishes exact or
+  additive compatibility for the shared display targets, and independently reproduces the newer
+  manager's five ADAP-derived target formulas. It deliberately does not claim whole-manager or
+  historical-posterior identity. The same pass also confirmed a legacy deployed metadata defect:
+  older simsets map `adap.clients` observations to `non.adap.clients`, producing a duplicated ADAP
+  overlay; model source corrected the mapping on 2026-01-09, but existing released artifacts still
+  carry the old metadata. Phase 5 has not started.
 
 ### Independent engineering audit checkpoint — 2026-07-31
 
@@ -547,6 +554,32 @@ observed data, omit the scientific provenance needed by the exit gate, and do no
 1,000-draw EHE epidemic baseline from the 80-draw MSA or 1,000-draw state Ryan White service-fit
 ensembles. Do not rerun a replacement 1,000-draw MSA service fit and present it as provenance for
 the deployed model.
+
+#### Phase 4 manager-compatibility checkpoint — 2026-08-12
+
+The manager comparison and candidate-derived-target validation are implemented as a deterministic,
+hash-gated `jheem_analyses` unit. The April 2025 display manager and March 2026 full manager have
+unchanged shared values for `non.adap.clients`, `oahs.clients`, `oahs.suppression`, and
+`adap.proportion`; `adap.suppression` is additive; and `diagnosed.prevalence` is unchanged on its
+shared cells while the newer manager fills additional coverage. All five checked ADAP-derived
+targets reproduce their documented formulas with zero mismatches.
+
+This evidence supports target-specific reuse, not silent substitution of the March 2026 manager as
+the historical fitting manager. In particular, `adap.clients` is candidate-only relative to the
+display manager. A production overlay that shows it equal to `non.adap.clients` reflects the old
+simset's incorrect `corresponding.observed.outcome` metadata, not historical numeric equivalence.
+
+The bounded order from here is:
+
+1. review redistribution constraints for the April 2025 display manager and March 2026 full
+   manager;
+2. choose immutable controlled storage and decide whether either manager may be a GitHub Release
+   asset, with a digest-only/public-derived-data fallback when redistribution is not established;
+3. commit the release-specific target registry, explicitly excluding the legacy `adap.clients`
+   overlay and representing the corrected target only where a valid observed-manager binding is
+   available;
+4. proceed to the deterministic exporter, manifest, backend binding, portal surface, and integrated
+   QA in Units 4B–4D.
 
 ### Phase 5 — Integrated QA and release
 
