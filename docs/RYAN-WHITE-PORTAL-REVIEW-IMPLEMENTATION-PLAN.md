@@ -1,7 +1,7 @@
 # Ryan White Portal Review and Remediation Plan
 
-**Status:** Phase 4 source investigation and manager-compatibility unit complete — redistribution,
-storage, and the calibration contract are next
+**Status:** Phase 4 source investigation, manager compatibility, and redistribution disposition
+complete — controlled archival and the release-specific target registry are next
 
 **Created:** 2026-07-29  
 **Scope:** Ryan White city and state explorers, custom simulations, calibration presentation, and the shared portal components they depend on
@@ -572,9 +572,12 @@ simset's incorrect `corresponding.observed.outcome` metadata, not historical num
 The bounded order from here is:
 
 1. review redistribution constraints for the April 2025 display manager and March 2026 full
-   manager;
+   manager — **complete; see
+   [`RYAN-WHITE-MANAGER-REDISTRIBUTION-AND-STORAGE-DECISION.md`](./RYAN-WHITE-MANAGER-REDISTRIBUTION-AND-STORAGE-DECISION.md)**;
 2. choose immutable controlled storage and decide whether either manager may be a GitHub Release
-   asset, with a digest-only/public-derived-data fallback when redistribution is not established;
+   asset, with a digest-only/public-derived-data fallback when redistribution is not established —
+   **complete: controlled archive plus public minimal derived artifacts; no public manager release
+   without source-rights review**;
 3. commit the release-specific target registry, explicitly excluding the legacy `adap.clients`
    overlay and representing the corrected target only where a valid observed-manager binding is
    available;

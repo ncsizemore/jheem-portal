@@ -1,7 +1,7 @@
 # Ryan White Calibration Artifact Inventory and Delivery Contract
 
-**Status:** Phase 4 inventory, provenance investigation, and manager-compatibility unit complete;
-redistribution and immutable-storage decision next
+**Status:** Phase 4 inventory, provenance investigation, manager compatibility, and redistribution
+disposition complete; controlled archival and target registry next
 
 **Reviewed:** 2026-08-12
 
@@ -423,7 +423,9 @@ Owner: engineering, followed by focused scientific review.
    pending cross-repository review/merge.**
 2. Review manager redistribution constraints, select immutable controlled storage, and decide
    whether manager files may be GitHub Release assets or require digest-only metadata plus public
-   derived payloads.
+   derived payloads. **Decision recorded in
+   [`RYAN-WHITE-MANAGER-REDISTRIBUTION-AND-STORAGE-DECISION.md`](./RYAN-WHITE-MANAGER-REDISTRIBUTION-AND-STORAGE-DECISION.md):
+   controlled archive plus public minimal derived artifacts; public manager release deferred.**
 3. Commit the release-specific two-stage target registry derived from the likelihood registrations
    and owner-side review script. Exclude the legacy `adap.clients` overlay and bind any corrected
    ADAP client target to a manager that contains the actual series.
