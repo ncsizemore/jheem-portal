@@ -1,12 +1,12 @@
 # Ryan White Portal Review and Remediation Plan
 
-**Status:** Phase 4 source investigation, manager compatibility, and redistribution disposition
-complete — controlled archival and the release-specific target registry are next
+**Status:** Phase 4 Unit 4A complete; deterministic exporter and representative MSA service-fit
+acceptance complete — remaining model/stage acceptance and immutable artifact publication next
 
 **Created:** 2026-07-29  
 **Scope:** Ryan White city and state explorers, custom simulations, calibration presentation, and the shared portal components they depend on
 
-### Progress snapshot — 2026-08-12
+### Progress snapshot — 2026-08-14
 
 - **Phase 0:** Implemented and covered by AJPH/CROI URL regression tests.
 - **Phase 1:** Model timing contract, shared-engine validation, workflow transport, cache isolation,
@@ -157,7 +157,20 @@ complete — controlled archival and the release-specific target registry are ne
   historical-posterior identity. The same pass also confirmed a legacy deployed metadata defect:
   older simsets map `adap.clients` observations to `non.adap.clients`, producing a duplicated ADAP
   overlay; model source corrected the mapping on 2026-01-09, but existing released artifacts still
-  carry the old metadata. Phase 5 has not started.
+  carry the old metadata. The manager compatibility unit is merged directly to `jheem_analyses`
+  `master` at `426f03d1`, following that repository's established workflow. The private
+  `CIPHER-Epi/jheem-data-managers` repository now holds digest-verified controlled releases of the
+  April 2025 web/display manager and March 2026 full manager. The release-specific target registry
+  is merged in [jheem-containers#16](https://github.com/ncsizemore/jheem-containers/pull/16), and the
+  deterministic exporter is merged in
+  [jheem-containers#17](https://github.com/ncsizemore/jheem-containers/pull/17). The exporter restores
+  the serialized JHEEM runtime state, rejects inherited observation mappings, preserves nested
+  likelihood geography, emits the closed `jheem-calibration/v1` schema, and records immutable
+  runtime, posterior, registry, exporter, and manager identities. A real Atlanta MSA service-fit
+  run using the released 80-draw posterior and both controlled managers passed duplicate-export
+  determinism, schema validation, and scientific invariants. Unit 4A is complete; Unit 4B has a
+  proven representative export but not yet a multi-model release manifest or immutable public
+  artifact release. Phase 5 has not started.
 
 ### Independent engineering audit checkpoint — 2026-07-31
 
@@ -577,23 +590,57 @@ The bounded order from here is:
 2. choose immutable controlled storage and decide whether either manager may be a GitHub Release
    asset, with a digest-only/public-derived-data fallback when redistribution is not established —
    **architecture selected: use private `CIPHER-Epi/jheem-data-managers` immutable releases plus
-   public minimal derived artifacts; repository creation, private-location data-classification
-   confirmation, and archival publication remain pending; no public manager release without
-   source-rights review**;
+   public minimal derived artifacts; repository creation, private-location data classification,
+   and both controlled releases are complete; no public manager release without source-rights
+   review**;
 3. commit the release-specific target registry, explicitly excluding the legacy `adap.clients`
    overlay and representing the corrected target only where a valid observed-manager binding is
    available — **complete in `jheem-containers` PR #16**;
 4. merge the manager-compatibility, portal-provenance, and target-registry PRs in dependency order,
    then remove their merged temporary worktrees and synchronize the repositories' default-branch
-   checkouts without disturbing the dirty primary portal checkout;
+   checkouts without disturbing the dirty primary portal checkout — **complete except for bounded
+   local branch/worktree cleanup, which remains intentionally deferred until unrelated portal work
+   is preserved**;
 5. bootstrap the private `CIPHER-Epi/jheem-data-managers` repository with the archive schema,
    registry, immutable-release convention, access policy, and verification workflow; confirm the
    two managers' private-location data classification and publish their exact verified byte streams
-   as controlled releases;
+   as controlled releases — **complete**;
 6. proceed to the deterministic exporter, manifest, backend binding, portal surface, and integrated
-   QA in Units 4B–4D; and
+   QA in Units 4B–4D — **exporter and representative MSA service-fit acceptance complete; manifest,
+   expanded acceptance, publication, backend binding, and portal work remain**; and
 7. treat central publication of future CI-built managers—beginning with a later syphilis promotion
    pilot—as a separate platform unit, not a prerequisite for the Ryan White calibration surface.
+
+#### Phase 4 exporter and acceptance checkpoint — 2026-08-14
+
+The accepted exporter is pinned to merged `jheem-containers` commit `f00283b9`. Its source tree is
+identical to the pre-squash revision used by the first green acceptance run. The private acceptance
+workflow downloads and verifies the exact simulation release asset and both controlled-manager
+byte streams, runs the exporter twice inside the immutable model-image digest, compares the outputs
+byte for byte, validates the closed schema, and checks model, stage, location, sample-count, target,
+and observation invariants. The merged-SHA
+[acceptance run](https://github.com/CIPHER-Epi/jheem-data-managers/actions/runs/31836974907)
+passed in full. No controlled input or raw posterior is published.
+
+The next bounded order is:
+
+1. rerun the existing Atlanta MSA service-fit gate against merged commit `f00283b9` and retain that
+   run as the durable acceptance record — **complete**;
+2. add representative real-artifact gates for the MSA EHE stage plus AJPH and CROI EHE/service-fit
+   stages before scaling generation;
+3. generate complete MSA artifacts for both stages and all 31 locations, followed by the state
+   products, with per-product manifests even where AJPH and CROI can safely share identical physical
+   baseline payloads;
+4. publish only schema-validated minimal derived artifacts, manifests, location indexes, coverage
+   reports, and checksums. Use public `jheem-simulations` releases as the default v1 destination
+   unless repository ownership or access policy produces a concrete blocker; keep manager binaries
+   exclusively in the private controlled archive; and
+5. bind immutable manifest URLs and digests in backend configuration before beginning the portal
+   surface.
+
+Calibration-tooling-only changes should eventually stop rebuilding and promoting unrelated runtime
+images. The current broad container gate is safe but unnecessarily expensive; selector refinement
+is bounded CI maintenance and must not weaken exact-digest model testing for runtime changes.
 
 ### Phase 5 — Integrated QA and release
 
