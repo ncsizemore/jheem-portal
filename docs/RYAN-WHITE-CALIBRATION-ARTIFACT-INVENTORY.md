@@ -1,9 +1,9 @@
 # Ryan White Calibration Artifact Inventory and Delivery Contract
 
-**Status:** Phase 4 inventory, provenance investigation, manager compatibility, and redistribution
-disposition complete; controlled archival and target registry next
+**Status:** Unit 4A complete; deterministic exporter and representative MSA service-fit acceptance
+complete; expanded model/stage acceptance and immutable derived-artifact publication next
 
-**Reviewed:** 2026-08-12
+**Reviewed:** 2026-08-14
 
 **Scope:** `ryan-white-msa`, `ryan-white-state-ajph`, and `ryan-white-state-croi`
 
@@ -419,8 +419,8 @@ expose draw-level data as a separate artifact if scientifically useful.
 
 Owner: engineering, followed by focused scientific review.
 
-1. Land the hash-gated manager comparison and candidate-derived-target validation. **Implemented;
-   pending cross-repository review/merge.**
+1. Land the hash-gated manager comparison and candidate-derived-target validation. **Complete on
+   `jheem_analyses` `master` at `426f03d1`.**
 2. Review manager redistribution constraints, select immutable controlled storage, and decide
    whether manager files may be GitHub Release assets or require digest-only metadata plus public
    derived payloads. **Decision recorded in
@@ -428,11 +428,13 @@ Owner: engineering, followed by focused scientific review.
    controlled archive plus public minimal derived artifacts; public manager release deferred.**
 3. Commit the release-specific two-stage target registry derived from the likelihood registrations
    and owner-side review script. Exclude the legacy `adap.clients` overlay and bind any corrected
-   ADAP client target to a manager that contains the actual series.
+   ADAP client target to a manager that contains the actual series. **Complete in
+   `jheem-containers` PR #16.**
 4. Record the verified EHE and Ryan White releases/assets, digests, stage-specific sample counts,
    April 2025 web-manager digest, and provenance-confidence fields.
 5. Archive the exact web/display manager and publish source/coverage metadata subject to its
-   redistribution constraints.
+   redistribution constraints. **Complete as a controlled private release alongside the separately
+   identified March 2026 full manager in `CIPHER-Epi/jheem-data-managers`.**
 6. Record that the authenticated historical-manager link returned the current March 2026 artifact;
    the exact March 2025 bytes remain unavailable and do not block Unit 4B.
 7. Record the absent full fitted MSA posterior and unknown historical generator revision explicitly;
@@ -442,16 +444,24 @@ Owner: engineering, followed by focused scientific review.
 identity, target definition, stage-specific sample count, and source, while historical uncertainty
 is represented explicitly rather than treated as a blocker.
 
+**Exit status:** Met. Unit 4A is complete.
+
 ### Unit 4B — Build and release deterministic artifacts
 
 Owner: `jheem-containers` for extraction/runtime; backend for product mapping.
 
 1. Refactor the existing `prepare_plot_local()`/observation extraction into a baseline-only,
-   stage-aware calibration export command.
+   stage-aware calibration export command. **Complete in `jheem-containers` PR #17.**
 2. Make model ID, release asset, expected digest, target allowlist, and output directory explicit
-   inputs; fail closed on mismatches or missing targets.
+   inputs; fail closed on mismatches or missing targets. **Complete in the exporter contract.**
 3. Emit `jheem-calibration/v1`, per-location payloads, a coverage report, and checksums.
+   **The closed per-location artifact schema is complete; release manifests, location indexes,
+   coverage reports, and release checksums remain.**
 4. Test sample count, quantiles, target/facet coverage, source URLs, and deterministic output.
+   **Complete for the representative Atlanta MSA Ryan White service-fit artifact; representative
+   EHE and state-model acceptance plus release-wide coverage remain. The durable merged-exporter
+   acceptance record is
+   [run 31836974907](https://github.com/CIPHER-Epi/jheem-data-managers/actions/runs/31836974907).**
 5. Publish a versioned release or immutable object prefix.
 6. Extend backend `models.json` with the manifest URL/release and digest; validate it alongside the
    existing container/simset contract.
