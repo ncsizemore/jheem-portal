@@ -1,12 +1,12 @@
 # Ryan White Portal Review and Remediation Plan
 
-**Status:** Phase 4 Unit 4A complete; deterministic exporter and representative MSA service-fit
-acceptance complete — remaining model/stage acceptance and immutable artifact publication next
+**Status:** Phase 4 Unit 4A and representative multi-model acceptance complete — exhaustive,
+review-gated artifact production and immutable publication next
 
 **Created:** 2026-07-29  
 **Scope:** Ryan White city and state explorers, custom simulations, calibration presentation, and the shared portal components they depend on
 
-### Progress snapshot — 2026-08-14
+### Progress snapshot — 2026-08-18
 
 - **Phase 0:** Implemented and covered by AJPH/CROI URL regression tests.
 - **Phase 1:** Model timing contract, shared-engine validation, workflow transport, cache isolation,
@@ -163,14 +163,18 @@ acceptance complete — remaining model/stage acceptance and immutable artifact 
   April 2025 web/display manager and March 2026 full manager. The release-specific target registry
   is merged in [jheem-containers#16](https://github.com/ncsizemore/jheem-containers/pull/16), and the
   deterministic exporter is merged in
-  [jheem-containers#17](https://github.com/ncsizemore/jheem-containers/pull/17). The exporter restores
+  [jheem-containers#17](https://github.com/ncsizemore/jheem-containers/pull/17), with the subsequent
+  scientific extraction corrections merged in
+  [jheem-containers#18](https://github.com/ncsizemore/jheem-containers/pull/18). The exporter restores
   the serialized JHEEM runtime state, rejects inherited observation mappings, preserves nested
   likelihood geography, emits the closed `jheem-calibration/v1` schema, and records immutable
   runtime, posterior, registry, exporter, and manager identities. A real Atlanta MSA service-fit
   run using the released 80-draw posterior and both controlled managers passed duplicate-export
-  determinism, schema validation, and scientific invariants. Unit 4A is complete; Unit 4B has a
-  proven representative export but not yet a multi-model release manifest or immutable public
-  artifact release. Phase 5 has not started.
+  determinism, schema validation, and scientific invariants. The final private acceptance matrix
+  then passed both EHE and Ryan White service-fit stages for representative MSA, AJPH, and CROI
+  locations against the merged exporter and exact runtime-image digests. Unit 4A and representative
+  Unit 4B acceptance are complete; exhaustive location generation, release manifests, immutable
+  public archival, and CloudFront promotion remain. Phase 5 has not started.
 
 ### Independent engineering audit checkpoint — 2026-07-31
 
@@ -606,37 +610,51 @@ The bounded order from here is:
    two managers' private-location data classification and publish their exact verified byte streams
    as controlled releases — **complete**;
 6. proceed to the deterministic exporter, manifest, backend binding, portal surface, and integrated
-   QA in Units 4B–4D — **exporter and representative MSA service-fit acceptance complete; manifest,
-   expanded acceptance, publication, backend binding, and portal work remain**; and
+   QA in Units 4B–4D — **exporter and representative multi-model/two-stage acceptance complete;
+   exhaustive production, publication, backend binding, and portal work remain**; and
 7. treat central publication of future CI-built managers—beginning with a later syphilis promotion
    pilot—as a separate platform unit, not a prerequisite for the Ryan White calibration surface.
 
-#### Phase 4 exporter and acceptance checkpoint — 2026-08-14
+#### Phase 4 exporter and acceptance checkpoint — 2026-08-18
 
-The accepted exporter is pinned to merged `jheem-containers` commit `f00283b9`. Its source tree is
-identical to the pre-squash revision used by the first green acceptance run. The private acceptance
+The accepted exporter and scientific extraction corrections are pinned to merged
+`jheem-containers` commit `a490eb7f8028785b68b5bf4b84b74bba2dbd0497`. The private acceptance
 workflow downloads and verifies the exact simulation release asset and both controlled-manager
 byte streams, runs the exporter twice inside the immutable model-image digest, compares the outputs
 byte for byte, validates the closed schema, and checks model, stage, location, sample-count, target,
-and observation invariants. The merged-SHA
-[acceptance run](https://github.com/CIPHER-Epi/jheem-data-managers/actions/runs/31836974907)
-passed in full. No controlled input or raw posterior is published.
+and observation invariants. The final provenance-exact
+[acceptance run](https://github.com/CIPHER-Epi/jheem-data-managers/actions/runs/31846981011)
+passed EHE and Ryan White service-fit stages for representative MSA, AJPH, and CROI locations. The
+acceptance matrix is merged in
+[CIPHER-Epi/jheem-data-managers#1](https://github.com/CIPHER-Epi/jheem-data-managers/pull/1) at
+`4cb656c5b05e34e608b5adf254fa715a0c594685`. No controlled input or raw posterior is published.
 
 The next bounded order is:
 
-1. rerun the existing Atlanta MSA service-fit gate against merged commit `f00283b9` and retain that
-   run as the durable acceptance record — **complete**;
-2. add representative real-artifact gates for the MSA EHE stage plus AJPH and CROI EHE/service-fit
-   stages before scaling generation;
-3. generate complete MSA artifacts for both stages and all 31 locations, followed by the state
-   products, with per-product manifests even where AJPH and CROI can safely share identical physical
-   baseline payloads;
-4. publish only schema-validated minimal derived artifacts, manifests, location indexes, coverage
-   reports, and checksums. Use public `jheem-simulations` releases as the default v1 destination
-   unless repository ownership or access policy produces a concrete blocker; keep manager binaries
-   exclusively in the private controlled archive; and
-5. bind immutable manifest URLs and digests in backend configuration before beginning the portal
-   surface.
+1. complete the representative real-artifact gates for MSA, AJPH, and CROI across both stages —
+   **complete**;
+2. add a committed, checksum-pinned production inventory for 31 MSA, 11 AJPH, and 30 CROI
+   locations, and generate both stages for every entry: 72 product/location bundles and 144 public
+   derived JSON artifacts;
+3. assemble per-product manifests, location indexes, coverage reports, and checksums; fail closed
+   on missing or extra locations, schema drift, input-digest drift, or nondeterministic output;
+4. retain the complete build privately for review, then publish only approved minimal derived
+   artifacts and release metadata to a versioned public `jheem-simulations` release. Manager
+   binaries and source posterior assets remain outside that release;
+5. promote the reviewed release byte-for-byte to an immutable versioned S3/CloudFront prefix.
+   GitHub Releases is the archival source of truth, not the browser delivery origin: direct release
+   assets use attachment redirects and do not provide a portal CORS contract;
+6. pin each product's CloudFront manifest URL and digest in backend configuration. Rollback changes
+   only that pin to a prior immutable release; it does not overwrite an existing prefix; and
+7. begin the schema-validated, lazy portal surface only after the promoted manifest contract passes
+   backend validation.
+
+The exhaustive build belongs in the private manager repository because it alone can read the
+controlled inputs. It is manually dispatched and bounded in concurrency: a full build transfers
+roughly 142 GB (132 GiB) of immutable simulation inputs but emits well under 0.1 GB of derived JSON
+before release bundling.
+Publication is a separate approval-gated promotion, not an automatic consequence of a successful
+build.
 
 Calibration-tooling-only changes should eventually stop rebuilding and promoting unrelated runtime
 images. The current broad container gate is safe but unnecessarily expensive; selector refinement
