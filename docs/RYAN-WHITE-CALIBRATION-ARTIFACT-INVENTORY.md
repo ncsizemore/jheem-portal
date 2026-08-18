@@ -1,9 +1,9 @@
 # Ryan White Calibration Artifact Inventory and Delivery Contract
 
-**Status:** Unit 4A complete; deterministic exporter and representative MSA service-fit acceptance
-complete; expanded model/stage acceptance and immutable derived-artifact publication next
+**Status:** Unit 4A and representative MSA/AJPH/CROI two-stage acceptance complete; exhaustive,
+review-gated derived-artifact production and immutable publication next
 
-**Reviewed:** 2026-08-14
+**Reviewed:** 2026-08-18
 
 **Scope:** `ryan-white-msa`, `ryan-white-state-ajph`, and `ryan-white-state-croi`
 
@@ -458,12 +458,14 @@ Owner: `jheem-containers` for extraction/runtime; backend for product mapping.
    **The closed per-location artifact schema is complete; release manifests, location indexes,
    coverage reports, and release checksums remain.**
 4. Test sample count, quantiles, target/facet coverage, source URLs, and deterministic output.
-   **Complete for the representative Atlanta MSA Ryan White service-fit artifact; representative
-   EHE and state-model acceptance plus release-wide coverage remain. The durable merged-exporter
-   acceptance record is
-   [run 31836974907](https://github.com/CIPHER-Epi/jheem-data-managers/actions/runs/31836974907).**
-5. Publish a versioned release or immutable object prefix.
-6. Extend backend `models.json` with the manifest URL/release and digest; validate it alongside the
+   **Complete for representative MSA, AJPH, and CROI locations across both EHE and Ryan White
+   service-fit stages. Release-wide coverage remains. The final provenance-exact acceptance record
+   is [run 31846981011](https://github.com/CIPHER-Epi/jheem-data-managers/actions/runs/31846981011).**
+5. Generate the exhaustive 72-product/location matrix (144 stage artifacts), retain it privately
+   for review, and publish the approved minimal payloads to an immutable public release.
+6. Promote the exact reviewed release to a versioned S3/CloudFront prefix for browser delivery;
+   do not depend on GitHub release-asset redirects as the portal data origin.
+7. Extend backend `models.json` with the manifest URL/release and digest; validate it alongside the
    existing container/simset contract.
 
 **Exit gate:** an unchanged input set reproduces byte-stable scientific payloads apart from a
