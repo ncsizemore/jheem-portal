@@ -60,9 +60,11 @@ itself the final public release for two explicit reasons:
 2. the catalog names `ncsizemore/jheem-simulations`, while the selected long-term archive should be
    the organization-owned public `CIPHER-Epi/jheem-simulations` repository.
 
-Do not rename the candidate or publish it under a contradictory tag. Create the organization-owned
-archive, update the committed publication registry, and run an assembly-only finalization from the
-retained, checksum-verified shard artifacts. The resulting `ryan-white-calibration-v1.0.0` package
+Do not rename the candidate or publish it under a contradictory tag. The existing public archive
+was transferred intact to `CIPHER-Epi/jheem-simulations` on 2026-08-25 with its repository ID,
+release IDs, asset IDs, sizes, and digests preserved. Update the committed publication registry and
+run an assembly-only finalization from the retained, checksum-verified shard artifacts. The
+resulting `ryan-white-calibration-v1.0.0` package
 must repeat the release/manifest/schema/checksum gates and demonstrate that stage artifact content
 is unchanged except for deliberately regenerated release metadata.
 

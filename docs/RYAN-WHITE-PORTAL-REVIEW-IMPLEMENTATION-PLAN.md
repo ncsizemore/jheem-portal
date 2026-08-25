@@ -185,8 +185,9 @@ organization-owned archival, immutable promotion, backend binding, and portal pr
   public observation source, and representative scientific payload. The review is recorded in
   [`RYAN-WHITE-CALIBRATION-RC2-REVIEW.md`](./RYAN-WHITE-CALIBRATION-RC2-REVIEW.md). The candidate is
   accepted for finalization but cannot be renamed or published as final: it embeds `rc.2` and the
-  personal archive repository. Organization-owned archival, final assembly, CloudFront promotion,
-  backend binding, and portal presentation remain. Phase 5 has not started.
+  former personal archive repository. The existing archive was transferred intact to
+  `CIPHER-Epi/jheem-simulations` on 2026-08-25; final assembly, CloudFront promotion, backend
+  binding, and portal presentation remain. Phase 5 has not started.
 
 ### Independent engineering audit checkpoint — 2026-07-31
 
@@ -661,9 +662,9 @@ The next bounded order is:
 4. retain the complete build privately for review, then publish only approved minimal derived
    artifacts and release metadata to a versioned public `jheem-simulations` release. Manager
    binaries and source posterior assets remain outside that release — **private retention and
-   independent review are complete; publication remains gated on creating public
-   `CIPHER-Epi/jheem-simulations`, updating the archive identity, and reassembling—not renaming—a
-   final `v1.0.0` package from the retained shards**;
+   independent review are complete; the existing public archive has been transferred intact to
+   `CIPHER-Epi/jheem-simulations`, and publication remains gated on updating the archive identity
+   and reassembling—not renaming—a final `v1.0.0` package from the retained shards**;
 5. promote the reviewed release byte-for-byte to an immutable versioned S3/CloudFront prefix.
    GitHub Releases is the archival source of truth, not the browser delivery origin: direct release
    assets use attachment redirects and do not provide a portal CORS contract;
