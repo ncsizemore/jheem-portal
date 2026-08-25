@@ -1,12 +1,12 @@
 # Ryan White Portal Review and Remediation Plan
 
-**Status:** Phase 4 Unit 4A and representative multi-model acceptance complete — exhaustive,
-review-gated artifact production and immutable publication next
+**Status:** Phase 4 exhaustive artifact production and independent candidate review complete —
+organization-owned archival, immutable promotion, backend binding, and portal presentation next
 
 **Created:** 2026-07-29  
 **Scope:** Ryan White city and state explorers, custom simulations, calibration presentation, and the shared portal components they depend on
 
-### Progress snapshot — 2026-08-18
+### Progress snapshot — 2026-08-25
 
 - **Phase 0:** Implemented and covered by AJPH/CROI URL regression tests.
 - **Phase 1:** Model timing contract, shared-engine validation, workflow transport, cache isolation,
@@ -173,8 +173,20 @@ review-gated artifact production and immutable publication next
   determinism, schema validation, and scientific invariants. The final private acceptance matrix
   then passed both EHE and Ryan White service-fit stages for representative MSA, AJPH, and CROI
   locations against the merged exporter and exact runtime-image digests. Unit 4A and representative
-  Unit 4B acceptance are complete; exhaustive location generation, release manifests, immutable
-  public archival, and CloudFront promotion remain. Phase 5 has not started.
+  Unit 4B acceptance are complete. The checksum-pinned production inventory and coverage contract
+  are merged in [CIPHER-Epi/jheem-data-managers#3](https://github.com/CIPHER-Epi/jheem-data-managers/pull/3)
+  and [jheem-containers#19](https://github.com/ncsizemore/jheem-containers/pull/19). Exhaustive
+  [production run 32667856224](https://github.com/CIPHER-Epi/jheem-data-managers/actions/runs/32667856224),
+  attempt 2, passed 31 MSA, 11 AJPH, and 30 CROI locations across both stages and assembled 144
+  artifacts into three deterministic product bundles. The sole first-attempt failure was a GitHub
+  release-asset connection reset; failed-job retry passed the unchanged AJPH shard and assembly.
+  Independent candidate review then verified every package checksum, committed source digest,
+  schema, inventory entry, coverage summary, provenance field, finite-value and quantile invariant,
+  public observation source, and representative scientific payload. The review is recorded in
+  [`RYAN-WHITE-CALIBRATION-RC2-REVIEW.md`](./RYAN-WHITE-CALIBRATION-RC2-REVIEW.md). The candidate is
+  accepted for finalization but cannot be renamed or published as final: it embeds `rc.2` and the
+  personal archive repository. Organization-owned archival, final assembly, CloudFront promotion,
+  backend binding, and portal presentation remain. Phase 5 has not started.
 
 ### Independent engineering audit checkpoint — 2026-07-31
 
@@ -617,7 +629,7 @@ The bounded order from here is:
 
 #### Phase 4 exporter and acceptance checkpoint — 2026-08-18
 
-The accepted exporter and scientific extraction corrections are pinned to merged
+The representative-acceptance exporter and scientific extraction corrections are pinned to merged
 `jheem-containers` commit `a490eb7f8028785b68b5bf4b84b74bba2dbd0497`. The private acceptance
 workflow downloads and verifies the exact simulation release asset and both controlled-manager
 byte streams, runs the exporter twice inside the immutable model-image digest, compares the outputs
@@ -629,18 +641,29 @@ acceptance matrix is merged in
 [CIPHER-Epi/jheem-data-managers#1](https://github.com/CIPHER-Epi/jheem-data-managers/pull/1) at
 `4cb656c5b05e34e608b5adf254fa715a0c594685`. No controlled input or raw posterior is published.
 
+The exhaustive build uses coverage-enabled exporter revision
+`d11c5ae6f945dbc12466615d3fa15a4131edb3bb`, while retaining the accepted registry and scientific
+extraction behavior. Its exporter, schema, registry, coverage scanner, and coverage-lock byte
+digests are independently verified. The six representative stage artifacts retain identical
+scientific payloads to run `31846981011`; only the deliberately added coverage source, target
+availability state, and corresponding exporter digest differ.
+
 The next bounded order is:
 
 1. complete the representative real-artifact gates for MSA, AJPH, and CROI across both stages —
    **complete**;
 2. add a committed, checksum-pinned production inventory for 31 MSA, 11 AJPH, and 30 CROI
    locations, and generate both stages for every entry: 72 product/location bundles and 144 public
-   derived JSON artifacts;
+   derived JSON artifacts — **complete in run 32667856224, attempt 2**;
 3. assemble per-product manifests, location indexes, coverage reports, and checksums; fail closed
-   on missing or extra locations, schema drift, input-digest drift, or nondeterministic output;
+   on missing or extra locations, schema drift, input-digest drift, or nondeterministic output —
+   **complete for `v1.0.0-rc.2`; independent review passed**;
 4. retain the complete build privately for review, then publish only approved minimal derived
    artifacts and release metadata to a versioned public `jheem-simulations` release. Manager
-   binaries and source posterior assets remain outside that release;
+   binaries and source posterior assets remain outside that release — **private retention and
+   independent review are complete; publication remains gated on creating public
+   `CIPHER-Epi/jheem-simulations`, updating the archive identity, and reassembling—not renaming—a
+   final `v1.0.0` package from the retained shards**;
 5. promote the reviewed release byte-for-byte to an immutable versioned S3/CloudFront prefix.
    GitHub Releases is the archival source of truth, not the browser delivery origin: direct release
    assets use attachment redirects and do not provide a portal CORS contract;
