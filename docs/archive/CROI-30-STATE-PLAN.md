@@ -307,7 +307,7 @@ cd /Volumes/WD_Black/wiley/Documents/jheem-ryan-white-croi-container
 
 ```bash
 gh release create ryan-white-state-v2.0.0-web \
-  --repo ncsizemore/jheem-simulations \
+  --repo CIPHER-Epi/jheem-simulations \
   --title "Ryan White State v2.0.0 (Web-Ready, CROI 2026)" \
   --notes "Trimmed simsets (80 sims) for web deployment" \
   */*.Rdata
