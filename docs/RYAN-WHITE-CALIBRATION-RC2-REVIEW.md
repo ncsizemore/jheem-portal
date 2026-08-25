@@ -73,12 +73,34 @@ reuse metadata appropriate to the derived outputs; manager binaries and raw post
 private. After publication, promote the exact approved release bytes to a new immutable
 S3/CloudFront prefix and bind the backend only to that manifest URL and digest.
 
+## Finalization outcome — 2026-08-25
+
+The organization archive transfer and registry migration completed, and assembly-only
+[run `32897836534`](https://github.com/CIPHER-Epi/jheem-data-managers/actions/runs/32897836534)
+produced the private `ryan-white-calibration-v1.0.0` package as artifact `9581909653`. The run
+locked production run `32667856224`, attempt 2, all 16 retained shards, RC2 artifact `9545743597`,
+and the reviewed exporter/schema identities. It proved all 144 scientific payloads byte-identical
+to RC2 while regenerating only the final release and organization archive metadata.
+
+A fresh download passed all outer checksums, safe archive-member checks, manifest identities, and
+31/11/30 location coverage. The final hashes are:
+
+```text
+8c2ed45f7e90e3abbcb17eaa8e878f94b99cdc915a85fdb08789835d7d955438  catalog.json
+1e10cc920e156c21c0461a1deb2e4a6b68cc3046fde207db559867c817eb58a4  ryan-white-ajph-ryan-white-calibration-v1.0.0.tar.gz
+805378bedc59abdaecc67e36192fd49ecce3521c2014973840024aafb2818ca7  ryan-white-croi-ryan-white-calibration-v1.0.0.tar.gz
+57e446c6361306efe61a3b73b1972ada0ad2ca680b2f2d4ed056d82be6b9a31a  ryan-white-msa-ryan-white-calibration-v1.0.0.tar.gz
+```
+
+Final assembly is complete. Public release creation remains explicitly unperformed and gated on
+reviewed citation/reuse metadata and publication approval.
+
 ## Bounded follow-up
 
 - Add retry with backoff and partial-download cleanup around GitHub release-asset transfers before
   the next exhaustive source-data run. This is operational hardening and does not invalidate the
   accepted candidate.
-- Complete final assembly while the shard artifacts are retained, preferably before 2026-09-06,
-  so finalization does not repeat the roughly 142 GB source-data transfer.
+- **Completed:** final assembly reused the retained shards in run `32897836534`; no repeat of the
+  roughly 142 GB source-data transfer was required.
 - Preserve the candidate artifact and this review record until the final GitHub Release,
   S3/CloudFront promotion, and backend digest pin have all been verified.
