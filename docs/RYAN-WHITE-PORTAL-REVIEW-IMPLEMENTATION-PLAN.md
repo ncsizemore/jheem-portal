@@ -1,12 +1,12 @@
 # Ryan White Portal Review and Remediation Plan
 
-**Status:** Phase 4 exhaustive artifact production and independent candidate review complete —
-organization-owned archival, immutable promotion, backend binding, and portal presentation next
+**Status:** Phase 4 public archival is complete and the immutable-release consumer is implemented —
+CloudFront promotion, backend binding, and portal presentation next
 
 **Created:** 2026-07-29  
 **Scope:** Ryan White city and state explorers, custom simulations, calibration presentation, and the shared portal components they depend on
 
-### Progress snapshot — 2026-08-25
+### Progress snapshot — 2026-09-06
 
 - **Phase 0:** Implemented and covered by AJPH/CROI URL regression tests.
 - **Phase 1:** Model timing contract, shared-engine validation, workflow transport, cache isolation,
@@ -188,8 +188,18 @@ organization-owned archival, immutable promotion, backend binding, and portal pr
   former personal archive repository. The existing archive was transferred intact to
   `CIPHER-Epi/jheem-simulations` on 2026-08-25. Assembly-only run `32897836534` then produced
   the final private `v1.0.0` package and proved all 144 scientific payloads byte-identical to RC2.
-  Public archival, CloudFront promotion, backend binding, and portal presentation remain. Phase 5
-  has not started.
+  The approved final package is now published as immutable public release
+  [`ryan-white-calibration-v1.0.0`](https://github.com/CIPHER-Epi/jheem-simulations/releases/tag/ryan-white-calibration-v1.0.0)
+  in the organization-owned archive. The portal consumer pins release ID `383350377`, tag commit
+  `af8d3fd12a193c5947b01c203792df89fdacc4d3`, and all five asset sizes and SHA-256 digests. Its
+  fail-closed fetch independently verifies GitHub release metadata, immutability, the direct tag
+  ref, exact server asset inventory, and downloaded bytes. Its staging path validates all outer and
+  internal checksums plus the catalog, manifests, coverage, indexes, and 144 artifact contracts,
+  then creates a versioned static tree and deterministic portal index. Live acceptance fetched and
+  staged all three public products successfully. This unit performs no AWS write or runtime portal
+  binding; see
+  [`RYAN-WHITE-CALIBRATION-RELEASE-CONSUMER.md`](./RYAN-WHITE-CALIBRATION-RELEASE-CONSUMER.md).
+  CloudFront promotion, backend binding, and portal presentation remain. Phase 5 has not started.
 
 ### Independent engineering audit checkpoint — 2026-07-31
 
@@ -666,11 +676,14 @@ The next bounded order is:
    binaries and source posterior assets remain outside that release — **private retention and
    independent review are complete; the existing public archive was transferred intact to
    `CIPHER-Epi/jheem-simulations`, and final `v1.0.0` assembly completed in run `32897836534`
-   with all 144 scientific payloads byte-identical to RC2. Publication remains gated on reviewed
-   citation/reuse metadata and explicit approval**;
+   with all 144 scientific payloads byte-identical to RC2. Reviewed citation/reuse metadata was
+   approved and the final package was published as immutable release
+   `ryan-white-calibration-v1.0.0` (release ID `383350377`)**;
 5. promote the reviewed release byte-for-byte to an immutable versioned S3/CloudFront prefix.
    GitHub Releases is the archival source of truth, not the browser delivery origin: direct release
-   assets use attachment redirects and do not provide a portal CORS contract;
+   assets use attachment redirects and do not provide a portal CORS contract — **public archival
+   and the checksum-pinned, fail-closed portal fetch/staging consumer are complete; immutable
+   CloudFront promotion remains**;
 6. pin each product's CloudFront manifest URL and digest in backend configuration. Rollback changes
    only that pin to a prior immutable release; it does not overwrite an existing prefix; and
 7. begin the schema-validated, lazy portal surface only after the promoted manifest contract passes
