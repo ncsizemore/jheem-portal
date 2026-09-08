@@ -18,10 +18,12 @@ function NavigationForPath({ pathname }: { pathname: string }) {
   const showRyanWhiteSubmenu = pathname === '/ryan-white' ||
                                pathname === '/ryan-white/explorer' ||
                                pathname === '/ryan-white/custom' ||
+                               pathname === '/ryan-white/calibration' ||
                                pathname === '/explore'; // legacy route
 
   // Check if we should show State Level submenu
   const showStateLevelSubmenu = pathname === '/ryan-white-state-level' ||
+                                pathname === '/ryan-white-state-level/calibration' ||
                                 pathname?.startsWith('/ryan-white-state-level/explorer') ||
                                 pathname?.startsWith('/ryan-white-state-level/custom');
 
@@ -319,11 +321,11 @@ function NavigationForPath({ pathname }: { pathname: string }) {
               className="border-t border-white/20 overflow-hidden"
             >
               <div className="py-4">
-                <div className="flex items-center space-x-8">
+                <div className="flex flex-wrap items-center gap-x-8 gap-y-3">
                   <span className="text-xs font-semibold text-hopkins-gold uppercase tracking-wider">
                     Ryan White
                   </span>
-                  <div className="flex items-center space-x-6">
+                  <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
                     <Link
                       href="/ryan-white/explorer"
                       className="text-white hover:text-hopkins-gold font-medium transition-all relative group py-1"
@@ -342,6 +344,7 @@ function NavigationForPath({ pathname }: { pathname: string }) {
                         pathname === '/ryan-white/custom' ? 'w-full' : 'w-0 group-hover:w-full'
                       }`}></span>
                     </Link>
+                    <Link href="/ryan-white/calibration" aria-current={pathname === '/ryan-white/calibration' ? 'page' : undefined} className={`py-1 font-medium hover:text-hopkins-gold ${pathname === '/ryan-white/calibration' ? 'text-hopkins-gold underline underline-offset-8' : 'text-white'}`}>Model fit</Link>
                   </div>
                 </div>
               </div>
@@ -360,11 +363,11 @@ function NavigationForPath({ pathname }: { pathname: string }) {
               className="border-t border-white/20 overflow-hidden"
             >
               <div className="py-4">
-                <div className="flex items-center space-x-8">
+                <div className="flex flex-wrap items-center gap-x-8 gap-y-3">
                   <span className="text-xs font-semibold text-hopkins-gold uppercase tracking-wider">
                     State-Level Ryan White
                   </span>
-                  <div className="flex items-center space-x-6">
+                  <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
                     <Link
                       href="/ryan-white-state-level/explorer/ajph"
                       className="text-white hover:text-hopkins-gold font-medium transition-all relative group py-1"
@@ -392,6 +395,7 @@ function NavigationForPath({ pathname }: { pathname: string }) {
                         pathname?.startsWith('/ryan-white-state-level/custom') ? 'w-full' : 'w-0 group-hover:w-full'
                       }`}></span>
                     </Link>
+                    {pathname === '/ryan-white-state-level/calibration' ? <span aria-current="page" className="py-1 font-medium text-hopkins-gold underline underline-offset-8">Model fit</span> : <Link href={`/ryan-white-state-level/calibration?model=${pathname?.endsWith('/croi') ? 'croi' : 'ajph'}`} className="py-1 font-medium text-white hover:text-hopkins-gold">Model fit</Link>}
                   </div>
                 </div>
               </div>

@@ -11,7 +11,7 @@
     "start": "next start",
     "lint": "eslint . --max-warnings=0",
     "audit:production": "node scripts/audit-production-dependencies.mjs",
-    "test": "node --experimental-strip-types --test scripts/test-custom-simulation-url.mjs scripts/test-custom-simulation-control-plane.mjs scripts/test-production-audit-policy.mjs scripts/test-calibration-release-consumer.mjs",
+    "test": "node --experimental-strip-types --test scripts/test-custom-simulation-url.mjs scripts/test-custom-simulation-control-plane.mjs scripts/test-production-audit-policy.mjs scripts/test-calibration-release-consumer.mjs scripts/test-calibration-reader.mjs",
     "test:browser": "playwright test",
     "test:custom-sim-url": "node --experimental-strip-types --test scripts/test-custom-simulation-url.mjs",
     "typecheck": "tsc --noEmit",
