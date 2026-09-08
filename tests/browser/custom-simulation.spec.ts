@@ -79,7 +79,13 @@ test('the Run Simulation button is the only path that requests a launch', async 
   await page.goto('/ryan-white/custom');
   expect(requests).toHaveLength(0);
 
-  await page.getByLabel('1 Location').selectOption('C.12580');
+  const locationSelect = page.getByLabel('1 Location');
+  // A native select can accept input just before React hydration and then be reset by hydration.
+  // The URL change proves the React onChange handler received the selection; retry until it does.
+  await expect(async () => {
+    await locationSelect.selectOption('C.12580');
+    await expect(page).toHaveURL(/\?loc=C\.12580$/);
+  }).toPass();
   const runButton = page.getByRole('button', { name: 'Run Simulation', exact: true });
   await expect(runButton).toBeEnabled();
   expect(requests).toHaveLength(0);

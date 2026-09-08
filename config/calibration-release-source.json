@@ -1,0 +1,37 @@
+{
+  "schema_version": "jheem-calibration-consumer-source/v1",
+  "repository": "CIPHER-Epi/jheem-simulations",
+  "release_id": 383350377,
+  "tag": "ryan-white-calibration-v1.0.0",
+  "tag_commit": "af8d3fd12a193c5947b01c203792df89fdacc4d3",
+  "release_url": "https://github.com/CIPHER-Epi/jheem-simulations/releases/tag/ryan-white-calibration-v1.0.0",
+  "immutable": true,
+  "destination_prefix": "calibration/ryan-white-calibration-v1.0.0",
+  "assets": [
+    {
+      "name": "SHA256SUMS",
+      "size_bytes": 435,
+      "sha256": "e6412fc8bf0ef1b60839fd51d0b3fd2972ad4a281080f4a3fe61e48110d57fe2"
+    },
+    {
+      "name": "catalog.json",
+      "size_bytes": 2387,
+      "sha256": "ad0a5e12f7014291444da04185419de85f9a3d62904b5a83303ffeaf29e11e5e"
+    },
+    {
+      "name": "ryan-white-ajph-ryan-white-calibration-v1.0.0.tar.gz",
+      "size_bytes": 2021406,
+      "sha256": "c8f814e750368f7bff16d45b06bacde1e798073e8f40abbb92d87dd8c63f9665"
+    },
+    {
+      "name": "ryan-white-croi-ryan-white-calibration-v1.0.0.tar.gz",
+      "size_bytes": 5503696,
+      "sha256": "9f5d16b3c9cbaec5f0af843770b35e20b81cf3a4418f91fcd8ae9bbce3fa7400"
+    },
+    {
+      "name": "ryan-white-msa-ryan-white-calibration-v1.0.0.tar.gz",
+      "size_bytes": 4824251,
+      "sha256": "64f0aad0f0555b64fd11b0d80c28ae7f4d78251c437e477bb4066285a49bec12"
+    }
+  ]
+}
