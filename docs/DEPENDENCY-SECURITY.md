@@ -1,47 +1,36 @@
 # Dependency Security Review
 
-## Temporary production exception: Next.js optional Sharp dependency
+## Resolved production exception: Next.js optional Sharp dependency
 
-**Reviewed:** 2026-07-31  
-**Advisory:** [GHSA-f88m-g3jw-g9cj](https://github.com/advisories/GHSA-f88m-g3jw-g9cj)  
-**Affected installed package:** `sharp@0.34.5`, optional dependency of `next@16.2.12`  
-**Status:** Time-bounded exception; review on every Next.js update
+**Reviewed:** 2026-09-29
 
-Next.js 16.2.12 is the current patched stable framework release used by the portal, but it declares
-the optional dependency `sharp@^0.34.5`. The current Next.js canary line declares the same range.
-The advisory is resolved in Sharp 0.35.x, which is outside Next.js's declared 0.x compatibility
-range. Forcing that upgrade would bypass the framework's package contract.
+**Advisory:** [GHSA-f88m-g3jw-g9cj](https://github.com/advisories/GHSA-f88m-g3jw-g9cj)
 
-The portal does not import `next/image`, accept user-uploaded images, or otherwise invoke the Next.js
-image optimizer. `next.config.ts` also sets `images.unoptimized` so a future `next/image` import does
-not silently activate this path. On that evidence, the affected optional native library is installed
-but not reachable through the deployed application.
+**Previously affected package:** `sharp@0.34.5`, optional dependency of `next@16.2.12`
 
-Do not add image optimization or user-controlled image processing while this exception is active.
-Remove the exception and the `images.unoptimized` control when a supported stable Next.js release
-accepts a patched Sharp version. Reassess immediately if the portal begins processing images on the
-server, the advisory's affected behavior changes, or new reachability evidence appears.
+**Status:** Resolved; exception removed
 
-## Temporary development exception: ESLint glob expansion
+Next.js 16.3.3 declares the patched `sharp@^0.35.3` dependency range. The portal now resolves
+`sharp@0.35.5`, so the temporary production exception and its audit allowlist have been removed.
+The temporary `images.unoptimized` compensating control was removed with the exception. The
+production audit now fails closed on every high- or critical-severity finding.
 
-**Reviewed:** 2026-07-31  
-**Advisory:** [GHSA-mh99-v99m-4gvg](https://github.com/advisories/GHSA-mh99-v99m-4gvg)  
-**Affected installed package:** `brace-expansion`, through ESLint and its plugins  
-**Status:** Development-only exception; review with the lint/CI migration
+## Resolved development exception: ESLint dependency chain
 
-The affected package is absent from `npm audit --omit=dev`. It is used by lint tooling against
-static repository paths and receives no request or other user-controlled glob input. The advisory's
-fixed brace-expansion major is outside the ranges accepted by the current ESLint dependency tree;
-`npm audit fix --force` proposes breaking downgrades rather than a compatible remediation.
+**Reviewed:** 2026-09-29
 
-Do not pass externally supplied patterns to repository lint commands. Remove this exception when a
-compatible ESLint toolchain accepts the fixed brace-expansion release, or reassess immediately if
-linting begins to process untrusted paths or content.
+**Previously affected packages:** `brace-expansion`, `js-yaml`, and `@humanfs/node` through ESLint
+
+**Status:** Resolved; exception removed
+
+The lint stack now uses `eslint@9.39.5`, `@eslint/eslintrc@3.3.7`, `js-yaml@4.3.2`, and
+`@humanfs/node@0.16.8`. These compatible patch updates remove the earlier development-only
+findings. The full npm audit reports zero known vulnerabilities.
 
 ## Audit policy
 
-- Run `npm run audit:production` for the enforced production dependency review. Its allowlist is
-  covered by pass/fail regression tests and contains only the documented Sharp advisory above.
+- Run `npm run audit:production` for the enforced production dependency review. It has no active
+  production exceptions and is covered by pass/fail regression tests.
 - A critical production finding blocks release.
 - A high production finding must be fixed or recorded here with reachability evidence, compensating
   controls, an owner-visible removal trigger, and a review date.

@@ -464,6 +464,14 @@ baseline because the Next.js 16 rules expose pre-existing cross-application Reac
 require focused remediation rather than a blanket severity downgrade. The baseline excluding lint
 was subsequently delivered in portal PR #16.
 
+**Security refresh — 2026-09-29:** A newly published Next.js critical advisory caused the current
+production audit gate to fail while calibration PR #35 was being revalidated. Next.js and its
+matching ESLint configuration are updated to `16.3.3`, which also resolves the former Sharp
+exception through `sharp@0.35.5`. The exception, compensating image-optimizer control, and
+advisory-specific audit allowlist are removed; high and critical production findings now fail
+closed without an active exception. Compatible ESLint-chain patch updates also clear the remaining
+development-only audit findings, leaving the full npm audit at zero known vulnerabilities.
+
 **Reproducibility and CI progress — 2026-07-31:** The portal now pins its generated model
 configuration to immutable backend commit `597b5ea0`, commits deterministic generated output, and
 keeps ordinary install/build paths independent of backend availability. The new CI baseline uses

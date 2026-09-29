@@ -144,13 +144,15 @@ export default function CustomSimulationExplorer({
   // A shared link may resume an existing run or load a cached result, but must
   // never launch compute merely because a person or crawler opened the page.
   const initialUrlHadKnownLoc = useRef(selectedLocation !== '');
-  const [initialLookupComplete, setInitialLookupComplete] = useState(false);
+  const initialLookupStarted = useRef(false);
   useEffect(() => {
-    if (!initialLookupComplete && initialUrlHadKnownLoc.current && selectedLocation && simStatus === 'idle') {
-      setInitialLookupComplete(true);
+    if (!initialLookupStarted.current && initialUrlHadKnownLoc.current && selectedLocation && simStatus === 'idle') {
+      // Set the ref before starting the request so React's development-mode effect replay cannot
+      // issue a duplicate lookup before the async state transition is committed.
+      initialLookupStarted.current = true;
       resumeSimulation(config.id, selectedLocation, parameters);
     }
-  }, [initialLookupComplete, selectedLocation, simStatus, resumeSimulation, parameters, config.id]);
+  }, [selectedLocation, simStatus, resumeSimulation, parameters, config.id]);
 
   // Extract available options from loaded data
   // scenarioData is the raw data keyed by scenario > outcome > statistic > facet
