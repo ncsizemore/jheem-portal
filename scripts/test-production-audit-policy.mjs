@@ -3,36 +3,18 @@ import test from 'node:test';
 
 import { evaluateProductionAudit } from './lib/production-audit-policy.mjs';
 
-const documentedSharpAdvisory = 'https://github.com/advisories/GHSA-f88m-g3jw-g9cj';
-
 function reportWith(vulnerabilities) {
   return { vulnerabilities };
 }
 
-function sharpFinding(severity = 'high', url = documentedSharpAdvisory) {
-  return {
-    severity,
-    via: [{ url }],
-  };
-}
-
-test('allows only the documented high Sharp path through Next', () => {
+test('blocks high findings, including transitive findings', () => {
   const result = evaluateProductionAudit(
     reportWith({
       next: { severity: 'high', via: ['sharp'] },
-      sharp: sharpFinding(),
-    })
-  );
-
-  assert.deepEqual(result.blocking, []);
-  assert.deepEqual(result.allowed.sort(), ['next (high)', 'sharp (high)']);
-});
-
-test('blocks a new Sharp advisory', () => {
-  const result = evaluateProductionAudit(
-    reportWith({
-      next: { severity: 'high', via: ['sharp'] },
-      sharp: sharpFinding('high', 'https://github.com/advisories/GHSA-new-finding'),
+      sharp: {
+        severity: 'high',
+        via: [{ url: 'https://github.com/advisories/GHSA-f88m-g3jw-g9cj' }],
+      },
     })
   );
 
@@ -40,15 +22,15 @@ test('blocks a new Sharp advisory', () => {
   assert.deepEqual(result.blocking.sort(), ['next (high)', 'sharp (high)']);
 });
 
-test('blocks the documented advisory if its severity becomes critical', () => {
+test('blocks critical findings', () => {
   const result = evaluateProductionAudit(
     reportWith({
-      sharp: sharpFinding('critical'),
+      framework: { severity: 'critical', via: [{ url: 'https://example.test/critical' }] },
     })
   );
 
   assert.deepEqual(result.allowed, []);
-  assert.deepEqual(result.blocking, ['sharp (critical)']);
+  assert.deepEqual(result.blocking, ['framework (critical)']);
 });
 
 test('blocks unrelated high findings and ignores moderate findings', () => {
