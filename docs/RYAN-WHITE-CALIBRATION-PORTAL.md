@@ -55,7 +55,26 @@ passed. The existing documented Next/Sharp audit exception is unchanged; no depe
 For manual local review, use `http://localhost:3000`, an existing allowed CDN origin. Browser tests
 run at port 3011 and proxy only the pinned public calibration responses to adapt their CORS header;
 the source bytes and checksum verification are unchanged. Tests require read-only CDN access.
-Production-origin CORS must still be checked after deployment.
+
+### Preview delivery checkpoint — 2026-09-29
+
+Current Edge/Chromium sends `Priority: u=1, i` on these cross-origin reads. With the legacy S3
+allowlist, CloudFront's managed `SimpleCORS` policy omitted `Access-Control-Allow-Origin` for that
+request when the origin was a Vercel branch preview. The same failure affected existing city and
+state explorer data, so it was a shared delivery-policy defect rather than a calibration-reader
+defect.
+
+The `jheem-data-production` bucket's GET/HEAD-only CORS rule now also allows
+`https://jheem-portal-*-jheems-projects.vercel.app`. This single-wildcard pattern is constrained to
+the portal project and the `jheems-projects` Vercel scope; it does not allow unrelated Vercel
+projects. All four S3 public-access-block controls remain enabled. No bucket policy, CloudFront
+origin access control, WAF rule, credential behavior, or write method changed.
+
+CloudFront invalidation `I8QF3WLHV3QVHT4V7OPKQRBQ4C` refreshed only the calibration release and
+the three Ryan White result prefixes. Exact Edge-style requests then returned HTTP 200 plus the
+specific preview origin for all three calibration products and all three existing explorer summary
+paths. `jheem.org` and `jheem-portal.vercel.app` remained allowed; an unrelated Vercel origin
+remained denied. Production page behavior must still receive its ordinary post-deployment smoke.
 
 Next: review/merge the portal PR, then smoke all three deployed model views and conduct the remaining
 integrated navigation, keyboard/accessibility, scientific-copy, and workflow QA in Phase 5. The

@@ -206,6 +206,13 @@ the first calibration interface is implemented; PR review and production QA next
   their digests and total/age display scope. The first portal interface is implemented in
   `codex/calibration-portal-view`; see
   [`RYAN-WHITE-CALIBRATION-PORTAL.md`](./RYAN-WHITE-CALIBRATION-PORTAL.md).
+  On 2026-09-29, live preview review exposed a shared CORS defect affecting both the new calibration
+  files and existing explorer data under modern Edge/Chromium's `Priority` request header. The
+  S3 GET/HEAD allowlist now includes the project-and-team-scoped Vercel preview pattern
+  `https://jheem-portal-*-jheems-projects.vercel.app`; all public-access blocks and write controls
+  remain unchanged. A four-prefix CloudFront invalidation completed, and exact browser-style probes
+  passed for all three calibration products and all three existing Ryan White data paths while an
+  unrelated Vercel origin remained denied.
   PR review, deployment, and integrated Phase 5 production/content QA remain.
 
 ### Independent engineering audit checkpoint — 2026-07-31
