@@ -205,8 +205,8 @@ function requireOutcomeDefinition(value: unknown, label: string): void {
 
 export function validateRyanWhiteCostingMetadata(value: unknown): RyanWhiteCostingMetadata {
   requireRecord(value, 'metadata');
-  if (value.dataContractVersion !== '2.2.0') {
-    throw new Error('metadata.dataContractVersion must be 2.2.0');
+  if (value.dataContractVersion !== '3.0.0') {
+    throw new Error('metadata.dataContractVersion must be 3.0.0');
   }
   requireString(value.generatedAt, 'metadata.generatedAt');
   requireRecord(value.sourceArtifacts, 'metadata.sourceArtifacts');
