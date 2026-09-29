@@ -107,7 +107,7 @@ export interface StateCostingSummary {
 }
 
 export interface RyanWhiteCostingMetadata {
-  dataContractVersion: '2.2.0';
+  dataContractVersion: '3.0.0';
   generatedAt: string;
   sourceArtifacts: {
     rData: ArtifactProvenance;

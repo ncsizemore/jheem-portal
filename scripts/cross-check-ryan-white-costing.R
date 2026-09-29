@@ -1,7 +1,7 @@
-# Independently reproduce the portal's 2035 cost summaries from Ryan's July
-# 2026 pipeline definitions. This check deliberately uses base-R matrix logic
-# rather than sourcing the analysis/exporter, then compares every jurisdiction
-# and the supplement-style pooled modeled total with the generated JSON.
+# Independently reproduce the portal's 2035 cost summaries from Ryan's
+# September 2026 pipeline definitions. This check deliberately uses base-R
+# matrix logic rather than sourcing the analysis/exporter, then compares every
+# jurisdiction and the built-in pooled modeled total with the generated JSON.
 
 suppressPackageStartupMessages(library(jsonlite))
 
@@ -63,7 +63,7 @@ care_inflation <- (1 + 0.056)^(0:9)
 routine_care <- sum(c(0.54, 0.37, 0.09) * c(1650, 2290, 16800)) *
   (591.677 / 549.084)
 funding_deflator <- 591.677 / 580.498
-base_return <- 0.87 * (1 - exp(-1.2 * (0:10)))
+base_return <- 0 * (1 - exp(-1.2 * (0:10)))
 
 q_value <- function(values) {
   c(
@@ -73,30 +73,42 @@ q_value <- function(values) {
   )
 }
 
-compute_state <- function(state) {
+compute_location <- function(location) {
   diagnoses <- results[
-    year_names, , "new", state, "adap.100.end.26", drop = TRUE
-  ] - results[year_names, , "new", state, "noint", drop = TRUE]
-  suppression <- results["2025", , "suppression", state, "noint", drop = TRUE]
-  diagnosed <- results[
-    "2025", , "diagnosed.prevalence", state, "noint", drop = TRUE
+    year_names, , "new", location, "adap.100.end.26", drop = TRUE
+  ] - results[year_names, , "new", location, "noint", drop = TRUE]
+  intervention_suppression <- results[
+    year_names, , "suppression", location, "adap.100.end.26", drop = TRUE
   ]
-  adap_suppression <- results[
-    "2025", , "adap.suppression", state, "noint", drop = TRUE
+  intervention_diagnosed <- results[
+    year_names, , "diagnosed.prevalence", location, "adap.100.end.26", drop = TRUE
   ]
+  care_post <- pmin(pmax(intervention_suppression / intervention_diagnosed, 0), 1)
 
-  loss_parameter <- if (isTRUE(expansion[[state]])) {
-    "lose.adap.expansion.effect"
+  if (identical(location, "Total")) {
+    disruption <- rep(1, n_sims)
   } else {
-    "lose.adap.nonexpansion.effect"
+    baseline_suppression <- results[
+      "2025", , "suppression", location, "noint", drop = TRUE
+    ]
+    adap_suppression <- results[
+      "2025", , "adap.suppression", location, "noint", drop = TRUE
+    ]
+    loss_parameter <- if (isTRUE(expansion[[location]])) {
+      "lose.adap.expansion.effect"
+    } else {
+      "lose.adap.nonexpansion.effect"
+    }
+    loss <- parameters[
+      loss_parameter, , location, "adap.100.end.26", drop = TRUE
+    ]
+    disruption <- pmin(
+      pmax(1 - (adap_suppression / baseline_suppression) * loss, 0),
+      1
+    )
   }
-  loss <- parameters[
-    loss_parameter, , state, "adap.100.end.26", drop = TRUE
-  ]
-  disruption <- pmin(pmax(1 - (adap_suppression / suppression) * loss, 0), 1)
-  care_post <- pmin(pmax((suppression / diagnosed) * disruption, 0), 1)
 
-  immediate <- sweep(diagnoses, 2, care_post, "*")
+  immediate <- diagnoses * care_post
   nonstarters <- diagnoses - immediate
   adjusted_return <- outer(base_return, disruption, "*")
   increments <- adjusted_return -
@@ -126,8 +138,12 @@ compute_state <- function(state) {
     apply(annual_discounted, 2, cumsum)
   })
 
-  funding_row <- funding[match(state, funding$location), ]
-  cumulative_adap <- as.numeric(funding_row$adap) * funding_deflator * sum(discount)
+  annual_adap <- if (identical(location, "Total")) {
+    sum(as.numeric(funding$adap), na.rm = TRUE)
+  } else {
+    as.numeric(funding$adap[match(location, funding$location)])
+  }
+  cumulative_adap <- annual_adap * funding_deflator * sum(discount)
   final_costs <- lapply(cumulative_costs, function(matrix) matrix[10, ])
   pooled_cost <- unlist(final_costs, use.names = FALSE)
   pooled_net <- pooled_cost - cumulative_adap
@@ -146,7 +162,10 @@ compute_state <- function(state) {
 }
 
 cat("Recomputing jurisdiction paths...\n")
-state_results <- setNames(lapply(states, compute_state), states)
+location_results <- setNames(
+  lapply(c(states, "Total"), compute_location),
+  c(states, "Total")
+)
 summary_json <- fromJSON(
   file.path(portal, "src", "data", "ryan-white-costing", "summary.json"),
   simplifyVector = FALSE
@@ -159,7 +178,7 @@ for (state in states) {
     function(item) identical(item$state, state),
     logical(1)
   ))]]
-  actual <- state_results[[state]]
+  actual <- location_results[[state]]
   observed <- c(
     unlist(expected$pooledFinalYear$cumulativeCareCost),
     unlist(expected$pooledFinalYear$cumulativeNetCostVsAdap),
@@ -180,46 +199,21 @@ for (state in states) {
   )
 }
 
-cat("Reproducing supplement-style pooled modeled total...\n")
-set.seed(123)
-B <- 100000
-national_cost <- numeric(B)
-national_net <- numeric(B)
-for (state in sort(states)) {
-  national_cost <- national_cost + sample(
-    state_results[[state]]$pooled_cost,
-    B,
-    replace = TRUE
-  )
-  national_net <- national_net + sample(
-    state_results[[state]]$pooled_net,
-    B,
-    replace = TRUE
-  )
-}
-national_adap <- sum(vapply(
-  state_results,
-  function(item) item$cumulative_adap,
-  numeric(1)
-))
-within_sim_cost <- unlist(lapply(names(drug_cost), function(scenario) {
-  Reduce(
-    "+",
-    lapply(state_results, function(item) item$final_costs[[scenario]])
-  )
-}), use.names = FALSE)
-within_sim_net <- within_sim_cost - national_adap
+cat("Reproducing pooled built-in modeled total...\n")
+national <- location_results[["Total"]]
 national_actual <- c(
-  q_value(national_cost),
-  q_value(national_net),
-  1000 * q_value(national_net / national_adap),
-  1e6 * mean(national_net > 0)
+  national$care,
+  national$net,
+  1000 * national$ratio,
+  1e6 * national$share,
+  national$person_years
 )
 national_expected <- c(
   unlist(summary_json$national$pooledFinalYear$cumulativeCareCost),
   unlist(summary_json$national$pooledFinalYear$cumulativeNetCostVsAdap),
   1000 * unlist(summary_json$national$pooledFinalYear$cumulativeNetCostRatioVsAdap),
-  1e6 * summary_json$national$pooledFinalYear$shareNetCostPositiveVsAdap
+  1e6 * summary_json$national$pooledFinalYear$shareNetCostPositiveVsAdap,
+  unlist(summary_json$national$finalYear$cumulativePersonYearsOnArt)
 )
 max_national_difference <- max(abs(national_actual - national_expected), na.rm = TRUE)
 
@@ -244,17 +238,4 @@ cat(sprintf(
   length(states),
   max_state_difference,
   max_national_difference
-))
-cat(sprintf(
-  paste0(
-    "Diagnostic only: pooled within-simulation jurisdiction sum net cost ",
-    "%.3f [%.3f, %.3f] billion; supplement-style independent bootstrap ",
-    "%.3f [%.3f, %.3f] billion.\n"
-  ),
-  q_value(within_sim_net)[["median"]] / 1e9,
-  q_value(within_sim_net)[["lower"]] / 1e9,
-  q_value(within_sim_net)[["upper"]] / 1e9,
-  q_value(national_net)[["median"]] / 1e9,
-  q_value(national_net)[["lower"]] / 1e9,
-  q_value(national_net)[["upper"]] / 1e9
 ))

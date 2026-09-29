@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { useSearchParams } from 'next/navigation';
@@ -506,7 +507,7 @@ function CascadeHero({
               {share !== null ? (
                 <>
                   ; {formatPercent(share)} of{' '}
-                  {estimand === 'pooled' ? 'independently bootstrapped pooled draws' : 'simulation draws'} are above
+                  {estimand === 'pooled' ? 'pooled modeled results' : 'simulation draws'} are above
                   zero
                 </>
               ) : null}. The comparison
@@ -539,7 +540,7 @@ function CascadeChain({ headline, horizon }: { headline: HeadlineValues; horizon
     },
     {
       value: `${formatNumber(headline.personYears)} ART person-years`,
-      sub: `Immediate and later ART starts accumulated through ${horizon}`,
+      sub: `ART starts accumulated through ${horizon}; delayed re-engagement is zero in this specification`,
     },
     {
       value: `${formatCompactDollars(headline.care.median)} downstream care`,
@@ -750,7 +751,7 @@ function UncertaintyDecomposition({
               <div className="border-b border-slate-200 bg-slate-50 px-4 py-3 text-xs leading-relaxed text-slate-500 sm:px-5">
                 <span className="font-semibold text-slate-700">Combined reporting summary.</span>{' '}
                 Equal numbers of draws from each price tier are mixed with model-simulation variation; the modeled
-                total independently bootstraps jurisdictions. This is not a fourth price assumption or a
+                total uses the model&apos;s built-in Total simulation rows. This is not a fourth price assumption or a
                 probability-weighted forecast.
               </div>
               <button
@@ -1610,7 +1611,7 @@ function ModelReview() {
         { label: 'Policy scenario', value: 'Complete ADAP elimination on Jan 1, 2026' },
         { label: 'Suppression effect', value: 'Mean 65% decline among ADAP recipients' },
         { label: 'Elicited range', value: '40%–90% interquartile range' },
-        { label: 'Comparator', value: '2025 ADAP coverage and spending continue' },
+        { label: 'Comparator', value: 'Continued ADAP coverage under the modeled baseline' },
       ],
       note: 'The suppression effect comes from a survey of 180 Ryan White clinic and public-health respondents. Complete, persistent elimination is a stress test, not a forecast of a specific enacted restriction.',
     },
@@ -1621,11 +1622,11 @@ function ModelReview() {
         { label: 'Excess diagnoses', value: ryanWhiteCostingMetadata.outcomeDefinitions.diagnoses.description },
         {
           label: 'Immediate ART',
-          value: 'Baseline care fraction reduced by the sampled state-specific ADAP disruption',
+          value: 'Annual care fraction from the ADAP-elimination intervention arm',
         },
         {
           label: 'Delayed engagement',
-          value: 'Unadjusted 61% by year one and 87% eventual return, reduced by the same disruption multiplier',
+          value: 'Set to zero in the September 2026 primary specification',
         },
       ],
       note: 'Infections and diagnoses are distinct. The cost ledger begins only after an excess incident case is diagnosed, engages in care, and starts ART.',
@@ -1638,7 +1639,7 @@ function ModelReview() {
         { label: 'Discount rate', value: formatPercent(p.discountRate) },
         { label: 'Model simulations', value: ryanWhiteCostingMetadata.simulationDraws.toLocaleString('en-US') },
       ],
-      note: 'The primary display pools equal numbers of draws from all three ART-price tiers; its modeled-total interval independently bootstraps jurisdictions. Fixed-tier views isolate epidemiologic model uncertainty. Funding is deterministic.',
+      note: 'The primary display pools equal numbers of results from all three ART-price tiers and uses the model’s built-in Total simulation rows. Fixed-tier views isolate epidemiologic model uncertainty. Funding is deterministic.',
     },
     {
       title: 'Accounting and interpretation',
@@ -1862,6 +1863,14 @@ export default function RyanWhiteCostingApp() {
 
   return (
     <div className="min-h-screen w-full min-w-0 max-w-full overflow-x-hidden bg-white text-slate-900">
+      <div className="border-b border-blue-100 bg-blue-50/80">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-2 px-5 py-3 text-sm sm:px-6">
+          <span className="text-slate-600">New to this analysis?</span>
+          <Link href="/ryan-white-costing" className="font-semibold text-[#002D72] hover:underline">
+            Read the plain-language summary →
+          </Link>
+        </div>
+      </div>
       <CascadeHero
         headline={headline}
         estimand={estimand}

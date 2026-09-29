@@ -27,7 +27,7 @@ function NavigationForPath({ pathname }: { pathname: string }) {
 
   const isRyanWhiteActive = pathname === '/ryan-white' || showRyanWhiteSubmenu;
   const isStateLevelActive = pathname === '/ryan-white-state-level' || showStateLevelSubmenu;
-  const isCostingActive = pathname === '/ryan-white-costing';
+  const isCostingActive = pathname?.startsWith('/ryan-white-costing');
   const showCdcTestingSubmenu = pathname === '/cdc-testing' ||
                                 pathname?.startsWith('/cdc-testing/explorer') ||
                                 pathname?.startsWith('/cdc-testing/custom');
