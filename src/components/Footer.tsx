@@ -3,6 +3,7 @@ import Link from 'next/link';
 const APPLICATION_LINKS = [
   { href: '/ryan-white', label: 'Ryan White: City-Level' },
   { href: '/ryan-white-state-level', label: 'Ryan White: State-Level' },
+  { href: '/ryan-white-costing', label: 'ADAP Costing Analysis' },
   { href: '/cdc-testing', label: 'CDC-Funded HIV Testing' },
   { href: '/aging', label: 'HIV Age Projections' },
 ];

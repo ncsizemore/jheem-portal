@@ -63,13 +63,12 @@ const APPLICATIONS: Application[] = [
     citation: <span className="italic">Submitted</span>,
   },
   {
-    // Not navigable yet - economic-impact analysis still in progress.
-    title: "The Economic Impact of Ryan White Program Elimination: State-Level Impact Projections",
-    scope: "30 states",
+    href: "/ryan-white-costing",
+    title: "The Economic Impact of ADAP Elimination: State-Level Projections",
+    scope: "30 states + DC",
     description:
-      "What are the economic consequences of eliminating the Ryan White program? Weighing downstream HIV care costs against the ADAP spending avoided, 2026-2035.",
+      "What are the economic and epidemiological consequences of ending ADAP? Compare downstream HIV care costs with program spending avoided through 2035.",
     citation: <span className="italic">Working paper</span>,
-    badge: "Coming soon",
   },
 ];
 

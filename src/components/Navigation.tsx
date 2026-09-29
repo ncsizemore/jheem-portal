@@ -213,6 +213,33 @@ function NavigationForPath({ pathname }: { pathname: string }) {
                         )}
 
                         <Link
+                          href="/ryan-white-costing"
+                          className={`block px-5 py-3 transition-all duration-200 border-l-4 ${
+                            isCostingActive
+                              ? 'bg-hopkins-blue/5 border-l-hopkins-blue'
+                              : 'border-l-transparent hover:bg-hopkins-blue/5 hover:border-l-hopkins-blue/30'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex-1">
+                              <div className={`text-sm font-semibold ${
+                                isCostingActive ? 'text-hopkins-blue' : 'text-gray-900'
+                              }`}>
+                                ADAP Costing Analysis
+                              </div>
+                              <div className="text-xs text-gray-500 mt-0.5">
+                                Costs and outcomes of ADAP elimination
+                              </div>
+                            </div>
+                            {isCostingActive && (
+                              <svg className="w-5 h-5 text-hopkins-blue ml-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                              </svg>
+                            )}
+                          </div>
+                        </Link>
+
+                        <Link
                           href="/cdc-testing"
                           className={`block px-5 py-3 transition-all duration-200 border-l-4 ${
                             isCdcTestingActive
@@ -540,6 +567,17 @@ function NavigationForPath({ pathname }: { pathname: string }) {
                         </Link>
                       </div>
                     )}
+
+                    <Link
+                      href="/ryan-white-costing"
+                      className={`block px-3 py-2 rounded-lg font-medium transition-colors ${
+                        isCostingActive
+                          ? 'bg-white/10 text-white'
+                          : 'text-white/80 hover:text-white hover:bg-white/5'
+                      }`}
+                    >
+                      ADAP Costing Analysis
+                    </Link>
 
                     <Link
                       href="/cdc-testing"
