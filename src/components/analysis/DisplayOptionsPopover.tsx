@@ -36,7 +36,7 @@ export default function DisplayOptionsPopover({
         aria-expanded={isOpen}
         aria-controls={isOpen ? popoverId : undefined}
         aria-haspopup="dialog"
-        className={`flex items-center gap-1.5 px-2.5 py-1.5 text-sm rounded-md transition-colors
+        className={`flex items-center gap-1 px-2 py-1.5 text-sm rounded-md transition-colors sm:gap-1.5 sm:px-2.5
           ${isOpen
             ? 'bg-slate-200 text-slate-700'
             : 'text-slate-500 hover:bg-slate-100 hover:text-slate-700'}`}

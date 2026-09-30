@@ -144,10 +144,10 @@ export default function AnalysisResults({
   return (
     <>
       {/* Controls bar */}
-      <div className="flex flex-shrink-0 flex-col items-stretch gap-3 border-b border-slate-200 bg-slate-50 px-3 py-3 sm:px-4 xl:flex-row xl:items-end xl:justify-between">
-        <div className="grid min-w-0 grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] items-end gap-3 xl:flex xl:flex-wrap xl:gap-4">
+      <div className="flex flex-shrink-0 flex-col items-stretch gap-2 border-b border-slate-200 bg-slate-50 px-3 py-2 sm:px-4 xl:flex-row xl:items-end xl:justify-between">
+        <div className="grid min-w-0 grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] items-end gap-2 xl:flex xl:flex-wrap xl:gap-3">
           {/* Outcome selector */}
-          <div className="flex min-w-0 flex-col gap-1 xl:w-96">
+          <div className="flex min-w-0 flex-col gap-0.5 xl:w-80">
             <label htmlFor={outcomeSelectId} className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
               Outcome
             </label>
@@ -164,7 +164,7 @@ export default function AnalysisResults({
           </div>
 
           {/* Statistic selector */}
-          <div className="flex min-w-0 flex-col gap-1 xl:w-44">
+          <div className="flex min-w-0 flex-col gap-0.5 xl:w-40">
             <label htmlFor={statisticSelectId} className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
               Summary statistic
             </label>
@@ -181,7 +181,7 @@ export default function AnalysisResults({
           </div>
 
           {/* Facet dimension toggles */}
-          <div className="col-span-2 flex flex-col gap-1 xl:col-span-1">
+          <div className="col-span-2 flex flex-col gap-0.5 xl:col-span-1">
             <span id={breakdownLabelId} className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
               Break down by
             </span>
@@ -212,23 +212,23 @@ export default function AnalysisResults({
           </div>
         </div>
 
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col gap-0.5">
           <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
             View and export
           </span>
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-1 sm:gap-2">
             {/* View mode toggle */}
             <div className="flex items-center border border-slate-200 rounded-md overflow-hidden">
             <button
               type="button"
               aria-pressed={viewMode === 'chart'}
               onClick={() => setViewMode('chart')}
-              className={`flex items-center gap-1 px-2.5 py-1.5 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500
+              className={`flex items-center gap-1 px-2 py-1.5 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 sm:px-2.5
                 ${viewMode === 'chart'
                   ? 'bg-blue-600 text-white'
                   : 'bg-white text-slate-600 hover:bg-slate-50'}`}
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="hidden w-4 h-4 sm:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
               </svg>
               <span>Chart</span>
@@ -237,12 +237,12 @@ export default function AnalysisResults({
               type="button"
               aria-pressed={viewMode === 'table'}
               onClick={() => setViewMode('table')}
-              className={`flex items-center gap-1 px-2.5 py-1.5 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500
+              className={`flex items-center gap-1 px-2 py-1.5 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 sm:px-2.5
                 ${viewMode === 'table'
                   ? 'bg-blue-600 text-white'
                   : 'bg-white text-slate-600 hover:bg-slate-50'}`}
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="hidden w-4 h-4 sm:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
               </svg>
               <span>Table</span>
@@ -252,12 +252,12 @@ export default function AnalysisResults({
             <div className="hidden h-6 w-px bg-slate-200 sm:block" aria-hidden="true" />
 
             {/* Export buttons */}
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-0.5 sm:gap-1">
             <button
               type="button"
               onClick={handleExportCSV}
               disabled={!chartPanels.length}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 text-sm text-slate-500 hover:bg-slate-100 hover:text-slate-700 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-1 px-2 py-1.5 text-sm text-slate-500 hover:bg-slate-100 hover:text-slate-700 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed sm:gap-1.5 sm:px-2.5"
               title="Export as CSV"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -269,7 +269,7 @@ export default function AnalysisResults({
               type="button"
               onClick={handleExportPNG}
               disabled={!chartPanels.length || viewMode === 'table' || exportingPng}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 text-sm text-slate-500 hover:bg-slate-100 hover:text-slate-700 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-1 px-2 py-1.5 text-sm text-slate-500 hover:bg-slate-100 hover:text-slate-700 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed sm:gap-1.5 sm:px-2.5"
               title={viewMode === 'table' ? 'Switch to chart view to export PNG' : 'Export as PNG'}
             >
               {exportingPng ? (
@@ -295,7 +295,7 @@ export default function AnalysisResults({
       {/* Chart/Table area */}
       <div
         data-testid="analysis-chart-region"
-        className="min-h-[34rem] flex-none overflow-visible p-3 sm:min-h-[38rem] sm:p-6 lg:min-h-0 lg:flex-1 lg:overflow-y-auto"
+        className="min-h-[34rem] flex-none overflow-visible p-3 sm:p-4"
       >
         {chartPanels.length === 0 ? (
           <div className="flex items-center justify-center h-full">
@@ -364,7 +364,7 @@ export default function AnalysisResults({
           </div>
         ) : !isFaceted ? (
           /* Single chart */
-          <div ref={chartContainerRef} className="max-w-4xl mx-auto bg-white rounded-lg border border-slate-200 p-6">
+          <div ref={chartContainerRef} className="max-w-4xl mx-auto bg-white rounded-lg border border-slate-200 p-4 sm:p-5">
             <NativeSimulationChart
               panel={chartPanels[0]}
               outcomeLabel={outcomeLabel}

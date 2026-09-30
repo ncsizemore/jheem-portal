@@ -107,7 +107,7 @@ async function deliverExplorerData(page: Page) {
   );
 }
 
-test('results use direct exploration controls and a scrollable narrow-screen workspace', async ({ page }) => {
+test('results use compact controls and one scrollable workspace', async ({ page }) => {
   await deliverExplorerData(page);
   await page.goto('/ryan-white/explorer');
   await page.getByLabel('Choose a city', { exact: true }).selectOption({
@@ -127,8 +127,25 @@ test('results use direct exploration controls and a scrollable narrow-screen wor
     await expect(page.getByText(oldLabel, { exact: true })).toHaveCount(0);
   }
 
-  await page.setViewportSize({ width: 390, height: 844 });
   const workspace = page.getByTestId('analysis-view');
+  const chartRegion = page.getByTestId('analysis-chart-region');
+  const desktopMetrics = await workspace.evaluate(element => ({
+    clientHeight: element.clientHeight,
+    scrollHeight: element.scrollHeight,
+    overflowY: getComputedStyle(element).overflowY,
+  }));
+
+  expect(desktopMetrics.overflowY).toBe('auto');
+  expect(desktopMetrics.scrollHeight).toBeGreaterThan(desktopMetrics.clientHeight);
+  await expect(chartRegion).toHaveCSS('overflow-y', 'visible');
+
+  await chartRegion.hover();
+  await page.mouse.wheel(0, 400);
+  await expect.poll(() => workspace.evaluate(element => element.scrollTop)).toBeGreaterThan(0);
+  expect(await chartRegion.evaluate(element => element.scrollTop)).toBe(0);
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await workspace.evaluate(element => element.scrollTop = 0);
   const metrics = await workspace.evaluate(element => ({
     clientHeight: element.clientHeight,
     scrollHeight: element.scrollHeight,
@@ -137,6 +154,12 @@ test('results use direct exploration controls and a scrollable narrow-screen wor
 
   expect(metrics.overflowY).toBe('auto');
   expect(metrics.scrollHeight).toBeGreaterThan(metrics.clientHeight);
-  await expect(page.getByTestId('analysis-chart-region')).toHaveCSS('min-height', '544px');
+  await expect(chartRegion).toHaveCSS('min-height', '544px');
+  await expect(chartRegion).toHaveCSS('overflow-y', 'visible');
+  const actionRowTops = await Promise.all([
+    page.getByRole('button', { name: 'Chart', exact: true }).evaluate(element => element.getBoundingClientRect().top),
+    page.getByRole('button', { name: 'Display', exact: true }).evaluate(element => element.getBoundingClientRect().top),
+  ]);
+  expect(Math.abs(actionRowTops[0] - actionRowTops[1])).toBeLessThan(2);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBeTruthy();
 });

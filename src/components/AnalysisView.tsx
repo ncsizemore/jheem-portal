@@ -143,12 +143,12 @@ export default function AnalysisView({
       exit={{ opacity: 0 }}
       transition={{ duration: 0.3 }}
       data-testid="analysis-view"
-      className="absolute inset-0 bg-slate-50 flex flex-col overflow-y-auto lg:overflow-hidden"
+      className="absolute inset-0 bg-slate-50 flex flex-col overflow-y-auto"
     >
       {/* Analysis context: location + scenario */}
       <div className="bg-white border-b border-slate-200 flex-shrink-0">
-        <div className="grid gap-4 px-3 py-3 sm:px-4 lg:grid-cols-[minmax(15rem,0.8fr)_minmax(0,1.7fr)] lg:items-start lg:gap-6">
-          <div className="flex min-w-0 items-center gap-3">
+        <div className="grid gap-2 px-3 py-2 sm:px-4 lg:grid-cols-[minmax(14rem,0.7fr)_minmax(0,1.8fr)] lg:items-center lg:gap-4">
+          <div className="flex min-w-0 items-center gap-2">
             {/* Back to map button */}
             <button
               type="button"
@@ -181,11 +181,11 @@ export default function AnalysisView({
 
           {/* Scenario tabs */}
           {availableScenarios.length > 0 && (
-            <section className="min-w-0 lg:border-l lg:border-slate-200 lg:pl-6" aria-labelledby="analysis-scenario-label">
+            <section className="min-w-0 lg:border-l lg:border-slate-200 lg:pl-4" aria-labelledby="analysis-scenario-label">
               <span id="analysis-scenario-label" className="block text-[10px] font-semibold uppercase tracking-wide text-slate-500">
                 Scenario
               </span>
-              <div className="mt-1.5 grid min-w-0 gap-2 xl:grid-cols-[max-content_minmax(0,1fr)] xl:items-start">
+              <div className="mt-1 grid min-w-0 gap-1.5 xl:grid-cols-[max-content_minmax(0,1fr)] xl:items-center">
                 <div className="flex flex-wrap gap-1" role="group" aria-labelledby="analysis-scenario-label">
                   {availableScenarios.map(scenario => (
                     <button
@@ -204,10 +204,15 @@ export default function AnalysisView({
                   ))}
                 </div>
                 {selectedScenario && scenarioDescriptions[selectedScenario] && (
-                  <div className="rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-xs leading-relaxed">
-                    <p className="font-medium text-slate-700">{scenarioDescriptions[selectedScenario]}</p>
-                    {selectedScenarioTimeline && <p className="mt-0.5 text-slate-500">{selectedScenarioTimeline}</p>}
-                  </div>
+                  <p className="min-w-0 text-xs leading-5 text-slate-500">
+                    <span className="font-medium text-slate-700">{scenarioDescriptions[selectedScenario]}</span>
+                    {selectedScenarioTimeline && (
+                      <>
+                        <span className="mx-1.5 text-slate-300" aria-hidden="true">·</span>
+                        <span>{selectedScenarioTimeline}</span>
+                      </>
+                    )}
+                  </p>
                 )}
               </div>
             </section>
