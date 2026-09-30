@@ -1,5 +1,6 @@
 export function evaluateProductionAudit(report) {
   const vulnerabilities = report.vulnerabilities ?? {};
+
   const blocking = [];
 
   for (const [name, vulnerability] of Object.entries(vulnerabilities)) {

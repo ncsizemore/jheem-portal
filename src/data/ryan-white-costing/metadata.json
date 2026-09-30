@@ -1,6 +1,6 @@
 {
-  "dataContractVersion": "2.2.0",
-  "generatedAt": "2026-07-28T16:40:51Z",
+  "dataContractVersion": "3.0.0",
+  "generatedAt": "2026-09-29T15:28:57Z",
   "sourceArtifacts": {
     "rData": {
       "fileName": "ADAP_input_state_costing2026_2026-07-08.Rdata",
@@ -11,32 +11,32 @@
     "fundingCsv": {
       "fileName": "ryan-white-costing-funding.csv",
       "sizeBytes": 1533,
-      "modifiedAt": "2026-07-28T16:40:33Z",
+      "modifiedAt": "2026-09-29T15:24:56Z",
       "sha256": "66c71f19c1b194917a7e2e5a79ba20d7baab18f9f0318726fcb94b18b82aee49"
     },
     "jurisdictionContextCsv": {
       "fileName": "ryan-white-costing-jurisdiction-context.csv",
       "sizeBytes": 659,
-      "modifiedAt": "2026-07-13T19:49:28Z",
+      "modifiedAt": "2026-09-29T15:24:56Z",
       "sha256": "72f643c0cfe18e05e4b6a2a898f382858bb2625fa788b333bfa995e8a1fe2bf9"
     },
     "artPriceCsv": {
       "fileName": "ryan-white-costing-art-price-tiers.csv",
       "sizeBytes": 73,
-      "modifiedAt": "2026-07-28T16:19:22Z",
+      "modifiedAt": "2026-09-29T15:24:56Z",
       "sha256": "a12135db086bb7624a1b572645117601193b5aa88b718fd5e9bf06f81de0b979"
     },
     "generator": {
       "fileName": "generate-ryan-white-costing-data.R",
-      "sizeBytes": 44841,
-      "modifiedAt": "2026-07-28T16:40:34Z",
-      "sha256": "859fa7228cba817233b11c53ec3b601f93d027a0849e39a979551b32a9c23ac3"
+      "sizeBytes": 39274,
+      "modifiedAt": "2026-09-29T15:27:33Z",
+      "sha256": "2fbae61812929a7f1b0a0981b292da51df30c43bc3fb9bef7e26744b61b9e027"
     }
   },
   "analysisSource": {
     "repository": "tfojo1/jheem_analyses",
-    "commit": "54293cee49a6b596ecbe1a8034fccf9af6d15d9b",
-    "analysisScript": "applications/ryan_white/Ryan_white_costing/cost_saving_analysis.R",
+    "commit": "6da16694bd7dfe0a1010d124f07321297ea10185",
+    "analysisScript": "applications/ryan_white/Ryan_white_costing/cost_saving_analysis_2.R",
     "supplementScript": "applications/ryan_white/Ryan_white_costing/ADAP_Supp_tables_figures.R",
     "artPriceScript": "applications/ryan_white/Ryan_white_costing/FSS_pricing_2026_pulldown.R"
   },
@@ -50,7 +50,7 @@
   "primaryEstimand": "pooled",
   "pooledConvention": {
     "description": "Pooled jurisdiction values combine equal numbers of draws from all three ART-price tiers and all model simulations. The price tier is therefore treated as an additional source of uncertainty.",
-    "nationalTotal": "The pooled modeled-jurisdiction total independently bootstraps each jurisdiction's equal-weight pooled distribution (100,000 draws; seed 123), matching ADAP_Supp_tables_figures.R. Fixed-tier sensitivity totals sum jurisdictions within each model simulation."
+    "nationalTotal": "The pooled modeled-jurisdiction total uses the model's existing Total simulation rows. All three ART-price tiers and all model simulations are pooled with equal weight, matching ADAP_Supp_tables_figures.R."
   },
   "defaultFocusJurisdiction": "FL",
   "dollarYear": "2026 USD",
@@ -79,10 +79,10 @@
     "diagnosedHivWeightedUrbanicity": "2020 Census county urbanicity weighted by each county's share of 2021 diagnosed HIV prevalence from the JHEEM surveillance manager.",
     "medicaidExpansion": "ACA Medicaid expansion adoption status for the manuscript's 2025 baseline year; classification checked against KFF State Health Facts."
   },
-  "assumptions": ["Jurisdiction-level model outputs and funding inputs cover 31 modeled jurisdictions, including DC.", "The modeled-jurisdiction funding total is the sum of those 31 jurisdictions.", "The 2035 fixed horizon truncates downstream costs for infections occurring late in the horizon.", "Negative per-simulation excess infections and diagnoses are preserved and reported as diagnostics, not floored.", "Funding comparators are deterministic under the current CSV inputs.", "Net-cost uncertainty is driven by modeled care-cost uncertainty, with deterministic funding offsets.", "Pooled cost summaries give equal weight to each ART-price tier and model simulation.", "Pooled modeled-jurisdiction cost totals independently bootstrap jurisdiction distributions (100,000 draws; seed 123), matching the supplement.", "Baseline counts are medians across 2025 no-intervention simulations; manuscript context ratios are means of per-simulation ratios.", "ADAP spending per client uses the mean 2025 no-intervention client count to reproduce the manuscript context analysis.", "Urbanicity uses county-level 2020 Census urban shares weighted by 2021 diagnosed HIV prevalence.", "Sexual transmission rate is the manuscript-defined numerator divided within simulation by diagnosed prevalence minus viral suppression.", "Immediate initiation and later return to care use state- and draw-specific ADAP-disruption multipliers from all.parameters.", "Off-ART mechanism values are person-time at the beginning of each interval, matching the revised analysis script; they are not an end-of-year stock."],
+  "assumptions": ["Jurisdiction-level model outputs and funding inputs cover 31 modeled jurisdictions, including DC.", "The modeled-jurisdiction funding total is the sum of those 31 jurisdictions.", "The 2035 fixed horizon truncates downstream costs for infections occurring late in the horizon.", "Negative per-simulation excess infections and diagnoses are preserved and reported as diagnostics, not floored.", "Funding comparators are deterministic under the current CSV inputs.", "Net-cost uncertainty is driven by modeled care-cost uncertainty, with deterministic funding offsets.", "Pooled cost summaries give equal weight to each ART-price tier and model simulation.", "Pooled modeled-jurisdiction cost totals use the model's existing Total simulation rows, matching the supplement.", "Baseline counts are medians across 2025 no-intervention simulations; manuscript context ratios are means of per-simulation ratios.", "ADAP spending per client uses the mean 2025 no-intervention client count to reproduce the manuscript context analysis.", "Urbanicity uses county-level 2020 Census urban shares weighted by 2021 diagnosed HIV prevalence.", "Sexual transmission rate is the manuscript-defined numerator divided within simulation by diagnosed prevalence minus viral suppression.", "Immediate initiation uses the time-varying suppression-to-diagnosed-prevalence ratio from the ADAP-elimination intervention.", "The September 2026 primary specification sets delayed return to care to zero; the ADAP-disruption multiplier is retained for that disabled pathway.", "Off-ART mechanism values are person-time at the beginning of each interval, matching the revised analysis script; they are not an end-of-year stock."],
   "deterministicFields": ["cumulativeAdapSpendingAvoided", "cumulativeTotalRwhapSpendingAvoided"],
   "modelParameters": {
-    "reengagementPi": 0.87,
+    "reengagementPi": 0,
     "reengagementLambda": 1.2,
     "discountRate": 0.03,
     "cd4Weights": {
@@ -96,7 +96,7 @@
       "high": 44971.84
     },
     "routineCareCost": 3502.43,
-    "immediateStartCareFractionDescription": "Per simulation and jurisdiction, immediate starts equal excess new diagnoses multiplied by the 2025 care fraction after applying the sampled ADAP-disruption multiplier."
+    "immediateStartCareFractionDescription": "Per simulation, jurisdiction, and year, immediate starts equal excess new diagnoses multiplied by the suppression-to-diagnosed-prevalence ratio from the ADAP-elimination intervention."
   },
   "validation": {
     "totalEqualsJurisdictionSum": true,

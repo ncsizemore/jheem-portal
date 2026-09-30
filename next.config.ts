@@ -1,6 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // The portal does not use next/image. Keep unnecessary server-side image processing disabled.
+  images: {
+    unoptimized: true,
+  },
   // Add security headers
   async headers() {
     return [

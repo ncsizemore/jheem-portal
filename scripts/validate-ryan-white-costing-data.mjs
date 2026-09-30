@@ -12,9 +12,18 @@ const series = readJson(path.join(repoRoot, 'public/data/ryan-white-costing/seri
 const scenarios = ['low', 'median', 'high'];
 const expectedYears = range(metadata.horizon.startYear, metadata.horizon.endYear);
 
-assert(metadata.dataContractVersion === '2.2.0', 'unexpected data contract version');
+assert(metadata.dataContractVersion === '3.0.0', 'unexpected data contract version');
 assert(metadata.primaryEstimand === 'pooled', 'pooled results are not the primary estimand');
 assert(summary.sensitivity.primaryEstimand === 'pooled', 'summary primary estimand is not pooled');
+assert(
+  metadata.analysisSource.commit === '6da16694bd7dfe0a1010d124f07321297ea10185',
+  'analysis source is not pinned to the September 2026 website update'
+);
+assert(metadata.modelParameters.reengagementPi === 0, 'delayed re-engagement must be zero in the primary specification');
+assert(
+  metadata.pooledConvention.nationalTotal.includes('existing Total simulation rows'),
+  'pooled modeled total does not document the built-in Total-row convention'
+);
 assert(metadata.simulationDraws === 1000, 'expected 1,000 simulation draws');
 assert(
   metadata.modeledJurisdictionCount === metadata.modeledJurisdictions.length,

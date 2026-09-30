@@ -7,13 +7,13 @@ function reportWith(vulnerabilities) {
   return { vulnerabilities };
 }
 
-test('blocks high transitive findings reported against both parent and child packages', () => {
+test('blocks high findings, including transitive findings', () => {
   const result = evaluateProductionAudit(
     reportWith({
       next: { severity: 'high', via: ['sharp'] },
       sharp: {
         severity: 'high',
-        via: [{ url: 'https://github.com/advisories/GHSA-example' }],
+        via: [{ url: 'https://github.com/advisories/GHSA-f88m-g3jw-g9cj' }],
       },
     })
   );
@@ -25,12 +25,12 @@ test('blocks high transitive findings reported against both parent and child pac
 test('blocks critical findings', () => {
   const result = evaluateProductionAudit(
     reportWith({
-      critical: { severity: 'critical', via: [] },
+      framework: { severity: 'critical', via: [{ url: 'https://example.test/critical' }] },
     })
   );
 
   assert.deepEqual(result.allowed, []);
-  assert.deepEqual(result.blocking, ['critical (critical)']);
+  assert.deepEqual(result.blocking, ['framework (critical)']);
 });
 
 test('blocks unrelated high findings and ignores moderate findings', () => {

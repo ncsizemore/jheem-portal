@@ -147,8 +147,9 @@ export default function CustomSimulationExplorer({
   const initialLookupStarted = useRef(false);
   useEffect(() => {
     if (!initialLookupStarted.current && initialUrlHadKnownLoc.current && selectedLocation && simStatus === 'idle') {
-      // Set the ref before starting the request so React's development-mode effect replay cannot
-      // issue a duplicate lookup before the async state transition is committed.
+      // Set the guard synchronously before issuing the request. A state-based
+      // guard can still observe its stale value when React replays effects in
+      // development, causing the same side-effect-free lookup to run twice.
       initialLookupStarted.current = true;
       resumeSimulation(config.id, selectedLocation, parameters);
     }

@@ -16,14 +16,14 @@ Urbanicity source artifacts used for this snapshot:
 
 `ryan-white-costing-art-price-tiers.csv` pins the 2026 annual ART-cost inputs produced by
 `FSS_pricing_2026_pulldown.R` from `vaFssPharmPrices.xlsx` in Ryan's revised costing
-pipeline. The snapshot corresponds to `jheem_analyses` commit
-`54293cee49a6b596ecbe1a8034fccf9af6d15d9b` (the July 27, 2026 costing update).
+pipeline. The snapshot is retained unchanged for `jheem_analyses` commit
+`6da16694bd7dfe0a1010d124f07321297ea10185` (the September 28, 2026 website update).
 The exporter records the CSV provenance alongside the other source artifacts.
 
 ## Ryan White funding
 
 `ryan-white-costing-funding.csv` pins the jurisdiction-level Parts A–F and ADAP
-funding input used by the costing analysis. Ryan's July 27 analysis script references
+funding input used by the costing analysis. Ryan's September 28 analysis script references
 this file as `rw_funding_by_state.csv`, but the file itself is absent from the pinned
 `jheem_analyses` tree. Keeping the exact 32-row input here makes the portal export
 reproducible and records its SHA-256 digest in `metadata.json`.
