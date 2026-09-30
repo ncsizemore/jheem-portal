@@ -188,44 +188,43 @@ export default function RyanWhiteCostingSummary() {
         }}
       >
         <div className="mx-auto max-w-6xl px-5 py-12 sm:px-6 sm:py-16">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">ADAP costing analysis</p>
-            <Link
-              href="/ryan-white-costing/technical"
-              aria-label="Technical results and methods"
-              className="text-sm font-semibold text-[#002D72] underline decoration-blue-200 underline-offset-4 hover:decoration-blue-700"
-            >
-              Technical explorer →
-            </Link>
-          </div>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">ADAP costing analysis</p>
           <h1 className="mt-6 max-w-4xl font-serif text-4xl font-medium leading-[1.06] tracking-[-0.02em] text-slate-950 sm:text-6xl">
-            What could happen if ADAP funding ended?
+            What happens if ADAP funding ends?
           </h1>
-          <p className="mt-6 max-w-3xl text-lg leading-relaxed text-slate-600">
-            A modeled comparison of continued ADAP coverage and complete elimination beginning January 1, 2026,
-            across 30 states and Washington, DC.
-          </p>
 
           <div className="mt-9 max-w-4xl border-l-4 border-[#002D72] bg-white px-5 py-5 shadow-sm sm:px-6">
-            <h2 className="text-sm font-semibold text-slate-950">What we modeled</h2>
+            <h2 className="text-sm font-semibold text-slate-950">What we did</h2>
             <p className="mt-2 text-[0.95rem] leading-relaxed text-slate-700">
-              We compared continued ADAP coverage with a scenario in which ADAP ends in 2026 and does not return
-              through 2035. We estimated the resulting HIV infections, diagnoses, and care costs, then compared those
-              costs with the ADAP spending avoided.
+              We compared two futures: one where ADAP funding stays the same, and one where ADAP ends in January 2026
+              and does not return through 2035. Ending ADAP saves money on the program itself, but it also leads to more
+              new HIV cases, and those people will need HIV care. We added up both sides to see how they compare.
             </p>
             <details className="group mt-4 border-t border-slate-200 pt-3">
               <summary className="cursor-pointer text-sm font-semibold text-[#002D72]">
                 How we did this <span aria-hidden className="inline-block transition-transform group-open:rotate-90">›</span>
               </summary>
-              <div className="mt-3 grid gap-4 text-sm leading-relaxed text-slate-600 sm:grid-cols-2">
+              <div className="mt-3 space-y-4 text-sm leading-relaxed text-slate-600">
+                <p>We modeled two scenarios from 2026 to 2035:</p>
+                <dl className="grid gap-3 sm:grid-cols-2">
+                  <div className="border-l-2 border-slate-200 pl-3">
+                    <dt className="font-semibold text-slate-800">Baseline</dt>
+                    <dd>No change to current ADAP funding.</dd>
+                  </div>
+                  <div className="border-l-2 border-slate-200 pl-3">
+                    <dt className="font-semibold text-slate-800">Elimination</dt>
+                    <dd>ADAP ends in January 2026 and is not restored through 2035.</dd>
+                  </div>
+                </dl>
                 <p>
-                  The difference between the two scenarios represents additional infections and diagnoses associated
-                  with complete ADAP elimination.
+                  We projected new HIV infections and diagnoses under each scenario. The difference between the two
+                  represents the additional cases associated with ending ADAP.
                 </p>
                 <p>
-                  The costing model follows people newly diagnosed and entering HIV care. Costs are reported in 2026
-                  US dollars and discounted 3% per year.
+                  We estimated HIV medicine and routine care costs for these additional cases over time. We added those
+                  care costs through 2035 and compared them with the savings from eliminating ADAP.
                 </p>
+                <p>All costs are shown in today’s dollars.</p>
               </div>
             </details>
           </div>
@@ -237,41 +236,48 @@ export default function RyanWhiteCostingSummary() {
           <div className="mx-auto max-w-6xl px-5 py-14 sm:px-6 sm:py-20">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Modeled result through 2035</p>
             <h2 className="mt-4 max-w-4xl font-serif text-3xl font-medium leading-tight text-slate-950 sm:text-5xl">
-              HIV care costs are projected to exceed ADAP savings
+              Ending ADAP is projected to cost more than it saves
             </h2>
             <p className="mt-5 max-w-4xl text-xl leading-relaxed text-slate-700 sm:text-2xl">
-              For every $1 in modeled ADAP savings, the model projects about{' '}
-              <strong className="font-semibold text-[#002D72]">${nationalPerDollar.toFixed(2)}</strong> in HIV care
-              costs for people newly infected.
+              For every $1 saved by ending ADAP, about{' '}
+              <strong className="font-semibold text-[#002D72]">${nationalPerDollar.toFixed(2)}</strong> comes back as
+              new HIV care costs.
+            </p>
+            <p className="mt-5 max-w-4xl text-base leading-relaxed text-slate-600">
+              Eliminating ADAP in 2026 would save about {formatDollars(nationalSavings)} in program spending through
+              2035, but would add about {formatDollars(nationalCare)} in HIV care for people newly infected. That is
+              about {formatDollars(nationalNet)} more spent.
             </p>
 
             <dl className="mt-9 grid gap-3 sm:grid-cols-3">
-              <ResultTile label="ADAP savings" value={formatDollars(nationalSavings)} note="Program spending avoided" tone="saving" />
+              <ResultTile label="Saved" value={formatDollars(nationalSavings)} note="ADAP program spending" tone="saving" />
               <ResultTile label="New HIV care costs" value={formatDollars(nationalCare)} note="Care for people newly infected" tone="cost" />
-              <ResultTile label="Median net cost" value={formatDollars(nationalNet)} note="Care costs minus ADAP savings" tone="net" />
+              <ResultTile label="Net" value={formatDollars(nationalNet)} note="More spent" tone="net" />
             </dl>
 
             <div className="mt-6 grid gap-5 border-y border-slate-200 py-5 sm:grid-cols-[minmax(0,1.4fr)_minmax(260px,0.6fr)]">
               <p className="text-base leading-relaxed text-slate-700">
-                By 2035, complete ADAP elimination is projected to result in about{' '}
-                <strong>{formatCount(nationalFinal.cumulativeExcessInfections.median)} additional HIV infections</strong>{' '}
-                and about <strong>{formatCount(nationalFinal.cumulativeExcessNewDiagnoses.median)} additional diagnoses</strong>.
+                Without ADAP, many people lose steady access to HIV medicine, and fewer keep their virus under control.
+                By 2035, that means about{' '}
+                <strong>{formatCount(nationalFinal.cumulativeExcessInfections.median)} more HIV infections</strong> and
+                about <strong>{formatCount(nationalFinal.cumulativeExcessNewDiagnoses.median)} more diagnoses</strong>.
               </p>
               <p className="text-sm leading-relaxed text-slate-600">
                 Care costs exceed ADAP savings in <strong className="text-slate-900">{nationalLikelihood} of every 100 modeled results</strong>.
-                The likely net range is {likelyRange(
+                The likely range is {likelyRange(
                   nationalPooled.cumulativeNetCostVsAdap.lower,
                   nationalPooled.cumulativeNetCostVsAdap.upper
-                )}.
+                )}. This covers 30 states and Washington, DC.
               </p>
             </div>
 
-            <ol className="mt-10 grid gap-3 sm:grid-cols-4" aria-label="Modeled pathway">
+            <ol className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-5" aria-label="Modeled pathway">
               {[
                 ['01', 'ADAP ends', 'The scenario begins in January 2026.'],
                 ['02', 'Fewer people remain virally suppressed', 'Loss of medication access changes HIV outcomes.'],
-                ['03', 'More infections occur', `${formatCount(nationalFinal.cumulativeExcessInfections.median)} additional infections are projected.`],
-                ['04', 'More people need HIV care', 'Medicine and routine care create costs over time.'],
+                ['03', 'More new infections occur', `${formatCount(nationalFinal.cumulativeExcessInfections.median)} additional infections are projected.`],
+                ['04', 'More people need lifelong HIV care', 'Medicine and routine care create costs over time.'],
+                ['05', 'Healthcare costs rise', 'Hospital stays and illnesses caused by weakened immunity are not included here.'],
               ].map(([number, title, note]) => (
                 <li key={number} className="border-t-2 border-blue-900 pt-4">
                   <span className="font-mono text-xs text-slate-400">{number}</span>
@@ -313,16 +319,16 @@ export default function RyanWhiteCostingSummary() {
                 <p className="mt-4 text-lg leading-relaxed text-slate-800">
                   In {selectedLabel}, ending ADAP is projected to result in about{' '}
                   <strong>{formatCount(selectedFinal.cumulativeExcessInfections.median)} additional HIV infections</strong>{' '}
-                  through 2035. It would avoid about <strong>{formatDollars(selectedSavings)}</strong> in ADAP spending
-                  and add about <strong>{formatDollars(selectedCare)}</strong> in HIV care costs.
+                  through 2035. It would save about <strong>{formatDollars(selectedSavings)}</strong> in ADAP spending
+                  and add about <strong>{formatDollars(selectedCare)}</strong> in new HIV care costs.
                 </p>
                 <p className="mt-4 text-base leading-relaxed text-slate-600">
                   {selectedNet > 0 ? (
                     <>
-                      That is about <strong className="text-slate-900">${selectedPerDollar.toFixed(2)} in care costs for every $1 saved</strong>.
+                      That is about <strong className="text-slate-900">${selectedPerDollar.toFixed(2)} in new HIV care costs for every $1 saved</strong>.
                       {crossoverYear
-                        ? ` Median care costs become larger than savings in ${crossoverYear}.`
-                        : ' Median care costs are larger than savings by 2035.'}
+                        ? ` New care costs overtake ADAP savings by ${crossoverYear}.`
+                        : ' New care costs are larger than ADAP savings by 2035.'}
                     </>
                   ) : (
                     <>
@@ -343,6 +349,11 @@ export default function RyanWhiteCostingSummary() {
                     <h3 className="text-sm font-semibold text-slate-900">When do the savings run out?</h3>
                     <p className="mt-1 text-xs leading-relaxed text-slate-500">
                       Cumulative median costs and savings for {selectedLabel}.
+                    </p>
+                    <p className="mt-3 max-w-xl text-sm leading-relaxed text-slate-600">
+                      {crossoverYear
+                        ? `The savings are real at first. Through ${crossoverYear - 1}, ending ADAP saves money. From ${crossoverYear} on, new care costs are larger.`
+                        : 'ADAP savings remain larger than new HIV care costs through 2035.'}
                     </p>
                   </div>
                   <div className="flex gap-4 text-xs text-slate-500">
@@ -392,18 +403,18 @@ export default function RyanWhiteCostingSummary() {
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Budget context</p>
               <h2 className="mt-3 font-serif text-3xl font-medium text-slate-950">Who pays?</h2>
               <p className="mt-4 max-w-xl text-base leading-relaxed text-slate-600">
-                ADAP savings and added HIV care costs may fall on different budgets. Medicaid, Medicare, private
-                insurers, hospitals, and other parts of the Ryan White program could bear some of the added costs.
-                This analysis does not estimate each payer’s share.
+                The savings occur in the ADAP budget. New costs could fall on Medicaid, Medicare, private insurers,
+                hospitals, and other parts of the Ryan White program. In other words, savings in one budget can move
+                costs to others. This analysis does not estimate each payer’s share.
               </p>
             </article>
             <article>
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">What is not counted</p>
-              <h2 className="mt-3 font-serif text-3xl font-medium text-slate-950">This is not the full economic impact</h2>
+              <h2 className="mt-3 font-serif text-3xl font-medium text-slate-950">Why this is likely an underestimate</h2>
               <p className="mt-4 max-w-xl text-base leading-relaxed text-slate-600">
-                The estimates count HIV medicine and routine care for people newly infected through 2035. They do not
-                count care for current ADAP clients who lose coverage, hospital stays, deaths, lost work, or costs after
-                2035.
+                We counted only HIV medicine and routine care for people newly infected, through 2035. We did not count
+                care for current ADAP clients who lose coverage, hospital stays, deaths, lost work or productivity, or
+                any costs after 2035. The full economic cost could therefore be higher.
               </p>
             </article>
           </div>
@@ -418,15 +429,16 @@ export default function RyanWhiteCostingSummary() {
               </p>
             </div>
             <Link
-              href="/ryan-white-costing/technical#methods"
+              href="/ryan-white-costing/technical"
               className="inline-flex items-center rounded-full bg-[#002D72] px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-950"
             >
               See full methods and technical results →
             </Link>
             <p className="basis-full text-xs leading-relaxed text-slate-500">
-              “Likely range” is the middle 95% of pooled modeled results. The pooled result gives equal weight to three
-              ART-price assumptions and all model simulations. Costs are in 2026 US dollars with a 3% annual discount rate.
-              The aggregate covers {ryanWhiteCostingMetadata.modeledJurisdictionCount} modeled jurisdictions and is not an estimate for all US jurisdictions.
+              The likely range reflects variation across model simulations and cost assumptions. Dollar amounts are in
+              2026 US dollars and discounted at 3% per year. The aggregate covers{' '}
+              {ryanWhiteCostingMetadata.modeledJurisdictionCount} modeled jurisdictions and is not an estimate for all
+              US jurisdictions.
             </p>
           </div>
         </section>
