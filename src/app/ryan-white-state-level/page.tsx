@@ -165,6 +165,26 @@ export default function RyanWhiteStateLevelPage() {
               </svg>
             </Link>
           </div>
+          <div className="mt-8 flex flex-col gap-4 border-t border-gray-200 pt-6 sm:flex-row sm:items-center sm:justify-between">
+            <div className="max-w-2xl">
+              <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">
+                Model evidence
+              </p>
+              <h2 className="mt-1 font-medium text-gray-900">
+                How well does the model fit?
+              </h2>
+              <p className="mt-1 text-sm leading-relaxed text-gray-500">
+                Compare model estimates with observed HIV and service data for the state-level analyses.
+              </p>
+            </div>
+            <Link
+              href="/ryan-white-state-level/calibration?model=ajph"
+              className="inline-flex flex-shrink-0 items-center gap-1.5 text-sm font-medium text-hopkins-blue hover:underline"
+            >
+              View model fit
+              <span aria-hidden="true">→</span>
+            </Link>
+          </div>
         </div>
       </section>
 

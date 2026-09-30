@@ -96,3 +96,19 @@ test('does not fetch an unknown location and rejects corrupted metadata', async 
   await page.getByRole('button',{name:'Retry loading'}).click();
   await expect(page.getByRole('img',{name:/model fit and observed data/})).toBeVisible();
 });
+
+test('presents model fit as contextual evidence rather than a primary workflow', async ({ page }) => {
+  await page.goto('/ryan-white');
+  await expect(page.getByRole('link', { name: 'View model fit' })).toHaveAttribute(
+    'href',
+    '/ryan-white/calibration',
+  );
+  await expect(page.locator('header nav').getByRole('link', { name: 'Model fit' })).toHaveCount(0);
+
+  await page.goto('/ryan-white-state-level');
+  await expect(page.getByRole('link', { name: 'View model fit' })).toHaveAttribute(
+    'href',
+    '/ryan-white-state-level/calibration?model=ajph',
+  );
+  await expect(page.locator('header nav').getByRole('link', { name: 'Model fit' })).toHaveCount(0);
+});

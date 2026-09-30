@@ -344,7 +344,6 @@ function NavigationForPath({ pathname }: { pathname: string }) {
                         pathname === '/ryan-white/custom' ? 'w-full' : 'w-0 group-hover:w-full'
                       }`}></span>
                     </Link>
-                    <Link href="/ryan-white/calibration" aria-current={pathname === '/ryan-white/calibration' ? 'page' : undefined} className={`py-1 font-medium hover:text-hopkins-gold ${pathname === '/ryan-white/calibration' ? 'text-hopkins-gold underline underline-offset-8' : 'text-white'}`}>Model fit</Link>
                   </div>
                 </div>
               </div>
@@ -395,7 +394,6 @@ function NavigationForPath({ pathname }: { pathname: string }) {
                         pathname?.startsWith('/ryan-white-state-level/custom') ? 'w-full' : 'w-0 group-hover:w-full'
                       }`}></span>
                     </Link>
-                    {pathname === '/ryan-white-state-level/calibration' ? <span aria-current="page" className="py-1 font-medium text-hopkins-gold underline underline-offset-8">Model fit</span> : <Link href={`/ryan-white-state-level/calibration?model=${pathname?.endsWith('/croi') ? 'croi' : 'ajph'}`} className="py-1 font-medium text-white hover:text-hopkins-gold">Model fit</Link>}
                   </div>
                 </div>
               </div>

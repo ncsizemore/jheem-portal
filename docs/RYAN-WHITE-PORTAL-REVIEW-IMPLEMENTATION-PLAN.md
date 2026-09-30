@@ -715,6 +715,13 @@ The next bounded order is:
    selections, explicit ensemble sizes and provenance caveats, accessible data tables, and
    checksum-verified reads of only the selected location/stage. No simulation jobs are launched.
 
+**Presentation integration — 2026-09-29:** Model fit is treated as supporting evidence rather than
+a peer of the primary pre-run and custom-simulation workflows. The persistent Ryan White subnav
+keeps those core tasks prominent; city- and state-level overview pages introduce model evidence in
+a subordinate callout, and each pre-run explorer links to the matching evidence from its orientation
+panel. A broader “Overview / Explore / Create / About” information-architecture change remains a
+separate design decision after this lighter placement is evaluated in production.
+
 The exhaustive build belongs in the private manager repository because it alone can read the
 controlled inputs. It is manually dispatched and bounded in concurrency: a full build transfers
 roughly 142 GB (132 GiB) of immutable simulation inputs but emits well under 0.1 GB of derived JSON
