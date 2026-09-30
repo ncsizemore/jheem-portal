@@ -111,4 +111,10 @@ test('presents model fit as contextual evidence rather than a primary workflow',
     '/ryan-white-state-level/calibration?model=ajph',
   );
   await expect(page.locator('header nav').getByRole('link', { name: 'Model fit' })).toHaveCount(0);
+
+  await page.goto('/ryan-white/explorer');
+  await expect(page.getByRole('link', { name: 'See how this model fits observed data' })).toHaveAttribute(
+    'href',
+    '/ryan-white/calibration',
+  );
 });
