@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import Link from 'next/link';
 import Map, { Marker } from 'react-map-gl/mapbox';
 import { CityData } from '@/data/cities';
 import { ryanWhiteConfig } from '@/config/model-configs';
@@ -389,6 +390,13 @@ export default function ExploreV2() {
                       </p>
                     </div>
                   </div>
+                  <Link
+                    href="/ryan-white/calibration"
+                    className="mt-4 inline-flex items-center gap-1.5 text-xs font-medium text-blue-700 hover:underline"
+                  >
+                    See how this model fits observed data
+                    <span aria-hidden="true">→</span>
+                  </Link>
                 </div>
               </motion.div>
 

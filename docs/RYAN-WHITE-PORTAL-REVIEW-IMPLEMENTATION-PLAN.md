@@ -1,12 +1,12 @@
 # Ryan White Portal Review and Remediation Plan
 
-**Status:** Phase 4 public archival is complete and the immutable-release consumer is implemented —
-CloudFront promotion, backend binding, and portal presentation next
+**Status:** Phase 4 archival, CloudFront delivery, and backend binding are complete —
+the first calibration interface is implemented; PR review and production QA next
 
 **Created:** 2026-07-29  
 **Scope:** Ryan White city and state explorers, custom simulations, calibration presentation, and the shared portal components they depend on
 
-### Progress snapshot — 2026-09-06
+### Progress snapshot — 2026-09-07
 
 - **Phase 0:** Implemented and covered by AJPH/CROI URL regression tests.
 - **Phase 1:** Model timing contract, shared-engine validation, workflow transport, cache isolation,
@@ -199,7 +199,21 @@ CloudFront promotion, backend binding, and portal presentation next
   staged all three public products successfully. This unit performs no AWS write or runtime portal
   binding; see
   [`RYAN-WHITE-CALIBRATION-RELEASE-CONSUMER.md`](./RYAN-WHITE-CALIBRATION-RELEASE-CONSUMER.md).
-  CloudFront promotion, backend binding, and portal presentation remain. Phase 5 has not started.
+  CloudFront promotion is now complete through backend PR #30 (`5851a5d`) and publication
+  [run 34181218982](https://github.com/ncsizemore/jheem-backend/actions/runs/34181218982): all
+  158 delivered files (89,689,757 bytes) were uploaded and verified. Backend PR #31
+  (`136ce60d`) binds all three models to the immutable manifests and location indexes, including
+  their digests and total/age display scope. The first portal interface is implemented in
+  `codex/calibration-portal-view`; see
+  [`RYAN-WHITE-CALIBRATION-PORTAL.md`](./RYAN-WHITE-CALIBRATION-PORTAL.md).
+  On 2026-09-29, live preview review exposed a shared CORS defect affecting both the new calibration
+  files and existing explorer data under modern Edge/Chromium's `Priority` request header. The
+  S3 GET/HEAD allowlist now includes the project-and-team-scoped Vercel preview pattern
+  `https://jheem-portal-*-jheems-projects.vercel.app`; all public-access blocks and write controls
+  remain unchanged. A four-prefix CloudFront invalidation completed, and exact browser-style probes
+  passed for all three calibration products and all three existing Ryan White data paths while an
+  unrelated Vercel origin remained denied.
+  PR review, deployment, and integrated Phase 5 production/content QA remain.
 
 ### Independent engineering audit checkpoint — 2026-07-31
 
@@ -450,6 +464,14 @@ baseline because the Next.js 16 rules expose pre-existing cross-application Reac
 require focused remediation rather than a blanket severity downgrade. The baseline excluding lint
 was subsequently delivered in portal PR #16.
 
+**Security refresh — 2026-09-29:** A newly published Next.js critical advisory caused the current
+production audit gate to fail while calibration PR #35 was being revalidated. Next.js and its
+matching ESLint configuration are updated to `16.3.3`, which also resolves the former Sharp
+exception through `sharp@0.35.5`. The exception, compensating image-optimizer control, and
+advisory-specific audit allowlist are removed; high and critical production findings now fail
+closed without an active exception. Compatible ESLint-chain patch updates also clear the remaining
+development-only audit findings, leaving the full npm audit at zero known vulnerabilities.
+
 **Reproducibility and CI progress — 2026-07-31:** The portal now pins its generated model
 configuration to immutable backend commit `597b5ea0`, commits deterministic generated output, and
 keeps ordinary install/build paths independent of backend availability. The new CI baseline uses
@@ -683,11 +705,22 @@ The next bounded order is:
    GitHub Releases is the archival source of truth, not the browser delivery origin: direct release
    assets use attachment redirects and do not provide a portal CORS contract — **public archival
    and the checksum-pinned, fail-closed portal fetch/staging consumer are complete; immutable
-   CloudFront promotion remains**;
+   CloudFront promotion passed in run `34181218982`**;
 6. pin each product's CloudFront manifest URL and digest in backend configuration. Rollback changes
-   only that pin to a prior immutable release; it does not overwrite an existing prefix; and
+   only that pin to a prior immutable release; it does not overwrite an existing prefix —
+   **complete in backend PR #31, merged as `136ce60d`**; and
 7. begin the schema-validated, lazy portal surface only after the promoted manifest contract passes
-   backend validation.
+   backend validation — **implemented in `codex/calibration-portal-view`, awaiting PR review and
+   deployment**. It uses guided model/location/stage/target/stratification controls, URL-restorable
+   selections, explicit ensemble sizes and provenance caveats, accessible data tables, and
+   checksum-verified reads of only the selected location/stage. No simulation jobs are launched.
+
+**Presentation integration — 2026-09-29:** Model fit is treated as supporting evidence rather than
+a peer of the primary pre-run and custom-simulation workflows. The persistent Ryan White subnav
+keeps those core tasks prominent; city- and state-level overview pages introduce model evidence in
+a subordinate callout, and each pre-run explorer links to the matching evidence from its orientation
+panel. A broader “Overview / Explore / Create / About” information-architecture change remains a
+separate design decision after this lighter placement is evaluated in production.
 
 The exhaustive build belongs in the private manager repository because it alone can read the
 controlled inputs. It is manually dispatched and bounded in concurrency: a full build transfers

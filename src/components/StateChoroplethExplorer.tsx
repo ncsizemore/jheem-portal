@@ -10,6 +10,7 @@
 
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import Link from 'next/link';
 import Map, { Source, Layer } from 'react-map-gl/mapbox';
 import type { MapMouseEvent } from 'react-map-gl/mapbox';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -73,6 +74,7 @@ function getImpactColor(value: number, min: number, max: number): string {
 const US_STATES_GEOJSON = '/us-states.json';
 
 export default function StateChoroplethExplorer({ config }: StateChoroplethExplorerProps) {
+  const calibrationModel = config.id === 'ryan-white-state-croi' ? 'croi' : 'ajph';
   const { summaries, loading, error, getStateByName } = useStateSummaries(config.dataUrl);
 
   const [statesGeoJson, setStatesGeoJson] = useState<GeoJSON.FeatureCollection | null>(null);
@@ -538,6 +540,13 @@ export default function StateChoroplethExplorer({ config }: StateChoroplethExplo
                   </p>
                 </div>
               </div>
+              <Link
+                href={`/ryan-white-state-level/calibration?model=${calibrationModel}`}
+                className="mt-4 inline-flex items-center gap-1.5 text-xs font-medium text-blue-700 hover:underline"
+              >
+                See how this model fits observed data
+                <span aria-hidden="true">→</span>
+              </Link>
             </div>
           </motion.div>
 

@@ -117,6 +117,14 @@ interface SourceCustomSimulation {
 }
 
 interface SourceModel {
+  calibration?: {
+    release: string;
+    manifestUrl: string;
+    manifestSha256: string;
+    locationIndexUrl: string;
+    locationIndexSha256: string;
+    displayFacets: ('total' | 'age')[];
+  };
   _status?: string;
   displayName: string;
   shortName: string;
@@ -241,7 +249,7 @@ ${params},
   locations: [${locationsCode}],
 
   dataUrl: '${model.output.cloudfrontUrl}',
-  summaryFileName: '${model.output.summaryFile}',
+  summaryFileName: '${model.output.summaryFile}',${model.calibration ? `\n  calibration: ${JSON.stringify(model.calibration)},` : ''}
 
   scenarios: [
 ${scenarios},
@@ -390,6 +398,14 @@ export interface CustomSimulationConfig {
 }
 
 export interface ModelConfig {
+  calibration?: {
+    release: string;
+    manifestUrl: string;
+    manifestSha256: string;
+    locationIndexUrl: string;
+    locationIndexSha256: string;
+    displayFacets: ('total' | 'age')[];
+  };
   // Basic info
   id: string;
   name: string;
