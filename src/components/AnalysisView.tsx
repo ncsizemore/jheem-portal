@@ -142,12 +142,13 @@ export default function AnalysisView({
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.3 }}
-      className="absolute inset-0 bg-slate-50 flex flex-col overflow-hidden"
+      data-testid="analysis-view"
+      className="absolute inset-0 bg-slate-50 flex flex-col overflow-y-auto lg:overflow-hidden"
     >
-      {/* Header: Location + Scenarios */}
+      {/* Analysis context: location + scenario */}
       <div className="bg-white border-b border-slate-200 flex-shrink-0">
-        <div className="px-3 py-3 sm:px-4 flex flex-col items-stretch gap-3 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex items-center gap-3 min-w-0">
+        <div className="grid gap-4 px-3 py-3 sm:px-4 lg:grid-cols-[minmax(15rem,0.8fr)_minmax(0,1.7fr)] lg:items-start lg:gap-6">
+          <div className="flex min-w-0 items-center gap-3">
             {/* Back to map button */}
             <button
               type="button"
@@ -166,7 +167,7 @@ export default function AnalysisView({
             {/* Location switcher */}
             <div className="min-w-0">
               <span className="block text-[10px] font-semibold uppercase tracking-wide text-slate-400">
-                1 Location
+                Location
               </span>
               <LocationSwitcher
                 currentLocation={currentLocation}
@@ -180,9 +181,11 @@ export default function AnalysisView({
 
           {/* Scenario tabs */}
           {availableScenarios.length > 0 && (
-            <div className="flex flex-col items-start gap-1.5 lg:max-w-[65%] xl:flex-row xl:items-center xl:gap-3">
-              <span id="analysis-scenario-label" className="text-xs font-semibold text-slate-500">2 Scenario</span>
-              <div className="flex min-w-0 flex-col items-start gap-1.5 xl:flex-row xl:items-center xl:gap-3">
+            <section className="min-w-0 lg:border-l lg:border-slate-200 lg:pl-6" aria-labelledby="analysis-scenario-label">
+              <span id="analysis-scenario-label" className="block text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+                Scenario
+              </span>
+              <div className="mt-1.5 grid min-w-0 gap-2 xl:grid-cols-[max-content_minmax(0,1fr)] xl:items-start">
                 <div className="flex flex-wrap gap-1" role="group" aria-labelledby="analysis-scenario-label">
                   {availableScenarios.map(scenario => (
                     <button
@@ -201,13 +204,13 @@ export default function AnalysisView({
                   ))}
                 </div>
                 {selectedScenario && scenarioDescriptions[selectedScenario] && (
-                  <div className="text-xs leading-relaxed text-slate-500 xl:max-w-md">
-                    <p>{scenarioDescriptions[selectedScenario]}</p>
-                    {selectedScenarioTimeline && <p className="mt-0.5">{selectedScenarioTimeline}</p>}
+                  <div className="rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-xs leading-relaxed">
+                    <p className="font-medium text-slate-700">{scenarioDescriptions[selectedScenario]}</p>
+                    {selectedScenarioTimeline && <p className="mt-0.5 text-slate-500">{selectedScenarioTimeline}</p>}
                   </div>
                 )}
               </div>
-            </div>
+            </section>
           )}
         </div>
       </div>

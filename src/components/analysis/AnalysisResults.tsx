@@ -144,16 +144,18 @@ export default function AnalysisResults({
   return (
     <>
       {/* Controls bar */}
-      <div className="px-3 py-3 sm:px-4 bg-slate-50 border-b border-slate-200 flex flex-col items-stretch gap-3 xl:flex-row xl:items-center xl:justify-between flex-shrink-0">
-        <div className="flex flex-wrap items-end gap-3 sm:gap-4">
+      <div className="flex flex-shrink-0 flex-col items-stretch gap-3 border-b border-slate-200 bg-slate-50 px-3 py-3 sm:px-4 xl:flex-row xl:items-end xl:justify-between">
+        <div className="grid min-w-0 grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] items-end gap-3 xl:flex xl:flex-wrap xl:gap-4">
           {/* Outcome selector */}
-          <div className="flex min-w-[12rem] flex-1 flex-col gap-1 sm:min-w-0 sm:flex-none sm:flex-row sm:items-center sm:gap-2">
-            <label htmlFor={outcomeSelectId} className="text-xs font-semibold text-slate-500">3 Outcome</label>
+          <div className="flex min-w-0 flex-col gap-1 xl:w-96">
+            <label htmlFor={outcomeSelectId} className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+              Outcome
+            </label>
             <select
               id={outcomeSelectId}
               value={selectedOutcome}
               onChange={e => setSelectedOutcome(e.target.value)}
-              className="min-w-0 border border-slate-300 rounded-md px-2 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full min-w-0 border border-slate-300 rounded-md px-2 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               {availableOutcomes.map(o => (
                 <option key={o} value={o}>{displayName(o)}</option>
@@ -162,13 +164,15 @@ export default function AnalysisResults({
           </div>
 
           {/* Statistic selector */}
-          <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-2">
-            <label htmlFor={statisticSelectId} className="text-xs font-medium text-slate-500">Summary</label>
+          <div className="flex min-w-0 flex-col gap-1 xl:w-44">
+            <label htmlFor={statisticSelectId} className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+              Summary statistic
+            </label>
             <select
               id={statisticSelectId}
               value={selectedStatistic}
               onChange={e => setSelectedStatistic(e.target.value)}
-              className="border border-slate-300 rounded-md px-2 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full min-w-0 border border-slate-300 rounded-md px-2 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               {availableStatistics.map(s => (
                 <option key={s} value={s}>{formatOptionLabel(s)}</option>
@@ -177,8 +181,10 @@ export default function AnalysisResults({
           </div>
 
           {/* Facet dimension toggles */}
-          <div className="flex flex-col gap-1">
-            <span id={breakdownLabelId} className="text-xs font-semibold text-slate-500">4 Stratification</span>
+          <div className="col-span-2 flex flex-col gap-1 xl:col-span-1">
+            <span id={breakdownLabelId} className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+              Break down by
+            </span>
             <div className="flex flex-wrap items-center gap-1" role="group" aria-labelledby={breakdownLabelId}>
               {(['age', 'sex', 'race', 'risk'] as const).map(dim => (
                 <button
@@ -206,9 +212,13 @@ export default function AnalysisResults({
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          {/* View mode toggle */}
-          <div className="flex items-center border border-slate-200 rounded-md overflow-hidden">
+        <div className="flex flex-col gap-1">
+          <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+            View and export
+          </span>
+          <div className="flex flex-wrap items-center gap-2">
+            {/* View mode toggle */}
+            <div className="flex items-center border border-slate-200 rounded-md overflow-hidden">
             <button
               type="button"
               aria-pressed={viewMode === 'chart'}
@@ -237,10 +247,12 @@ export default function AnalysisResults({
               </svg>
               <span>Table</span>
             </button>
-          </div>
+            </div>
 
-          {/* Export buttons */}
-          <div className="flex items-center gap-1">
+            <div className="hidden h-6 w-px bg-slate-200 sm:block" aria-hidden="true" />
+
+            {/* Export buttons */}
+            <div className="flex items-center gap-1">
             <button
               type="button"
               onClick={handleExportCSV}
@@ -269,18 +281,22 @@ export default function AnalysisResults({
               )}
               <span>PNG</span>
             </button>
-          </div>
+            </div>
 
-          {/* Display options */}
-          <DisplayOptionsPopover
-            options={displayOptions}
-            onChange={setDisplayOptions}
-          />
+            {/* Display options */}
+            <DisplayOptionsPopover
+              options={displayOptions}
+              onChange={setDisplayOptions}
+            />
+          </div>
         </div>
       </div>
 
       {/* Chart/Table area */}
-      <div className="flex-1 min-h-0 overflow-y-auto p-3 sm:p-6">
+      <div
+        data-testid="analysis-chart-region"
+        className="min-h-[34rem] flex-none overflow-visible p-3 sm:min-h-[38rem] sm:p-6 lg:min-h-0 lg:flex-1 lg:overflow-y-auto"
+      >
         {chartPanels.length === 0 ? (
           <div className="flex items-center justify-center h-full">
             <p className="text-slate-500">Select options to view data</p>
