@@ -171,7 +171,27 @@ export default function RyanWhiteCostingSummary() {
     care: point.pooledCumulativeCareCost.median,
     savings: point.cumulativeAdapSpendingAvoided,
   }));
-  const crossoverYear = chartPoints.find((point) => point.care > point.savings)?.year ?? null;
+  const crossoverIndex = chartPoints.findIndex((point) => point.care > point.savings);
+  const crossoverYear = crossoverIndex >= 0 ? chartPoints[crossoverIndex].year : null;
+  const postCrossoverGaps = crossoverIndex >= 0
+    ? chartPoints.slice(crossoverIndex).map((point) => point.care - point.savings)
+    : [];
+  const gapKeepsGrowing = postCrossoverGaps.length > 1
+    && postCrossoverGaps.every((gap, index) => index === 0 || gap > postCrossoverGaps[index - 1]);
+  const annualNarrative = seriesError
+    ? 'The annual cost path could not be loaded.'
+    : series === null
+      ? 'Loading the annual comparison…'
+      : chartPoints.length === 0
+        ? 'Annual results are not available for this selection.'
+        : crossoverYear
+          ? `The savings are real at first. Through ${crossoverYear - 1}, ending ADAP saves money. From ${crossoverYear} on, new care costs are larger${gapKeepsGrowing ? ', and the gap keeps growing.' : '.'}`
+          : 'ADAP savings remain larger than new HIV care costs through 2035.';
+  const annualChartStatus = seriesError
+    ? 'The annual results could not be loaded.'
+    : series === null
+      ? 'Loading annual results…'
+      : 'Annual results are not available for this selection.';
   const selectedLabel = location === TOTAL
     ? 'the 30 states and Washington, DC included in the analysis'
     : location === 'DC' ? 'the District of Columbia' : stateName(location);
@@ -314,7 +334,7 @@ export default function RyanWhiteCostingSummary() {
             <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,0.82fr)_minmax(0,1.18fr)]">
               <article className="border border-slate-200 bg-white p-6 shadow-sm sm:p-8" aria-live="polite">
                 <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
-                  {location === TOTAL ? 'Modeled-jurisdiction total' : stateName(location)}
+                  {location === TOTAL ? '30 states + Washington, DC' : stateName(location)}
                 </p>
                 <p className="mt-4 text-lg leading-relaxed text-slate-800">
                   In {selectedLabel}, ending ADAP is projected to result in about{' '}
@@ -351,9 +371,7 @@ export default function RyanWhiteCostingSummary() {
                       Cumulative median costs and savings for {selectedLabel}.
                     </p>
                     <p className="mt-3 max-w-xl text-sm leading-relaxed text-slate-600">
-                      {crossoverYear
-                        ? `The savings are real at first. Through ${crossoverYear - 1}, ending ADAP saves money. From ${crossoverYear} on, new care costs are larger.`
-                        : 'ADAP savings remain larger than new HIV care costs through 2035.'}
+                      {annualNarrative}
                     </p>
                   </div>
                   <div className="flex gap-4 text-xs text-slate-500">
@@ -388,7 +406,7 @@ export default function RyanWhiteCostingSummary() {
                     </ResponsiveContainer>
                   ) : (
                     <div className="flex h-full items-center justify-center text-sm text-slate-500">
-                      {seriesError ? 'The annual results could not be loaded.' : 'Loading annual results…'}
+                      {annualChartStatus}
                     </div>
                   )}
                 </div>
@@ -425,7 +443,7 @@ export default function RyanWhiteCostingSummary() {
             <div>
               <h2 className="font-serif text-2xl font-medium text-slate-950">How was this analysis done?</h2>
               <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-600">
-                Review assumptions, uncertainty, jurisdiction comparisons, price sensitivity, and technical provenance.
+                See detailed methods, assumptions, uncertainty, and results for each modeled jurisdiction.
               </p>
             </div>
             <Link
