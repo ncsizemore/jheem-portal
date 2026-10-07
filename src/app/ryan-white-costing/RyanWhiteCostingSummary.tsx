@@ -241,10 +241,13 @@ export default function RyanWhiteCostingSummary() {
                   represents the additional cases associated with ending ADAP.
                 </p>
                 <p>
-                  We estimated HIV medicine and routine care costs for these additional cases over time. We added those
-                  care costs through 2035 and compared them with the savings from eliminating ADAP.
+                  We estimated the average cost of keeping a person with HIV in care and applied that cost to these
+                  additional cases over time.
                 </p>
-                <p>All costs are shown in today’s dollars.</p>
+                <p>
+                  We added those care costs through 2035 and compared them with the savings from eliminating ADAP.
+                </p>
+                <p>All costs are in 2026 US dollars, discounted at 3% per year.</p>
               </div>
             </details>
           </div>
@@ -256,7 +259,7 @@ export default function RyanWhiteCostingSummary() {
           <div className="mx-auto max-w-6xl px-5 py-14 sm:px-6 sm:py-20">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Modeled result through 2035</p>
             <h2 className="mt-4 max-w-4xl font-serif text-3xl font-medium leading-tight text-slate-950 sm:text-5xl">
-              Ending ADAP is projected to cost more than it saves
+              Cutting ADAP would cost more than it saves
             </h2>
             <p className="mt-5 max-w-4xl text-xl leading-relaxed text-slate-700 sm:text-2xl">
               For every $1 saved by ending ADAP, about{' '}
@@ -412,6 +415,10 @@ export default function RyanWhiteCostingSummary() {
                 </div>
               </div>
             </div>
+            <p className="mt-6 max-w-4xl text-sm leading-relaxed text-slate-600">
+              Across the modeled jurisdictions, states where ADAP supports a larger share of people with controlled HIV,
+              and less urban states, tended to see larger net costs.
+            </p>
           </div>
         </section>
 
