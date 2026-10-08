@@ -60,7 +60,7 @@ const APPLICATIONS: Application[] = [
     scope: "24 states",
     description:
       "How will the HIV population age over the next 15 years? State-level projections from 2025 to 2040.",
-    citation: <span className="italic">Submitted</span>,
+    citation: <><span className="italic">JAMA Netw Open</span>, 2026</>,
   },
   {
     href: "/ryan-white-costing",
