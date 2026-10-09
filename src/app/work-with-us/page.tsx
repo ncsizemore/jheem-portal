@@ -2,7 +2,8 @@ import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import Link from 'next/link';
 import Footer from '@/components/Footer';
-import FuturesIllustration, { DotsKey, FuturesKey, RangeKey } from './FuturesIllustration';
+import CopyEmailButton from './CopyEmailButton';
+import FuturesIllustration from './FuturesIllustration';
 
 export const metadata: Metadata = {
   title: 'Work With Us | JHEEM Portal',
@@ -98,24 +99,6 @@ const COLLABORATION_STEPS: { title: string; description: string }[] = [
   },
 ];
 
-const LEGEND: { key: ReactNode; title: string; description: string }[] = [
-  {
-    key: <DotsKey />,
-    title: 'Reported data',
-    description: 'What has already happened. Each local model is fit to public surveillance data.',
-  },
-  {
-    key: <FuturesKey />,
-    title: 'Possible futures',
-    description: 'We change one thing, like a funding cut or more testing, and compare.',
-  },
-  {
-    key: <RangeKey />,
-    title: 'Ranges',
-    description: 'Many simulations show how uncertain each future is.',
-  },
-];
-
 const LEADS = [
   {
     name: 'Parastu Kasaie, PhD',
@@ -183,30 +166,18 @@ export default function WorkWithUsPage() {
                 research into answers for local decisions, and we&apos;re looking for new collaborators.
               </p>
               <p className="mt-5 text-base leading-relaxed text-gray-600">
-                To discuss a question you&apos;re working on, email us at{' '}
-                <a href={CONTACT_HREF} className={LINK_CLASS}>
-                  {CONTACT_EMAIL}
+                To discuss a question you&apos;re working on,{' '}
+                <a href="#contact" className={LINK_CLASS}>
+                  get in touch
                 </a>
                 .
               </p>
             </div>
             <figure className="border-t border-gray-200 pt-8 lg:border-l lg:border-t-0 lg:pl-12 lg:pt-0">
               <FuturesIllustration />
-              <figcaption className="mt-6">
-                <dl className="grid gap-4 border-t border-gray-200 pt-5 sm:grid-cols-3 sm:gap-6">
-                  {LEGEND.map((item) => (
-                    <div key={item.title}>
-                      <dt className="flex items-center gap-3 text-sm font-medium text-gray-900">
-                        {item.key}
-                        {item.title}
-                      </dt>
-                      <dd className="mt-1.5 text-sm leading-relaxed text-gray-600">{item.description}</dd>
-                    </div>
-                  ))}
-                </dl>
-                <p className="mt-5 text-sm leading-relaxed text-gray-500">
-                  Projections compare choices. They aren&apos;t predictions of exactly what will happen.
-                </p>
+              <figcaption className="mt-5 text-sm leading-relaxed text-gray-500">
+                Shaded bands show the range of likely outcomes. Projections compare choices; they aren&apos;t
+                predictions of exactly what will happen.
               </figcaption>
             </figure>
           </div>
@@ -299,23 +270,28 @@ export default function WorkWithUsPage() {
       </section>
 
       {/* Contact */}
-      <section className="border-t border-gray-200">
+      <section id="contact" className="scroll-mt-20 border-t border-gray-200">
         <div className="mx-auto max-w-6xl px-6 py-16 md:py-20">
           <div className="grid gap-12 md:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] md:gap-16">
             <div>
               <SectionTitle>Get in touch</SectionTitle>
               <p className="mt-5 text-lg leading-relaxed text-gray-800">
                 If your organization has a question our models could help answer, or you&apos;d simply like to
-                learn more, we&apos;d be glad to hear from you at{' '}
-                <a href={CONTACT_HREF} className={LINK_CLASS}>
-                  {CONTACT_EMAIL}
-                </a>
-                .
+                learn more, we&apos;d be glad to hear from you.
               </p>
               <p className="mt-4 text-base leading-relaxed text-gray-600">
                 A few lines about your organization, your city or state, and what you&apos;re working on is
                 enough to start.
               </p>
+              <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3">
+                <a
+                  href={CONTACT_HREF}
+                  className="inline-flex items-center bg-hopkins-blue px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-hopkins-blue/90"
+                >
+                  Email us
+                </a>
+                <CopyEmailButton email={CONTACT_EMAIL} />
+              </div>
             </div>
 
             <div className="md:pt-12">
