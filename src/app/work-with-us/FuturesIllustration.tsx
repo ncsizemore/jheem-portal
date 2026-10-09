@@ -104,21 +104,21 @@ export default function FuturesIllustration() {
   );
 }
 
-// Small keys that tie the "How to read our projections" text back to the illustration.
+// Legend keys shown under the illustration.
 
-const KEY_CLASS = 'h-9 w-16';
+const KEY_CLASS = 'h-6 w-11 flex-shrink-0';
 
 export function DotsKey() {
   return (
     <svg viewBox="0 0 44 24" className={KEY_CLASS} aria-hidden="true">
-      <path d="M2,10 C14,11 30,14 42,15" fill="none" stroke={PAST} strokeWidth="1.25" />
+      <path d="M2,10 C14,11 30,14 42,15" fill="none" stroke={PAST} strokeWidth="1.5" />
       {[
         [6, 6],
         [16, 15],
         [26, 9],
         [36, 18],
       ].map(([cx, cy]) => (
-        <circle key={cx} cx={cx} cy={cy} r="2.25" fill={PAST} fillOpacity="0.6" />
+        <circle key={cx} cx={cx} cy={cy} r="2.5" fill={PAST} fillOpacity="0.6" />
       ))}
     </svg>
   );
@@ -127,9 +127,9 @@ export function DotsKey() {
 export function FuturesKey() {
   return (
     <svg viewBox="0 0 44 24" className={KEY_CLASS} aria-hidden="true">
-      <path d="M2,12 C16,11 28,5 42,2" fill="none" stroke={FUNDING_CUT} strokeWidth="1.5" />
-      <path d="M2,12 C16,12 28,13 42,13" fill="none" stroke={NO_CHANGE} strokeWidth="1.5" strokeDasharray="3 2.5" />
-      <path d="M2,12 C16,13 28,19 42,22" fill="none" stroke={SCALE_UP} strokeWidth="1.5" />
+      <path d="M2,12 C16,11 28,5 42,2" fill="none" stroke={FUNDING_CUT} strokeWidth="1.75" />
+      <path d="M2,12 C16,12 28,13 42,13" fill="none" stroke={NO_CHANGE} strokeWidth="1.75" strokeDasharray="3 2.5" />
+      <path d="M2,12 C16,13 28,19 42,22" fill="none" stroke={SCALE_UP} strokeWidth="1.75" />
       <circle cx="2.5" cy="12" r="2" fill={PAST} />
     </svg>
   );
@@ -139,7 +139,7 @@ export function RangeKey() {
   return (
     <svg viewBox="0 0 44 24" className={KEY_CLASS} aria-hidden="true">
       <path d="M2,12 C16,9 28,4 42,2 L42,20 C28,18 16,15 2,12 Z" fill={SCALE_UP} fillOpacity="0.16" />
-      <path d="M2,12 C16,12 28,11 42,11" fill="none" stroke={SCALE_UP} strokeWidth="1.5" />
+      <path d="M2,12 C16,12 28,11 42,11" fill="none" stroke={SCALE_UP} strokeWidth="1.75" />
     </svg>
   );
 }
