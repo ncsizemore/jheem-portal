@@ -2,11 +2,12 @@ import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import Link from 'next/link';
 import Footer from '@/components/Footer';
+import FuturesIllustration, { DotsKey, FuturesKey, RangeKey } from './FuturesIllustration';
 
 export const metadata: Metadata = {
   title: 'Work With Us | JHEEM Portal',
   description:
-    'JHEEM projects how policy and funding decisions shape local HIV epidemics. We work with health departments to answer local planning questions using publicly available data.',
+    'JHEEM projects how policy and funding decisions shape local HIV epidemics. We work with public health partners to answer local planning questions using publicly available data.',
   // Live but unlinked while the team reviews it. Remove when the page is linked from the site.
   robots: { index: false, follow: false },
 };
@@ -97,19 +98,22 @@ const COLLABORATION_STEPS: { title: string; description: string }[] = [
   },
 ];
 
-const MODEL_STEPS: { title: string; description: string }[] = [
+const READING_GUIDE: { key: ReactNode; title: string; description: string }[] = [
   {
-    title: 'It learns from local data',
+    key: <DotsKey />,
+    title: 'The dots are what has already happened.',
     description:
-      'Each city or state model is adjusted until it matches what has already happened there: diagnoses, viral suppression and deaths in public surveillance data.',
+      'Each city or state model is adjusted until it reproduces reported diagnoses, viral suppression and deaths from public surveillance data.',
   },
   {
-    title: 'It tests "what if?"',
+    key: <FuturesKey />,
+    title: 'The lines are possible futures.',
     description:
       'We change one thing at a time, like a funding cut or more testing, and compare the future with and without it.',
   },
   {
-    title: 'It shows a range, not one number',
+    key: <RangeKey />,
+    title: 'The shaded bands are the range.',
     description:
       'Every result comes from many simulations, so we report both the most likely outcome and how uncertain it is.',
   },
@@ -132,9 +136,12 @@ const LEADS = [
 
 function SectionTitle({ children }: { children: ReactNode }) {
   return (
-    <h2 className="text-balance font-serif text-[1.85rem] font-normal leading-tight text-gray-950 md:text-[2.25rem]">
-      {children}
-    </h2>
+    <div>
+      <div aria-hidden="true" className="mb-5 h-0.5 w-10 bg-hopkins-gold" />
+      <h2 className="text-balance font-serif text-[1.85rem] font-normal leading-tight text-gray-950 md:text-[2.25rem]">
+        {children}
+      </h2>
+    </div>
   );
 }
 
@@ -159,36 +166,47 @@ function SourceList({ sources }: { sources: Source[] }) {
 export default function WorkWithUsPage() {
   return (
     <div className="min-h-screen bg-white text-gray-900">
-      {/* Intro */}
-      <header className="border-b border-gray-200">
-        <div className="mx-auto max-w-5xl px-6 pb-14 pt-16 md:pb-20 md:pt-24">
-          <p className="mb-6 text-sm font-medium text-hopkins-blue">For health departments and HIV program partners</p>
+      {/* Intro: the headline and the illustration make the same point */}
+      <header className="border-b border-gray-200 bg-[#f7f9fc]">
+        <div className="mx-auto max-w-6xl px-6 pb-16 pt-16 md:pb-20 md:pt-20">
+          <p className="mb-6 text-sm font-medium text-hopkins-blue">For public health and HIV program partners</p>
           <h1 className="max-w-4xl text-balance font-serif text-[2.5rem] font-normal leading-[1.08] text-gray-950 md:text-[3.5rem]">
             We study how policy and funding decisions shape local HIV epidemics.
           </h1>
-          <div className="mt-10 grid gap-6 md:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] md:gap-14">
-            <p className="text-xl leading-relaxed text-gray-800">
-              JHEEM, the Joint HIV Epidemiology and Economic Model, projects HIV trends in U.S. cities and states
-              under different scenarios. It is developed by researchers at the Johns Hopkins Schools of Public
-              Health and Medicine and funded by the National Institutes of Health.
-            </p>
-            <p className="text-base leading-relaxed text-gray-600 md:border-l md:border-gray-200 md:pl-8 md:pt-1">
-              We work with health departments to turn this research into answers for local decisions, and
-              we&apos;re looking for new partners. To discuss a question you&apos;re working on, email Parastu
-              Kasaie at{' '}
-              <a href={CONTACT_HREF} className={LINK_CLASS}>
-                {CONTACT_EMAIL}
-              </a>
-              .
-            </p>
+          <div className="mt-12 grid items-start gap-12 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-16">
+            <div className="lg:pt-6">
+              <p className="text-xl leading-relaxed text-gray-800">
+                JHEEM, the Joint HIV Epidemiology and Economic Model, projects HIV trends in U.S. cities and
+                states, and how they could change under different decisions.
+              </p>
+              <p className="mt-5 text-base leading-relaxed text-gray-600">
+                It is developed by researchers at the Johns Hopkins Schools of Public Health and Medicine and
+                funded by the National Institutes of Health. We work with public health partners to turn this
+                research into answers for local decisions, and we&apos;re looking for new collaborators.
+              </p>
+              <p className="mt-5 text-base leading-relaxed text-gray-600">
+                To discuss a question you&apos;re working on, email Parastu Kasaie at{' '}
+                <a href={CONTACT_HREF} className={LINK_CLASS}>
+                  {CONTACT_EMAIL}
+                </a>
+                .
+              </p>
+            </div>
+            <figure className="border-t border-gray-200 pt-8 lg:border-l lg:border-t-0 lg:pl-12 lg:pt-0">
+              <FuturesIllustration />
+              <figcaption className="mt-5 text-sm leading-relaxed text-gray-500">
+                How we look at the future: the model learns from what has already happened, then projects how
+                new infections could change under different decisions, with a range around each.
+              </figcaption>
+            </figure>
           </div>
         </div>
       </header>
 
-      {/* Questions */}
-      <section className="mx-auto max-w-5xl px-6 py-16 md:py-20">
+      {/* What we can help answer */}
+      <section className="mx-auto max-w-6xl px-6 py-16 md:py-20">
         <div className="max-w-2xl">
-          <SectionTitle>Questions our research answers</SectionTitle>
+          <SectionTitle>What we can help you answer</SectionTitle>
           <p className="mt-4 text-base leading-relaxed text-gray-600">
             Our results cover individual U.S. cities and states. These are the questions we&apos;ve studied so
             far, each with an example from our published work.
@@ -198,7 +216,7 @@ export default function WorkWithUsPage() {
           {QUESTION_AREAS.map((area) => (
             <div
               key={area.question}
-              className="grid gap-4 border-b border-gray-200 py-9 md:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] md:gap-14 md:py-11"
+              className="grid gap-4 border-b border-gray-200 py-9 md:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] md:gap-16 md:py-11"
             >
               <h3 className="text-balance font-serif text-[1.4rem] leading-snug text-gray-950 md:text-[1.65rem]">
                 {area.question}
@@ -228,13 +246,13 @@ export default function WorkWithUsPage() {
         </div>
       </section>
 
-      {/* Collaboration */}
+      {/* Working together */}
       <section className="border-y border-gray-200 bg-slate-50">
-        <div className="mx-auto max-w-5xl px-6 py-16 md:py-20">
+        <div className="mx-auto max-w-6xl px-6 py-16 md:py-20">
           <div className="max-w-2xl">
-            <SectionTitle>How a collaboration works</SectionTitle>
+            <SectionTitle>Working together</SectionTitle>
             <p className="mt-4 text-base leading-relaxed text-gray-600">
-              We already work with several health departments, and we keep the work light on your side.
+              We already work with several health departments. A collaboration usually looks like this.
             </p>
           </div>
           <ol className="mt-12 grid gap-10 border-l border-hopkins-blue/20 pl-7 md:grid-cols-3 md:gap-12 md:border-l-0 md:border-t md:pl-0">
@@ -252,62 +270,78 @@ export default function WorkWithUsPage() {
               </li>
             ))}
           </ol>
-          <p className="mt-14 max-w-3xl text-base leading-relaxed text-gray-700">
-            What we ask of partners is local knowledge: the questions and priorities that matter to you, context
-            on programs and populations that data alone can&apos;t capture, and feedback on how results are
-            framed. Our models are built on publicly available data, so you don&apos;t need to share any local
-            data.
-          </p>
+          <div className="mt-14 grid gap-6 md:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] md:gap-16">
+            <p className="border-l-2 border-hopkins-gold pl-6 font-serif text-[1.45rem] leading-snug text-gray-950 md:text-[1.7rem]">
+              You don&apos;t need modeling expertise or local data to work with us. Our models are built on
+              publicly available data.
+            </p>
+            <p className="text-base leading-relaxed text-gray-700 md:pt-1">
+              What we ask for is your knowledge of the local picture: the questions and priorities that matter
+              to you, context on programs and populations that data alone can&apos;t capture, and feedback on how
+              results are framed.
+            </p>
+          </div>
         </div>
       </section>
 
-      {/* Model */}
-      <section className="mx-auto max-w-5xl px-6 py-16 md:py-20">
-        <div className="grid gap-6 md:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] md:gap-14">
-          <SectionTitle>How our models work</SectionTitle>
-          <p className="text-lg leading-relaxed text-gray-800 md:pt-1">
+      {/* How to read the projections */}
+      <section className="mx-auto max-w-6xl px-6 py-16 md:py-20">
+        <div className="grid gap-6 md:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] md:gap-16">
+          <SectionTitle>How to read our projections</SectionTitle>
+          <p className="text-lg leading-relaxed text-gray-800 md:self-end">
             Think of a weather forecast: it learns from past patterns, runs many possible futures and tells you
-            how likely each one is. Our model does the same for HIV, one city or state at a time.
+            how likely each one is. Our projections work the same way, and have the same three parts as the
+            illustration at the top of this page.
           </p>
         </div>
-        <div className="mt-12 grid gap-8 md:grid-cols-3 md:gap-12">
-          {MODEL_STEPS.map((step) => (
-            <div key={step.title} className="border-t border-gray-300 pt-5">
-              <h3 className="font-serif text-xl text-gray-950">{step.title}</h3>
-              <p className="mt-2 text-base leading-relaxed text-gray-700">{step.description}</p>
+        <div className="mt-12 grid gap-10 md:grid-cols-3 md:gap-12">
+          {READING_GUIDE.map((item) => (
+            <div key={item.title} className="border-t border-gray-300 pt-5">
+              {item.key}
+              <h3 className="mt-4 font-serif text-xl leading-snug text-gray-950">{item.title}</h3>
+              <p className="mt-2 text-base leading-relaxed text-gray-700">{item.description}</p>
             </div>
           ))}
         </div>
-        <p className="mt-12 text-base leading-relaxed text-gray-600">
-          JHEEM has been developed over several years, and its methods and results are published in peer-reviewed
-          journals (
-          <a href={PUBLICATIONS_URL} target="_blank" rel="noopener noreferrer" className={LINK_CLASS}>
-            see our publications
-          </a>
-          ).
-        </p>
+        <div className="mt-12 grid gap-6 border-t border-gray-200 pt-8 md:grid-cols-2 md:gap-16">
+          <p className="text-base leading-relaxed text-gray-700">
+            Projections are not predictions of exactly what will happen. Their value is in comparing choices:
+            how much a decision could change the path of a local epidemic.
+          </p>
+          <p className="text-base leading-relaxed text-gray-700">
+            JHEEM has been developed at Johns Hopkins over several years, and its results are published in
+            peer-reviewed journals including <span className="italic">Annals of Internal Medicine</span>,{' '}
+            <span className="italic">JAMA Network Open</span> and{' '}
+            <span className="italic">Clinical Infectious Diseases</span> (
+            <a href={PUBLICATIONS_URL} target="_blank" rel="noopener noreferrer" className={LINK_CLASS}>
+              see our publications
+            </a>
+            ).
+          </p>
+        </div>
       </section>
 
       {/* Contact */}
       <section className="border-t border-gray-200">
-        <div className="mx-auto max-w-5xl px-6 py-16 md:py-20">
-          <div className="grid gap-12 md:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] md:gap-14">
+        <div className="mx-auto max-w-6xl px-6 py-16 md:py-20">
+          <div className="grid gap-12 md:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] md:gap-16">
             <div>
               <SectionTitle>Get in touch</SectionTitle>
               <p className="mt-5 text-lg leading-relaxed text-gray-800">
-                If your health department has a question our models could help answer, or you&apos;d simply like
-                to learn more, email Parastu Kasaie at{' '}
+                If your organization has a question our models could help answer, or you&apos;d simply like to
+                learn more, email Parastu Kasaie at{' '}
                 <a href={CONTACT_HREF} className={LINK_CLASS}>
                   {CONTACT_EMAIL}
                 </a>
                 .
               </p>
               <p className="mt-4 text-base leading-relaxed text-gray-600">
-                A few lines about your jurisdiction and what you&apos;re working on is enough to start.
+                A few lines about your organization, your city or state, and what you&apos;re working on is
+                enough to start.
               </p>
             </div>
 
-            <div>
+            <div className="md:pt-12">
               <ul className="space-y-6">
                 {LEADS.map((lead) => (
                   <li key={lead.name} className="flex items-center gap-5">
@@ -342,8 +376,7 @@ export default function WorkWithUsPage() {
             <p className="max-w-3xl text-xs leading-relaxed text-gray-500">
               This research is supported by the National Institutes of Health (K08MH118094, K01AI138853,
               P30AI094189, R01MD018539). The content is solely the responsibility of the authors and does not
-              necessarily represent the official views of the NIH. Results are model projections under stated
-              assumptions, not predictions of what will happen.
+              necessarily represent the official views of the NIH.
             </p>
           </div>
         </div>
