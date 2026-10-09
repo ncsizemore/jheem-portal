@@ -84,22 +84,22 @@ const QUESTION_AREAS: QuestionArea[] = [
 
 const COLLABORATION_STEPS: { title: string; description: string }[] = [
   {
-    title: 'You bring the question.',
+    title: 'You bring the question',
     description: "Tell us the decision you're facing: a budget change, a new program or a planning target.",
   },
   {
-    title: 'We tailor and run the model.',
+    title: 'We tailor and run the model',
     description: 'We set up scenarios that match your question and run them for your city or state.',
   },
   {
-    title: 'We share results you can use.',
+    title: 'We share results you can use',
     description: 'Plain-language summaries, presentations for your leadership or board, and interactive tools for your staff.',
   },
 ];
 
 const MODEL_STEPS: { title: string; description: string }[] = [
   {
-    title: 'It learns from local data.',
+    title: 'It learns from local data',
     description:
       'Each city or state model is adjusted until it matches what has already happened there: diagnoses, viral suppression and deaths in public surveillance data.',
   },
@@ -109,20 +109,32 @@ const MODEL_STEPS: { title: string; description: string }[] = [
       'We change one thing at a time, like a funding cut or more testing, and compare the future with and without it.',
   },
   {
-    title: 'It shows a range, not one number.',
+    title: 'It shows a range, not one number',
     description:
       'Every result comes from many simulations, so we report both the most likely outcome and how uncertain it is.',
   },
 ];
 
-function Section({ title, children }: { title: string; children: ReactNode }) {
+const LEADS = [
+  {
+    name: 'Parastu Kasaie, PhD',
+    role: 'Associate Scientist',
+    school: 'Johns Hopkins Bloomberg School of Public Health',
+    photo: '/images/team/kasaie.jpg',
+  },
+  {
+    name: 'Todd Fojo, MD, MHS',
+    role: 'Associate Professor',
+    school: 'Johns Hopkins School of Medicine',
+    photo: '/images/team/fojo.jpg',
+  },
+];
+
+function SectionTitle({ children }: { children: ReactNode }) {
   return (
-    <section className="border-t border-gray-200 py-12 md:py-14">
-      <h2 className="mb-6 font-serif text-[1.75rem] font-normal leading-tight text-gray-950 md:text-[2rem]">
-        {title}
-      </h2>
+    <h2 className="text-balance font-serif text-[1.85rem] font-normal leading-tight text-gray-950 md:text-[2.25rem]">
       {children}
-    </section>
+    </h2>
   );
 }
 
@@ -147,38 +159,52 @@ function SourceList({ sources }: { sources: Source[] }) {
 export default function WorkWithUsPage() {
   return (
     <div className="min-h-screen bg-white text-gray-900">
-      <article className="mx-auto max-w-3xl px-6">
-        <header className="pb-12 pt-16 md:pb-14 md:pt-20">
-          <p className="mb-6 text-sm text-gray-500">For health departments and HIV program partners</p>
-          <h1 className="text-balance font-serif text-[2.4rem] font-normal leading-[1.1] text-gray-950 md:text-5xl">
+      {/* Intro */}
+      <header className="border-b border-gray-200">
+        <div className="mx-auto max-w-5xl px-6 pb-14 pt-16 md:pb-20 md:pt-24">
+          <p className="mb-6 text-sm font-medium text-hopkins-blue">For health departments and HIV program partners</p>
+          <h1 className="max-w-4xl text-balance font-serif text-[2.5rem] font-normal leading-[1.08] text-gray-950 md:text-[3.5rem]">
             We study how policy and funding decisions shape local HIV epidemics.
           </h1>
-          <p className="mt-8 text-lg leading-relaxed text-gray-700">
-            JHEEM, the Joint HIV Epidemiology and Economic Model, projects HIV trends in U.S. cities and states
-            under different scenarios. It is developed by researchers at the Johns Hopkins Schools of Public
-            Health and Medicine and funded by the National Institutes of Health.
-          </p>
-          <p className="mt-5 text-lg leading-relaxed text-gray-700">
-            We work with health departments to turn this research into answers for local decisions, and
-            we&apos;re looking for new partners. To discuss a question you&apos;re working on, email Parastu
-            Kasaie at{' '}
-            <a href={CONTACT_HREF} className={LINK_CLASS}>
-              {CONTACT_EMAIL}
-            </a>
-            .
-          </p>
-        </header>
+          <div className="mt-10 grid gap-6 md:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] md:gap-14">
+            <p className="text-xl leading-relaxed text-gray-800">
+              JHEEM, the Joint HIV Epidemiology and Economic Model, projects HIV trends in U.S. cities and states
+              under different scenarios. It is developed by researchers at the Johns Hopkins Schools of Public
+              Health and Medicine and funded by the National Institutes of Health.
+            </p>
+            <p className="text-base leading-relaxed text-gray-600 md:border-l md:border-gray-200 md:pl-8 md:pt-1">
+              We work with health departments to turn this research into answers for local decisions, and
+              we&apos;re looking for new partners. To discuss a question you&apos;re working on, email Parastu
+              Kasaie at{' '}
+              <a href={CONTACT_HREF} className={LINK_CLASS}>
+                {CONTACT_EMAIL}
+              </a>
+              .
+            </p>
+          </div>
+        </div>
+      </header>
 
-        <Section title="Questions our research answers">
-          <p className="text-base leading-relaxed text-gray-700">
+      {/* Questions */}
+      <section className="mx-auto max-w-5xl px-6 py-16 md:py-20">
+        <div className="max-w-2xl">
+          <SectionTitle>Questions our research answers</SectionTitle>
+          <p className="mt-4 text-base leading-relaxed text-gray-600">
             Our results cover individual U.S. cities and states. These are the questions we&apos;ve studied so
             far, each with an example from our published work.
           </p>
-          <div className="mt-4 divide-y divide-gray-200">
-            {QUESTION_AREAS.map((area) => (
-              <div key={area.question} className="py-8 last:pb-0">
-                <h3 className="text-balance font-serif text-xl leading-snug text-gray-950 md:text-[1.375rem]">{area.question}</h3>
-                <p className="mt-3 text-base leading-relaxed text-gray-700">{area.description}</p>
+        </div>
+        <div className="mt-10 border-t border-gray-200">
+          {QUESTION_AREAS.map((area) => (
+            <div
+              key={area.question}
+              className="grid gap-4 border-b border-gray-200 py-9 md:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] md:gap-14 md:py-11"
+            >
+              <h3 className="text-balance font-serif text-[1.4rem] leading-snug text-gray-950 md:text-[1.65rem]">
+                {area.question}
+              </h3>
+              <div>
+                <p className="text-base leading-relaxed text-gray-700">{area.description}</p>
                 <p className="mt-3 text-base leading-relaxed text-gray-700">
                   {area.example}
                   <SourceList sources={area.sources} />
@@ -197,77 +223,131 @@ export default function WorkWithUsPage() {
                   </p>
                 )}
               </div>
-            ))}
-          </div>
-        </Section>
+            </div>
+          ))}
+        </div>
+      </section>
 
-        <Section title="How a collaboration works">
-          <p className="text-base leading-relaxed text-gray-700">
-            We already work with several health departments, and we keep the work light on your side.
-          </p>
-          <ol className="mt-6 list-decimal space-y-4 pl-6 marker:font-serif marker:text-gray-500">
-            {COLLABORATION_STEPS.map((step) => (
-              <li key={step.title} className="pl-2 text-base leading-relaxed text-gray-700">
-                <span className="font-medium text-gray-950">{step.title}</span> {step.description}
+      {/* Collaboration */}
+      <section className="border-y border-gray-200 bg-slate-50">
+        <div className="mx-auto max-w-5xl px-6 py-16 md:py-20">
+          <div className="max-w-2xl">
+            <SectionTitle>How a collaboration works</SectionTitle>
+            <p className="mt-4 text-base leading-relaxed text-gray-600">
+              We already work with several health departments, and we keep the work light on your side.
+            </p>
+          </div>
+          <ol className="mt-12 grid gap-10 border-l border-hopkins-blue/20 pl-7 md:grid-cols-3 md:gap-12 md:border-l-0 md:border-t md:pl-0">
+            {COLLABORATION_STEPS.map((step, i) => (
+              <li key={step.title} className="relative md:pt-9">
+                <span
+                  aria-hidden="true"
+                  className="absolute -left-[33px] top-2 h-2.5 w-2.5 rounded-full bg-hopkins-gold md:-top-[5px] md:left-0"
+                />
+                <p className="font-serif text-xl text-gray-950">
+                  <span className="mr-2 text-hopkins-blue">{i + 1}.</span>
+                  {step.title}
+                </p>
+                <p className="mt-3 text-base leading-relaxed text-gray-700">{step.description}</p>
               </li>
             ))}
           </ol>
-          <p className="mt-6 text-base leading-relaxed text-gray-700">
+          <p className="mt-14 max-w-3xl text-base leading-relaxed text-gray-700">
             What we ask of partners is local knowledge: the questions and priorities that matter to you, context
             on programs and populations that data alone can&apos;t capture, and feedback on how results are
             framed. Our models are built on publicly available data, so you don&apos;t need to share any local
             data.
           </p>
-        </Section>
+        </div>
+      </section>
 
-        <Section title="How our models work">
-          <p className="text-base leading-relaxed text-gray-700">
+      {/* Model */}
+      <section className="mx-auto max-w-5xl px-6 py-16 md:py-20">
+        <div className="grid gap-6 md:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] md:gap-14">
+          <SectionTitle>How our models work</SectionTitle>
+          <p className="text-lg leading-relaxed text-gray-800 md:pt-1">
             Think of a weather forecast: it learns from past patterns, runs many possible futures and tells you
             how likely each one is. Our model does the same for HIV, one city or state at a time.
           </p>
-          <div className="mt-6 space-y-4">
-            {MODEL_STEPS.map((step) => (
-              <p key={step.title} className="text-base leading-relaxed text-gray-700">
-                <span className="font-medium text-gray-950">{step.title}</span> {step.description}
-              </p>
-            ))}
-          </div>
-          <p className="mt-6 text-base leading-relaxed text-gray-700">
-            JHEEM has been developed over several years, and its methods and results are published in
-            peer-reviewed journals (
-            <a href={PUBLICATIONS_URL} target="_blank" rel="noopener noreferrer" className={LINK_CLASS}>
-              see our publications
-            </a>
-            ).
-          </p>
-        </Section>
+        </div>
+        <div className="mt-12 grid gap-8 md:grid-cols-3 md:gap-12">
+          {MODEL_STEPS.map((step) => (
+            <div key={step.title} className="border-t border-gray-300 pt-5">
+              <h3 className="font-serif text-xl text-gray-950">{step.title}</h3>
+              <p className="mt-2 text-base leading-relaxed text-gray-700">{step.description}</p>
+            </div>
+          ))}
+        </div>
+        <p className="mt-12 text-base leading-relaxed text-gray-600">
+          JHEEM has been developed over several years, and its methods and results are published in peer-reviewed
+          journals (
+          <a href={PUBLICATIONS_URL} target="_blank" rel="noopener noreferrer" className={LINK_CLASS}>
+            see our publications
+          </a>
+          ).
+        </p>
+      </section>
 
-        <Section title="Get in touch">
-          <p className="text-base leading-relaxed text-gray-700">
-            If your health department has a question our models could help answer, or you&apos;d simply like to
-            learn more, email Parastu Kasaie at{' '}
-            <a href={CONTACT_HREF} className={LINK_CLASS}>
-              {CONTACT_EMAIL}
-            </a>
-            . A few lines about your jurisdiction and what you&apos;re working on is enough to start.
-          </p>
-          <p className="mt-5 text-base leading-relaxed text-gray-700">
-            The work is led by Parastu Kasaie, PhD, Associate Scientist at the Johns Hopkins Bloomberg School of
-            Public Health, and Todd Fojo, MD, MHS, Associate Professor at the Johns Hopkins School of Medicine,
-            with a team of epidemiologists, physicians and modelers (
-            <a href={TEAM_URL} target="_blank" rel="noopener noreferrer" className={LINK_CLASS}>
-              meet the team
-            </a>
-            ).
-          </p>
-          <p className="mt-10 border-t border-gray-100 pt-6 text-xs leading-relaxed text-gray-500">
-            This research is supported by the National Institutes of Health (K08MH118094, K01AI138853,
-            P30AI094189, R01MD018539). The content is solely the responsibility of the authors and does not
-            necessarily represent the official views of the NIH. Results are model projections under stated
-            assumptions, not predictions of what will happen.
-          </p>
-        </Section>
-      </article>
+      {/* Contact */}
+      <section className="border-t border-gray-200">
+        <div className="mx-auto max-w-5xl px-6 py-16 md:py-20">
+          <div className="grid gap-12 md:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] md:gap-14">
+            <div>
+              <SectionTitle>Get in touch</SectionTitle>
+              <p className="mt-5 text-lg leading-relaxed text-gray-800">
+                If your health department has a question our models could help answer, or you&apos;d simply like
+                to learn more, email Parastu Kasaie at{' '}
+                <a href={CONTACT_HREF} className={LINK_CLASS}>
+                  {CONTACT_EMAIL}
+                </a>
+                .
+              </p>
+              <p className="mt-4 text-base leading-relaxed text-gray-600">
+                A few lines about your jurisdiction and what you&apos;re working on is enough to start.
+              </p>
+            </div>
+
+            <div>
+              <ul className="space-y-6">
+                {LEADS.map((lead) => (
+                  <li key={lead.name} className="flex items-center gap-5">
+                    {/* The portal serves static images directly (images.unoptimized in next.config). */}
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={lead.photo}
+                      alt={`Portrait of ${lead.name}`}
+                      width={80}
+                      height={80}
+                      className="h-20 w-20 flex-shrink-0 rounded-full object-cover ring-1 ring-gray-200"
+                    />
+                    <div>
+                      <p className="font-medium text-gray-950">{lead.name}</p>
+                      <p className="mt-0.5 text-sm leading-snug text-gray-600">{lead.role}</p>
+                      <p className="text-sm leading-snug text-gray-600">{lead.school}</p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-6 text-sm leading-relaxed text-gray-600">
+                With a team of epidemiologists, physicians and modelers (
+                <a href={TEAM_URL} target="_blank" rel="noopener noreferrer" className={LINK_CLASS}>
+                  meet the team
+                </a>
+                ).
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-16 border-t border-gray-100 pt-6">
+            <p className="max-w-3xl text-xs leading-relaxed text-gray-500">
+              This research is supported by the National Institutes of Health (K08MH118094, K01AI138853,
+              P30AI094189, R01MD018539). The content is solely the responsibility of the authors and does not
+              necessarily represent the official views of the NIH. Results are model projections under stated
+              assumptions, not predictions of what will happen.
+            </p>
+          </div>
+        </div>
+      </section>
 
       <Footer />
     </div>
