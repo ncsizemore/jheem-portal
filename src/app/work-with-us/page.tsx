@@ -131,33 +131,30 @@ export default function WorkWithUsPage() {
       </header>
 
       <section aria-labelledby="questions-heading" className="mx-auto max-w-6xl px-6 py-14 md:py-20">
-        <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] lg:gap-16">
-          <div>
-            <h2 id="questions-heading" className={SECTION_TITLE_CLASS}>What we can help you answer</h2>
-            <p className="mt-4 max-w-md text-base leading-relaxed text-gray-600">
-              We study questions like these at the city and state level.
-            </p>
-          </div>
-          <div>
-            <ul className="border-t border-gray-300">
-              {QUESTION_AREAS.map((area) => (
-                <li key={area.question} className="border-b border-gray-200 py-6">
-                  <h3 className="max-w-2xl text-lg font-medium leading-snug text-gray-950 md:text-xl">
-                    {area.question}
-                  </h3>
-                  <p className="mt-2 text-base leading-relaxed text-gray-600">{area.description}</p>
-                </li>
-              ))}
-            </ul>
-            <div className="mt-5 flex flex-wrap gap-x-7 gap-y-1 text-sm">
-              <Link href="/#analyses" className={`inline-flex min-h-11 items-center ${LINK_CLASS}`}>
-                Explore our modeling tools
-              </Link>
-              <a href={PUBLICATIONS_URL} target="_blank" rel="noopener noreferrer" className={`inline-flex min-h-11 items-center ${LINK_CLASS}`}>
-                Read our published research
-              </a>
-            </div>
-          </div>
+        <h2 id="questions-heading" className={SECTION_TITLE_CLASS}>What we can help you answer</h2>
+        <p className="mt-4 max-w-2xl text-base leading-relaxed text-gray-600">
+          We study questions like these at the city and state level.
+        </p>
+        <ul className="mt-9 border-t border-gray-300">
+          {QUESTION_AREAS.map((area) => (
+            <li
+              key={area.question}
+              className="grid gap-2 border-b border-gray-200 py-6 md:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] md:gap-16"
+            >
+              <h3 className="text-balance font-serif text-xl font-normal leading-snug text-gray-950 md:text-[1.4rem]">
+                {area.question}
+              </h3>
+              <p className="text-base leading-relaxed text-gray-600 md:pt-1">{area.description}</p>
+            </li>
+          ))}
+        </ul>
+        <div className="mt-5 flex flex-wrap gap-x-7 gap-y-1 text-sm">
+          <Link href="/#analyses" className={`inline-flex min-h-11 items-center ${LINK_CLASS}`}>
+            Explore our modeling tools
+          </Link>
+          <a href={PUBLICATIONS_URL} target="_blank" rel="noopener noreferrer" className={`inline-flex min-h-11 items-center ${LINK_CLASS}`}>
+            Read our published research
+          </a>
         </div>
       </section>
 
@@ -170,15 +167,19 @@ export default function WorkWithUsPage() {
           <ol className="mt-9 grid gap-7 md:grid-cols-3 md:gap-10">
             {COLLABORATION_STEPS.map((step, i) => (
               <li key={step.title} className="border-t border-hopkins-blue/25 pt-5">
-                <span aria-hidden="true" className="text-sm font-medium text-hopkins-blue">0{i + 1}</span>
-                <h3 className="mt-3 text-lg font-medium leading-snug text-gray-950">{step.title}</h3>
+                <h3 className="font-serif text-xl font-normal leading-snug text-gray-950">
+                  <span aria-hidden="true" className="mr-2 text-hopkins-blue">
+                    {i + 1}.
+                  </span>
+                  {step.title}
+                </h3>
                 <p className="mt-3 text-base leading-relaxed text-gray-700">{step.description}</p>
               </li>
             ))}
           </ol>
           <div className="mt-10 grid gap-5 border-t border-gray-200 pt-8 lg:mt-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] lg:gap-16">
             <div>
-              <h3 className="text-lg font-medium text-gray-950">What partners contribute</h3>
+              <h3 className="font-serif text-xl font-normal text-gray-950">What partners contribute</h3>
               <p className="mt-3 max-w-md text-base leading-relaxed text-gray-600">
                 Our models are built on publicly available data. Your local knowledge helps us put it in context.
               </p>
@@ -208,14 +209,14 @@ export default function WorkWithUsPage() {
                 A few lines about your organization, your city or state, and what you&apos;re working on is
                 enough to start.
               </p>
-              <div className="mt-7">
-                <p className="text-sm text-gray-600">Email Parastu Kasaie</p>
-                <div className="mt-1 flex flex-wrap items-center gap-x-6 gap-y-2">
-                  <a href={CONTACT_HREF} className={`inline-flex min-h-11 items-center text-lg font-medium ${LINK_CLASS}`}>
-                    {CONTACT_EMAIL}
-                  </a>
-                  <CopyEmailButton email={CONTACT_EMAIL} />
-                </div>
+              <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3">
+                <a
+                  href={CONTACT_HREF}
+                  className="inline-flex min-h-11 items-center bg-hopkins-blue px-6 text-sm font-medium text-white transition-colors hover:bg-hopkins-blue/90 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-hopkins-blue"
+                >
+                  Email us
+                </a>
+                <CopyEmailButton email={CONTACT_EMAIL} />
               </div>
             </div>
             <div className="md:pt-2">
