@@ -6,7 +6,7 @@ import { useLayoutEffect } from 'react';
 // inline script in FuturesIllustration does this before first paint (so the finished chart
 // never flashes before animating); this covers client-side navigations, where React
 // doesn't execute that script and the chart arrives still marked "static".
-export default function FuturesAnimation({ targetId }: { targetId: string }) {
+export default function FuturesAnimation({ targetId, threshold }: { targetId: string; threshold: number }) {
   useLayoutEffect(() => {
     const svg = document.getElementById(targetId);
     if (!svg || svg.getAttribute('data-anim') !== 'static') return;
@@ -21,7 +21,7 @@ export default function FuturesAnimation({ targetId }: { targetId: string }) {
           observer.disconnect();
         }
       },
-      { threshold: 0.35 },
+      { threshold },
     );
     observer.observe(svg);
 
@@ -30,7 +30,7 @@ export default function FuturesAnimation({ targetId }: { targetId: string }) {
       // Don't leave the chart hidden if this effect is torn down before it ran.
       if (svg.getAttribute('data-anim') === 'pending') svg.setAttribute('data-anim', 'static');
     };
-  }, [targetId]);
+  }, [targetId, threshold]);
 
   return null;
 }

@@ -1,10 +1,16 @@
 /*
- * Draw-in sequence for the futures illustration: reported data, the fitted past, today,
- * then the three futures and their ranges. The finished chart is the default; these
- * rules apply only while the root carries data-anim="pending" (hidden, waiting to be
- * scrolled into view) or data-anim="run" (playing), and only on screens for readers who
- * haven't asked for reduced motion. Print, no-JS and reduced motion all get the static chart.
+ * Draw-in sequence for the futures illustration. Timing for each element comes from
+ * custom properties set in FuturesIllustration.tsx (--delay, --duration, --ease).
+ *
+ * The finished chart is the default; these rules apply only while the root carries
+ * data-anim="pending" (hidden, waiting to be scrolled into view) or data-anim="run"
+ * (playing), and only on screens for readers who haven't asked for reduced motion.
+ * Print, no-JS and reduced motion all get the static chart.
  */
+
+.root {
+  --ease-out: cubic-bezier(0.33, 1, 0.68, 1);
+}
 
 /* Overlay used to draw the dashed "no change" line; only visible while animating. */
 .noChangeDraw {
@@ -12,11 +18,8 @@
 }
 
 @media screen and (prefers-reduced-motion: no-preference) {
-  .root[data-anim='pending'] .dot,
+  .root[data-anim='pending'] .pop,
   .root[data-anim='pending'] .fade,
-  .root[data-anim='pending'] .todayDot,
-  .root[data-anim='pending'] .futureBand,
-  .root[data-anim='pending'] .futureLabel,
   .root[data-anim='pending'] .noChangeDashed {
     opacity: 0;
   }
@@ -26,49 +29,32 @@
     stroke-dashoffset: 1;
   }
 
-  .root[data-anim='run'] .dot {
+  .root[data-anim='run'] .pop {
     transform-box: fill-box;
     transform-origin: center;
-    animation: pop 380ms var(--ease-out) var(--delay, 0ms) both;
+    animation: pop var(--duration, 420ms) var(--ease-out) var(--delay, 0ms) both;
   }
 
   .root[data-anim='run'] .fade {
-    animation: fade-in 600ms ease-out var(--delay, 0ms) both;
+    animation: fade-in var(--duration, 600ms) ease-out var(--delay, 0ms) both;
   }
 
   .root[data-anim='run'] .draw {
     stroke-dasharray: 1;
-    animation: draw var(--duration, 900ms) var(--ease-out) var(--delay, 0ms) both;
+    animation: draw var(--duration, 900ms) var(--ease, var(--ease-out)) var(--delay, 0ms) both;
   }
 
-  .root[data-anim='run'] .todayDot {
-    transform-box: fill-box;
-    transform-origin: center;
-    animation: pop 320ms var(--ease-out) 1050ms both;
-  }
-
-  .root[data-anim='run'] .futureBand {
-    animation: fade-in 800ms ease-out 1550ms both;
-  }
-
-  .root[data-anim='run'] .futureLabel {
-    animation: fade-in 450ms ease-out var(--delay, 2000ms) both;
-  }
-
+  /* Draws in solid, then fades out as the dashed line fades in at --handoff. */
   .root[data-anim='run'] .noChangeDraw {
     stroke-dasharray: 1;
     animation:
-      draw-visible 900ms var(--ease-out) 1310ms both,
-      fade-out 350ms ease-out 2150ms forwards;
+      draw-visible var(--duration, 900ms) var(--ease, var(--ease-out)) var(--delay, 0ms) both,
+      fade-out 350ms ease-out var(--handoff, 0ms) forwards;
   }
 
   .root[data-anim='run'] .noChangeDashed {
-    animation: fade-in 350ms ease-out 2150ms both;
+    animation: fade-in 350ms ease-out var(--handoff, 0ms) both;
   }
-}
-
-.root {
-  --ease-out: cubic-bezier(0.33, 1, 0.68, 1);
 }
 
 @keyframes fade-in {
@@ -92,7 +78,7 @@
 @keyframes pop {
   from {
     opacity: 0;
-    transform: scale(0.5);
+    transform: scale(0.4);
   }
   to {
     opacity: 1;
