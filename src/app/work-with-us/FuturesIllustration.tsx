@@ -2,9 +2,11 @@
 // diverging futures under different decisions, and uncertainty bands. Deliberately has no
 // axis values so it can't be mistaken for (or screenshotted as) a real result.
 //
-// It draws itself in once when scrolled into view (see FuturesIllustration.module.css).
-// The title, "Illustration, not real data" and axes are never animated, so a screenshot
-// taken mid-animation still says what it is.
+// It draws itself in once when scrolled into view (see FuturesIllustration.module.css),
+// in the order it should be read: the reported data point by point, the fitted past
+// continuing into "no change", then a funding cut, then scaled-up prevention. The title,
+// "Illustration, not real data" and axes are never animated, so a screenshot taken
+// mid-animation still says what it is.
 
 import type { CSSProperties } from 'react';
 import FuturesAnimation from './FuturesAnimation';
@@ -31,16 +33,54 @@ const OBSERVED: [number, number][] = [
   [192, 218],
 ];
 
+// The fitted past and "no change" draw as one continuous stroke: the first eases in and
+// ends at constant speed, the second starts at that speed and eases out.
+const EASE_INTO_TODAY = 'cubic-bezier(0.5, 0, 0.7, 0.7)';
+const EASE_FROM_TODAY = 'cubic-bezier(0.3, 0.3, 0.5, 1)';
+const EASE_DRAW = 'cubic-bezier(0.45, 0, 0.25, 1)';
+
+// Animation timeline in milliseconds (about 6.5s in total). Each range fades in as its
+// line finishes, so it follows the line rather than leading it.
+const DOT_STAGGER = 170;
+const TIMELINE = {
+  reportedLabel: { delay: 0, duration: 500 },
+  pastLine: { delay: 1650, duration: 850, ease: EASE_INTO_TODAY },
+  pastBand: { delay: 2150, duration: 700 },
+  today: { delay: 2400, duration: 320 },
+  noChange: { delay: 2500, duration: 850, ease: EASE_FROM_TODAY, handoff: 3350 },
+  noChangeBand: { delay: 3000, duration: 700 },
+  noChangeLabel: { delay: 3200, duration: 450 },
+  fundingCut: { delay: 3750, duration: 1000, ease: EASE_DRAW },
+  fundingCutBand: { delay: 4400, duration: 700 },
+  fundingCutLabel: { delay: 4600, duration: 450 },
+  scaleUp: { delay: 5150, duration: 1000, ease: EASE_DRAW },
+  scaleUpBand: { delay: 5800, duration: 700 },
+  scaleUpLabel: { delay: 6000, duration: 450 },
+};
+
+interface Step {
+  delay: number;
+  duration?: number;
+  ease?: string;
+  handoff?: number;
+}
+
+function timing({ delay, duration, ease, handoff }: Step): CSSProperties {
+  return {
+    '--delay': `${delay}ms`,
+    ...(duration !== undefined && { '--duration': `${duration}ms` }),
+    ...(ease && { '--ease': ease }),
+    ...(handoff !== undefined && { '--handoff': `${handoff}ms` }),
+  } as CSSProperties;
+}
+
 const SVG_ID = 'futures-illustration';
+const START_THRESHOLD = 0.5;
 
 // Runs as the page is parsed, before first paint: marks the chart "pending" (hidden) and
 // starts it when it scrolls into view. Without this, a full page load would show the
 // finished chart and then hide it to animate once React hydrates.
-const START_SCRIPT = `(function(){var s=document.getElementById(${JSON.stringify(SVG_ID)});if(!s||!window.matchMedia||matchMedia('(prefers-reduced-motion: reduce)').matches||!('IntersectionObserver' in window))return;s.setAttribute('data-anim','pending');var o=new IntersectionObserver(function(e){for(var i=0;i<e.length;i++){if(e[i].isIntersecting){s.setAttribute('data-anim','run');o.disconnect();return;}}},{threshold:0.35});o.observe(s);})();`;
-
-function timing(delay: number, duration?: number): CSSProperties {
-  return { '--delay': `${delay}ms`, ...(duration ? { '--duration': `${duration}ms` } : {}) } as CSSProperties;
-}
+const START_SCRIPT = `(function(){var s=document.getElementById(${JSON.stringify(SVG_ID)});if(!s||!window.matchMedia||matchMedia('(prefers-reduced-motion: reduce)').matches||!('IntersectionObserver' in window))return;s.setAttribute('data-anim','pending');var o=new IntersectionObserver(function(e){for(var i=0;i<e.length;i++){if(e[i].isIntersecting){s.setAttribute('data-anim','run');o.disconnect();return;}}},{threshold:${START_THRESHOLD}});o.observe(s);})();`;
 
 export default function FuturesIllustration() {
   return (
@@ -82,17 +122,42 @@ export default function FuturesIllustration() {
           Future
         </text>
 
-        {/* 1. Reported data, then the fitted past */}
-        <text x="14" y="174" className={`${NOTE} ${styles.fade}`} style={timing(0)} fill="#6B7280">
-          Reported data
-        </text>
+        {/* Bands sit beneath every line. */}
         <path
           d="M8,192 C80,196 150,210 220,216 L220,232 C150,226 80,212 8,208 Z"
           fill={PAST}
           fillOpacity="0.08"
           className={styles.fade}
-          style={timing(350)}
+          style={timing(TIMELINE.pastBand)}
         />
+        <path
+          d="M220,224 C284,224 357,224 430,222 L430,252 C357,243 284,232 220,224 Z"
+          fill={NO_CHANGE}
+          fillOpacity="0.13"
+          className={styles.fade}
+          style={timing(TIMELINE.noChangeBand)}
+        />
+        <path
+          d="M220,224 C284,214 357,150 430,118 L430,170 C357,186 284,220 220,224 Z"
+          fill={FUNDING_CUT}
+          fillOpacity="0.13"
+          className={styles.fade}
+          style={timing(TIMELINE.fundingCutBand)}
+        />
+        <path
+          d="M220,224 C284,231 357,272 430,290 L430,328 C357,302 284,242 220,224 Z"
+          fill={SCALE_UP}
+          fillOpacity="0.13"
+          className={styles.fade}
+          style={timing(TIMELINE.scaleUpBand)}
+        />
+
+        {/* 1. Reported data, one point at a time */}
+        <text x="14" y="174" className={`${NOTE} ${styles.fade}`} style={timing(TIMELINE.reportedLabel)} fill="#6B7280">
+          Reported data
+        </text>
+
+        {/* 2. The fitted past, continuing into "no change" */}
         <path
           d="M8,200 C80,204 150,218 220,224"
           pathLength={1}
@@ -100,48 +165,7 @@ export default function FuturesIllustration() {
           stroke={PAST}
           strokeWidth="2.5"
           className={styles.draw}
-          style={timing(380, 700)}
-        />
-        {OBSERVED.map(([cx, cy], i) => (
-          <circle
-            key={cx}
-            cx={cx}
-            cy={cy}
-            r="4.5"
-            fill={PAST}
-            fillOpacity="0.55"
-            className={styles.dot}
-            style={timing(i * 70)}
-          />
-        ))}
-
-        {/* 2. Today, then the three futures and their ranges */}
-        <path
-          d="M220,224 C284,214 357,150 430,118 L430,170 C357,186 284,220 220,224 Z"
-          fill={FUNDING_CUT}
-          fillOpacity="0.13"
-          className={styles.futureBand}
-        />
-        <path
-          d="M220,224 C284,224 357,224 430,222 L430,252 C357,243 284,232 220,224 Z"
-          fill={NO_CHANGE}
-          fillOpacity="0.13"
-          className={styles.futureBand}
-        />
-        <path
-          d="M220,224 C284,231 357,272 430,290 L430,328 C357,302 284,242 220,224 Z"
-          fill={SCALE_UP}
-          fillOpacity="0.13"
-          className={styles.futureBand}
-        />
-        <path
-          d="M220,224 C284,217 357,168 430,144"
-          pathLength={1}
-          fill="none"
-          stroke={FUNDING_CUT}
-          strokeWidth="2.5"
-          className={styles.draw}
-          style={timing(1250)}
+          style={timing(TIMELINE.pastLine)}
         />
         {/* A dashed line can't be drawn in with a dash offset, so a solid copy draws in and
             then hands off to the dashed line. */}
@@ -152,6 +176,7 @@ export default function FuturesIllustration() {
           stroke={NO_CHANGE}
           strokeWidth="2.5"
           className={styles.noChangeDraw}
+          style={timing(TIMELINE.noChange)}
           aria-hidden="true"
         />
         <path
@@ -161,6 +186,18 @@ export default function FuturesIllustration() {
           strokeWidth="2.5"
           strokeDasharray="7 5"
           className={styles.noChangeDashed}
+          style={timing(TIMELINE.noChange)}
+        />
+
+        {/* 3. A funding cut, then 4. scaled-up prevention */}
+        <path
+          d="M220,224 C284,217 357,168 430,144"
+          pathLength={1}
+          fill="none"
+          stroke={FUNDING_CUT}
+          strokeWidth="2.5"
+          className={styles.draw}
+          style={timing(TIMELINE.fundingCut)}
         />
         <path
           d="M220,224 C284,236 357,286 430,308"
@@ -169,25 +206,52 @@ export default function FuturesIllustration() {
           stroke={SCALE_UP}
           strokeWidth="2.5"
           className={styles.draw}
-          style={timing(1370)}
+          style={timing(TIMELINE.scaleUp)}
         />
-        <circle cx="220" cy="224" r="6" fill={PAST} className={styles.todayDot} />
 
-        <text x="442" y="151" className={`${LABEL} ${styles.futureLabel}`} style={timing(1950)} fontWeight="500" fill={FUNDING_CUT}>
-          Funding cut
-        </text>
-        <text x="442" y="243" className={`${LABEL} ${styles.futureLabel}`} style={timing(2050)} fontWeight="500" fill={NO_CHANGE}>
+        {OBSERVED.map(([cx, cy], i) => (
+          <circle
+            key={cx}
+            cx={cx}
+            cy={cy}
+            r="4.5"
+            fill={PAST}
+            fillOpacity="0.55"
+            className={styles.pop}
+            style={timing({ delay: i * DOT_STAGGER })}
+          />
+        ))}
+        <circle cx="220" cy="224" r="6" fill={PAST} className={styles.pop} style={timing(TIMELINE.today)} />
+
+        <text
+          x="442"
+          y="243"
+          className={`${LABEL} ${styles.fade}`}
+          style={timing(TIMELINE.noChangeLabel)}
+          fontWeight="500"
+          fill={NO_CHANGE}
+        >
           No change
         </text>
-        <text x="442" y="304" className={`${LABEL} ${styles.futureLabel}`} style={timing(2100)} fontWeight="500" fill={SCALE_UP}>
+        <text
+          x="442"
+          y="151"
+          className={`${LABEL} ${styles.fade}`}
+          style={timing(TIMELINE.fundingCutLabel)}
+          fontWeight="500"
+          fill={FUNDING_CUT}
+        >
+          Funding cut
+        </text>
+        <text x="442" y="304" className={`${LABEL} ${styles.fade}`} style={timing(TIMELINE.scaleUpLabel)} fontWeight="500" fill={SCALE_UP}>
           Scaled-up
         </text>
-        <text x="442" y="330" className={`${LABEL} ${styles.futureLabel}`} style={timing(2100)} fontWeight="500" fill={SCALE_UP}>
+        <text x="442" y="330" className={`${LABEL} ${styles.fade}`} style={timing(TIMELINE.scaleUpLabel)} fontWeight="500" fill={SCALE_UP}>
           prevention
         </text>
       </svg>
       <script dangerouslySetInnerHTML={{ __html: START_SCRIPT }} />
-      <FuturesAnimation targetId={SVG_ID} />
+      <FuturesAnimation targetId={SVG_ID} threshold={START_THRESHOLD} />
     </>
   );
 }
