@@ -1,6 +1,14 @@
 // Schematic of how JHEEM projections are read: reported data the model learns from,
 // diverging futures under different decisions, and uncertainty bands. Deliberately has no
 // axis values so it can't be mistaken for (or screenshotted as) a real result.
+//
+// It draws itself in once when scrolled into view (see FuturesIllustration.module.css).
+// The title, "Illustration, not real data" and axes are never animated, so a screenshot
+// taken mid-animation still says what it is.
+
+import type { CSSProperties } from 'react';
+import FuturesAnimation from './FuturesAnimation';
+import styles from './FuturesIllustration.module.css';
 
 const PAST = '#002D72';
 const FUNDING_CUT = '#B4532A';
@@ -23,83 +31,163 @@ const OBSERVED: [number, number][] = [
   [192, 218],
 ];
 
+const SVG_ID = 'futures-illustration';
+
+// Runs as the page is parsed, before first paint: marks the chart "pending" (hidden) and
+// starts it when it scrolls into view. Without this, a full page load would show the
+// finished chart and then hide it to animate once React hydrates.
+const START_SCRIPT = `(function(){var s=document.getElementById(${JSON.stringify(SVG_ID)});if(!s||!window.matchMedia||matchMedia('(prefers-reduced-motion: reduce)').matches||!('IntersectionObserver' in window))return;s.setAttribute('data-anim','pending');var o=new IntersectionObserver(function(e){for(var i=0;i<e.length;i++){if(e[i].isIntersecting){s.setAttribute('data-anim','run');o.disconnect();return;}}},{threshold:0.35});o.observe(s);})();`;
+
+function timing(delay: number, duration?: number): CSSProperties {
+  return { '--delay': `${delay}ms`, ...(duration ? { '--duration': `${duration}ms` } : {}) } as CSSProperties;
+}
+
 export default function FuturesIllustration() {
   return (
-    <svg viewBox="0 0 600 400" role="img" aria-labelledby="futures-title futures-desc" className="h-auto w-full font-sans">
-      <title id="futures-title">Illustration: three possible futures for new HIV infections</title>
-      <desc id="futures-desc">
-        Dots show past reported data that a model is fit to. From today, the projection splits into three
-        futures: a funding cut, where new infections rise; no change, where they stay roughly level; and
-        scaled-up prevention, where they fall. Shaded bands around each line widen over time to show the
-        range of likely outcomes. Not real data.
-      </desc>
+    <>
+      <svg
+        id={SVG_ID}
+        data-anim="static"
+        // The start script changes data-anim before hydration.
+        suppressHydrationWarning
+        viewBox="0 0 600 400"
+        role="img"
+        aria-labelledby="futures-title futures-desc"
+        className={`h-auto w-full font-sans ${styles.root}`}
+      >
+        <title id="futures-title">Illustration: three possible futures for new HIV infections</title>
+        <desc id="futures-desc">
+          Dots show past reported data that a model is fit to. From today, the projection splits into three
+          futures: a funding cut, where new infections rise; no change, where they stay roughly level; and
+          scaled-up prevention, where they fall. Shaded bands around each line widen over time to show the
+          range of likely outcomes. Not real data.
+        </desc>
 
-      <text x="0" y="26" className={TITLE} fontWeight="500" fill="#374151">
-        New HIV infections each year
-      </text>
-      <text x="0" y="58" className={NOTE} fontStyle="italic" fill="#6B7280">
-        Illustration, not real data
-      </text>
+        <text x="0" y="26" className={TITLE} fontWeight="500" fill="#374151">
+          New HIV infections each year
+        </text>
+        <text x="0" y="58" className={NOTE} fontStyle="italic" fill="#6B7280">
+          Illustration, not real data
+        </text>
 
-      <line x1="220" x2="220" y1="102" y2="360" stroke="#9CA3AF" strokeDasharray="4 5" />
-      <text x="220" y="92" className={NOTE} fill="#4B5563" textAnchor="middle">
-        Today
-      </text>
-      <line x1="8" x2="430" y1="360" y2="360" stroke="#D1D5DB" />
-      <text x="114" y="390" className={NOTE} fill="#6B7280" textAnchor="middle">
-        Past
-      </text>
-      <text x="325" y="390" className={NOTE} fill="#6B7280" textAnchor="middle">
-        Future
-      </text>
+        <line x1="220" x2="220" y1="102" y2="360" stroke="#9CA3AF" strokeDasharray="4 5" />
+        <text x="220" y="92" className={NOTE} fill="#4B5563" textAnchor="middle">
+          Today
+        </text>
+        <line x1="8" x2="430" y1="360" y2="360" stroke="#D1D5DB" />
+        <text x="114" y="390" className={NOTE} fill="#6B7280" textAnchor="middle">
+          Past
+        </text>
+        <text x="325" y="390" className={NOTE} fill="#6B7280" textAnchor="middle">
+          Future
+        </text>
 
-      <path d="M8,192 C80,196 150,210 220,216 L220,232 C150,226 80,212 8,208 Z" fill={PAST} fillOpacity="0.08" />
-      <path d="M8,200 C80,204 150,218 220,224" fill="none" stroke={PAST} strokeWidth="2.5" />
-      {OBSERVED.map(([cx, cy]) => (
-        <circle key={cx} cx={cx} cy={cy} r="4.5" fill={PAST} fillOpacity="0.55" />
-      ))}
-      <text x="14" y="174" className={NOTE} fill="#6B7280">
-        Reported data
-      </text>
+        {/* 1. Reported data, then the fitted past */}
+        <text x="14" y="174" className={`${NOTE} ${styles.fade}`} style={timing(0)} fill="#6B7280">
+          Reported data
+        </text>
+        <path
+          d="M8,192 C80,196 150,210 220,216 L220,232 C150,226 80,212 8,208 Z"
+          fill={PAST}
+          fillOpacity="0.08"
+          className={styles.fade}
+          style={timing(350)}
+        />
+        <path
+          d="M8,200 C80,204 150,218 220,224"
+          pathLength={1}
+          fill="none"
+          stroke={PAST}
+          strokeWidth="2.5"
+          className={styles.draw}
+          style={timing(380, 700)}
+        />
+        {OBSERVED.map(([cx, cy], i) => (
+          <circle
+            key={cx}
+            cx={cx}
+            cy={cy}
+            r="4.5"
+            fill={PAST}
+            fillOpacity="0.55"
+            className={styles.dot}
+            style={timing(i * 70)}
+          />
+        ))}
 
-      <path
-        d="M220,224 C284,214 357,150 430,118 L430,170 C357,186 284,220 220,224 Z"
-        fill={FUNDING_CUT}
-        fillOpacity="0.13"
-      />
-      <path
-        d="M220,224 C284,224 357,224 430,222 L430,252 C357,243 284,232 220,224 Z"
-        fill={NO_CHANGE}
-        fillOpacity="0.13"
-      />
-      <path
-        d="M220,224 C284,231 357,272 430,290 L430,328 C357,302 284,242 220,224 Z"
-        fill={SCALE_UP}
-        fillOpacity="0.13"
-      />
-      <path d="M220,224 C284,217 357,168 430,144" fill="none" stroke={FUNDING_CUT} strokeWidth="2.5" />
-      <path
-        d="M220,224 C284,228 357,233 430,236"
-        fill="none"
-        stroke={NO_CHANGE}
-        strokeWidth="2.5"
-        strokeDasharray="7 5"
-      />
-      <path d="M220,224 C284,236 357,286 430,308" fill="none" stroke={SCALE_UP} strokeWidth="2.5" />
-      <circle cx="220" cy="224" r="6" fill={PAST} />
+        {/* 2. Today, then the three futures and their ranges */}
+        <path
+          d="M220,224 C284,214 357,150 430,118 L430,170 C357,186 284,220 220,224 Z"
+          fill={FUNDING_CUT}
+          fillOpacity="0.13"
+          className={styles.futureBand}
+        />
+        <path
+          d="M220,224 C284,224 357,224 430,222 L430,252 C357,243 284,232 220,224 Z"
+          fill={NO_CHANGE}
+          fillOpacity="0.13"
+          className={styles.futureBand}
+        />
+        <path
+          d="M220,224 C284,231 357,272 430,290 L430,328 C357,302 284,242 220,224 Z"
+          fill={SCALE_UP}
+          fillOpacity="0.13"
+          className={styles.futureBand}
+        />
+        <path
+          d="M220,224 C284,217 357,168 430,144"
+          pathLength={1}
+          fill="none"
+          stroke={FUNDING_CUT}
+          strokeWidth="2.5"
+          className={styles.draw}
+          style={timing(1250)}
+        />
+        {/* A dashed line can't be drawn in with a dash offset, so a solid copy draws in and
+            then hands off to the dashed line. */}
+        <path
+          d="M220,224 C284,228 357,233 430,236"
+          pathLength={1}
+          fill="none"
+          stroke={NO_CHANGE}
+          strokeWidth="2.5"
+          className={styles.noChangeDraw}
+          aria-hidden="true"
+        />
+        <path
+          d="M220,224 C284,228 357,233 430,236"
+          fill="none"
+          stroke={NO_CHANGE}
+          strokeWidth="2.5"
+          strokeDasharray="7 5"
+          className={styles.noChangeDashed}
+        />
+        <path
+          d="M220,224 C284,236 357,286 430,308"
+          pathLength={1}
+          fill="none"
+          stroke={SCALE_UP}
+          strokeWidth="2.5"
+          className={styles.draw}
+          style={timing(1370)}
+        />
+        <circle cx="220" cy="224" r="6" fill={PAST} className={styles.todayDot} />
 
-      <text x="442" y="151" className={LABEL} fontWeight="500" fill={FUNDING_CUT}>
-        Funding cut
-      </text>
-      <text x="442" y="243" className={LABEL} fontWeight="500" fill={NO_CHANGE}>
-        No change
-      </text>
-      <text x="442" y="304" className={LABEL} fontWeight="500" fill={SCALE_UP}>
-        Scaled-up
-      </text>
-      <text x="442" y="330" className={LABEL} fontWeight="500" fill={SCALE_UP}>
-        prevention
-      </text>
-    </svg>
+        <text x="442" y="151" className={`${LABEL} ${styles.futureLabel}`} style={timing(1950)} fontWeight="500" fill={FUNDING_CUT}>
+          Funding cut
+        </text>
+        <text x="442" y="243" className={`${LABEL} ${styles.futureLabel}`} style={timing(2050)} fontWeight="500" fill={NO_CHANGE}>
+          No change
+        </text>
+        <text x="442" y="304" className={`${LABEL} ${styles.futureLabel}`} style={timing(2100)} fontWeight="500" fill={SCALE_UP}>
+          Scaled-up
+        </text>
+        <text x="442" y="330" className={`${LABEL} ${styles.futureLabel}`} style={timing(2100)} fontWeight="500" fill={SCALE_UP}>
+          prevention
+        </text>
+      </svg>
+      <script dangerouslySetInnerHTML={{ __html: START_SCRIPT }} />
+      <FuturesAnimation targetId={SVG_ID} />
+    </>
   );
 }
