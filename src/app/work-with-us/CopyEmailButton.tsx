@@ -27,7 +27,7 @@ export default function CopyEmailButton({ email }: { email: string }) {
       type="button"
       onClick={handleCopy}
       aria-live="polite"
-      className="text-sm text-hopkins-blue underline decoration-hopkins-blue/30 underline-offset-2 transition-colors hover:decoration-hopkins-blue"
+      className="min-h-11 text-sm text-hopkins-blue underline decoration-hopkins-blue/30 underline-offset-4 transition-colors hover:decoration-hopkins-blue focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-hopkins-blue"
     >
       {state === 'copied' ? 'Copied' : 'Copy email address'}
     </button>
