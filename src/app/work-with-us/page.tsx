@@ -209,7 +209,7 @@ export default function WorkWithUsPage() {
                 A few lines about your organization, your city or state, and what you&apos;re working on is
                 enough to start.
               </p>
-              <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3">
+              <div className="mt-8 flex flex-wrap items-center gap-3">
                 <a
                   href={CONTACT_HREF}
                   className="inline-flex min-h-11 items-center bg-hopkins-blue px-6 text-sm font-medium text-white transition-colors hover:bg-hopkins-blue/90 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-hopkins-blue"
