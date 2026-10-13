@@ -1,9 +1,46 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
+import { CIPHER_URL, PUBLICATIONS_URL } from '@/lib/site';
+
+const MODELS = [
+  { href: '/ryan-white', label: 'Ryan White: City-Level', detail: 'Metropolitan areas nationwide' },
+  { href: '/ryan-white-state-level', label: 'Ryan White: State-Level', detail: 'Statewide analysis' },
+  { href: '/ryan-white-costing', label: 'ADAP Costing Analysis', detail: 'Costs and outcomes of ADAP elimination' },
+  { href: '/cdc-testing', label: 'CDC Testing', detail: 'CDC-funded HIV testing in 18 states' },
+  { href: '/aging', label: 'HIV Age Projections', detail: 'Aging trends among people with HIV' },
+];
+
+const MODEL_SECTIONS = [
+  {
+    root: '/ryan-white', label: 'Ryan White',
+    links: [
+      { href: '/ryan-white/explorer', label: 'Prerun Explorer' },
+      { href: '/ryan-white/custom', label: 'Custom Simulations' },
+    ],
+  },
+  {
+    root: '/ryan-white-state-level', label: 'Ryan White: State-Level',
+    links: [
+      { href: '/ryan-white-state-level/explorer/ajph', label: '11 States (2025–2030)' },
+      { href: '/ryan-white-state-level/explorer/croi', label: '30 States (2026–2031)' },
+      { href: '/ryan-white-state-level/custom', label: 'Custom Simulations' },
+    ],
+  },
+  {
+    root: '/cdc-testing', label: 'CDC Testing',
+    links: [
+      { href: '/cdc-testing/explorer', label: 'Prerun Explorer' },
+      { href: '/cdc-testing/custom', label: 'Custom Simulations' },
+    ],
+  },
+];
+
+function matchesRoute(pathname: string, href: string) {
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
 
 export default function Navigation() {
   const pathname = usePathname();
@@ -11,630 +48,123 @@ export default function Navigation() {
 }
 
 function NavigationForPath({ pathname }: { pathname: string }) {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [modelsDropdownOpen, setModelsDropdownOpen] = useState(false);
-
-  // Check if we should show Ryan White submenu
-  const showRyanWhiteSubmenu = pathname === '/ryan-white' ||
-                               pathname === '/ryan-white/explorer' ||
-                               pathname === '/ryan-white/custom' ||
-                               pathname === '/ryan-white/calibration' ||
-                               pathname === '/explore'; // legacy route
-
-  // Check if we should show State Level submenu
-  const showStateLevelSubmenu = pathname === '/ryan-white-state-level' ||
-                                pathname === '/ryan-white-state-level/calibration' ||
-                                pathname?.startsWith('/ryan-white-state-level/explorer') ||
-                                pathname?.startsWith('/ryan-white-state-level/custom');
-
-  const isRyanWhiteActive = pathname === '/ryan-white' || showRyanWhiteSubmenu;
-  const isStateLevelActive = pathname === '/ryan-white-state-level' || showStateLevelSubmenu;
-  const isCostingActive = pathname?.startsWith('/ryan-white-costing');
-  const showCdcTestingSubmenu = pathname === '/cdc-testing' ||
-                                pathname?.startsWith('/cdc-testing/explorer') ||
-                                pathname?.startsWith('/cdc-testing/custom');
-
-  const isCdcTestingActive = pathname === '/cdc-testing' || showCdcTestingSubmenu || pathname === '/shiny/cdc-testing';
-  const isHIVAgeProjectionsActive = pathname === '/aging';
-  const isAnyModelActive = isRyanWhiteActive || isStateLevelActive || isCostingActive || isCdcTestingActive || isHIVAgeProjectionsActive;
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [modelsOpen, setModelsOpen] = useState(false);
+  const modelsButton = useRef<HTMLButtonElement>(null);
+  const mobileButton = useRef<HTMLButtonElement>(null);
+  const isPublicPage = pathname === '/' || pathname === '/work-with-us';
+  const section = MODEL_SECTIONS.find(({ root }) => matchesRoute(pathname, root))
+    ?? (pathname === '/explore' ? MODEL_SECTIONS[0] : undefined);
+  const activeModel = (href: string) => matchesRoute(pathname, href)
+    || (href === '/ryan-white' && pathname === '/explore')
+    || (href === '/cdc-testing' && pathname === '/shiny/cdc-testing');
+  const closeMenus = () => {
+    setMobileOpen(false);
+    setModelsOpen(false);
+    // Start a destination at its heading even when a long mobile menu was scrolled.
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  };
 
   return (
-    <header className="bg-hopkins-blue/95 backdrop-blur sticky top-0 z-50 border-b border-white/10 shadow-[0_1px_0_rgba(255,255,255,0.06)]">
-      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Main Navigation */}
-        <div className="flex justify-between items-center h-20">
-          {/* Logo and Branding */}
-          <Link href="/" className="group flex items-center gap-4">
-            <span className="font-serif text-2xl leading-none tracking-tight">
-              <span className="text-hopkins-gold">JHEEM</span>{' '}
-              <span className="text-white/90 transition-colors group-hover:text-white">Portal</span>
-            </span>
-            <span className="hidden md:block h-8 w-px bg-white/20" aria-hidden="true"></span>
-            <span className="hidden lg:block whitespace-nowrap text-xs leading-snug text-white/65">
-              Joint HIV Epidemiology and Economic Model
-            </span>
-          </Link>
-          
-          {/* Desktop Navigation with Models Dropdown */}
-          <nav className="hidden md:flex items-center space-x-8">
-            <div
-              className="relative"
-              onMouseEnter={() => setModelsDropdownOpen(true)}
-              onMouseLeave={() => setModelsDropdownOpen(false)}
-            >
-              <button
-                type="button"
-                aria-haspopup="true"
-                aria-expanded={modelsDropdownOpen}
-                className="text-white hover:text-hopkins-gold font-medium transition-all relative group py-2 flex items-center gap-2 whitespace-nowrap"
-              >
-                <span>Modeling Tools</span>
-                <svg
-                  className={`w-4 h-4 transition-transform duration-200 ${modelsDropdownOpen ? 'rotate-180' : ''}`}
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-                <span className={`absolute bottom-0 left-0 h-0.5 bg-hopkins-gold transition-all duration-300 ${
-                  isAnyModelActive ? 'w-full' : 'w-0 group-hover:w-full'
-                }`}></span>
-              </button>
-
-              {/* Dropdown Menu */}
-              <AnimatePresence>
-                {modelsDropdownOpen && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.2 }}
-                    className="absolute top-full right-0 pt-2 z-50"
-                  >
-                    {/* Bridge to prevent hover gap */}
-                    <div className="w-full h-2 bg-transparent -mt-2"></div>
-
-                    <div className="w-96 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden">
-                      <div className="py-2">
-                        {/* Ryan White with submenu indicator */}
-                        <Link
-                          href="/ryan-white"
-                          className={`block px-5 py-3 transition-all duration-200 border-l-4 ${
-                            isRyanWhiteActive
-                              ? 'bg-hopkins-blue/5 border-l-hopkins-blue'
-                              : 'border-l-transparent hover:bg-hopkins-blue/5 hover:border-l-hopkins-blue/30'
-                          }`}
-                        >
-                          <div className="flex items-center justify-between">
-                            <div className="flex-1">
-                              <div className={`text-sm font-semibold ${
-                                isRyanWhiteActive ? 'text-hopkins-blue' : 'text-gray-900'
-                              }`}>
-                                Ryan White: City-Level
-                              </div>
-                              <div className="text-xs text-gray-500 mt-0.5">
-                                Metropolitan areas nationwide
-                              </div>
-                            </div>
-                            {isRyanWhiteActive && (
-                              <svg className="w-5 h-5 text-hopkins-blue ml-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                              </svg>
-                            )}
-                          </div>
-                        </Link>
-
-                        {/* Show Ryan White submenu if active */}
-                        {isRyanWhiteActive && (
-                          <div className="bg-gray-50 border-y border-gray-200 py-1">
-                            <Link
-                              href="/ryan-white/explorer"
-                              className={`block px-10 py-2 text-xs font-medium transition-colors ${
-                                pathname === '/ryan-white/explorer'
-                                  ? 'text-hopkins-blue bg-white'
-                                  : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
-                              }`}
-                            >
-                              Prerun Explorer
-                            </Link>
-                            <Link
-                              href="/ryan-white/custom"
-                              className={`block px-10 py-2 text-xs font-medium transition-colors ${
-                                pathname === '/ryan-white/custom'
-                                  ? 'text-hopkins-blue bg-white'
-                                  : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
-                              }`}
-                            >
-                              Custom Simulations
-                            </Link>
-                          </div>
-                        )}
-
-                        <Link
-                          href="/ryan-white-state-level"
-                          className={`block px-5 py-3 transition-all duration-200 border-l-4 ${
-                            isStateLevelActive
-                              ? 'bg-hopkins-blue/5 border-l-hopkins-blue'
-                              : 'border-l-transparent hover:bg-hopkins-blue/5 hover:border-l-hopkins-blue/30'
-                          }`}
-                        >
-                          <div className="flex items-center justify-between">
-                            <div className="flex-1">
-                              <div className={`text-sm font-semibold ${
-                                isStateLevelActive ? 'text-hopkins-blue' : 'text-gray-900'
-                              }`}>
-                                Ryan White: State-Level
-                              </div>
-                              <div className="text-xs text-gray-500 mt-0.5">
-                                Statewide analysis
-                              </div>
-                            </div>
-                            {isStateLevelActive && (
-                              <svg className="w-5 h-5 text-hopkins-blue ml-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                              </svg>
-                            )}
-                          </div>
-                        </Link>
-
-                        {/* Show State Level submenu if active */}
-                        {isStateLevelActive && (
-                          <div className="bg-gray-50 border-y border-gray-200 py-1">
-                            <Link
-                              href="/ryan-white-state-level/explorer/ajph"
-                              className={`block px-10 py-2 text-xs font-medium transition-colors ${
-                                pathname === '/ryan-white-state-level/explorer/ajph'
-                                  ? 'text-hopkins-blue bg-white'
-                                  : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
-                              }`}
-                            >
-                              11 States (2025–2030)
-                            </Link>
-                            <Link
-                              href="/ryan-white-state-level/explorer/croi"
-                              className={`block px-10 py-2 text-xs font-medium transition-colors ${
-                                pathname === '/ryan-white-state-level/explorer/croi'
-                                  ? 'text-hopkins-blue bg-white'
-                                  : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
-                              }`}
-                            >
-                              30 States (2026–2031)
-                            </Link>
-                            <Link
-                              href="/ryan-white-state-level/custom"
-                              className={`block px-10 py-2 text-xs font-medium transition-colors ${
-                                pathname?.startsWith('/ryan-white-state-level/custom')
-                                  ? 'text-hopkins-blue bg-white'
-                                  : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
-                              }`}
-                            >
-                              Custom Simulations
-                            </Link>
-                          </div>
-                        )}
-
-                        <Link
-                          href="/ryan-white-costing"
-                          className={`block px-5 py-3 transition-all duration-200 border-l-4 ${
-                            isCostingActive
-                              ? 'bg-hopkins-blue/5 border-l-hopkins-blue'
-                              : 'border-l-transparent hover:bg-hopkins-blue/5 hover:border-l-hopkins-blue/30'
-                          }`}
-                        >
-                          <div className="flex items-center justify-between">
-                            <div className="flex-1">
-                              <div className={`text-sm font-semibold ${
-                                isCostingActive ? 'text-hopkins-blue' : 'text-gray-900'
-                              }`}>
-                                ADAP Costing Analysis
-                              </div>
-                              <div className="text-xs text-gray-500 mt-0.5">
-                                Costs and outcomes of ADAP elimination
-                              </div>
-                            </div>
-                            {isCostingActive && (
-                              <svg className="w-5 h-5 text-hopkins-blue ml-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                              </svg>
-                            )}
-                          </div>
-                        </Link>
-
-                        <Link
-                          href="/cdc-testing"
-                          className={`block px-5 py-3 transition-all duration-200 border-l-4 ${
-                            isCdcTestingActive
-                              ? 'bg-hopkins-blue/5 border-l-hopkins-blue'
-                              : 'border-l-transparent hover:bg-hopkins-blue/5 hover:border-l-hopkins-blue/30'
-                          }`}
-                        >
-                          <div className="flex items-center justify-between">
-                            <div className="flex-1">
-                              <div className={`text-sm font-semibold ${
-                                isCdcTestingActive ? 'text-hopkins-blue' : 'text-gray-900'
-                              }`}>
-                                CDC Testing
-                              </div>
-                              <div className="text-xs text-gray-500 mt-0.5">
-                                CDC-funded HIV testing (18 States)
-                              </div>
-                            </div>
-                            {isCdcTestingActive && (
-                              <svg className="w-5 h-5 text-hopkins-blue ml-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                              </svg>
-                            )}
-                          </div>
-                        </Link>
-
-                        {/* Show CDC Testing submenu if active */}
-                        {isCdcTestingActive && (
-                          <div className="bg-gray-50 border-y border-gray-200 py-1">
-                            <Link
-                              href="/cdc-testing/explorer"
-                              className={`block px-10 py-2 text-xs font-medium transition-colors ${
-                                pathname === '/cdc-testing/explorer'
-                                  ? 'text-hopkins-blue bg-white'
-                                  : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
-                              }`}
-                            >
-                              Prerun Explorer
-                            </Link>
-                            <Link
-                              href="/cdc-testing/custom"
-                              className={`block px-10 py-2 text-xs font-medium transition-colors ${
-                                pathname?.startsWith('/cdc-testing/custom')
-                                  ? 'text-hopkins-blue bg-white'
-                                  : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
-                              }`}
-                            >
-                              Custom Simulations
-                            </Link>
-                          </div>
-                        )}
-
-                        <Link
-                          href="/aging"
-                          className={`block px-5 py-3 transition-all duration-200 border-l-4 ${
-                            isHIVAgeProjectionsActive
-                              ? 'bg-hopkins-blue/5 border-l-hopkins-blue'
-                              : 'border-l-transparent hover:bg-hopkins-blue/5 hover:border-l-hopkins-blue/30'
-                          }`}
-                        >
-                          <div className={`text-sm font-semibold ${
-                            isHIVAgeProjectionsActive ? 'text-hopkins-blue' : 'text-gray-900'
-                          }`}>
-                            HIV Age Projections
-                          </div>
-                          <div className="text-xs text-gray-500 mt-0.5">
-                            Aging trends among people with HIV
-                          </div>
-                        </Link>
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          </nav>
-          
-          {/* Mobile Menu Button */}
-          <div className="md:hidden flex items-center">
-            <button 
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="text-white p-2 rounded-md hover:bg-white/10 transition-colors"
-              aria-label="Toggle menu"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                {mobileMenuOpen ? (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                ) : (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                )}
-              </svg>
-            </button>
+    <>
+      {isPublicPage && (
+        <div className="site-affiliation bg-hopkins-blue">
+          <div className="site-container flex flex-wrap items-center gap-x-2 py-2 text-[0.6875rem] leading-relaxed tracking-[0.02em] text-white/85 sm:text-xs">
+            <a href={CIPHER_URL} className="font-medium text-white underline-offset-4 hover:underline">CIPHER Lab</a>
+            <span aria-hidden="true">/</span>
+            <span className="sm:hidden">Johns Hopkins University</span>
+            <span className="hidden sm:inline">Johns Hopkins Schools of Public Health and Medicine</span>
           </div>
         </div>
-        
-        {/* Ryan White City-Level Sub-Navigation */}
-        <AnimatePresence>
-          {showRyanWhiteSubmenu && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.3, ease: "easeInOut" }}
-              className="border-t border-white/20 overflow-hidden"
+      )}
+    <header
+      className={`site-header z-50 bg-white font-sans text-ink ${isPublicPage ? 'relative lg:sticky lg:top-0' : 'sticky top-0'}`}
+      onKeyDown={(event) => {
+        if (event.key !== 'Escape') return;
+        if (mobileOpen) { setMobileOpen(false); mobileButton.current?.focus(); }
+        if (modelsOpen) { setModelsOpen(false); modelsButton.current?.focus(); }
+      }}
+    >
+      <a href="#main-content" className="sr-only z-50 bg-white p-3 focus:not-sr-only focus:absolute focus:left-4 focus:top-4">
+        Skip to content
+      </a>
+      <div className="border-b border-rule">
+        <div className="site-container flex min-h-22 items-center justify-between gap-6 py-4 lg:min-h-18 lg:py-3">
+          <Link href="/" aria-label="JHEEM home" className="flex shrink-0 items-center gap-4 text-hopkins-blue max-[374px]:flex-col max-[374px]:items-start max-[374px]:gap-1 sm:gap-5" onNavigate={closeMenus}>
+            <span className="font-serif text-[2.25rem] leading-none tracking-[-0.045em] sm:text-[2.6rem]">JHEEM</span>
+            <span className="border-l border-rule pl-4 text-[0.6875rem] max-[374px]:border-0 max-[374px]:pl-0 leading-[1.45] text-ink sm:pl-5 sm:text-[0.8125rem]">
+              Joint HIV Epidemiology<br />and Economic Model
+            </span>
+          </Link>
+
+          <nav aria-label="Main navigation" className="hidden items-center gap-8 text-sm lg:flex">
+            <div
+              className="relative"
+              onBlur={(event) => {
+                if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setModelsOpen(false);
+              }}
             >
-              <div className="py-4">
-                <div className="flex flex-wrap items-center gap-x-8 gap-y-3">
-                  <span className="text-xs font-semibold text-hopkins-gold uppercase tracking-wider">
-                    Ryan White
-                  </span>
-                  <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
-                    <Link
-                      href="/ryan-white/explorer"
-                      className="text-white hover:text-hopkins-gold font-medium transition-all relative group py-1"
-                    >
-                      <span>Prerun Explorer</span>
-                      <span className={`absolute bottom-0 left-0 h-0.5 bg-hopkins-gold transition-all duration-300 ${
-                        pathname === '/ryan-white/explorer' ? 'w-full' : 'w-0 group-hover:w-full'
-                      }`}></span>
+              <button
+                ref={modelsButton}
+                type="button"
+                aria-expanded={modelsOpen}
+                aria-controls="model-navigation"
+                onClick={() => setModelsOpen(!modelsOpen)}
+                className={`flex min-h-11 items-center gap-2 hover:text-hopkins-blue ${MODELS.some(({ href }) => activeModel(href)) ? 'text-hopkins-blue' : ''}`}
+              >
+                Modeling tools
+                <svg aria-hidden="true" className={`h-3 w-3 transition-transform ${modelsOpen ? 'rotate-180' : ''}`} viewBox="0 0 12 12" fill="none" stroke="currentColor"><path d="m2 4 4 4 4-4" /></svg>
+              </button>
+              {modelsOpen && (
+                <div id="model-navigation" className="absolute right-0 top-full w-80 border border-rule bg-white p-2 shadow-[0_12px_32px_rgba(18,36,53,0.09)]">
+                  {MODELS.map((model) => (
+                    <Link key={model.href} href={model.href} onNavigate={closeMenus} aria-current={pathname === model.href ? 'page' : undefined} className={`block px-4 py-3 hover:bg-paper focus-visible:bg-paper ${activeModel(model.href) ? 'bg-paper text-hopkins-blue' : ''}`}>
+                      <span className="block font-medium">{model.label}</span>
+                      <span className="mt-1 block text-xs leading-relaxed text-muted">{model.detail}</span>
                     </Link>
-                    <Link
-                      href="/ryan-white/custom"
-                      className="text-white hover:text-hopkins-gold font-medium transition-all relative group py-1"
-                    >
-                      <span>Custom Simulations</span>
-                      <span className={`absolute bottom-0 left-0 h-0.5 bg-hopkins-gold transition-all duration-300 ${
-                        pathname === '/ryan-white/custom' ? 'w-full' : 'w-0 group-hover:w-full'
-                      }`}></span>
-                    </Link>
-                  </div>
+                  ))}
                 </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+              )}
+            </div>
+            <a href={PUBLICATIONS_URL} className="inline-flex min-h-11 items-center hover:text-hopkins-blue">Research</a>
+            <Link href="/work-with-us" aria-current={pathname === '/work-with-us' ? 'page' : undefined} className={`inline-flex min-h-11 items-center border-b hover:border-hopkins-blue hover:text-hopkins-blue ${pathname === '/work-with-us' ? 'border-hopkins-blue text-hopkins-blue' : 'border-transparent'}`}>
+              Work with us
+            </Link>
+          </nav>
 
-        {/* Ryan White State-Level Sub-Navigation */}
-        <AnimatePresence>
-          {showStateLevelSubmenu && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.3, ease: "easeInOut" }}
-              className="border-t border-white/20 overflow-hidden"
-            >
-              <div className="py-4">
-                <div className="flex flex-wrap items-center gap-x-8 gap-y-3">
-                  <span className="text-xs font-semibold text-hopkins-gold uppercase tracking-wider">
-                    State-Level Ryan White
-                  </span>
-                  <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
-                    <Link
-                      href="/ryan-white-state-level/explorer/ajph"
-                      className="text-white hover:text-hopkins-gold font-medium transition-all relative group py-1"
-                    >
-                      <span>11 States (2025–2030)</span>
-                      <span className={`absolute bottom-0 left-0 h-0.5 bg-hopkins-gold transition-all duration-300 ${
-                        pathname === '/ryan-white-state-level/explorer/ajph' ? 'w-full' : 'w-0 group-hover:w-full'
-                      }`}></span>
-                    </Link>
-                    <Link
-                      href="/ryan-white-state-level/explorer/croi"
-                      className="text-white hover:text-hopkins-gold font-medium transition-all relative group py-1"
-                    >
-                      <span>30 States (2026–2031)</span>
-                      <span className={`absolute bottom-0 left-0 h-0.5 bg-hopkins-gold transition-all duration-300 ${
-                        pathname === '/ryan-white-state-level/explorer/croi' ? 'w-full' : 'w-0 group-hover:w-full'
-                      }`}></span>
-                    </Link>
-                    <Link
-                      href="/ryan-white-state-level/custom"
-                      className="text-white hover:text-hopkins-gold font-medium transition-all relative group py-1"
-                    >
-                      <span>Custom Simulations</span>
-                      <span className={`absolute bottom-0 left-0 h-0.5 bg-hopkins-gold transition-all duration-300 ${
-                        pathname?.startsWith('/ryan-white-state-level/custom') ? 'w-full' : 'w-0 group-hover:w-full'
-                      }`}></span>
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-        
-        {/* CDC Testing Sub-Navigation */}
-        <AnimatePresence>
-          {showCdcTestingSubmenu && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.3, ease: "easeInOut" }}
-              className="border-t border-white/20 overflow-hidden"
-            >
-              <div className="py-4">
-                <div className="flex items-center space-x-8">
-                  <span className="text-xs font-semibold text-hopkins-gold uppercase tracking-wider">
-                    CDC Testing
-                  </span>
-                  <div className="flex items-center space-x-6">
-                    <Link
-                      href="/cdc-testing/explorer"
-                      className="text-white hover:text-hopkins-gold font-medium transition-all relative group py-1"
-                    >
-                      <span>Prerun Explorer</span>
-                      <span className={`absolute bottom-0 left-0 h-0.5 bg-hopkins-gold transition-all duration-300 ${
-                        pathname === '/cdc-testing/explorer' ? 'w-full' : 'w-0 group-hover:w-full'
-                      }`}></span>
-                    </Link>
-                    <Link
-                      href="/cdc-testing/custom"
-                      className="text-white hover:text-hopkins-gold font-medium transition-all relative group py-1"
-                    >
-                      <span>Custom Simulations</span>
-                      <span className={`absolute bottom-0 left-0 h-0.5 bg-hopkins-gold transition-all duration-300 ${
-                        pathname?.startsWith('/cdc-testing/custom') ? 'w-full' : 'w-0 group-hover:w-full'
-                      }`}></span>
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+          <button ref={mobileButton} type="button" onClick={() => setMobileOpen(!mobileOpen)} aria-expanded={mobileOpen} aria-controls="mobile-navigation" aria-label={mobileOpen ? 'Close menu' : 'Open menu'} className="-mr-2 inline-flex h-11 w-11 shrink-0 items-center justify-center text-hopkins-blue lg:hidden">
+            <svg aria-hidden="true" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <path d={mobileOpen ? 'M6 6l12 12M6 18 18 6' : 'M3 7h18M3 12h18M3 17h18'} />
+            </svg>
+          </button>
+        </div>
+      </div>
 
-        {/* Mobile Menu */}
-        <AnimatePresence>
-          {mobileMenuOpen && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.3, ease: "easeInOut" }}
-              className="md:hidden border-t border-white/20 overflow-hidden"
-            >
-              <div className="py-4 space-y-2">
-                {/* Models Section */}
-                <div className="px-3">
-                  <p className="text-xs font-semibold text-hopkins-gold uppercase tracking-wider mb-2">
-                    Modeling Tools
-                  </p>
-                  <div className="space-y-1">
-                    <Link
-                      href="/ryan-white"
-                      className={`block px-3 py-2 rounded-lg font-medium transition-colors ${
-                        isRyanWhiteActive
-                          ? 'bg-white/10 text-white'
-                          : 'text-white/80 hover:text-white hover:bg-white/5'
-                      }`}
-                    >
-                      Ryan White: City-Level
-                    </Link>
+      {mobileOpen && (
+        <nav id="mobile-navigation" aria-label="Mobile navigation" className="max-h-[65vh] overflow-y-auto border-b border-rule bg-white lg:hidden">
+          <div className="site-container py-5">
+            <Link href="/" onNavigate={closeMenus} className="block py-3 text-sm">Overview</Link>
+            <Link href="/work-with-us" onNavigate={closeMenus} aria-current={pathname === '/work-with-us' ? 'page' : undefined} className="block py-3 text-sm text-hopkins-blue">Work with us</Link>
+            <a href={PUBLICATIONS_URL} className="block py-3 text-sm">Research</a>
+            <p className="mt-4 border-t border-rule pt-5 text-xs font-medium text-muted">Modeling tools</p>
+            {MODELS.map((model) => (
+              <Link key={model.href} href={model.href} onNavigate={closeMenus} aria-current={pathname === model.href ? 'page' : undefined} className={`block py-3 text-sm ${activeModel(model.href) ? 'text-hopkins-blue' : ''}`}>{model.label}</Link>
+            ))}
+          </div>
+        </nav>
+      )}
 
-                    {/* Ryan White Submenu */}
-                    {isRyanWhiteActive && (
-                      <div className="ml-3 space-y-1 border-l-2 border-hopkins-gold/30 pl-3">
-                        <Link
-                          href="/ryan-white/explorer"
-                          className={`block px-3 py-1.5 rounded text-sm transition-colors ${
-                            pathname === '/ryan-white/explorer'
-                              ? 'text-hopkins-gold font-medium'
-                              : 'text-white/70 hover:text-white'
-                          }`}
-                        >
-                          Prerun Explorer
-                        </Link>
-                        <Link
-                          href="/ryan-white/custom"
-                          className={`block px-3 py-1.5 rounded text-sm transition-colors ${
-                            pathname === '/ryan-white/custom'
-                              ? 'text-hopkins-gold font-medium'
-                              : 'text-white/70 hover:text-white'
-                          }`}
-                        >
-                          Custom Simulations
-                        </Link>
-                      </div>
-                    )}
-
-                    <Link
-                      href="/ryan-white-state-level"
-                      className={`block px-3 py-2 rounded-lg font-medium transition-colors ${
-                        isStateLevelActive
-                          ? 'bg-white/10 text-white'
-                          : 'text-white/80 hover:text-white hover:bg-white/5'
-                      }`}
-                    >
-                      Ryan White: State-Level
-                    </Link>
-
-                    {/* State-Level Submenu */}
-                    {isStateLevelActive && (
-                      <div className="ml-3 space-y-1 border-l-2 border-hopkins-gold/30 pl-3">
-                        <Link
-                          href="/ryan-white-state-level/explorer/ajph"
-                          className={`block px-3 py-1.5 rounded text-sm transition-colors ${
-                            pathname === '/ryan-white-state-level/explorer/ajph'
-                              ? 'text-hopkins-gold font-medium'
-                              : 'text-white/70 hover:text-white'
-                          }`}
-                        >
-                          11 States (2025–2030)
-                        </Link>
-                        <Link
-                          href="/ryan-white-state-level/explorer/croi"
-                          className={`block px-3 py-1.5 rounded text-sm transition-colors ${
-                            pathname === '/ryan-white-state-level/explorer/croi'
-                              ? 'text-hopkins-gold font-medium'
-                              : 'text-white/70 hover:text-white'
-                          }`}
-                        >
-                          30 States (2026–2031)
-                        </Link>
-                        <Link
-                          href="/ryan-white-state-level/custom"
-                          className={`block px-3 py-1.5 rounded text-sm transition-colors ${
-                            pathname?.startsWith('/ryan-white-state-level/custom')
-                              ? 'text-hopkins-gold font-medium'
-                              : 'text-white/70 hover:text-white'
-                          }`}
-                        >
-                          Custom Simulations
-                        </Link>
-                      </div>
-                    )}
-
-                    <Link
-                      href="/ryan-white-costing"
-                      className={`block px-3 py-2 rounded-lg font-medium transition-colors ${
-                        isCostingActive
-                          ? 'bg-white/10 text-white'
-                          : 'text-white/80 hover:text-white hover:bg-white/5'
-                      }`}
-                    >
-                      ADAP Costing Analysis
-                    </Link>
-
-                    <Link
-                      href="/cdc-testing"
-                      className={`block px-3 py-2 rounded-lg font-medium transition-colors ${
-                        isCdcTestingActive
-                          ? 'bg-white/10 text-white'
-                          : 'text-white/80 hover:text-white hover:bg-white/5'
-                      }`}
-                    >
-                      CDC Testing
-                    </Link>
-
-                    {/* CDC Testing Submenu */}
-                    {isCdcTestingActive && (
-                      <div className="ml-3 space-y-1 border-l-2 border-hopkins-gold/30 pl-3">
-                        <Link
-                          href="/cdc-testing/explorer"
-                          className={`block px-3 py-1.5 rounded text-sm transition-colors ${
-                            pathname === '/cdc-testing/explorer'
-                              ? 'text-hopkins-gold font-medium'
-                              : 'text-white/70 hover:text-white'
-                          }`}
-                        >
-                          Prerun Explorer
-                        </Link>
-                        <Link
-                          href="/cdc-testing/custom"
-                          className={`block px-3 py-1.5 rounded text-sm transition-colors ${
-                            pathname?.startsWith('/cdc-testing/custom')
-                              ? 'text-hopkins-gold font-medium'
-                              : 'text-white/70 hover:text-white'
-                          }`}
-                        >
-                          Custom Simulations
-                        </Link>
-                      </div>
-                    )}
-
-                    <Link
-                      href="/aging"
-                      className={`block px-3 py-2 rounded-lg font-medium transition-colors ${
-                        isHIVAgeProjectionsActive
-                          ? 'bg-white/10 text-white'
-                          : 'text-white/80 hover:text-white hover:bg-white/5'
-                      }`}
-                    >
-                      HIV Age Projections
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </nav>
+      {section && (
+        <nav aria-label={`${section.label} navigation`} className="border-b border-rule bg-paper">
+          <div className="site-container flex items-center gap-x-7 overflow-x-auto whitespace-nowrap py-2 text-sm">
+            <Link href={section.root} className="hidden py-2 font-medium text-hopkins-blue md:inline">{section.label}</Link>
+            {section.links.map((link) => (
+              <Link key={link.href} href={link.href} aria-current={matchesRoute(pathname, link.href) ? 'page' : undefined} className={`border-b py-2 hover:text-hopkins-blue ${matchesRoute(pathname, link.href) ? 'border-hopkins-blue text-hopkins-blue' : 'border-transparent text-muted'}`}>{link.label}</Link>
+            ))}
+          </div>
+        </nav>
+      )}
     </header>
+    </>
   );
 }

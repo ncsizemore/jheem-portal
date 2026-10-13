@@ -41,7 +41,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} ${newsreader.variable} antialiased flex flex-col min-h-screen`}
       >
         <Navigation />
-        <main className="flex flex-col flex-1 min-h-0 overflow-hidden">
+        <main id="main-content" tabIndex={-1} className="flex flex-col flex-1 min-h-0 overflow-hidden">
           <AppViewManager>{children}</AppViewManager>
         </main>
         <Analytics />
