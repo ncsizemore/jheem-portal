@@ -1,6 +1,7 @@
 'use client';
 
 import { useLayoutEffect } from 'react';
+import styles from './FuturesIllustration.module.css';
 
 // Starts the illustration's draw-in once it scrolls into view. On a full page load the
 // inline script in FuturesIllustration does this before first paint (so the finished chart
@@ -32,5 +33,23 @@ export default function FuturesAnimation({ targetId, threshold }: { targetId: st
     };
   }, [targetId, threshold]);
 
-  return null;
+  const replay = () => {
+    const svg = document.getElementById(targetId);
+    if (!svg || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    svg.setAttribute('data-anim', 'pending');
+    // Flush the pending styles so the same CSS sequence restarts from the beginning.
+    svg.getBoundingClientRect();
+    svg.setAttribute('data-anim', 'run');
+  };
+
+  return (
+    <div className={styles.replay}>
+      <button type="button" onClick={replay} aria-controls={targetId} className="editorial-link inline-flex min-h-11 items-center gap-2 text-xs">
+        <svg aria-hidden="true" width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.2">
+          <path d="M3 5a5.5 5.5 0 1 1-.5 5M3 1v4h4" />
+        </svg>
+        Replay illustration
+      </button>
+    </div>
+  );
 }

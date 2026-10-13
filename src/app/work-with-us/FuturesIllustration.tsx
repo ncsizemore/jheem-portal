@@ -3,10 +3,8 @@
 // axis values so it can't be mistaken for (or screenshotted as) a real result.
 //
 // It draws itself in once when scrolled into view (see FuturesIllustration.module.css),
-// in the order it should be read: the reported data point by point, the fitted past
-// continuing into "no change", then a funding cut, then scaled-up prevention. The title,
-// "Illustration, not real data" and axes are never animated, so a screenshot taken
-// mid-animation still says what it is.
+// in a reading sequence with a pause between scenarios. Labels and the caption stay visible.
+// The complete figure is available after 4.2 seconds; reduced motion is static.
 
 import type { CSSProperties } from 'react';
 import FuturesAnimation from './FuturesAnimation';
@@ -19,7 +17,6 @@ const SCALE_UP = '#0F766E';
 
 // Text sizes are in SVG units, which shrink with the drawing; phones get larger sizes so
 // labels stay readable once scaled down.
-const TITLE = 'text-[26px] sm:text-[19px]';
 const LABEL = 'text-[25px] sm:text-[18px]';
 const NOTE = 'text-[22px] sm:text-[16px]';
 
@@ -39,23 +36,19 @@ const EASE_INTO_TODAY = 'cubic-bezier(0.5, 0, 0.7, 0.7)';
 const EASE_FROM_TODAY = 'cubic-bezier(0.3, 0.3, 0.5, 1)';
 const EASE_DRAW = 'cubic-bezier(0.45, 0, 0.25, 1)';
 
-// Animation timeline in milliseconds (about 6.5s in total). Each range fades in as its
-// line finishes, so it follows the line rather than leading it.
-const DOT_STAGGER = 170;
+// Allow each stage to register: reported data, fitted past and baseline, then alternatives.
+// Timings are milliseconds; a short hold separates the completed scenario bands.
+const DOT_STAGGER = 105;
 const TIMELINE = {
-  reportedLabel: { delay: 0, duration: 500 },
-  pastLine: { delay: 1650, duration: 850, ease: EASE_INTO_TODAY },
-  pastBand: { delay: 2150, duration: 700 },
-  today: { delay: 2400, duration: 320 },
-  noChange: { delay: 2500, duration: 850, ease: EASE_FROM_TODAY, handoff: 3350 },
-  noChangeBand: { delay: 3000, duration: 700 },
-  noChangeLabel: { delay: 3200, duration: 450 },
-  fundingCut: { delay: 3750, duration: 1000, ease: EASE_DRAW },
-  fundingCutBand: { delay: 4400, duration: 700 },
-  fundingCutLabel: { delay: 4600, duration: 450 },
-  scaleUp: { delay: 5150, duration: 1000, ease: EASE_DRAW },
-  scaleUpBand: { delay: 5800, duration: 700 },
-  scaleUpLabel: { delay: 6000, duration: 450 },
+  pastLine: { delay: 650, duration: 650, ease: EASE_INTO_TODAY },
+  pastBand: { delay: 1050, duration: 400 },
+  today: { delay: 1200, duration: 240 },
+  noChange: { delay: 1300, duration: 650, ease: EASE_FROM_TODAY, handoff: 1950 },
+  noChangeBand: { delay: 1700, duration: 450 },
+  fundingCut: { delay: 2250, duration: 650, ease: EASE_DRAW },
+  fundingCutBand: { delay: 2650, duration: 450 },
+  scaleUp: { delay: 3250, duration: 650, ease: EASE_DRAW },
+  scaleUpBand: { delay: 3750, duration: 450 },
 };
 
 interface Step {
@@ -90,7 +83,7 @@ export default function FuturesIllustration() {
         data-anim="static"
         // The start script changes data-anim before hydration.
         suppressHydrationWarning
-        viewBox="0 0 600 400"
+        viewBox="0 72 600 328"
         role="img"
         aria-labelledby="futures-title futures-desc"
         className={`h-auto w-full font-sans ${styles.root}`}
@@ -102,13 +95,6 @@ export default function FuturesIllustration() {
           scaled-up prevention, where they fall. Shaded bands around each line widen over time to show the
           range of likely outcomes. Not real data.
         </desc>
-
-        <text x="0" y="26" className={TITLE} fontWeight="500" fill="#374151">
-          New HIV infections each year
-        </text>
-        <text x="0" y="58" className={NOTE} fontStyle="italic" fill="#6B7280">
-          Illustration, not real data
-        </text>
 
         <line x1="220" x2="220" y1="102" y2="360" stroke="#9CA3AF" strokeDasharray="4 5" />
         <text x="220" y="92" className={NOTE} fill="#4B5563" textAnchor="middle">
@@ -153,7 +139,7 @@ export default function FuturesIllustration() {
         />
 
         {/* 1. Reported data, one point at a time */}
-        <text x="14" y="174" className={`${NOTE} ${styles.fade}`} style={timing(TIMELINE.reportedLabel)} fill="#6B7280">
+        <text x="14" y="174" className={NOTE} fill="#6B7280">
           Reported data
         </text>
 
@@ -226,8 +212,7 @@ export default function FuturesIllustration() {
         <text
           x="442"
           y="243"
-          className={`${LABEL} ${styles.fade}`}
-          style={timing(TIMELINE.noChangeLabel)}
+          className={LABEL}
           fontWeight="500"
           fill={NO_CHANGE}
         >
@@ -236,17 +221,16 @@ export default function FuturesIllustration() {
         <text
           x="442"
           y="151"
-          className={`${LABEL} ${styles.fade}`}
-          style={timing(TIMELINE.fundingCutLabel)}
+          className={LABEL}
           fontWeight="500"
           fill={FUNDING_CUT}
         >
           Funding cut
         </text>
-        <text x="442" y="304" className={`${LABEL} ${styles.fade}`} style={timing(TIMELINE.scaleUpLabel)} fontWeight="500" fill={SCALE_UP}>
+        <text x="442" y="304" className={LABEL} fontWeight="500" fill={SCALE_UP}>
           Scaled-up
         </text>
-        <text x="442" y="330" className={`${LABEL} ${styles.fade}`} style={timing(TIMELINE.scaleUpLabel)} fontWeight="500" fill={SCALE_UP}>
+        <text x="442" y="330" className={LABEL} fontWeight="500" fill={SCALE_UP}>
           prevention
         </text>
       </svg>

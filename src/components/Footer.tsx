@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { CIPHER_URL, PUBLICATIONS_URL, TEAM_URL } from '@/lib/site';
 
 const APPLICATION_LINKS = [
   { href: '/ryan-white', label: 'Ryan White: City-Level' },
@@ -10,74 +11,39 @@ const APPLICATION_LINKS = [
 
 export default function Footer() {
   return (
-    <footer className="bg-hopkins-blue text-white">
-      <div className="max-w-6xl mx-auto px-6 py-14">
-        <div className="grid gap-10 md:grid-cols-3">
+    <footer className="site-footer bg-hopkins-blue font-sans text-white">
+      <div className="site-container pb-7 pt-12 md:pt-14">
+        <div className="grid gap-10 md:grid-cols-[1.4fr_1fr_1fr] md:gap-12">
           <div>
-            <p className="font-serif text-2xl leading-tight">
-              <span className="text-hopkins-gold">JHEEM</span>{' '}
-              <span className="text-white/90">Portal</span>
+            <Link href="/" className="font-serif text-[2rem] tracking-[-0.035em] text-white">JHEEM</Link>
+            <p className="mt-2 max-w-xs text-sm leading-relaxed">Joint HIV Epidemiology<br />and Economic Model</p>
+            <p className="mt-5 max-w-xs text-sm leading-relaxed text-white/75">
+              A research program of <a href={CIPHER_URL} className="text-white underline decoration-white/40 underline-offset-4 hover:decoration-white">CIPHER Lab</a>,
+              based at the Johns Hopkins Schools of Public Health and Medicine.
             </p>
-            <p className="mt-3 max-w-xs text-sm leading-relaxed text-white/70">
-              Interactive HIV policy modeling from the Joint HIV Epidemiology and
-              Economic Model.
-            </p>
-            <a
-              href="https://jhu-comp-epi.vercel.app/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-5 inline-block text-sm text-white/85 transition-colors hover:text-white"
-            >
-              Part of <span className="font-medium text-hopkins-gold">CIPHER Lab</span> &rarr;
-            </a>
           </div>
-
           <div>
-            <h4 className="mb-3 text-xs font-semibold uppercase tracking-wider text-white/60">
-              Modeling Tools
-            </h4>
-            <ul className="space-y-2 text-sm">
+            <h2 className="mb-4 text-sm font-medium">Modeling tools</h2>
+            <ul className="space-y-3 text-sm text-white/75">
               {APPLICATION_LINKS.map((item) => (
-                <li key={item.href}>
-                  <Link href={item.href} className="text-white/85 hover:underline">
-                    {item.label}
-                  </Link>
-                </li>
+                <li key={item.href}><Link href={item.href} className="hover:text-white hover:underline">{item.label}</Link></li>
               ))}
             </ul>
           </div>
-
           <div>
-            <h4 className="mb-3 text-xs font-semibold uppercase tracking-wider text-white/60">
-              Institution
-            </h4>
-            <p className="max-w-xs text-sm leading-relaxed text-white/85">
-              Johns Hopkins Schools of Public Health and Medicine
-            </p>
-            <div className="mt-4 flex flex-col gap-2 text-sm">
-              <a
-                href="https://www.jhu.edu"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-white/70 hover:text-white hover:underline"
-              >
-                Johns Hopkins University
-              </a>
-              <a
-                href="https://publichealth.jhu.edu"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-white/70 hover:text-white hover:underline"
-              >
-                Bloomberg School of Public Health
-              </a>
-            </div>
+            <h2 className="mb-4 text-sm font-medium">Research &amp; collaboration</h2>
+            <ul className="space-y-3 text-sm text-white/75">
+              <li><Link href="/work-with-us" className="hover:text-white hover:underline">Work with us</Link></li>
+              <li><a href={PUBLICATIONS_URL} className="hover:text-white hover:underline">Publications</a></li>
+              <li><a href={TEAM_URL} className="hover:text-white hover:underline">Meet the team</a></li>
+              <li><a href="https://www.jhu.edu" className="hover:text-white hover:underline">Johns Hopkins University</a></li>
+              <li><a href="https://publichealth.jhu.edu" className="hover:text-white hover:underline">Bloomberg School of Public Health</a></li>
+            </ul>
           </div>
         </div>
-
-        <div className="mt-12 border-t border-white/15 pt-6 text-xs text-white/60">
+        <p className="mt-12 border-t border-white/20 pt-6 text-xs leading-relaxed text-white/65">
           {`© ${new Date().getFullYear()} JHEEM · Joint HIV Epidemiology and Economic Model`}
-        </div>
+        </p>
       </div>
     </footer>
   );

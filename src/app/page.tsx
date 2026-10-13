@@ -1,4 +1,5 @@
 import HomePageWrapper from './page-wrapper';
+import { CIPHER_URL } from '@/lib/site';
 
 // Server component that fetches publications at build time
 export const revalidate = 3600; // Revalidate every hour (ISR)
@@ -16,7 +17,7 @@ interface Publication {
 
 async function getRecentPublications(): Promise<Publication[]> {
   try {
-    const apiUrl = process.env.NEXT_PUBLIC_GROUP_WEBSITE_URL || 'https://jhu-comp-epi.vercel.app';
+    const apiUrl = process.env.NEXT_PUBLIC_GROUP_WEBSITE_URL || CIPHER_URL;
     const response = await fetch(
       `${apiUrl}/api/publications?project=jheem&limit=3`,
       {
