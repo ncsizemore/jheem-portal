@@ -1,8 +1,9 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import Footer from '@/components/Footer';
-import { PUBLICATIONS_URL, TEAM_URL } from '@/lib/site';
+import { CONTACT_EMAIL, CONTACT_HREF, PUBLICATIONS_URL, TEAM_URL } from '@/lib/site';
 import CopyEmailButton from './CopyEmailButton';
+import ContactForm from './ContactForm';
 import FuturesIllustration from './FuturesIllustration';
 
 export const metadata: Metadata = {
@@ -10,10 +11,6 @@ export const metadata: Metadata = {
   description:
     'Work with JHEEM to explore local HIV policy and planning questions. We collaborate with public health partners using publicly available data; no modeling expertise is needed.',
 };
-
-// Until a shared team inbox exists, collaboration requests go to Parastu.
-const CONTACT_EMAIL = 'pkasaie@jhu.edu';
-const CONTACT_HREF = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent('Collaborating with JHEEM')}`;
 
 const LINK_CLASS =
   'text-hopkins-blue underline decoration-hopkins-blue/30 underline-offset-4 transition-colors hover:decoration-hopkins-blue focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-hopkins-blue';
@@ -206,21 +203,18 @@ export default function WorkWithUsPage() {
                 If your organization has a question our models could help answer, or you&apos;d simply like to
                 learn more, we&apos;d be glad to hear from you.
               </p>
-              <p className="mt-4 max-w-xl text-base leading-relaxed text-muted">
+              <p id="contact-intro" className="mt-4 max-w-xl text-base leading-relaxed text-muted">
                 A few lines about your organization, your city or state, and what you&apos;re working on is
                 enough to start.
               </p>
-              <div className="mt-8 flex flex-wrap items-center gap-3">
-                <a
-                  href={CONTACT_HREF}
-                  className="inline-flex min-h-11 items-center bg-hopkins-blue px-6 text-sm font-medium text-white transition-colors hover:bg-hopkins-blue/90 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-hopkins-blue"
-                >
-                  Email us
-                </a>
+              <ContactForm />
+              <div className="mt-7 flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-rule pt-5 text-sm text-muted">
+                <span>Prefer email?</span>
+                <a href={CONTACT_HREF} className={LINK_CLASS}>{CONTACT_EMAIL}</a>
                 <CopyEmailButton email={CONTACT_EMAIL} />
               </div>
             </div>
-            <div className="border-t border-rule pt-7 lg:border-l lg:border-t-0 lg:pl-8 lg:pt-2">
+            <div className="self-start border-t border-rule pt-7 lg:border-l lg:border-t-0 lg:pl-8 lg:pt-2">
               <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-1">
                 {LEADS.map((lead) => (
                   <li key={lead.name} className="flex items-center gap-4">
