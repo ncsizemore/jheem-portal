@@ -55,14 +55,20 @@ patient information. Assign someone to check and respond to the team inbox.
 References: https://vercel.com/docs/headers/request-headers and
 https://resend.com/docs/dashboard/emails/idempotency-keys.
 
-## Release gate — 22 October 2026
+## Recovery and delivery verification — 23 October 2026
 
-The shared inbox configuration and security updates shipped separately in PR #57.
-The form remains unreleased. An authorized browser submission correctly preserved
-the draft and returned service unavailable: the configured Upstash hostname
-returns NXDOMAIN, so the quota check cannot complete and email delivery is not
-attempted. Restore that database or configure its replacement, then retry the
-approved test and confirm actual inbox receipt. Do not bypass the quota check.
+The replacement Redis database is configured in Vercel Production, Preview, and
+Development and in the backend Actions secrets. Production was rebuilt, and a
+harmless status lookup was confirmed in the replacement database's diagnostic
+log. Simulation quota Lua, dispatch reservation, duplicate detection, and release
+passed using isolated test keys; no simulation was launched.
 
-The same Redis configuration is used by existing custom-simulation rate limits;
-restoration should include a read-only connectivity check for those services too.
+The single authorized contact-form test passed the real quota check and received
+a Resend acceptance receipt. The browser displayed success, and the inbox owner
+confirmed that the message arrived in the team Gmail inbox (not spam). The test
+used the production build locally with the same shared Redis and Resend settings.
+The earlier failed attempt stopped before email delivery; no extra test was sent.
+
+A daily read/write/expiry check is installed on shield2 and passed its first run.
+See the server repository's `runbooks/redis-health-check.md` for its schedule,
+rollback, and the remaining alerting limitations. Keep credentials out of Git.
