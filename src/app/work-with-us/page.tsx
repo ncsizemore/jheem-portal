@@ -210,7 +210,7 @@ export default function WorkWithUsPage() {
               <ContactForm />
               <div className="mt-7 flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-rule pt-5 text-sm text-muted">
                 <span>Prefer email?</span>
-                <a href={CONTACT_HREF} className={LINK_CLASS}>{CONTACT_EMAIL}</a>
+                <a href={CONTACT_HREF} className={LINK_CLASS}>Email the team</a>
                 <CopyEmailButton email={CONTACT_EMAIL} />
               </div>
             </div>
