@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import Footer from '@/components/Footer';
-import { PUBLICATIONS_URL, TEAM_URL } from '@/lib/site';
+import { CONTACT_EMAIL, CONTACT_HREF, PUBLICATIONS_URL, TEAM_URL } from '@/lib/site';
 import CopyEmailButton from './CopyEmailButton';
 import FuturesIllustration from './FuturesIllustration';
 
@@ -10,10 +10,6 @@ export const metadata: Metadata = {
   description:
     'Work with JHEEM to explore local HIV policy and planning questions. We collaborate with public health partners using publicly available data; no modeling expertise is needed.',
 };
-
-// Until a shared team inbox exists, collaboration requests go to Parastu.
-const CONTACT_EMAIL = 'pkasaie@jhu.edu';
-const CONTACT_HREF = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent('Collaborating with JHEEM')}`;
 
 const LINK_CLASS =
   'text-hopkins-blue underline decoration-hopkins-blue/30 underline-offset-4 transition-colors hover:decoration-hopkins-blue focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-hopkins-blue';
