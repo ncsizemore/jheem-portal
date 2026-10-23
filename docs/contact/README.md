@@ -54,3 +54,15 @@ patient information. Assign someone to check and respond to the team inbox.
 
 References: https://vercel.com/docs/headers/request-headers and
 https://resend.com/docs/dashboard/emails/idempotency-keys.
+
+## Release gate — 22 October 2026
+
+The shared inbox configuration and security updates shipped separately in PR #57.
+The form remains unreleased. An authorized browser submission correctly preserved
+the draft and returned service unavailable: the configured Upstash hostname
+returns NXDOMAIN, so the quota check cannot complete and email delivery is not
+attempted. Restore that database or configure its replacement, then retry the
+approved test and confirm actual inbox receipt. Do not bypass the quota check.
+
+The same Redis configuration is used by existing custom-simulation rate limits;
+restoration should include a read-only connectivity check for those services too.
