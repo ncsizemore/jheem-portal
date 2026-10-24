@@ -73,7 +73,9 @@ separate actions; no one has been contacted by this work.
 
 ## Pending operational choices
 
-- Hopkins forwarding destination and ownership of initial triage.
+- Gmail forwarding to Hopkins was confirmed complete by the inbox owner on
+  24 October. No forwarding address is needed from them. Initial triage and backup
+  responder ownership should remain explicit.
 - Infrastructure-alert recipient, then activation of the private monitoring PR
   and a hosted check. Real test-email delivery requires explicit permission.
 - Final manuscript input/reporting revision, via the prepared source question.
