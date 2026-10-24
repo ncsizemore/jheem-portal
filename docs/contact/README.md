@@ -77,10 +77,12 @@ rollback, and the remaining alerting limitations. Keep credentials out of Git.
 ## Inbox handover
 
 The current shared inbox is configured centrally and public pages use descriptive
-links. Gmail forwarding is not yet configured by this work: the destination must
-be supplied and verified by its owner. Use Gmail's built-in forwarding to the
-agreed Hopkins mailbox and keep Gmail's copy in the Inbox. Gmail does not forward
-messages it classifies as spam; review that folder periodically.
+links. On 24 October 2026, the inbox owner confirmed that they had already
+configured Gmail forwarding to their Hopkins email. Forwarding setup is complete;
+there is no need to collect or record the Hopkins address here. The forwarding
+settings were not independently inspected by this work. Keep Gmail's copy in the
+Inbox. Gmail does not forward messages it classifies as spam; review that folder
+periodically.
 
 The person receiving forwarded messages should own initial triage. Confirm a
 backup responder before relying on an unattended shared inbox. Replies sent from
