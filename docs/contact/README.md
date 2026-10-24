@@ -72,3 +72,45 @@ The earlier failed attempt stopped before email delivery; no extra test was sent
 A daily read/write/expiry check is installed on shield2 and passed its first run.
 See the server repository's `runbooks/redis-health-check.md` for its schedule,
 rollback, and the remaining alerting limitations. Keep credentials out of Git.
+
+
+## Inbox handover
+
+The current shared inbox is configured centrally and public pages use descriptive
+links. Gmail forwarding is not yet configured by this work: the destination must
+be supplied and verified by its owner. Use Gmail's built-in forwarding to the
+agreed Hopkins mailbox and keep Gmail's copy in the Inbox. Gmail does not forward
+messages it classifies as spam; review that folder periodically.
+
+The person receiving forwarded messages should own initial triage. Confirm a
+backup responder before relying on an unattended shared inbox. Replies sent from
+Hopkins do not automatically appear in Gmail's Sent folder. If several people
+start handling inquiries, use a shared institutional mailbox or agree how to
+retain the group correspondence; do not share personal passwords.
+
+Forwarding setup: Gmail Settings → See all settings → Forwarding and POP/IMAP →
+Add a forwarding address. Verify the confirmation at the destination, then enable
+forwarding and retain Gmail's copy. Verify the applied setting; no extra website
+submission is necessary merely to configure forwarding.
+
+A visitor can omit their reply address. Those messages are valid inquiries but
+cannot receive a direct reply. If someone includes patient information despite
+the form's request, handle it through the institution's appropriate process;
+do not copy it into issue trackers or application logs.
+
+Infrastructure alerts are separate from visitor inquiries. The server repository
+contains the independent observer and runbook. A configured recipient and a green
+hosted check establish monitoring readiness; only an authorized test plus inbox
+confirmation establishes alert-email delivery.
+
+## Maintenance cadence
+
+- At each deployment: existing CI, route checks, and a non-sending form check.
+- Periodically: review Gmail spam, Redis monitor run history, provider quota usage,
+  and whether someone remains responsible for inquiries.
+- Quarterly or when notified: review publications, preprint status, roster, and
+  news links. Preserve the explicit TB/PEARL group boundaries.
+- On a contact-address change: update both sites' central settings and forwarding;
+  update the operations alert destination separately if intended.
+
+Reference: https://support.google.com/mail/answer/10957?hl=en
