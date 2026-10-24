@@ -21,6 +21,12 @@ It is an engineering/design walkthrough, not a substitute for reader testing.
   the single-column names wrap clearly. Desktop uses three columns.
 - Mobile navigation reaches Work with us, and Get in touch reaches the form.
   Message and optional email fields remain readable. No submission was sent.
+- The live city explorer loaded all 31 metros; selecting Baltimore reached its
+  cessation chart, and the Table control exposed 26 annual rows. This used stored
+  results and did not launch a simulation. The local preview lacked its Mapbox
+  token and showed a data-fetch failure, so the full explorer journey was checked
+  on production instead. The public summary endpoint separately returned HTTP 200
+  with 31 cities and an allowed local origin. No hosting settings were changed.
 - Type checking, focused lint, and the production build pass. The monitor's
   independent CI passes 14 offline tests; its live read-only Redis check passed.
 
@@ -32,6 +38,12 @@ and stratification. These may be reasonable for experienced users, but the next
 workflow pass should test whether a first-time public-health reader understands
 which route answers their question. Coordinate with the existing portal workflow
 work rather than introducing a second competing navigation redesign.
+
+The result chart exposes two legend images as "[object Object] legend icon" in
+the accessibility tree. Fix those decorative icon labels in the analytical
+component pass. The scenario text is present and the table alternative works,
+but this is a concrete accessibility cleanup item. Also evaluate clearer labels
+for Incidence and Mean & Interval with intended readers.
 
 The mobile study header plus secondary navigation occupies substantial vertical
 space. Evaluate that alongside the analytical workflow; the collaboration page
