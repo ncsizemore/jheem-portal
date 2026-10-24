@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import Footer from '@/components/Footer';
+import { ALL_CITIES } from '@/data/cities';
+import { ryanWhiteConfig } from '@/config/model-configs';
 
 export default function RyanWhiteLandingPage() {
   const [citationCopied, setCitationCopied] = useState(false);
@@ -22,14 +24,7 @@ export default function RyanWhiteLandingPage() {
     }
   };
 
-  const cities = [
-    'Atlanta', 'Baltimore', 'Baton Rouge', 'Birmingham', 'Boston', 'Charlotte',
-    'Chicago', 'Dallas', 'Denver', 'Detroit', 'Fort Lauderdale', 'Houston',
-    'Jacksonville', 'Las Vegas', 'Los Angeles', 'Memphis', 'Miami', 'New Orleans',
-    'New York', 'Newark', 'Oakland', 'Orlando', 'Philadelphia', 'Phoenix',
-    'Riverside', 'San Antonio', 'San Diego', 'San Francisco', 'San Juan',
-    'Tampa', 'Washington DC'
-  ];
+  const cities = ALL_CITIES.filter((city) => ryanWhiteConfig.locations.includes(city.code));
 
   return (
     <div className="min-h-screen bg-white">
@@ -235,10 +230,10 @@ export default function RyanWhiteLandingPage() {
             City-specific epidemic models capturing local patterns in HIV prevalence,
             care engagement, and Ryan White service utilization.
           </p>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-8 gap-y-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-8 gap-y-2">
             {cities.map((city) => (
-              <span key={city} className="text-sm text-gray-600 py-1">
-                {city}
+              <span key={city.code} className="text-sm text-gray-600 py-1">
+                {city.name}
               </span>
             ))}
           </div>
