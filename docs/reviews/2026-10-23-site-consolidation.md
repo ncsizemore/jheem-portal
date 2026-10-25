@@ -30,6 +30,14 @@ It is an engineering/design walkthrough, not a substitute for reader testing.
 - Type checking, focused lint, and the production build pass. The monitor's
   independent CI passes 14 offline tests; its live read-only Redis check passed.
 
+## Update — 25 October 2026
+
+The focused analytical-label and chart-legend pass is documented in
+[Results reading and accessibility](2026-10-25-results-reading.md). The independent
+Redis monitor was activated on October 24 and its initial hosted check passed.
+Gmail forwarding is complete. The local scientific audit now verifies all 31
+metros; remaining historical reconciliation does not block this website work.
+
 ## Next design work, kept separate from this small release
 
 The portal study and analytical routes retain a denser application vocabulary
@@ -76,8 +84,9 @@ separate actions; no one has been contacted by this work.
 - Gmail forwarding to Hopkins was confirmed complete by the inbox owner on
   24 October. No forwarding address is needed from them. Initial triage and backup
   responder ownership should remain explicit.
-- Infrastructure-alert recipient, then activation of the private monitoring PR
-  and a hosted check. Real test-email delivery requires explicit permission.
+- Infrastructure monitoring was activated on October 24 with alerts to the
+  shared inbox; its initial hosted check passed without sending mail. No further
+  recipient choice is pending. Real test-email delivery requires explicit permission.
 - Final manuscript input/reporting revision, via the prepared source question.
 - A durable CIPHER domain, respecting the user's preference for free tiers.
 

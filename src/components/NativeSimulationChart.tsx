@@ -1,13 +1,12 @@
 'use client';
 
-import React, { memo, useMemo, useState, useCallback } from 'react';
+import React, { memo, useMemo, useState, useCallback, useId } from 'react';
 import {
   Line,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
   ResponsiveContainer,
   Area,
   ComposedChart,
@@ -28,6 +27,7 @@ interface ObservationHoverInfo {
 interface NativeSimulationChartProps {
   panel: FacetPanel;
   outcomeLabel: string;
+  description?: string;
   units: string;
   displayAsPercent: boolean;
   options: ChartDisplayOptions;
@@ -117,6 +117,7 @@ function sanitizeId(str: string): string {
 const NativeSimulationChart = memo(({
   panel,
   outcomeLabel,
+  description,
   units,
   displayAsPercent,
   options,
@@ -127,6 +128,12 @@ const NativeSimulationChart = memo(({
 }: NativeSimulationChartProps) => {
   const { showConfidenceInterval, showBaseline, showObservations } = options;
   const { data, observations, facetLabel, isIndividualSimulation, individualSimulations } = panel;
+
+  const titleId = useId();
+  const descriptionId = useId();
+  const hasBaseline = isIndividualSimulation
+    ? individualSimulations?.some(line => line.simset === 'Baseline')
+    : data.some(point => point.baselineValue != null);
 
   // Create safe ID for SVG gradient references
   const safeId = sanitizeId(panel.facetValue);
@@ -217,8 +224,8 @@ const NativeSimulationChart = memo(({
   };
 
   return (
-    <div className="w-full">
-      <h3 className="text-lg font-semibold text-gray-900 mb-2">
+    <div className="w-full" role="group" aria-labelledby={titleId} aria-describedby={description ? descriptionId : undefined}>
+      <h3 id={titleId} className="text-lg font-semibold text-gray-900 mb-2">
         {outcomeLabel}
         {locationName && (
           <span className="text-gray-500 font-normal"> — {locationName}</span>
@@ -276,20 +283,6 @@ const NativeSimulationChart = memo(({
           {/* Tooltip disabled for individual simulations (too many lines) */}
           {!isIndividualSimulation && (
             <Tooltip content={<CustomTooltip displayAsPercent={displayAsPercent} units={units} scenarioLabel={scenarioLabel} />} />
-          )}
-
-          {/* Legend - custom for individual simulations */}
-          {!isIndividualSimulation && (
-            <Legend
-              wrapperStyle={{ paddingTop: 20 }}
-              formatter={(value: string) => {
-                const labels: Record<string, string> = {
-                  value: scenarioLabel || 'Intervention',
-                  baselineValue: 'Baseline',
-                };
-                return <span className="text-sm text-gray-700">{labels[value] || value}</span>;
-              }}
-            />
           )}
 
           {/* Reference line at intervention start year */}
@@ -497,14 +490,32 @@ const NativeSimulationChart = memo(({
         )}
       </div>
 
-      {/* Custom legend for observations (shown when observations are enabled and present) */}
-      {showObservations && observationData.length > 0 && (
-        <div className="flex justify-center mt-2">
-          <div className="flex items-center gap-2 text-sm text-gray-700">
-            <div className="w-3 h-3 rounded-full bg-red-500" />
-            <span>Observed Data</span>
-          </div>
-        </div>
+      <ul aria-label="Chart legend" className="mt-3 flex flex-wrap justify-center gap-x-5 gap-y-2 text-sm text-slate-700">
+        <li className="flex items-center gap-2">
+          <svg aria-hidden="true" focusable="false" width="24" height="12" viewBox="0 0 24 12">
+            <path d="M0 6h24" stroke="#3b82f6" strokeWidth="2.5" />
+          </svg>
+          <span>{scenarioLabel || 'Intervention'}</span>
+        </li>
+        {showBaseline && hasBaseline && (
+          <li className="flex items-center gap-2">
+            <svg aria-hidden="true" focusable="false" width="24" height="12" viewBox="0 0 24 12">
+              <path d="M0 6h24" stroke="#9ca3af" strokeWidth="2" strokeDasharray={isIndividualSimulation ? undefined : '5 5'} />
+            </svg>
+            <span>Baseline</span>
+          </li>
+        )}
+        {showObservations && observationData.length > 0 && (
+          <li className="flex items-center gap-2">
+            <span aria-hidden="true" className="h-3 w-3 rounded-full bg-red-500" />
+            <span>Observed data</span>
+          </li>
+        )}
+      </ul>
+      {description && (
+        <p id={descriptionId} className="mt-4 border-t border-slate-200 pt-3 text-sm leading-relaxed text-slate-600">
+          {description}
+        </p>
       )}
     </div>
   );

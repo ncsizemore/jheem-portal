@@ -29,6 +29,12 @@ function formatOptionLabel(value: string): string {
     .replace('And', '&');
 }
 
+const STATISTIC_LABELS: Record<string, string> = {
+  'mean.and.interval': 'Average (mean)',
+  'median.and.interval': 'Median',
+  'individual.simulation': 'Individual simulations',
+};
+
 const FACET_PAGE_SIZE = 9;
 
 export interface AnalysisResultsProps {
@@ -96,16 +102,38 @@ export default function AnalysisResults({
   const isFaceted = chartPanels.length > 1;
 
   const outcomeLabel = useMemo(() => {
-    return plotData?.metadata?.outcome_metadata?.display_name || selectedOutcome;
+    return selectedOutcome === 'incidence'
+      ? 'New HIV infections'
+      : plotData?.metadata?.outcome_metadata?.display_name || formatOptionLabel(selectedOutcome);
   }, [plotData, selectedOutcome]);
 
   const units = plotData?.metadata?.y_label || '';
   const displayAsPercent = plotData?.metadata?.outcome_metadata?.display_as_percent || false;
 
   const displayName = useCallback(
-    (outcome: string) => getOutcomeDisplayName?.(outcome) ?? formatOptionLabel(outcome),
+    (outcome: string) => outcome === 'incidence'
+      ? 'New HIV infections'
+      : getOutcomeDisplayName?.(outcome) ?? formatOptionLabel(outcome),
     [getOutcomeDisplayName]
   );
+
+  const statistic = plotData?.metadata.statistic ?? selectedStatistic;
+  const isIndividual = statistic === 'individual.simulation';
+  const hasIntervals = chartPanels.some(panel => panel.data.some(point =>
+    (point.lower != null && point.upper != null) ||
+    (point.baselineLower != null && point.baselineUpper != null)
+  ));
+  const summaryDescription = statistic === 'mean.and.interval'
+    ? 'Lines show the average (mean) across model simulations.'
+    : statistic === 'median.and.interval'
+      ? 'Lines show the median (middle estimate) across model simulations.'
+      : isIndividual ? 'Each line shows one model simulation.' : '';
+  const chartDescription = [
+    selectedOutcome === 'incidence' ? 'Incidence is the number of new HIV infections each year.' : '',
+    summaryDescription,
+    !isIndividual && hasIntervals && displayOptions.showConfidenceInterval
+      ? 'Shaded bands show the middle 95% of simulated estimates for each year.' : '',
+  ].filter(Boolean).join(' ');
 
   // Export handlers
   const handleExportCSV = useCallback(() => {
@@ -145,7 +173,7 @@ export default function AnalysisResults({
     <>
       {/* Controls bar */}
       <div className="flex flex-shrink-0 flex-col items-stretch gap-2 border-b border-slate-200 bg-slate-50 px-3 py-2 sm:px-4 xl:flex-row xl:items-end xl:justify-between">
-        <div className="grid min-w-0 grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] items-end gap-2 xl:flex xl:flex-wrap xl:gap-3">
+        <div className="grid min-w-0 grid-cols-2 items-end gap-2 xl:flex xl:flex-wrap xl:gap-3">
           {/* Outcome selector */}
           <div className="flex min-w-0 flex-col gap-0.5 xl:w-80">
             <label htmlFor={outcomeSelectId} className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
@@ -155,7 +183,7 @@ export default function AnalysisResults({
               id={outcomeSelectId}
               value={selectedOutcome}
               onChange={e => setSelectedOutcome(e.target.value)}
-              className="w-full min-w-0 border border-slate-300 rounded-md px-2 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full min-w-0 border border-slate-300 rounded-md px-2 py-1.5 text-sm bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               {availableOutcomes.map(o => (
                 <option key={o} value={o}>{displayName(o)}</option>
@@ -166,16 +194,16 @@ export default function AnalysisResults({
           {/* Statistic selector */}
           <div className="flex min-w-0 flex-col gap-0.5 xl:w-40">
             <label htmlFor={statisticSelectId} className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
-              Summary statistic
+              Summarize simulations
             </label>
             <select
               id={statisticSelectId}
               value={selectedStatistic}
               onChange={e => setSelectedStatistic(e.target.value)}
-              className="w-full min-w-0 border border-slate-300 rounded-md px-2 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full min-w-0 border border-slate-300 rounded-md px-2 py-1.5 text-sm bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               {availableStatistics.map(s => (
-                <option key={s} value={s}>{formatOptionLabel(s)}</option>
+                <option key={s} value={s}>{STATISTIC_LABELS[s] ?? formatOptionLabel(s)}</option>
               ))}
             </select>
           </div>
@@ -286,6 +314,7 @@ export default function AnalysisResults({
             {/* Display options */}
             <DisplayOptionsPopover
               options={displayOptions}
+              showIntervalControl={!isIndividual && hasIntervals}
               onChange={setDisplayOptions}
             />
           </div>
@@ -304,6 +333,12 @@ export default function AnalysisResults({
         ) : viewMode === 'table' ? (
           /* Table view */
           <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
+            <p className="border-b border-slate-200 px-4 py-3 text-sm leading-relaxed text-slate-600">
+              {units && <>Values in {units}. </>}
+              {statistic === 'mean.and.interval' && 'Values show the average (mean) across model simulations. '}
+              {statistic === 'median.and.interval' && 'Values show the median (middle estimate) across model simulations. '}
+              {hasIntervals && 'The 95% intervals show the middle 95% of simulated estimates for each year.'}
+            </p>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <caption className="sr-only">
@@ -314,9 +349,9 @@ export default function AnalysisResults({
                     {isFaceted && <th className="px-4 py-3 text-left font-medium text-slate-700">Group</th>}
                     <th className="px-4 py-3 text-left font-medium text-slate-700">Year</th>
                     <th className="px-4 py-3 text-right font-medium text-slate-700">{scenarioLabel || 'Intervention'}</th>
-                    <th className="px-4 py-3 text-right font-medium text-slate-700">95% CI</th>
+                    <th className="px-4 py-3 text-right font-medium text-slate-700">95% interval</th>
                     <th className="px-4 py-3 text-right font-medium text-slate-700">Baseline</th>
-                    <th className="px-4 py-3 text-right font-medium text-slate-700">95% CI</th>
+                    <th className="px-4 py-3 text-right font-medium text-slate-700">95% interval</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -368,6 +403,7 @@ export default function AnalysisResults({
             <NativeSimulationChart
               panel={chartPanels[0]}
               outcomeLabel={outcomeLabel}
+              description={chartDescription}
               units={units}
               displayAsPercent={displayAsPercent}
               options={displayOptions}
@@ -380,6 +416,7 @@ export default function AnalysisResults({
         ) : (
           /* Faceted grid */
           <div ref={chartContainerRef}>
+            <p className="mb-4 text-sm leading-relaxed text-slate-600">{chartDescription}</p>
             <div className="flex items-center justify-between mb-4">
               <p className="text-sm text-slate-500">
                 {chartPanels.length > FACET_PAGE_SIZE && !showAllFacets
