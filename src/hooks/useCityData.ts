@@ -7,13 +7,13 @@
  * Works for both city-level (MSA) and state-level data - just pass the appropriate dataUrl.
  */
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import type { PlotDataFile } from '@/types/native-plotting';
 
 export interface AggregatedLocationData {
   metadata: {
-    city: string;        // location code (e.g., "C.12580" or "AL")
-    city_label: string;  // display name (e.g., "Atlanta, GA" or "Alabama")
+    city: string; // location code (e.g., "C.12580" or "AL")
+    city_label: string; // display name (e.g., "Atlanta, GA" or "Alabama")
     scenarios: string[];
     outcomes: string[];
     statistics: string[];
@@ -65,7 +65,7 @@ interface UseLocationDataReturn {
     scenario: string,
     outcome: string,
     statistic: string,
-    facet: string
+    facet: string,
   ) => PlotDataFile | null;
   getAvailableOptions: () => {
     scenarios: string[];
@@ -80,7 +80,11 @@ interface UseLocationDataReturn {
 export type UseCityDataReturn = UseLocationDataReturn;
 
 // Cache for loaded location data (keyed by URL + code to support multiple models)
-const locationDataCache = new Map<string, AggregatedLocationData>();
+// Keep only the most recently used bundle; a single decoded city can exceed 200 MB.
+const locationDataCache = new Map<
+  string,
+  { data: AggregatedLocationData; expires: number }
+>();
 
 // Default CloudFront URL for production data
 const DEFAULT_DATA_URL =
@@ -92,91 +96,123 @@ const DEFAULT_DATA_URL =
  *
  * @param options.dataUrl - Base URL for data files (default: ryan-white MSA)
  */
-export function useLocationData(options: UseLocationDataOptions = {}): UseLocationDataReturn {
+export function useLocationData(
+  options: UseLocationDataOptions = {},
+): UseLocationDataReturn {
   const dataBaseUrl = options.dataUrl || DEFAULT_DATA_URL;
-  const [locationData, setLocationData] = useState<AggregatedLocationData | null>(null);
+  const [loaded, setLoaded] = useState<{
+    data: AggregatedLocationData;
+    baseUrl: string;
+  } | null>(null);
+  const locationData = loaded?.baseUrl === dataBaseUrl ? loaded.data : null;
+  const setLocationData = useCallback(
+    (data: AggregatedLocationData | null) => {
+      setLoaded(data ? { data, baseUrl: dataBaseUrl } : null);
+    },
+    [dataBaseUrl],
+  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const loadLocation = useCallback(async (code: string) => {
-    const baseUrl = dataBaseUrl;
-    const cacheKey = `${baseUrl}:${code}`;
+  const activeRequest = useRef<{ id: number; controller?: AbortController }>({
+    id: 0,
+  });
+  useEffect(
+    () => () => {
+      activeRequest.current.id++;
+      activeRequest.current.controller?.abort();
+    },
+    [],
+  );
 
-    // Check cache first
-    if (locationDataCache.has(cacheKey)) {
-      setLocationData(locationDataCache.get(cacheKey)!);
-      setError(null);
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      // Load from CloudFront (or local via env override)
-      const url = `${baseUrl}/${encodeURIComponent(code)}.json`;
-
+  const loadLocation = useCallback(
+    async (code: string) => {
+      activeRequest.current.controller?.abort();
+      const id = ++activeRequest.current.id;
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000);
-
-      const response = await fetch(url, {
-        signal: controller.signal,
-        headers: {
-          Accept: 'application/json',
-        },
-      });
-
-      clearTimeout(timeoutId);
-
-      if (!response.ok) {
-        if (response.status === 404) {
-          throw new Error(`Data not available for location ${code}`);
-        }
-        throw new Error(`Failed to load data: ${response.status}`);
+      activeRequest.current.controller = controller;
+      const current = () => activeRequest.current.id === id;
+      const cacheKey = `${dataBaseUrl}:${code}`;
+      const cached = locationDataCache.get(cacheKey);
+      setError(null);
+      if (cached && cached.expires > Date.now()) {
+        setLocationData(cached.data);
+        setLoading(false);
+        return;
       }
-
-      const data: AggregatedLocationData = await response.json();
-
-      // Validate structure
-      if (!data.metadata || !data.data) {
-        throw new Error('Invalid data structure');
-      }
-
-      // Cache the data
-      locationDataCache.set(cacheKey, data);
-      setLocationData(data);
-    } catch (err) {
-      if (err instanceof Error) {
-        if (err.name === 'AbortError') {
-          setError('Loading timed out. Please try again.');
-        } else {
-          setError(err.message);
-        }
-      } else {
-        setError('Failed to load data');
-      }
+      setLoading(true);
       setLocationData(null);
-    } finally {
-      setLoading(false);
-    }
-  }, [dataBaseUrl]);
+      const timeoutId = setTimeout(() => controller.abort(), 30_000);
+      try {
+        const response = await fetch(
+          `${dataBaseUrl}/${encodeURIComponent(code)}.json`,
+          {
+            signal: controller.signal,
+            headers: { Accept: 'application/json' },
+          },
+        );
+        if (!response.ok)
+          throw new Error(
+            response.status === 404
+              ? 'Results are not available for this location.'
+              : `Unable to load results (${response.status}).`,
+          );
+        const data: AggregatedLocationData = await response.json();
+        if (!current()) return;
+        if (controller.signal.aborted)
+          throw new DOMException('Timed out', 'AbortError');
+        if (
+          data?.metadata?.city !== code ||
+          !data.data ||
+          !Array.isArray(data.metadata.scenarios) ||
+          !Array.isArray(data.metadata.outcomes)
+        ) {
+          throw new Error(
+            'These results do not match the selected location. Please retry.',
+          );
+        }
+        locationDataCache.clear();
+        locationDataCache.set(cacheKey, {
+          data,
+          expires: Date.now() + 5 * 60_000,
+        });
+        setLocationData(data);
+      } catch (err) {
+        if (!current()) return;
+        setLocationData(null);
+        setError(
+          err instanceof Error && err.name === 'AbortError'
+            ? 'Loading took too long. Please retry.'
+            : err instanceof Error
+              ? err.message
+              : 'Unable to load results. Please retry.',
+        );
+      } finally {
+        clearTimeout(timeoutId);
+        if (current()) setLoading(false);
+      }
+    },
+    [dataBaseUrl, setLocationData],
+  );
 
   const getPlotData = useCallback(
     (
       scenario: string,
       outcome: string,
       statistic: string,
-      facet: string
+      facet: string,
     ): PlotDataFile | null => {
       if (!locationData) return null;
 
       try {
-        return locationData.data[scenario]?.[outcome]?.[statistic]?.[facet] || null;
+        return (
+          locationData.data[scenario]?.[outcome]?.[statistic]?.[facet] || null
+        );
       } catch {
         return null;
       }
     },
-    [locationData]
+    [locationData],
   );
 
   const getAvailableOptions = useCallback(() => {
@@ -223,7 +259,7 @@ export function useLocationData(options: UseLocationDataOptions = {}): UseLocati
       // Fallback to formatted name
       return formatOptionName(outcome);
     },
-    [locationData]
+    [locationData],
   );
 
   return {
@@ -243,7 +279,9 @@ export function useLocationData(options: UseLocationDataOptions = {}): UseLocati
  * Backward-compatible alias for useLocationData
  * @deprecated Use useLocationData instead
  */
-export function useCityData(options: UseLocationDataOptions = {}): UseLocationDataReturn {
+export function useCityData(
+  options: UseLocationDataOptions = {},
+): UseLocationDataReturn {
   return useLocationData(options);
 }
 
@@ -268,6 +306,6 @@ export function formatOptionName(name: string): string {
   return name
     .replace(/\./g, ' ')
     .split('_')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');
 }

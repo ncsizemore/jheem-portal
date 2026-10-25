@@ -8,6 +8,7 @@
  * Data fetched from CloudFront based on config.dataUrl.
  */
 
+import { useAnalysisQuery, updateAnalysisQuery } from '@/hooks/useAnalysisQuery';
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
@@ -94,10 +95,13 @@ export default function StateChoroplethExplorer({ config }: StateChoroplethExplo
   });
 
   // View mode: 'map' or 'analysis'
-  const [mode, setMode] = useState<'map' | 'analysis'>('map');
+  const analysisQuery = useAnalysisQuery();
+  const requestedLocation = analysisQuery.get('loc');
+  const selectedStateCode = requestedLocation && summaries?.states[requestedLocation] ? requestedLocation : null;
+  const mode = selectedStateCode ? 'analysis' : 'map';
 
   // Selected state for analysis mode
-  const [selectedStateCode, setSelectedStateCode] = useState<string | null>(null);
+
 
   // Derive available states from summaries
   const availableStates = useMemo(() => {
@@ -188,20 +192,19 @@ export default function StateChoroplethExplorer({ config }: StateChoroplethExplo
       const stateCode = STATE_NAME_TO_CODE[stateName];
       const stateData = getStateByName(stateName);
       if (stateData && stateCode) {
-        setSelectedStateCode(stateCode);
-        setMode('analysis');
+        updateAnalysisQuery({ loc: stateCode });
       }
     }
   }, [getStateByName]);
 
   // Return to map
   const handleBackToMap = useCallback(() => {
-    setMode('map');
+    updateAnalysisQuery({ loc: null });
   }, []);
 
   // Handle location change from AnalysisView
   const handleLocationChange = useCallback((code: string) => {
-    setSelectedStateCode(code);
+    updateAnalysisQuery({ loc: code });
   }, []);
 
   const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
@@ -378,8 +381,7 @@ export default function StateChoroplethExplorer({ config }: StateChoroplethExplo
         const handleCardClick = () => {
           const stateCode = STATE_NAME_TO_CODE[state.name];
           if (stateCode) {
-            setSelectedStateCode(stateCode);
-            setMode('analysis');
+            updateAnalysisQuery({ loc: stateCode });
           }
         };
 
@@ -561,8 +563,7 @@ export default function StateChoroplethExplorer({ config }: StateChoroplethExplo
               value=""
               onChange={(event) => {
                 if (!event.target.value) return;
-                setSelectedStateCode(event.target.value);
-                setMode('analysis');
+                updateAnalysisQuery({ loc: event.target.value });
               }}
               className="w-full rounded-md border border-slate-300 bg-white px-2.5 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >

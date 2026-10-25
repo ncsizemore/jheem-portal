@@ -255,10 +255,13 @@ function formatFacetLabel(value: string): string {
     'black': 'Black',
     'hispanic': 'Hispanic',
     'other': 'Other',
+    'IDU_in_remission': 'Former injection drug use',
+    'active_IDU': 'Current injection drug use',
+    'never_IDU': 'No injection drug use',
     // Age values are already formatted like "13-24 years"
   };
 
-  return labelMap[value] || value;
+  return value.split(' | ').map(part => labelMap[part] || part).join(' · ');
 }
 
 /**
@@ -320,5 +323,5 @@ export function getValueRange(
   const max = Math.max(...values);
   const padding = (max - min) * 0.1;
 
-  return [Math.max(0, min - padding), max + padding];
+  return [0, max > 0 ? max + padding : 1];
 }

@@ -187,6 +187,7 @@ export default function CustomSimulationExplorer({
     setSelectedOutcome,
     setSelectedStatistic,
     toggleFacetDimension,
+    facetChoices, setSelectedFacet, selectionNotice, availableOutcomes, availableStatistics,
   } = useAnalysisState({
     config,
     availableOptions,
@@ -502,14 +503,20 @@ export default function CustomSimulationExplorer({
               selectedFacet={selectedFacet}
               facetDimensions={facetDimensions}
               availableFacetDimensions={availableFacetDimensions}
-              availableOutcomes={availableOptions.outcomes}
-              availableStatistics={availableOptions.statistics}
+              availableOutcomes={availableOutcomes}
+              availableStatistics={availableStatistics}
               setSelectedOutcome={setSelectedOutcome}
               setSelectedStatistic={setSelectedStatistic}
               toggleFacetDimension={toggleFacetDimension}
-              interventionStartYear={config.interventionStartYear}
+              facetChoices={facetChoices}
+              setSelectedFacet={setSelectedFacet}
+              selectionNotice={selectionNotice}
+              modelName={config.name}
+              modelId={config.id}
+              scenarioDescription={`${scenarioDescription}.${timing ? ` Intervention begins in ${formatModelTime(timing.interventionStartTime)}; modeled suppression changes follow after ${formatLagYears(timing.lossLagYears)}.` : ''}`}
+              interventionStartYear={simData.metadata.custom_simulation?.intervention_start_time ?? config.customSimulation?.timing?.interventionStartTime ?? config.interventionStartYear}
               locationName={locationName}
-              scenarioLabel={activeScenario}
+              scenarioLabel="Custom scenario"
             />
           </div>
         )}

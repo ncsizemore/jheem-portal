@@ -11,7 +11,7 @@
     "start": "next start",
     "lint": "eslint . --max-warnings=0",
     "audit:production": "node scripts/audit-production-dependencies.mjs",
-    "test": "node --experimental-strip-types --test scripts/test-custom-simulation-url.mjs scripts/test-custom-simulation-control-plane.mjs scripts/test-production-audit-policy.mjs scripts/test-calibration-release-consumer.mjs && npm run test:contact",
+    "test": "node --experimental-strip-types --test scripts/test-custom-simulation-url.mjs scripts/test-custom-simulation-control-plane.mjs scripts/test-production-audit-policy.mjs scripts/test-calibration-release-consumer.mjs && npm run test:contact && npm run test:results",
     "test:browser": "playwright test",
     "test:custom-sim-url": "node --experimental-strip-types --test scripts/test-custom-simulation-url.mjs",
     "typecheck": "tsc --noEmit",
@@ -20,7 +20,8 @@
     "prepare:calibration": "node scripts/prepare-calibration-release.mjs",
     "sync-config": "tsx scripts/sync-config.ts",
     "verify-config": "tsx scripts/sync-config.ts --check",
-    "test:contact": "node --import tsx --test scripts/test-contact.mjs"
+    "test:contact": "node --import tsx --test scripts/test-contact.mjs",
+    "test:results": "node --import tsx --test scripts/test-analysis-results.mjs"
   },
   "dependencies": {
     "@upstash/redis": "^1.37.0",
