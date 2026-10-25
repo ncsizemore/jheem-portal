@@ -23,7 +23,7 @@ const citySummaries = {
   },
 };
 
-function plotData(scenario: string) {
+function plotData(scenario: string, statistic = 'mean.and.interval') {
   const displayScenario = scenario === 'cessation'
     ? 'Cessation'
     : scenario === 'brief_interruption'
@@ -57,7 +57,7 @@ function plotData(scenario: string) {
       city: 'C.12060',
       scenario,
       outcome: 'incidence',
-      statistic: 'mean.and.interval',
+      statistic,
       facet: 'none',
       y_label: 'infections',
       plot_title: 'Incidence',
@@ -79,14 +79,17 @@ const locationData = {
     city_label: 'Atlanta-Sandy Springs-Alpharetta, GA',
     scenarios: scenarioIds,
     outcomes: ['incidence'],
-    statistics: ['mean.and.interval'],
+    statistics: ['mean.and.interval', 'median.and.interval'],
     facets: ['none'],
     generation_time: '2026-09-30T00:00:00Z',
     file_count: scenarioIds.length,
   },
   data: Object.fromEntries(scenarioIds.map(scenario => [
     scenario,
-    { incidence: { 'mean.and.interval': { none: plotData(scenario) } } },
+    { incidence: {
+      'mean.and.interval': { none: plotData(scenario) },
+      'median.and.interval': { none: plotData(scenario, 'median.and.interval') },
+    } },
   ])),
 };
 
@@ -115,11 +118,11 @@ test('results use compact controls and one scrollable workspace', async ({ page 
   });
 
   await expect(
-    page.getByRole('heading', { name: 'Incidence — Atlanta-Sandy Springs-Alpharetta, GA — Cessation' }),
+    page.getByRole('heading', { name: 'New HIV infections — Atlanta-Sandy Springs-Alpharetta, GA — Cessation' }),
   ).toBeVisible({ timeout: 20_000 });
   await expect(page.getByRole('region', { name: 'Scenario' })).toBeVisible();
   await expect(page.getByLabel('Outcome', { exact: true })).toBeVisible();
-  await expect(page.getByLabel('Summary statistic', { exact: true })).toBeVisible();
+  await expect(page.getByLabel('Summarize simulations', { exact: true })).toBeVisible();
   await expect(page.getByRole('group', { name: 'Break down by' })).toBeVisible();
   await expect(page.getByText('View and export', { exact: true })).toBeVisible();
 
@@ -162,4 +165,75 @@ test('results use compact controls and one scrollable workspace', async ({ page 
   ]);
   expect(Math.abs(actionRowTops[0] - actionRowTops[1])).toBeLessThan(2);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBeTruthy();
+});
+
+
+test('chart explanations and accessible legend follow the displayed results', async ({ page }) => {
+  await page.emulateMedia({ colorScheme: 'dark' });
+  await deliverExplorerData(page);
+  await page.goto('/ryan-white/explorer');
+  await page.getByLabel('Choose a city', { exact: true }).selectOption('C.12060');
+
+  const summary = page.getByLabel('Summarize simulations', { exact: true });
+  await expect(summary).toHaveValue('mean.and.interval');
+  await expect(page.getByText('Shaded bands show the middle 95%', { exact: false })).toBeVisible();
+  const legend = page.getByRole('list', { name: 'Chart legend' });
+  await expect(legend.getByText('Cessation', { exact: true })).toBeVisible();
+  await expect(legend.getByText('Baseline', { exact: true })).toBeVisible();
+  await expect(legend.getByRole('img')).toHaveCount(0);
+  await expect(page.getByRole('img', { name: /legend icon/ })).toHaveCount(0);
+
+  await summary.selectOption('median.and.interval');
+  await expect(page.getByText('Lines show the median (middle estimate)', { exact: false })).toBeVisible();
+  await expect(page.getByText('Lines show the average (mean)', { exact: false })).toHaveCount(0);
+
+  // Operate the disclosure by keyboard and return focus when it closes.
+  const display = page.getByRole('button', { name: 'Display', exact: true });
+  await display.press('Enter');
+  await display.press('Tab');
+  const interval = page.getByRole('checkbox', { name: '95% uncertainty interval' });
+  await expect(interval).toBeFocused();
+  await interval.press('Space');
+  await page.getByRole('checkbox', { name: 'Baseline', exact: true }).uncheck();
+  await interval.press('Escape');
+  await expect(display).toBeFocused();
+  await expect(display).toHaveAttribute('aria-expanded', 'false');
+  await expect(legend.getByText('Baseline', { exact: true })).toHaveCount(0);
+  await expect(page.getByText('Shaded bands show', { exact: false })).toHaveCount(0);
+
+  // The panel stays within a narrow viewport even when actions wrap to two rows.
+  await page.setViewportSize({ width: 354, height: 844 });
+  await display.click();
+  const panel = page.getByRole('group', { name: 'Chart display options' });
+  const panelBounds = await panel.boundingBox();
+  expect(panelBounds).not.toBeNull();
+  expect(panelBounds!.x).toBeGreaterThanOrEqual(0);
+  expect(panelBounds!.x + panelBounds!.width).toBeLessThanOrEqual(354);
+  await interval.press('Escape');
+  // Explicit dark text must remain on the white controls under dark OS appearance.
+  for (const label of ['Outcome', 'Summarize simulations']) {
+    const colors = await page.getByLabel(label, { exact: true }).evaluate(element => {
+      const style = getComputedStyle(element);
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d')!;
+      context.fillStyle = style.color;
+      context.fillRect(0, 0, 1, 1);
+      return { rgb: Array.from(context.getImageData(0, 0, 1, 1).data).slice(0, 3), background: style.backgroundColor };
+    });
+    const channels = colors.rgb.map(value => {
+      const channel = value / 255;
+      return channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
+    });
+    const luminance = channels[0] * 0.2126 + channels[1] * 0.7152 + channels[2] * 0.0722;
+    expect(colors.background).toBe('rgb(255, 255, 255)');
+    expect(1.05 / (luminance + 0.05)).toBeGreaterThanOrEqual(4.5);
+  }
+
+  // Chart display choices must not discard the underlying table values/bounds.
+  await page.getByRole('button', { name: 'Table', exact: true }).click();
+  const table = page.getByRole('table');
+  await expect(table.getByRole('row')).toHaveCount(5);
+  await expect(table.getByRole('row').nth(1)).toHaveText('20241,000900 – 1,1001,000900 – 1,100');
+  await expect(table.getByRole('columnheader', { name: '95% interval', exact: true })).toHaveCount(2);
+  await expect(page.getByText('Values in infections.', { exact: false })).toBeVisible();
 });
