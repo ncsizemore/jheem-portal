@@ -1,4 +1,5 @@
-// City data extracted from JHEEM defaults.yaml with geographic coordinates
+// City codes and coordinates from JHEEM defaults.yaml.
+// Study location labels match the pinned Ryan White result manifests.
 // These are the 32 metropolitan areas that have simulation data
 
 export interface CityData {
@@ -13,12 +14,12 @@ export interface CityData {
 export const ALL_CITIES: CityData[] = [
   {
     code: "C.12060",
-    name: "Atlanta-Sandy Springs-Roswell, GA",
+    name: "Atlanta-Sandy Springs-Alpharetta, GA",
     coordinates: [-84.3880, 33.7490]
   },
   {
     code: "C.12420", 
-    name: "Austin-Round Rock, TX",
+    name: "Austin-Round Rock-Georgetown, TX",
     coordinates: [-97.7431, 30.2672]
   },
   {
@@ -98,7 +99,7 @@ export const ALL_CITIES: CityData[] = [
   },
   {
     code: "C.33100",
-    name: "Miami-Fort Lauderdale-West Palm Beach, FL",
+    name: "Miami-Fort Lauderdale-Pompano Beach, FL",
     coordinates: [-80.1918, 25.7617]
   },
   {
@@ -123,7 +124,7 @@ export const ALL_CITIES: CityData[] = [
   },
   {
     code: "C.38060", 
-    name: "Phoenix-Mesa-Scottsdale, AZ",
+    name: "Phoenix-Mesa-Chandler, AZ",
     coordinates: [-112.0740, 33.4484]
   },
   {
@@ -133,7 +134,7 @@ export const ALL_CITIES: CityData[] = [
   },
   {
     code: "C.40900",
-    name: "Sacramento-Roseville-Arden-Arcade, CA",
+    name: "Sacramento-Roseville-Folsom, CA",
     coordinates: [-121.4944, 38.5816]
   },
   {
@@ -143,12 +144,12 @@ export const ALL_CITIES: CityData[] = [
   },
   {
     code: "C.41740",
-    name: "San Diego-Carlsbad, CA",
+    name: "San Diego-Chula Vista-Carlsbad, CA",
     coordinates: [-117.1611, 32.7157]
   },
   {
     code: "C.41860",
-    name: "San Francisco-Oakland-Hayward, CA",
+    name: "San Francisco-Oakland-Berkeley, CA",
     coordinates: [-122.4194, 37.7749]
   },
   {

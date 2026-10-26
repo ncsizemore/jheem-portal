@@ -17,8 +17,9 @@ const MODEL_SECTIONS = [
   {
     root: '/ryan-white', label: 'Ryan White',
     links: [
-      { href: '/ryan-white/explorer', label: 'Prerun Explorer' },
-      { href: '/ryan-white/custom', label: 'Custom Simulations' },
+      { href: '/ryan-white', label: 'Study overview', shortLabel: 'Overview' },
+      { href: '/ryan-white/explorer', label: 'Explore results', shortLabel: 'Results' },
+      { href: '/ryan-white/custom', label: 'Custom scenarios' },
     ],
   },
   {
@@ -52,7 +53,7 @@ function NavigationForPath({ pathname }: { pathname: string }) {
   const [modelsOpen, setModelsOpen] = useState(false);
   const modelsButton = useRef<HTMLButtonElement>(null);
   const mobileButton = useRef<HTMLButtonElement>(null);
-  const isPublicPage = pathname === '/' || pathname === '/work-with-us';
+  const isPublicPage = pathname === '/' || pathname === '/work-with-us' || pathname === '/ryan-white';
   const section = MODEL_SECTIONS.find(({ root }) => matchesRoute(pathname, root))
     ?? (pathname === '/explore' ? MODEL_SECTIONS[0] : undefined);
   const activeModel = (href: string) => matchesRoute(pathname, href)
@@ -156,11 +157,27 @@ function NavigationForPath({ pathname }: { pathname: string }) {
 
       {section && (
         <nav aria-label={`${section.label} navigation`} className="border-b border-rule bg-paper">
-          <div className="site-container flex items-center gap-x-7 overflow-x-auto whitespace-nowrap py-2 text-sm">
-            <Link href={section.root} className="hidden py-2 font-medium text-hopkins-blue md:inline">{section.label}</Link>
-            {section.links.map((link) => (
-              <Link key={link.href} href={link.href} aria-current={matchesRoute(pathname, link.href) ? 'page' : undefined} className={`border-b py-2 hover:text-hopkins-blue ${matchesRoute(pathname, link.href) ? 'border-hopkins-blue text-hopkins-blue' : 'border-transparent text-muted'}`}>{link.label}</Link>
-            ))}
+          <div className="site-container flex items-center gap-x-4 overflow-x-auto whitespace-nowrap py-1 text-[0.8125rem] sm:gap-x-7 sm:py-2 sm:text-sm">
+            {!section.links.some(link => link.href === section.root) && <Link href={section.root} className="hidden py-2 font-medium text-hopkins-blue md:inline">{section.label}</Link>}
+            {section.links.map((link) => {
+              const isCurrent = link.href === section.root
+                ? pathname === link.href
+                : matchesRoute(pathname, link.href);
+              const shortLabel = 'shortLabel' in link ? link.shortLabel : undefined;
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  aria-label={link.label}
+                  aria-current={isCurrent ? 'page' : undefined}
+                  className={`inline-flex min-h-11 items-center border-b py-2 hover:text-hopkins-blue ${isCurrent ? 'border-hopkins-blue text-hopkins-blue' : 'border-transparent text-muted'}`}
+                >
+                  {shortLabel ? (
+                    <><span className="sm:hidden">{shortLabel}</span><span className="hidden sm:inline">{link.label}</span></>
+                  ) : link.label}
+                </Link>
+              );
+            })}
           </div>
         </nav>
       )}
