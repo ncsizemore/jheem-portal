@@ -5,13 +5,14 @@ import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import Map, { Marker } from 'react-map-gl/mapbox';
-import { CityData } from '@/data/cities';
+import { ALL_CITIES, CityData } from '@/data/cities';
 import { ryanWhiteConfig } from '@/config/model-configs';
 import AnalysisView from '@/components/AnalysisView';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
 // Use model config for this explorer instance
 const MODEL_CONFIG = ryanWhiteConfig;
+const STUDY_CITIES = ALL_CITIES.filter(city => MODEL_CONFIG.locations.includes(city.code));
 
 // City summary data types
 interface MetricValue {
@@ -120,13 +121,13 @@ export default function ExploreV2() {
     };
   }, []);
 
-  // Derive available cities from city summaries (data-driven, no hardcoding)
+  // A direct result link must not depend on the optional map-summary request.
+  // Coverage is defined by the same model configuration as the study overview.
   const availableCities: CityData[] = useMemo(() => {
-    if (!citySummaries?.cities) return [];
-    return Object.entries(citySummaries.cities).map(([code, summary]) => ({
-      code,
-      name: summary.name,
-      coordinates: summary.coordinates,
+    return STUDY_CITIES.map(city => ({
+      ...city,
+      name: citySummaries?.cities[city.code]?.name ?? city.name,
+      coordinates: citySummaries?.cities[city.code]?.coordinates ?? city.coordinates,
       availableScenarios: ALL_SCENARIOS,
     }));
   }, [citySummaries]);
@@ -264,7 +265,7 @@ export default function ExploreV2() {
             style={{ width: '100%', height: '100%' }}
             attributionControl={false}
           >
-            {availableCities.map(city => {
+            {availableCities.filter(city => citySummaries?.cities[city.code]).map(city => {
               const summary = citySummaries?.cities[city.code];
               const suppression = summary?.metrics.suppressionRate.value ?? 75;
               const prevalence = summary?.metrics.diagnosedPrevalence.value ?? 15000;
@@ -338,7 +339,7 @@ export default function ExploreV2() {
                 className="w-full px-4 py-3 flex items-center justify-between hover:bg-slate-50 transition-colors"
               >
                 <h1 className="text-slate-800 font-semibold text-sm">
-                  {MODEL_CONFIG.name}
+                  Explore Ryan White results
                 </h1>
                 <motion.div
                   animate={{ rotate: instructionsCollapsed ? 0 : 180 }}
@@ -363,8 +364,8 @@ export default function ExploreV2() {
               >
                 <div className="px-4 pb-4 border-t border-slate-100">
                   <p className="mt-3 text-sm leading-relaxed text-slate-600">
-                    {MODEL_CONFIG.description}. The pre-run scenarios estimate how changes in
-                    Ryan White services could affect future epidemiologic outcomes.
+                    Compare how interruptions to Ryan White services could affect HIV outcomes
+                    in {STUDY_CITIES.length} metropolitan areas through 2030.
                   </p>
                   <div className="mt-3 space-y-2.5">
                     <div className="flex items-start gap-2.5">
@@ -388,7 +389,7 @@ export default function ExploreV2() {
                         <span className="text-blue-600 text-xs font-medium">3</span>
                       </div>
                       <p className="text-slate-600 text-sm">
-                        <span className="text-slate-800 font-medium">Choose an outcome</span> and stratification in the results view
+                        <span className="text-slate-800 font-medium">Explore an outcome</span> for the whole population or a specific group
                       </p>
                     </div>
                   </div>

@@ -508,3 +508,112 @@ for (const [model, routePath] of [
     ).toBeVisible();
   });
 }
+
+for (const [scenario, label] of [
+  ["cessation", "Cessation"],
+  ["brief_interruption", "Brief Interruption"],
+  ["prolonged_interruption", "Prolonged Interruption"],
+]) {
+  test(`study overview opens the chosen area and ${scenario} even when map summaries fail`, async ({
+    page,
+  }, testInfo) => {
+    await setup(page);
+    await page.route(`${base}/city-summaries.json`, (route) =>
+      route.fulfill({ status: 503, body: "Unavailable" }),
+    );
+    await page.goto("/ryan-white");
+    if (scenario === "cessation")
+      await page.screenshot({
+        path: testInfo.outputPath("study-overview-desktop.png"),
+        fullPage: true,
+      });
+    await page
+      .getByLabel("Metropolitan area", { exact: true })
+      .selectOption("C.12580");
+    await page
+      .getByLabel("Service interruption", { exact: true })
+      .selectOption(scenario);
+    await page
+      .getByRole("button", { name: "View results", exact: true })
+      .click();
+    await expect(page).toHaveURL(
+      new RegExp(`loc=C.12580&scenario=${scenario}`),
+    );
+    await expect(page.getByTestId("analysis-chart-region")).toHaveAttribute(
+      "aria-busy",
+      "false",
+    );
+    await expect(
+      page.getByRole("button", { name: label, exact: true }),
+    ).toHaveAttribute("aria-pressed", "true");
+    await expect(page.getByRole("heading", { level: 1 })).toContainText(
+      "Baltimore",
+    );
+    await page
+      .getByRole("link", { name: "Study overview", exact: true })
+      .click();
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+      "What happens if Ryan White services stop?",
+    );
+  });
+}
+
+test("study overview supports narrow-screen selection, coverage and return navigation", async ({
+  page,
+}, testInfo) => {
+  await page.setViewportSize({ width: 320, height: 812 });
+  await setup(page);
+  await page.goto("/ryan-white");
+  await expect(
+    page
+      .getByRole("navigation", { name: "Ryan White navigation" })
+      .getByRole("link", { name: "Study overview" }),
+  ).toHaveAttribute("aria-current", "page");
+  await page.screenshot({
+    path: testInfo.outputPath("study-overview-mobile.png"),
+    fullPage: true,
+  });
+  expect(
+    await page
+      .getByRole("navigation", { name: "Ryan White navigation" })
+      .evaluate(
+        (nav) =>
+          nav.firstElementChild!.scrollWidth <=
+          nav.firstElementChild!.clientWidth,
+      ),
+  ).toBe(true);
+  await page.getByRole("button", { name: "View results", exact: true }).click();
+  await expect(page).toHaveURL(/\/ryan-white$/);
+  await expect(
+    page.getByLabel("Metropolitan area", { exact: true }),
+  ).toBeFocused();
+  await page.getByRole("link", { name: "Area not listed?" }).click();
+  await expect(
+    page.getByRole("link", {
+      name: "Explore state-level studies",
+      exact: false,
+    }),
+  ).toBeVisible();
+  await page
+    .getByText("View all 31 metropolitan areas", { exact: true })
+    .click();
+  await expect(page.locator("#coverage li")).toHaveCount(31);
+  await page
+    .getByRole("link", { name: "Baltimore-Columbia-Towson, MD", exact: true })
+    .click();
+  await expect(page.getByTestId("analysis-chart-region")).toHaveAttribute(
+    "aria-busy",
+    "false",
+  );
+  const nav = page.getByRole("navigation", { name: "Ryan White navigation" });
+  await expect(nav.getByRole("link", { name: "Study overview" })).toBeVisible();
+  await expect(
+    nav.getByRole("link", { name: "Explore results" }),
+  ).toHaveAttribute("aria-current", "page");
+  await nav.getByRole("link", { name: "Study overview" }).click();
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= window.innerWidth,
+    ),
+  ).toBe(true);
+});
