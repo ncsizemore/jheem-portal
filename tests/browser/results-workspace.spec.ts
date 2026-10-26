@@ -1,13 +1,19 @@
 import { expect, test, type Page, type Route } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
+import {
+  resultFixtures,
+  routeResultArtifacts,
+  resultBindings,
+  stateResultArtifacts,
+} from './result-data-fixtures';
 import type { AggregatedLocationData } from '../../src/hooks/useCityData';
 
 const base = 'https://d320iym4dtm9lj.cloudfront.net/ryan-white';
 let baltimore: AggregatedLocationData;
+let fixtures: Awaited<ReturnType<typeof resultFixtures>>;
 test.beforeAll(async () => {
-  baltimore = JSON.parse(
-    await readFile('tests/fixtures/baltimore-results.json', 'utf8'),
-  );
+  fixtures = await resultFixtures();
+  baltimore = fixtures.baltimore;
 });
 const summary = (name: string) => ({
   name,
@@ -34,18 +40,6 @@ const summary = (name: string) => ({
     headline: '100% higher incidence',
   },
 });
-function dataFor(code: string) {
-  // Second location is a test-only clone with a distinct value sentinel.
-  const data = structuredClone(baltimore);
-  data.metadata.city = code;
-  if (code !== 'C.12580')
-    data.data.cessation.incidence['mean.and.interval'].none.sim!.forEach(
-      (point) => {
-        point.value = 99999;
-      },
-    );
-  return data;
-}
 async function setup(page: Page) {
   await page.route(`${base}/city-summaries.json`, (route) =>
     route.fulfill({
@@ -58,18 +52,16 @@ async function setup(page: Page) {
       },
     }),
   );
-  await page.route(`${base}/C.*.json`, (route) =>
-    route.fulfill({
-      json: dataFor(
-        route.request().url().split('/').pop()!.replace('.json', ''),
-      ),
-    }),
-  );
+  await routeResultArtifacts(page, base, fixtures.artifacts);
 }
 async function open(page: Page, query = '') {
   await setup(page);
   await page.goto(`/ryan-white/explorer?loc=C.12580${query}`);
   await expect(page.getByLabel('Outcome', { exact: true })).toBeVisible();
+  await expect(page.getByTestId('analysis-chart-region')).toHaveAttribute(
+    'aria-busy',
+    'false',
+  );
 }
 async function adjust(page: Page) {
   await page.getByText('Adjust analysis', { exact: false }).click();
@@ -82,6 +74,10 @@ test('all fourteen outcomes have specific explanations and correctly labeled uni
   const texts = new Set<string>();
   for (const outcome of baltimore.metadata.outcomes) {
     await page.getByLabel('Outcome', { exact: true }).selectOption(outcome);
+    await expect(page.getByTestId('analysis-chart-region')).toHaveAttribute(
+      'aria-busy',
+      'false',
+    );
     const descriptionId = await page
       .getByLabel('Outcome', { exact: true })
       .getAttribute('aria-describedby');
@@ -98,7 +94,10 @@ test('all fourteen outcomes have specific explanations and correctly labeled uni
     ),
   ).toBeVisible();
   await expect(
-    page.getByRole('button', { name: 'Observed 2019: 68.3%. Source: cdc.hiv', exact: true }),
+    page.getByRole('button', {
+      name: 'Observed 2019: 68.3%. Source: cdc.hiv',
+      exact: true,
+    }),
   ).toBeVisible();
   await page.getByRole('button', { name: 'Table', exact: true }).click();
   await expect(
@@ -129,7 +128,7 @@ test('combined breakdowns, summary changes, direct links and history preserve th
     'median.and.interval',
   );
   await expect(page.getByLabel('Population breakdown')).toHaveValue('sex+risk');
-  await page.getByLabel('Outcome', { exact: true }).selectOption('suppression');
+  await page.getByLabel('Outcome', { exact: true }).selectOption('awareness');
   await expect(
     page.getByRole('status').filter({ hasText: 'breakdown is unavailable' }),
   ).toBeVisible();
@@ -238,9 +237,12 @@ test('a slow old location cannot replace a newer cached result', async ({
 }) => {
   await open(page);
   let pending: Route | undefined;
-  await page.route(`${base}/C.12060.json`, (route) => {
-    pending = route;
-  });
+  await page.route(
+    `${base}/${resultBindings['ryan-white'].locations['C.12060'].path}`,
+    (route) => {
+      pending = route;
+    },
+  );
   await page
     .getByRole('button', { name: /Baltimore-Columbia-Towson, MD/ })
     .click();
@@ -255,11 +257,22 @@ test('a slow old location cannot replace a newer cached result', async ({
   await page.getByRole('combobox', { name: 'Search cities' }).fill('Baltimore');
   await page.getByRole('combobox', { name: 'Search cities' }).press('Enter');
   await expect(page.getByLabel('Outcome', { exact: true })).toBeVisible();
-  await pending!.fulfill({ json: dataFor('C.12060') }).catch(() => {});
+  await pending!
+    .fulfill({ json: fixtures.cityManifests['C.12060'] })
+    .catch(() => {});
   await page.getByRole('button', { name: 'Table', exact: true }).click();
+  const expected = baltimore.data.cessation.incidence['mean.and.interval'].none
+    .sim!.find((point) => point.simset === 'Cessation' && point.year === 2030)!
+    .value.toLocaleString(undefined, { maximumFractionDigits: 1 });
   await expect(
-    page.getByRole('table', { name: /modeled results/ }),
-  ).not.toContainText('99,999');
+    page
+      .getByRole('row')
+      .filter({
+        has: page.getByRole('rowheader', { name: '2030', exact: true }),
+      })
+      .getByRole('cell')
+      .first(),
+  ).toHaveText(expected);
   await expect(
     page.getByRole('button', { name: /Baltimore-Columbia-Towson, MD/ }),
   ).toBeVisible();
@@ -269,14 +282,21 @@ test('mismatched data is rejected and an inline retry recovers', async ({
   page,
 }) => {
   await setup(page);
-  await page.route(`${base}/C.12580.json`, (route) =>
-    route.fulfill({ json: dataFor('C.12060') }),
+  const manifestUrl = `${base}/${resultBindings['ryan-white'].locations['C.12580'].path}`;
+  await page.route(manifestUrl, (route) =>
+    route.fulfill({
+      body: JSON.stringify(fixtures.cityManifests['C.12580']).replaceAll(
+        'C.12580',
+        'C.12060',
+      ),
+      contentType: 'application/json',
+    }),
   );
   await page.goto('/ryan-white/explorer?loc=C.12580');
   await expect(
     page.getByRole('alert').filter({ hasText: 'Failed to load data' }),
   ).toContainText('do not match');
-  await page.unroute(`${base}/C.12580.json`);
+  await page.unroute(manifestUrl);
   await page.getByRole('button', { name: 'Retry loading results' }).click();
   await expect(page.getByLabel('Outcome', { exact: true })).toBeVisible();
 });
@@ -291,8 +311,10 @@ test('state results restore their scenario timeline and selections', async ({
       json: { generated: '2026-03-02', states: { MD: summary('Maryland') } },
     }),
   );
-  await page.route(`${stateBase}/MD.json`, (route) =>
-    route.fulfill({ json: dataFor('MD') }),
+  await routeResultArtifacts(
+    page,
+    stateBase,
+    await stateResultArtifacts('ryan-white-state-croi', 'MD'),
   );
   await page.goto(
     '/ryan-white-state-level/explorer/croi?loc=MD&outcome=suppression&summary=median.and.interval',
@@ -342,3 +364,147 @@ test('cached custom results use the shared definitions without launching compute
     page.getByRole('table', { name: /Viral suppression/ }),
   ).toBeVisible();
 });
+
+test('initial analysis downloads only its small index and selected plot', async ({
+  page,
+}) => {
+  const received: string[] = [];
+  page.on('response', (response) => {
+    if (response.url().includes('/results-v1/') && response.ok())
+      received.push(response.url());
+  });
+  await open(page);
+  const manifest = fixtures.cityManifests['C.12580'];
+  const ref = manifest.data.cessation.incidence['mean.and.interval'].none;
+  expect(new Set(received)).toEqual(
+    new Set([
+      `${base}/${resultBindings['ryan-white'].locations['C.12580'].path}`,
+      `${base}/${ref.path}`,
+    ]),
+  );
+  expect(
+    resultBindings['ryan-white'].locations['C.12580'].bytes + ref.bytes,
+  ).toBeLessThan(250_000);
+  const count = received.length;
+  await page.getByRole('button', { name: 'Table', exact: true }).click();
+  await expect(
+    page.getByRole('table', { name: /modeled results/ }),
+  ).toBeVisible();
+  expect(received).toHaveLength(count);
+  await page.getByLabel('Outcome', { exact: true }).selectOption('suppression');
+  await expect(
+    page.getByRole('table', { name: /Viral suppression/ }),
+  ).toBeVisible();
+  expect(received.at(-1)).toBe(
+    `${base}/${manifest.data.cessation.suppression['mean.and.interval'].none.path}`,
+  );
+  expect(received).toHaveLength(count + 1);
+});
+
+test('a late plot cannot overwrite a newer selection and controls remain usable', async ({
+  page,
+}) => {
+  await open(page);
+  const ref =
+    fixtures.cityManifests['C.12580'].data.cessation.suppression[
+      'mean.and.interval'
+    ].none;
+  let pending: Route | undefined;
+  await page.route(`${base}/${ref.path}`, (route) => {
+    pending = route;
+  });
+  await page.getByLabel('Outcome', { exact: true }).selectOption('suppression');
+  await expect(page.getByText('Loading selected result…')).toBeVisible();
+  await expect(
+    page.getByRole('button', { name: 'PNG', exact: true }),
+  ).toBeDisabled();
+  await page.getByLabel('Outcome', { exact: true }).selectOption('incidence');
+  await expect(page.getByTestId('analysis-chart-region')).toHaveAttribute(
+    'aria-busy',
+    'false',
+  );
+  await pending!
+    .fulfill({
+      body: fixtures.artifacts.get(ref.path),
+      contentType: 'application/json',
+    })
+    .catch(() => {});
+  await page.getByRole('button', { name: 'Table', exact: true }).click();
+  await expect(
+    page.getByRole('table', { name: /New HIV infections/ }),
+  ).toBeVisible();
+  await expect(
+    page.getByText('Values in infections.', { exact: false }),
+  ).toBeVisible();
+});
+
+test('a failed plot can be retried without reloading the index or losing selections', async ({
+  page,
+}) => {
+  await setup(page);
+  const ref =
+    fixtures.cityManifests['C.12580'].data.cessation.suppression[
+      'median.and.interval'
+    ].none;
+  let attempts = 0;
+  await page.route(`${base}/${ref.path}`, (route) => {
+    attempts++;
+    return attempts === 1 ? route.fulfill({ status: 503 }) : route.fallback();
+  });
+  await page.goto(
+    '/ryan-white/explorer?loc=C.12580&outcome=suppression&summary=median.and.interval',
+  );
+  await expect(
+    page.getByTestId('analysis-chart-region').getByRole('alert'),
+  ).toContainText('could not be loaded');
+  await expect(page.getByLabel('Outcome', { exact: true })).toHaveValue(
+    'suppression',
+  );
+  await page
+    .getByRole('button', { name: 'Retry loading result', exact: true })
+    .click();
+  await expect(page.getByTestId('analysis-chart-region')).toHaveAttribute(
+    'aria-busy',
+    'false',
+  );
+  await expect(
+    page.getByRole('button', { name: 'PNG', exact: true }),
+  ).toBeEnabled();
+  await adjust(page);
+  await expect(page.getByLabel('Summarize simulations')).toHaveValue(
+    'median.and.interval',
+  );
+  expect(attempts).toBe(2);
+});
+
+for (const [model, routePath] of [
+  ['ryan-white-state-ajph', '/ryan-white-state-level/explorer/ajph'],
+  ['cdc-testing', '/cdc-testing/explorer'],
+]) {
+  test(`${model} loads its own verified index and default plot`, async ({
+    page,
+  }) => {
+    const baseUrl = resultBindings[model].baseUrl;
+    await page.route(`${baseUrl}/state-summaries.json`, (route) =>
+      route.fulfill({
+        json: { generated: '2026-03-02', states: { AL: summary('Alabama') } },
+      }),
+    );
+    await routeResultArtifacts(
+      page,
+      baseUrl,
+      await stateResultArtifacts(model, 'AL'),
+    );
+    await page.goto(`${routePath}?loc=AL`);
+    await expect(
+      page.getByRole('button', { name: 'PNG', exact: true }),
+    ).toBeEnabled();
+    await expect(page.getByLabel('Outcome', { exact: true })).toHaveValue(
+      'incidence',
+    );
+    await page.getByRole('button', { name: 'Table', exact: true }).click();
+    await expect(
+      page.getByRole('table', { name: /New HIV infections/ }),
+    ).toBeVisible();
+  });
+}

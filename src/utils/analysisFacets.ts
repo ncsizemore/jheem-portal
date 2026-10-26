@@ -1,4 +1,5 @@
 import type { PlotDataFile } from '@/types/native-plotting';
+import type { ResultPlotRef } from '@/types/result-data';
 
 export const DIMENSIONS = ['age', 'race', 'sex', 'risk'] as const;
 export type Dimension = (typeof DIMENSIONS)[number];
@@ -25,7 +26,9 @@ export function facetLabel(key: string): string {
 
 // A file name is not sufficient evidence of its dimensions. Some legacy files
 // requested several dimensions but contain only age (or an aggregate baseline).
-export function getFacetChoices(plots: Record<string, PlotDataFile> = {}) {
+export function getFacetChoices(
+  plots: Record<string, PlotDataFile | ResultPlotRef> = {},
+) {
   const choices = new Map<string, { key: string; label: string }>();
   for (const [key, plot] of Object.entries(plots)) {
     if (
@@ -36,13 +39,15 @@ export function getFacetChoices(plots: Record<string, PlotDataFile> = {}) {
     const canonical = canonicalFacet(key);
     const count = canonical === 'none' ? 0 : canonical.split('+').length;
     if (
-      !plot.sim?.length ||
-      !plot.sim.every((point) =>
-        Array.from(
-          { length: count },
-          (_, i) => point[`facet.by${i + 1}` as 'facet.by1'],
-        ).every(Boolean),
-      )
+      'selectable' in plot
+        ? !plot.selectable
+        : !plot.sim?.length ||
+          !plot.sim.every((point) =>
+            Array.from(
+              { length: count },
+              (_, i) => point[`facet.by${i + 1}` as 'facet.by1'],
+            ).every(Boolean),
+          )
     )
       continue;
     if (!choices.has(canonical))

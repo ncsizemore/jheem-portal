@@ -28,6 +28,9 @@ import { facetLabel } from '@/utils/analysisFacets';
 import { describeScenarioTimeline } from '@/utils/modelTimeline';
 
 export interface AnalysisResultsProps {
+  loading?: boolean;
+  loadError?: string;
+  onRetry?: () => void;
   // Data
   chartPanels: FacetPanel[];
   plotData: PlotDataFile | null;
@@ -65,6 +68,9 @@ export interface AnalysisResultsProps {
 }
 
 export default function AnalysisResults({
+  loading = false,
+  loadError,
+  onRetry,
   chartPanels,
   plotData,
   selectedOutcome,
@@ -406,10 +412,25 @@ export default function AnalysisResults({
         data-testid="analysis-chart-region"
         role="region"
         aria-label={`${definition.label} results`}
+        aria-busy={loading}
         aria-describedby={`${id}-definition`}
         className="mt-4"
       >
-        {!chartPanels.length ? (
+        {loading ? (
+          <p role="status" className="py-12 text-muted">
+            Loading selected result…
+          </p>
+        ) : loadError ? (
+          <div role="alert" className="py-12 text-muted">
+            <p>{loadError}</p>
+            <button
+              className={`${action} mt-3 border border-rule`}
+              onClick={onRetry}
+            >
+              Retry loading result
+            </button>
+          </div>
+        ) : !chartPanels.length ? (
           <p role="status" className="py-12 text-muted">
             No results are available for this selection.
           </p>
@@ -546,7 +567,9 @@ export default function AnalysisResults({
                     day: 'numeric',
                     timeZone: 'UTC',
                   })
-                : 'not recorded in this release'}
+                : loading
+                  ? 'loading…'
+                  : 'unavailable'}
               .
             </p>
             <p>
@@ -557,7 +580,9 @@ export default function AnalysisResults({
           </div>
         </details>
       </div>
-      <ObservationsTable key={selection} panels={chartPanels} units={units} />
+      {plotData && (
+        <ObservationsTable key={selection} panels={chartPanels} units={units} />
+      )}
     </div>
   );
 }

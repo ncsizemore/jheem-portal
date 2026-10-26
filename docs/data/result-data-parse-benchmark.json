@@ -1,0 +1,5 @@
+{
+  "environment": "Local Node v22.22.3; three runs; median JSON.parse time only; not a browser or network benchmark",
+  "old_parse_ms": 1180.9015080000001,
+  "index_and_plot_parse_ms": 0.48551999999972395
+}
