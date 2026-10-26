@@ -13,15 +13,19 @@
  * Used by both MSA (city) and state-level explorers.
  */
 
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { useLocationData } from '@/hooks/useCityData';
-import { useAnalysisState } from '@/hooks/useAnalysisState';
+import { useResultManifest, useResultPlot } from '@/hooks/useResultData';
+import { resultDataReleases } from '@/config/result-data-releases';
+import {
+  useAnalysisState,
+  type AvailableOptions,
+} from '@/hooks/useAnalysisState';
 import AnalysisResults from '@/components/analysis/AnalysisResults';
 import LocationSwitcher from '@/components/analysis/LocationSwitcher';
 import { transformPlotData } from '@/utils/transformPlotData';
 import type { ModelConfig } from '@/config/model-configs';
-import type { PlotDataFile, FacetPanel } from '@/types/native-plotting';
+import type { FacetPanel } from '@/types/native-plotting';
 
 export interface Location {
   code: string;
@@ -43,31 +47,15 @@ export default function AnalysisView({
   onLocationChange,
   onBackToMap,
 }: AnalysisViewProps) {
-  // Data loading
-  const {
-    locationData: loadedData,
-    loading: requestLoading,
-    error,
-    loadLocation,
-    getPlotData,
-    getAvailableOptions,
-    getOutcomeDisplayName,
-  } = useLocationData({ dataUrl: config.dataUrl });
-
-  // Get available options for state management
-  const locationData =
-    loadedData?.metadata.city === locationCode ? loadedData : null;
-  const loading = requestLoading || (!error && !locationData);
-  const availableOptions = locationData
-    ? getAvailableOptions()
-    : { scenarios: [], outcomes: [], statistics: [], facets: [] };
-
-  // Extract first scenario's data for per-outcome facet availability
-  const scenarioData = useMemo(() => {
-    if (!locationData?.data) return null;
-    const scenarios = Object.keys(locationData.data);
-    return scenarios.length > 0 ? locationData.data[scenarios[0]] : null;
-  }, [locationData]);
+  const binding = resultDataReleases[config.id];
+  const manifestResult = useResultManifest(binding, config.id, locationCode);
+  const manifest = manifestResult.manifest;
+  const availableOptions: AvailableOptions = manifest?.metadata ?? {
+    scenarios: [],
+    outcomes: [],
+    statistics: [],
+    facets: [],
+  };
 
   // Selection state (extracted hook)
   const {
@@ -89,17 +77,25 @@ export default function AnalysisView({
   } = useAnalysisState({
     config,
     availableOptions,
-    isDataLoaded: !!locationData,
-    scenarioData,
-    allScenarioData: locationData?.data,
+    isDataLoaded: !!manifest,
+    catalog: manifest?.data,
   });
 
-  // Load location data when locationCode changes
-  useEffect(() => {
-    if (locationCode) {
-      loadLocation(locationCode);
-    }
-  }, [locationCode, loadLocation]);
+  const plotResult = useResultPlot(binding, manifest, {
+    scenario: selectedScenario,
+    outcome: selectedOutcome,
+    statistic: selectedStatistic,
+    facet: selectedFacet,
+  });
+  const plotData = plotResult.plot;
+  const error = manifestResult.error;
+  const loading = !error && manifestResult.loading;
+  const retry = () => {
+    manifestResult.retry();
+    plotResult.retry();
+  };
+  const getOutcomeDisplayName = (outcome: string) =>
+    manifest?.outcome_labels[outcome] || outcome;
 
   // Get current location info
   const currentLocation = useMemo(() => {
@@ -116,32 +112,6 @@ export default function AnalysisView({
   const scenarioLabels = useMemo(() => {
     return Object.fromEntries(config.scenarios.map((s) => [s.id, s.label]));
   }, [config.scenarios]);
-
-  // Get plot data
-  const plotData: PlotDataFile | null = useMemo(() => {
-    if (
-      locationData &&
-      selectedScenario &&
-      selectedOutcome &&
-      selectedStatistic &&
-      selectedFacet
-    ) {
-      return getPlotData(
-        selectedScenario,
-        selectedOutcome,
-        selectedStatistic,
-        selectedFacet,
-      );
-    }
-    return null;
-  }, [
-    locationData,
-    selectedScenario,
-    selectedOutcome,
-    selectedStatistic,
-    selectedFacet,
-    getPlotData,
-  ]);
 
   // Transform plot data for charts
   const chartPanels: FacetPanel[] = useMemo(() => {
@@ -316,7 +286,7 @@ export default function AnalysisView({
             </h3>
             <p className="text-slate-500 text-sm">{error}</p>
             <button
-              onClick={() => loadLocation(locationCode)}
+              onClick={retry}
               className="mt-4 rounded border border-rule px-4 py-2 text-ink"
             >
               Retry loading results
@@ -325,6 +295,9 @@ export default function AnalysisView({
         </div>
       ) : (
         <AnalysisResults
+          loading={plotResult.loading}
+          loadError={plotResult.error}
+          onRetry={plotResult.retry}
           chartPanels={chartPanels}
           plotData={plotData}
           selectedOutcome={selectedOutcome}

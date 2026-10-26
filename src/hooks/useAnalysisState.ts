@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { ModelConfig } from '@/config/model-configs';
 import type { AggregatedLocationData } from './useCityData';
+import type { ResultCatalog } from '@/types/result-data';
 import {
   canonicalFacet,
   DIMENSIONS,
@@ -23,6 +24,7 @@ export interface UseAnalysisStateOptions {
   isDataLoaded: boolean;
   scenarioData?: AggregatedLocationData['data'][string] | null;
   allScenarioData?: AggregatedLocationData['data'] | null;
+  catalog?: ResultCatalog | null;
 }
 const EMPTY: FacetDimensionState = {
   age: false,
@@ -48,17 +50,19 @@ export function useAnalysisState({
   isDataLoaded,
   scenarioData,
   allScenarioData,
+  catalog,
 }: UseAnalysisStateOptions) {
   const query = useAnalysisQuery();
+  const selectionData = catalog ?? allScenarioData;
   // Explicit changes retain compatible choices. Invalid URL values never enter a data lookup.
   const [notice, setNotice] = useState('');
   const selectedScenario = choose(
     query.get('scenario'),
     config.scenarios[0]?.id ?? '',
-    allScenarioData ? Object.keys(allScenarioData) : availableOptions.scenarios,
+    selectionData ? Object.keys(selectionData) : availableOptions.scenarios,
   );
-  const currentScenario = allScenarioData
-    ? allScenarioData[selectedScenario]
+  const currentScenario = selectionData
+    ? selectionData[selectedScenario]
     : scenarioData;
   const outcomes = currentScenario
     ? Object.keys(currentScenario)
@@ -106,7 +110,7 @@ export function useAnalysisState({
     const scenario = key === 'scenario' ? value : selectedScenario;
     const outcome = key === 'outcome' ? value : selectedOutcome;
     const summary = key === 'summary' ? value : selectedStatistic;
-    const nextData = allScenarioData?.[scenario] ?? scenarioData;
+    const nextData = selectionData?.[scenario] ?? scenarioData;
     const nextOutcome = choose(
       outcome,
       config.defaults.outcome,
