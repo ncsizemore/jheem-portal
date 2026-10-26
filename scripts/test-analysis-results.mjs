@@ -6,7 +6,7 @@ import {
   getFacetChoices,
   resolveFacet,
 } from '../src/utils/analysisFacets.ts';
-import { transformPlotData } from '../src/utils/transformPlotData.ts';
+import { transformPlotData, getValueRange } from '../src/utils/transformPlotData.ts';
 import { buildResultsCsv } from '../src/utils/exportCsv.ts';
 import { OUTCOME_DEFINITIONS } from '../src/utils/outcomeDefinitions.ts';
 const release = JSON.parse(
@@ -101,4 +101,13 @@ test('CSV includes observations and individual simulations, preserving quotes an
     context,
   );
   assert.ok(individual.includes('All,2030,Cessation,42,123'));
+});
+test('percentage scales use 0–100 while retaining values above 100', () => {
+  assert.deepEqual(
+    getValueRange([{ year: 2030, value: 80, upper: 95 }], [], false, true, undefined, true),
+    [0, 100]
+  );
+  assert.ok(
+    getValueRange([{ year: 2030, value: 120, upper: 135 }], [], false, true, undefined, true)[1] >= 135
+  );
 });

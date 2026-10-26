@@ -243,6 +243,7 @@ const NativeSimulationChart = memo(
           showBaseline,
           showConfidenceInterval,
           individualSimulations,
+          displayAsPercent,
         )
       );
     }, [
@@ -253,6 +254,7 @@ const NativeSimulationChart = memo(
       individualSimulations,
       showObservations,
       sharedDomain,
+      displayAsPercent,
     ]);
 
     // Transform data for CI band rendering

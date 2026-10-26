@@ -150,10 +150,11 @@ export default function AnalysisResults({
         options.showBaseline,
         options.showConfidenceInterval,
         p.individualSimulations,
+        plotData?.metadata.outcome_metadata?.display_as_percent,
       ),
     );
     return [0, Math.max(...ranges.map((range) => range[1]))];
-  }, [chartPanels, faceted, separateScales, options]);
+  }, [chartPanels, faceted, separateScales, options, plotData]);
   const groups = [
     'HIV outcomes',
     'Prevention and testing',

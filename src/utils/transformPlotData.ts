@@ -282,7 +282,8 @@ export function getValueRange(
   observations: ChartObservation[],
   includeBaseline: boolean,
   includeCI: boolean,
-  individualSimulations?: SimulationLine[]
+  individualSimulations?: SimulationLine[],
+  displayAsPercent = false
 ): [number, number] {
   const values: number[] = [];
 
@@ -323,5 +324,7 @@ export function getValueRange(
   const max = Math.max(...values);
   const padding = (max - min) * 0.1;
 
-  return [0, max > 0 ? max + padding : 1];
+  // Use the familiar percentage range when it contains every visible value.
+  // Ratios or observations above 100 remain visible rather than being clipped.
+  return [0, displayAsPercent && max <= 100 ? 100 : max > 0 ? max + padding : 1];
 }

@@ -9,7 +9,7 @@ Implements the focused page specification in `2026-10-25-chart-workspace-review.
 - Breakdown resolution is independent of storage-key order. Payloads whose advertised dimensions are missing from their rows are excluded from the selector. A direct combination selector avoids inaccessible intermediate combinations.
 - Requests cancel/supersede older loads, verify location identity, isolate model data URLs, and retain only the last location for five minutes. Loading/errors are announced and retryable.
 - Numeric time axis with sensible year ticks. Service stop/resumption markers and figure/export prose use the same scenario metadata. Annual summaries remain unchanged; cross-outcome line morphing is disabled.
-- Shared vertical scales by default, explicit separate-scale option, short panel headings, six-panel pagination, and one shared legend. Hidden observations no longer influence chart scale.
+- Shared vertical scales by default, explicit separate-scale option, short panel headings, six-panel pagination, and one shared legend. Hidden observations no longer influence chart scale. Percentage axes use 0–100 when all visible values fit, while preserving ratios or observations above 100.
 - PNG is composed from chart SVG with outcome/context/timeline/source information and explicit panel scope. Uses the existing image CSP without widening it. CSV includes all groups, bounds, units, release generation time, source URL, and observed values/sources. Individual simulation CSV/table rows are supported.
 - Accessible observed-value inspection and a paginated source table. Results tables retain year context while horizontally scrolling, identify each scenario's interval columns, and render at most 50 rows per page. Location search supports arrow/Enter/Escape navigation and focus restoration.
 - Shared state and cached custom-simulation consumers exercised alongside the MSA explorer. No custom compute is launched by result inspection.
@@ -23,7 +23,7 @@ Suppression explicitly refers to diagnosed HIV. PrEP uptake is a count of people
 ## Verification
 
 - Production build, lint, typecheck, pinned configuration verification, and production dependency audit.
-- Existing non-browser suite plus three result regressions: all released outcomes retain their original point estimates/bounds; facet aliases/malformed dimensional payloads; CSV observations, quoting, and individual simulations.
+- Existing non-browser suite plus four result regressions (47 tests total): all released outcomes retain their original point estimates/bounds; facet aliases/malformed dimensional payloads; CSV observations, quoting, and individual simulations; percentage-axis ranges.
 - Nineteen browser journeys, including all outcomes, URL/history, subgroup scales/pagination, actual PNG/CSV downloads, keyboard/mobile, late requests/cache hits, location-identity rejection/retry, CROI state timelines, and cached custom results.
 - Desktop/mobile visual inspection and inspection of an actual downloaded PNG. Temporary local preview route and framework-generated AGENTS file removed before the production build.
 
