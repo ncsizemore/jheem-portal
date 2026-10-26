@@ -1,41 +1,31 @@
 'use client';
-
-/**
- * AnalysisResults - Shared controls + chart/table rendering
- *
- * Extracted from AnalysisView to be reused by both the prerun explorer
- * and the custom simulation page. Provides:
- *   - Outcome/statistic selectors
- *   - Facet dimension toggles
- *   - Chart/table view mode toggle
- *   - CSV and PNG export
- *   - Display options (CI, baseline, observations)
- *   - Single chart, faceted grid, and table rendering
- */
-
-import { useState, useCallback, useRef, useId, useMemo } from 'react';
+import { useState, useRef, useId, useMemo } from 'react';
+import type { ScenarioConfig } from '@/config/model-configs';
+import type {
+  PlotDataFile,
+  FacetPanel,
+  ChartDisplayOptions,
+} from '@/types/native-plotting';
+import type {
+  FacetDimension,
+  FacetDimensionState,
+} from '@/hooks/useAnalysisState';
 import NativeSimulationChart from '@/components/NativeSimulationChart';
-import DisplayOptionsPopover from '@/components/analysis/DisplayOptionsPopover';
+import ChartLegend from './ChartLegend';
+import ResultsTable, { ObservationsTable } from './ResultsTable';
+import DisplayOptionsPopover from './DisplayOptionsPopover';
 import { exportToCsv } from '@/utils/exportCsv';
 import { exportToPng } from '@/utils/exportPng';
-import type { PlotDataFile, FacetPanel, ChartDisplayOptions } from '@/types/native-plotting';
-import type { FacetDimension, FacetDimensionState } from '@/hooks/useAnalysisState';
-
-function formatOptionLabel(value: string): string {
-  return value
-    .replace(/\./g, ' ')
-    .replace(/_/g, ' ')
-    .replace(/\b\w/g, c => c.toUpperCase())
-    .replace('And', '&');
-}
-
-const STATISTIC_LABELS: Record<string, string> = {
-  'mean.and.interval': 'Average (mean)',
-  'median.and.interval': 'Median',
-  'individual.simulation': 'Individual simulations',
-};
-
-const FACET_PAGE_SIZE = 9;
+import type { AnalysisExportContext } from '@/utils/analysisExport';
+import {
+  getOutcomeDefinition,
+  OUTCOME_DEFINITIONS,
+  SUMMARY_LABELS,
+  summaryDescription,
+} from '@/utils/outcomeDefinitions';
+import { getValueRange } from '@/utils/transformPlotData';
+import { facetLabel } from '@/utils/analysisFacets';
+import { describeScenarioTimeline } from '@/utils/modelTimeline';
 
 export interface AnalysisResultsProps {
   // Data
@@ -58,6 +48,13 @@ export interface AnalysisResultsProps {
   setSelectedStatistic: (statistic: string) => void;
   toggleFacetDimension: (dim: FacetDimension) => void;
 
+  facetChoices?: { key: string; label: string }[];
+  setSelectedFacet?: (key: string) => void;
+  selectionNotice?: string;
+  modelName?: string;
+  modelId?: string;
+  timeline?: ScenarioConfig['timeline'];
+  scenarioDescription?: string;
   // Display context
   interventionStartYear?: number;
   locationName?: string;
@@ -81,405 +78,486 @@ export default function AnalysisResults({
   setSelectedStatistic,
   toggleFacetDimension,
   interventionStartYear,
-  locationName,
-  scenarioLabel,
+  locationName = '',
+  scenarioLabel = 'Scenario',
   getOutcomeDisplayName,
+  facetChoices,
+  setSelectedFacet,
+  selectionNotice,
+  modelName = 'JHEEM',
+  timeline,
+  scenarioDescription = '',
 }: AnalysisResultsProps) {
-  const [showAllFacets, setShowAllFacets] = useState(false);
-  const [viewMode, setViewMode] = useState<'chart' | 'table'>('chart');
-  const [exportingPng, setExportingPng] = useState(false);
-  const chartContainerRef = useRef<HTMLDivElement>(null);
-  const outcomeSelectId = useId();
-  const statisticSelectId = useId();
-  const breakdownLabelId = useId();
-
-  const [displayOptions, setDisplayOptions] = useState<ChartDisplayOptions>({
+  const [view, setView] = useState<'chart' | 'table'>('chart');
+  const [separateScales, setSeparateScales] = useState(false);
+  const [options, setOptions] = useState<ChartDisplayOptions>({
     showConfidenceInterval: true,
     showBaseline: true,
     showObservations: true,
   });
-
-  const isFaceted = chartPanels.length > 1;
-
-  const outcomeLabel = useMemo(() => {
-    return selectedOutcome === 'incidence'
-      ? 'New HIV infections'
-      : plotData?.metadata?.outcome_metadata?.display_name || formatOptionLabel(selectedOutcome);
-  }, [plotData, selectedOutcome]);
-
-  const units = plotData?.metadata?.y_label || '';
-  const displayAsPercent = plotData?.metadata?.outcome_metadata?.display_as_percent || false;
-
-  const displayName = useCallback(
-    (outcome: string) => outcome === 'incidence'
-      ? 'New HIV infections'
-      : getOutcomeDisplayName?.(outcome) ?? formatOptionLabel(outcome),
-    [getOutcomeDisplayName]
+  const [exporting, setExporting] = useState(false);
+  const [message, setMessage] = useState('');
+  const [pagination, setPagination] = useState({ selection: '', page: 0 });
+  const figureRef = useRef<HTMLDivElement>(null);
+  const id = useId();
+  const definition = getOutcomeDefinition(
+    selectedOutcome,
+    plotData?.metadata.outcome_metadata?.display_name,
   );
-
-  const statistic = plotData?.metadata.statistic ?? selectedStatistic;
-  const isIndividual = statistic === 'individual.simulation';
-  const hasIntervals = chartPanels.some(panel => panel.data.some(point =>
-    (point.lower != null && point.upper != null) ||
-    (point.baselineLower != null && point.baselineUpper != null)
-  ));
-  const summaryDescription = statistic === 'mean.and.interval'
-    ? 'Lines show the average (mean) across model simulations.'
-    : statistic === 'median.and.interval'
-      ? 'Lines show the median (middle estimate) across model simulations.'
-      : isIndividual ? 'Each line shows one model simulation.' : '';
-  const chartDescription = [
-    selectedOutcome === 'incidence' ? 'Incidence is the number of new HIV infections each year.' : '',
-    summaryDescription,
-    !isIndividual && hasIntervals && displayOptions.showConfidenceInterval
-      ? 'Shaded bands show the middle 95% of simulated estimates for each year.' : '',
-  ].filter(Boolean).join(' ');
-
-  // Export handlers
-  const handleExportCSV = useCallback(() => {
-    if (!chartPanels.length || !plotData) return;
-    exportToCsv({
-      panels: chartPanels,
-      locationName: locationName || '',
-      scenario: scenarioLabel || '',
-      scenarioLabel: scenarioLabel || '',
-      outcome: plotData.metadata.outcome || selectedOutcome,
-      statistic: selectedStatistic,
-      facet: selectedFacet,
-    });
-  }, [chartPanels, plotData, locationName, scenarioLabel, selectedOutcome, selectedStatistic, selectedFacet]);
-
-  const handleExportPNG = useCallback(async () => {
-    if (!chartContainerRef.current || !plotData) return;
-    setExportingPng(true);
+  const units =
+    plotData?.metadata.y_label ||
+    plotData?.metadata.outcome_metadata?.units ||
+    '';
+  const statistic = plotData?.metadata.statistic || selectedStatistic;
+  const individual = statistic === 'individual.simulation';
+  const intervals = chartPanels.some((p) =>
+    p.data.some((d) => d.lower != null || d.baselineLower != null),
+  );
+  const observations = chartPanels.some((p) => p.observations.length > 0);
+  const baseline = chartPanels.some(
+    (p) =>
+      p.data.some((d) => d.baselineValue != null) ||
+      p.individualSimulations?.some((line) => line.simset === 'Baseline'),
+  );
+  const faceted = chartPanels.length > 1;
+  const selection = `${locationName}/${scenarioLabel}/${selectedOutcome}/${statistic}/${selectedFacet}`;
+  const page =
+    pagination.selection === selection
+      ? Math.min(
+          pagination.page,
+          Math.max(0, Math.ceil(chartPanels.length / 6) - 1),
+        )
+      : 0;
+  const visiblePanels = chartPanels.slice(page * 6, (page + 1) * 6);
+  const summary = summaryDescription(
+    statistic,
+    intervals && options.showConfidenceInterval,
+  );
+  const timelineText = timeline
+    ? describeScenarioTimeline({
+        id: '',
+        label: scenarioLabel,
+        description: scenarioDescription,
+        timeline,
+      }) || ''
+    : scenarioDescription;
+  const sharedDomain = useMemo<[number, number] | undefined>(() => {
+    if (!faceted || separateScales) return undefined;
+    const ranges = chartPanels.map((p) =>
+      getValueRange(
+        p.data,
+        options.showObservations ? p.observations : [],
+        options.showBaseline,
+        options.showConfidenceInterval,
+        p.individualSimulations,
+        plotData?.metadata.outcome_metadata?.display_as_percent,
+      ),
+    );
+    return [0, Math.max(...ranges.map((range) => range[1]))];
+  }, [chartPanels, faceted, separateScales, options, plotData]);
+  const groups = [
+    'HIV outcomes',
+    'Prevention and testing',
+    'Ryan White services',
+    'Other outcomes',
+  ].filter((group) =>
+    availableOutcomes.some((key) => getOutcomeDefinition(key).group === group),
+  );
+  const orderedOutcomes = [
+    ...new Set([
+      ...Object.keys(OUTCOME_DEFINITIONS).filter((key) =>
+        availableOutcomes.includes(key),
+      ),
+      ...availableOutcomes,
+    ]),
+  ];
+  const exportContext = (csv = false): AnalysisExportContext => ({
+    title: definition.label,
+    definition: [definition.description, definition.note]
+      .filter(Boolean)
+      .join(' '),
+    units,
+    location: locationName,
+    scenario: scenarioLabel,
+    summary: csv ? SUMMARY_LABELS[statistic] || statistic : summary,
+    model: modelName,
+    generated: plotData?.metadata.generation_time || '',
+    timeline: timelineText,
+    url: window.location.href,
+    scope: csv
+      ? 'All population groups, model series, intervals, and available observations.'
+      : `${faceted ? `Population groups ${page * 6 + 1}–${Math.min((page + 1) * 6, chartPanels.length)} of ${chartPanels.length}. ${separateScales ? 'Separate vertical scales.' : 'Shared vertical scale.'}` : 'Whole population.'} ${!observations ? 'No observed data in this selection.' : options.showObservations ? 'Observed data shown.' : 'Observed data hidden.'}`,
+  });
+  const exportArgs = {
+    locationName,
+    scenario: scenarioLabel,
+    outcome: selectedOutcome,
+    statistic,
+    facet: selectedFacet,
+  };
+  async function downloadPng() {
+    setExporting(true);
+    setMessage('');
     try {
       await exportToPng({
-        containerRef: chartContainerRef,
-        locationName: locationName || '',
-        scenario: scenarioLabel || '',
-        outcome: plotData.metadata.outcome || selectedOutcome,
-        statistic: selectedStatistic,
-        facet: selectedFacet,
+        ...exportArgs,
+        containerRef: figureRef,
+        context: exportContext(),
+        legend: `Solid blue: ${scenarioLabel}.${options.showBaseline && baseline ? ' Dashed gray: baseline.' : ''}${options.showObservations && observations ? ' Rust dots: observed data.' : ''}`,
       });
-    } catch (err) {
-      console.error('PNG export failed:', err);
-      alert('PNG export failed. Please try again.');
+      setMessage('Figure downloaded.');
+    } catch (error) {
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : 'Unable to create the figure. Please retry.',
+      );
     } finally {
-      setExportingPng(false);
+      setExporting(false);
     }
-  }, [plotData, locationName, scenarioLabel, selectedOutcome, selectedStatistic, selectedFacet]);
-
+  }
+  async function copyLink() {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      setMessage('Link copied to this analysis.');
+    } catch {
+      setMessage('Copy the address from your browser to share this analysis.');
+    }
+  }
+  const control =
+    'w-full rounded border border-rule bg-white px-3 py-2.5 text-sm text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hopkins-blue';
+  const action =
+    'rounded px-2 py-2 text-sm sm:px-3 text-muted hover:bg-paper hover:text-ink disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-hopkins-blue';
   return (
-    <>
-      {/* Controls bar */}
-      <div className="flex flex-shrink-0 flex-col items-stretch gap-2 border-b border-slate-200 bg-slate-50 px-3 py-2 sm:px-4 xl:flex-row xl:items-end xl:justify-between">
-        <div className="grid min-w-0 grid-cols-2 items-end gap-2 xl:flex xl:flex-wrap xl:gap-3">
-          {/* Outcome selector */}
-          <div className="flex min-w-0 flex-col gap-0.5 xl:w-80">
-            <label htmlFor={outcomeSelectId} className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
-              Outcome
-            </label>
+    <div className="results-workspace mx-auto w-full max-w-6xl flex-none px-4 py-4 text-ink sm:px-8 sm:py-8">
+      <div className="grid gap-3 lg:gap-5 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start">
+        <div className="order-2 lg:order-1">
+          <p className="mb-2 hidden lg:block text-xs font-medium uppercase tracking-widest text-muted">
+            Model results
+          </p>
+          <h2 className="sr-only lg:not-sr-only text-2xl font-semibold tracking-tight sm:text-3xl">
+            {definition.label}
+          </h2>
+          <p
+            id={`${id}-definition`}
+            className="mt-0 max-w-2xl text-sm lg:mt-3 leading-6 text-muted"
+          >
+            {definition.description}
+          </p>
+        </div>
+        <div className="order-1 lg:order-2">
+          <label
+            htmlFor={`${id}-outcome`}
+            className="mb-1.5 block text-xs font-medium text-muted"
+          >
+            Outcome
+          </label>
+          <select
+            id={`${id}-outcome`}
+            value={selectedOutcome}
+            onChange={(e) => setSelectedOutcome(e.target.value)}
+            className={control}
+            aria-describedby={`${id}-definition`}
+          >
+            {groups.map((group) => (
+              <optgroup label={group} key={group}>
+                {orderedOutcomes
+                  .filter((key) => getOutcomeDefinition(key).group === group)
+                  .map((key) => (
+                    <option value={key} key={key}>
+                      {
+                        getOutcomeDefinition(key, getOutcomeDisplayName?.(key))
+                          .label
+                      }
+                    </option>
+                  ))}
+              </optgroup>
+            ))}
+          </select>
+        </div>
+      </div>
+      <details className="mt-5 border-y border-rule py-3">
+        <summary className="cursor-pointer text-sm font-medium">
+          Adjust analysis{' '}
+          <span className="sr-only ml-2 font-normal text-muted sm:not-sr-only">
+            {SUMMARY_LABELS[statistic] || statistic} ·{' '}
+            {facetLabel(selectedFacet || 'none')}
+          </span>
+        </summary>
+        <div className="grid gap-4 py-4 sm:grid-cols-2">
+          <label className="text-xs font-medium text-muted">
+            Summarize simulations
             <select
-              id={outcomeSelectId}
-              value={selectedOutcome}
-              onChange={e => setSelectedOutcome(e.target.value)}
-              className="w-full min-w-0 border border-slate-300 rounded-md px-2 py-1.5 text-sm bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              {availableOutcomes.map(o => (
-                <option key={o} value={o}>{displayName(o)}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* Statistic selector */}
-          <div className="flex min-w-0 flex-col gap-0.5 xl:w-40">
-            <label htmlFor={statisticSelectId} className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
-              Summarize simulations
-            </label>
-            <select
-              id={statisticSelectId}
+              aria-label="Summarize simulations"
               value={selectedStatistic}
-              onChange={e => setSelectedStatistic(e.target.value)}
-              className="w-full min-w-0 border border-slate-300 rounded-md px-2 py-1.5 text-sm bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              onChange={(e) => setSelectedStatistic(e.target.value)}
+              className={`${control} mt-1.5`}
             >
-              {availableStatistics.map(s => (
-                <option key={s} value={s}>{STATISTIC_LABELS[s] ?? formatOptionLabel(s)}</option>
+              {availableStatistics.map((s) => (
+                <option key={s} value={s}>
+                  {SUMMARY_LABELS[s] || s}
+                </option>
               ))}
             </select>
-          </div>
-
-          {/* Facet dimension toggles */}
-          <div className="col-span-2 flex flex-col gap-0.5 xl:col-span-1">
-            <span id={breakdownLabelId} className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
-              Break down by
-            </span>
-            <div className="flex flex-wrap items-center gap-1" role="group" aria-labelledby={breakdownLabelId}>
-              {(['age', 'sex', 'race', 'risk'] as const).map(dim => (
+          </label>
+          {facetChoices && setSelectedFacet ? (
+            <label className="text-xs font-medium text-muted">
+              Population breakdown
+              <select
+                aria-label="Population breakdown"
+                value={selectedFacet}
+                onChange={(e) => setSelectedFacet(e.target.value)}
+                className={`${control} mt-1.5`}
+              >
+                {facetChoices.map((choice) => (
+                  <option key={choice.key} value={choice.key}>
+                    {choice.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ) : (
+            <div
+              role="group"
+              aria-label="Break down by"
+              className="flex flex-wrap gap-2"
+            >
+              {(['age', 'race', 'sex', 'risk'] as const).map((dim) => (
                 <button
                   key={dim}
-                  type="button"
                   aria-pressed={facetDimensions[dim]}
-                  onClick={() => {
-                    toggleFacetDimension(dim);
-                    setShowAllFacets(false);
-                  }}
                   disabled={!availableFacetDimensions[dim]}
-                  className={`px-2.5 py-1.5 text-sm font-medium rounded-md transition-all capitalize focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1
-                    ${facetDimensions[dim]
-                      ? 'bg-blue-600 text-white'
-                      : availableFacetDimensions[dim]
-                        ? 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                        : 'bg-slate-50 text-slate-300 cursor-not-allowed'
-                    }`}
-                  title={!availableFacetDimensions[dim] ? `${dim} breakdown not available` : undefined}
+                  onClick={() => toggleFacetDimension(dim)}
+                  className={action}
                 >
                   {dim}
                 </button>
               ))}
             </div>
-          </div>
+          )}
         </div>
-
-        <div className="flex flex-col gap-0.5">
-          <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
-            View and export
-          </span>
-          <div className="flex flex-wrap items-center gap-1 sm:gap-2">
-            {/* View mode toggle */}
-            <div className="flex items-center border border-slate-200 rounded-md overflow-hidden">
+        <p className="pb-2 text-xs leading-5 text-muted">
+          Available breakdowns depend on the outcome. Population groups follow
+          the model’s categories; “MSM” means men who have sex with men.
+        </p>
+      </details>
+      {selectionNotice && (
+        <p role="status" className="mt-3 text-sm text-muted">
+          {selectionNotice}
+        </p>
+      )}
+      <div className="mt-4 flex flex-wrap items-center gap-1 sm:gap-2">
+        <div
+          role="group"
+          aria-label="Result view"
+          className="flex rounded border border-rule p-0.5"
+        >
+          {(['chart', 'table'] as const).map((mode) => (
             <button
-              type="button"
-              aria-pressed={viewMode === 'chart'}
-              onClick={() => setViewMode('chart')}
-              className={`flex items-center gap-1 px-2 py-1.5 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 sm:px-2.5
-                ${viewMode === 'chart'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-white text-slate-600 hover:bg-slate-50'}`}
+              key={mode}
+              aria-pressed={view === mode}
+              onClick={() => setView(mode)}
+              className={`${action} ${view === mode ? 'bg-ink !text-white' : ''}`}
             >
-              <svg className="hidden w-4 h-4 sm:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
-              </svg>
-              <span>Chart</span>
+              {mode === 'chart' ? 'Chart' : 'Table'}
             </button>
-            <button
-              type="button"
-              aria-pressed={viewMode === 'table'}
-              onClick={() => setViewMode('table')}
-              className={`flex items-center gap-1 px-2 py-1.5 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 sm:px-2.5
-                ${viewMode === 'table'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-white text-slate-600 hover:bg-slate-50'}`}
-            >
-              <svg className="hidden w-4 h-4 sm:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-              </svg>
-              <span>Table</span>
-            </button>
-            </div>
-
-            <div className="hidden h-6 w-px bg-slate-200 sm:block" aria-hidden="true" />
-
-            {/* Export buttons */}
-            <div className="flex items-center gap-0.5 sm:gap-1">
-            <button
-              type="button"
-              onClick={handleExportCSV}
-              disabled={!chartPanels.length}
-              className="flex items-center gap-1 px-2 py-1.5 text-sm text-slate-500 hover:bg-slate-100 hover:text-slate-700 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed sm:gap-1.5 sm:px-2.5"
-              title="Export as CSV"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-              <span>CSV</span>
-            </button>
-            <button
-              type="button"
-              onClick={handleExportPNG}
-              disabled={!chartPanels.length || viewMode === 'table' || exportingPng}
-              className="flex items-center gap-1 px-2 py-1.5 text-sm text-slate-500 hover:bg-slate-100 hover:text-slate-700 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed sm:gap-1.5 sm:px-2.5"
-              title={viewMode === 'table' ? 'Switch to chart view to export PNG' : 'Export as PNG'}
-            >
-              {exportingPng ? (
-                <div className="w-4 h-4 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin" />
-              ) : (
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-              )}
-              <span>PNG</span>
-            </button>
-            </div>
-
-            {/* Display options */}
-            <DisplayOptionsPopover
-              options={displayOptions}
-              showIntervalControl={!isIndividual && hasIntervals}
-              onChange={setDisplayOptions}
-            />
-          </div>
+          ))}
         </div>
+        <button
+          className={action}
+          disabled={!chartPanels.length}
+          onClick={() => {
+            exportToCsv({
+              ...exportArgs,
+              panels: chartPanels,
+              context: exportContext(true),
+            });
+            setMessage(
+              'CSV downloaded with all groups and available observations.',
+            );
+          }}
+        >
+          CSV
+        </button>
+        <button
+          className={action}
+          disabled={!chartPanels.length || view !== 'chart' || exporting}
+          onClick={downloadPng}
+        >
+          {exporting ? 'Creating figure…' : 'PNG'}
+        </button>
+        <button className={`${action} hidden sm:block`} onClick={copyLink}>
+          Copy link
+        </button>
+        {view === 'chart' && (
+          <DisplayOptionsPopover
+            options={options}
+            showIntervalControl={!individual && intervals}
+            showBaselineControl={baseline}
+            showObservationsControl={observations}
+            onChange={setOptions}
+          />
+        )}
       </div>
-
-      {/* Chart/Table area */}
+      <p role="status" aria-live="polite" className="mt-2 text-sm text-muted">
+        {message}
+      </p>
       <div
         data-testid="analysis-chart-region"
-        className="min-h-[34rem] flex-none overflow-visible p-3 sm:p-4"
+        role="region"
+        aria-label={`${definition.label} results`}
+        aria-describedby={`${id}-definition`}
+        className="mt-4"
       >
-        {chartPanels.length === 0 ? (
-          <div className="flex items-center justify-center h-full">
-            <p className="text-slate-500">Select options to view data</p>
-          </div>
-        ) : viewMode === 'table' ? (
-          /* Table view */
-          <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
-            <p className="border-b border-slate-200 px-4 py-3 text-sm leading-relaxed text-slate-600">
-              {units && <>Values in {units}. </>}
-              {statistic === 'mean.and.interval' && 'Values show the average (mean) across model simulations. '}
-              {statistic === 'median.and.interval' && 'Values show the median (middle estimate) across model simulations. '}
-              {hasIntervals && 'The 95% intervals show the middle 95% of simulated estimates for each year.'}
-            </p>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <caption className="sr-only">
-                  {outcomeLabel} results for {locationName || 'the selected location'}
-                </caption>
-                <thead className="bg-slate-50 border-b border-slate-200">
-                  <tr>
-                    {isFaceted && <th className="px-4 py-3 text-left font-medium text-slate-700">Group</th>}
-                    <th className="px-4 py-3 text-left font-medium text-slate-700">Year</th>
-                    <th className="px-4 py-3 text-right font-medium text-slate-700">{scenarioLabel || 'Intervention'}</th>
-                    <th className="px-4 py-3 text-right font-medium text-slate-700">95% interval</th>
-                    <th className="px-4 py-3 text-right font-medium text-slate-700">Baseline</th>
-                    <th className="px-4 py-3 text-right font-medium text-slate-700">95% interval</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {chartPanels.flatMap((panel, panelIdx) =>
-                    panel.data.map((point, pointIdx) => (
-                      <tr
-                        key={`${panel.facetValue}-${point.year}`}
-                        className={panelIdx % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'}
-                      >
-                        {isFaceted && pointIdx === 0 && (
-                          <td
-                            className="px-4 py-2 text-slate-700 font-medium align-top"
-                            rowSpan={panel.data.length}
-                          >
-                            {panel.facetLabel}
-                          </td>
-                        )}
-                        <td className="px-4 py-2 text-slate-600">{point.year}</td>
-                        <td className="px-4 py-2 text-right text-slate-900 font-medium">
-                          {point.value != null ? point.value.toLocaleString(undefined, { maximumFractionDigits: 1 }) : '\u2014'}
-                        </td>
-                        <td className="px-4 py-2 text-right text-slate-500 text-xs">
-                          {point.lower != null && point.upper != null
-                            ? `${point.lower.toLocaleString(undefined, { maximumFractionDigits: 1 })} \u2013 ${point.upper.toLocaleString(undefined, { maximumFractionDigits: 1 })}`
-                            : '\u2014'}
-                        </td>
-                        <td className="px-4 py-2 text-right text-slate-600">
-                          {point.baselineValue != null ? point.baselineValue.toLocaleString(undefined, { maximumFractionDigits: 1 }) : '\u2014'}
-                        </td>
-                        <td className="px-4 py-2 text-right text-slate-500 text-xs">
-                          {point.baselineLower != null && point.baselineUpper != null
-                            ? `${point.baselineLower.toLocaleString(undefined, { maximumFractionDigits: 1 })} \u2013 ${point.baselineUpper.toLocaleString(undefined, { maximumFractionDigits: 1 })}`
-                            : '\u2014'}
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-            <div className="px-4 py-3 bg-slate-50 border-t border-slate-200 text-xs text-slate-500">
-              {chartPanels.reduce((acc, p) => acc + p.data.length, 0)} rows
-              {isFaceted && ` across ${chartPanels.length} groups`}
-            </div>
-          </div>
-        ) : !isFaceted ? (
-          /* Single chart */
-          <div ref={chartContainerRef} className="max-w-4xl mx-auto bg-white rounded-lg border border-slate-200 p-4 sm:p-5">
-            <NativeSimulationChart
-              panel={chartPanels[0]}
-              outcomeLabel={outcomeLabel}
-              description={chartDescription}
-              units={units}
-              displayAsPercent={displayAsPercent}
-              options={displayOptions}
-              height={500}
-              interventionStartYear={interventionStartYear}
-              locationName={locationName}
-              scenarioLabel={scenarioLabel}
-            />
-          </div>
+        {!chartPanels.length ? (
+          <p role="status" className="py-12 text-muted">
+            No results are available for this selection.
+          </p>
+        ) : view === 'table' ? (
+          <ResultsTable
+            panels={chartPanels}
+            title={definition.label}
+            scenario={scenarioLabel}
+            units={units}
+            selection={selection}
+          />
         ) : (
-          /* Faceted grid */
-          <div ref={chartContainerRef}>
-            <p className="mb-4 text-sm leading-relaxed text-slate-600">{chartDescription}</p>
-            <div className="flex items-center justify-between mb-4">
-              <p className="text-sm text-slate-500">
-                {chartPanels.length > FACET_PAGE_SIZE && !showAllFacets
-                  ? `Showing ${FACET_PAGE_SIZE} of ${chartPanels.length} panels`
-                  : `${chartPanels.length} panels`}
-              </p>
-              {chartPanels.length > FACET_PAGE_SIZE && (
-                <button
-                  onClick={() => setShowAllFacets(!showAllFacets)}
-                  className="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
-                >
-                  {showAllFacets ? (
-                    <>
-                      <span>Show fewer</span>
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-                      </svg>
-                    </>
-                  ) : (
-                    <>
-                      <span>Show all {chartPanels.length}</span>
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
-                    </>
-                  )}
-                </button>
+          <>
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+              <ChartLegend
+                scenarioLabel={scenarioLabel}
+                baseline={options.showBaseline && baseline}
+                observations={options.showObservations && observations}
+              />
+              {faceted && (
+                <label className="flex items-center gap-2 text-sm text-muted">
+                  <input
+                    type="checkbox"
+                    checked={separateScales}
+                    onChange={(e) => setSeparateScales(e.target.checked)}
+                  />
+                  Separate scales
+                </label>
               )}
             </div>
-            <div className={`grid gap-4 ${
-              chartPanels.length <= 4 ? 'grid-cols-1 lg:grid-cols-2' :
-              chartPanels.length <= 9 ? 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3' :
-              'grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4'
-            }`}>
-              {(showAllFacets ? chartPanels : chartPanels.slice(0, FACET_PAGE_SIZE)).map(panel => (
-                <div key={panel.facetValue} className="bg-white rounded-lg border border-slate-200 p-4">
+            {faceted && (
+              <div className="mb-5 flex flex-wrap items-center justify-between gap-3 text-sm text-muted">
+                <span>
+                  {page * 6 + 1}–{Math.min((page + 1) * 6, chartPanels.length)}{' '}
+                  of {chartPanels.length} groups ·{' '}
+                  {separateScales
+                    ? 'Each panel has its own vertical scale'
+                    : 'All panels share a vertical scale'}
+                </span>
+                {chartPanels.length > 6 && (
+                  <div className="flex gap-3">
+                    <button
+                      disabled={page === 0}
+                      className={action}
+                      onClick={() =>
+                        setPagination({ selection, page: page - 1 })
+                      }
+                    >
+                      Previous groups
+                    </button>
+                    <button
+                      disabled={(page + 1) * 6 >= chartPanels.length}
+                      className={action}
+                      onClick={() =>
+                        setPagination({ selection, page: page + 1 })
+                      }
+                    >
+                      Next groups
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+            <div
+              ref={figureRef}
+              className={faceted ? 'grid gap-x-8 gap-y-6 lg:grid-cols-2' : ''}
+            >
+              {visiblePanels.map((panel) => (
+                <div
+                  key={`${selection}/${panel.facetValue}`}
+                  data-export-panel={panel.facetLabel}
+                  className={
+                    faceted ? 'min-w-0 border-t border-rule pt-4' : 'min-w-0'
+                  }
+                >
                   <NativeSimulationChart
                     panel={panel}
-                    outcomeLabel={outcomeLabel}
+                    outcomeLabel={definition.label}
+                    description={undefined}
                     units={units}
-                    displayAsPercent={displayAsPercent}
-                    options={displayOptions}
-                    height={300}
+                    displayAsPercent={
+                      plotData?.metadata.outcome_metadata?.display_as_percent ||
+                      false
+                    }
+                    options={options}
+                    height={faceted ? 300 : 380}
                     interventionStartYear={interventionStartYear}
+                    timeline={timeline}
                     locationName={locationName}
                     scenarioLabel={scenarioLabel}
+                    compact={faceted}
+                    showLegend={false}
+                    sharedDomain={sharedDomain}
                   />
                 </div>
               ))}
             </div>
-            {chartPanels.length > FACET_PAGE_SIZE && !showAllFacets && (
-              <div className="mt-4 text-center">
-                <button
-                  onClick={() => setShowAllFacets(true)}
-                  className="px-4 py-2 text-sm text-blue-600 hover:text-blue-700 hover:bg-blue-50 font-medium rounded-lg transition-colors"
-                >
-                  Show all {chartPanels.length} panels
-                </button>
-              </div>
+            <p className="mt-4 text-sm leading-6 text-muted">{summary}</p>
+            {faceted && (
+              <p className="mt-1 text-xs text-muted">
+                PNG includes the groups currently shown. CSV includes every
+                group.
+              </p>
             )}
-          </div>
+          </>
         )}
       </div>
-    </>
+      <div className="mt-5 border-t border-rule pt-4 text-sm leading-6 text-muted">
+        {timelineText && (
+          <p>{timelineText} Values are annual model summaries.</p>
+        )}
+        <button className={`${action} -ml-3 sm:hidden`} onClick={copyLink}>
+          Copy link to this analysis
+        </button>
+        <details className="mt-3">
+          <summary className="cursor-pointer font-medium text-ink">
+            About this result
+          </summary>
+          <div className="mt-3 space-y-2">
+            {definition.note && <p>{definition.note}</p>}
+            <p>
+              Baseline is the model’s comparison scenario without the selected
+              interruption or intervention. The bands describe variation across
+              simulations, not the probability of a particular policy outcome.
+            </p>
+            <p>
+              {modelName} · Results generated:{' '}
+              {plotData?.metadata.generation_time
+                ? new Date(
+                    plotData.metadata.generation_time,
+                  ).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                    timeZone: 'UTC',
+                  })
+                : 'not recorded in this release'}
+              .
+            </p>
+            <p>
+              CSV includes model values, available uncertainty bounds, and
+              observed data with sources. Display settings affect the chart and
+              PNG only.
+            </p>
+          </div>
+        </details>
+      </div>
+      <ObservationsTable key={selection} panels={chartPanels} units={units} />
+    </div>
   );
 }

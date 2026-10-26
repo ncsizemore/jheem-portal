@@ -255,10 +255,13 @@ function formatFacetLabel(value: string): string {
     'black': 'Black',
     'hispanic': 'Hispanic',
     'other': 'Other',
+    'IDU_in_remission': 'Former injection drug use',
+    'active_IDU': 'Current injection drug use',
+    'never_IDU': 'No injection drug use',
     // Age values are already formatted like "13-24 years"
   };
 
-  return labelMap[value] || value;
+  return value.split(' | ').map(part => labelMap[part] || part).join(' · ');
 }
 
 /**
@@ -279,7 +282,8 @@ export function getValueRange(
   observations: ChartObservation[],
   includeBaseline: boolean,
   includeCI: boolean,
-  individualSimulations?: SimulationLine[]
+  individualSimulations?: SimulationLine[],
+  displayAsPercent = false
 ): [number, number] {
   const values: number[] = [];
 
@@ -320,5 +324,7 @@ export function getValueRange(
   const max = Math.max(...values);
   const padding = (max - min) * 0.1;
 
-  return [Math.max(0, min - padding), max + padding];
+  // Use the familiar percentage range when it contains every visible value.
+  // Ratios or observations above 100 remain visible rather than being clipped.
+  return [0, displayAsPercent && max <= 100 ? 100 : max > 0 ? max + padding : 1];
 }

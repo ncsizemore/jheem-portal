@@ -20,7 +20,6 @@ import { useAnalysisState } from '@/hooks/useAnalysisState';
 import AnalysisResults from '@/components/analysis/AnalysisResults';
 import LocationSwitcher from '@/components/analysis/LocationSwitcher';
 import { transformPlotData } from '@/utils/transformPlotData';
-import { describeScenarioTimeline } from '@/utils/modelTimeline';
 import type { ModelConfig } from '@/config/model-configs';
 import type { PlotDataFile, FacetPanel } from '@/types/native-plotting';
 
@@ -46,8 +45,8 @@ export default function AnalysisView({
 }: AnalysisViewProps) {
   // Data loading
   const {
-    locationData,
-    loading,
+    locationData: loadedData,
+    loading: requestLoading,
     error,
     loadLocation,
     getPlotData,
@@ -56,7 +55,12 @@ export default function AnalysisView({
   } = useLocationData({ dataUrl: config.dataUrl });
 
   // Get available options for state management
-  const availableOptions = getAvailableOptions();
+  const locationData =
+    loadedData?.metadata.city === locationCode ? loadedData : null;
+  const loading = requestLoading || (!error && !locationData);
+  const availableOptions = locationData
+    ? getAvailableOptions()
+    : { scenarios: [], outcomes: [], statistics: [], facets: [] };
 
   // Extract first scenario's data for per-outcome facet availability
   const scenarioData = useMemo(() => {
@@ -77,12 +81,17 @@ export default function AnalysisView({
     setSelectedOutcome,
     setSelectedStatistic,
     toggleFacetDimension,
-    resetSelections,
+    facetChoices,
+    setSelectedFacet,
+    selectionNotice,
+    availableOutcomes,
+    availableStatistics,
   } = useAnalysisState({
     config,
     availableOptions,
     isDataLoaded: !!locationData,
     scenarioData,
+    allScenarioData: locationData?.data,
   });
 
   // Load location data when locationCode changes
@@ -94,30 +103,45 @@ export default function AnalysisView({
 
   // Get current location info
   const currentLocation = useMemo(() => {
-    return availableLocations.find(loc => loc.code === locationCode);
+    return availableLocations.find((loc) => loc.code === locationCode);
   }, [availableLocations, locationCode]);
 
   // Derive scenario descriptions and labels from config
   const scenarioDescriptions = useMemo(() => {
-    return Object.fromEntries(config.scenarios.map(s => [s.id, s.description]));
+    return Object.fromEntries(
+      config.scenarios.map((s) => [s.id, s.description]),
+    );
   }, [config.scenarios]);
 
   const scenarioLabels = useMemo(() => {
-    return Object.fromEntries(config.scenarios.map(s => [s.id, s.label]));
+    return Object.fromEntries(config.scenarios.map((s) => [s.id, s.label]));
   }, [config.scenarios]);
-
-  const selectedScenarioTimeline = useMemo(() => {
-    const scenario = config.scenarios.find(item => item.id === selectedScenario);
-    return scenario ? describeScenarioTimeline(scenario) : null;
-  }, [config.scenarios, selectedScenario]);
 
   // Get plot data
   const plotData: PlotDataFile | null = useMemo(() => {
-    if (locationData && selectedScenario && selectedOutcome && selectedStatistic && selectedFacet) {
-      return getPlotData(selectedScenario, selectedOutcome, selectedStatistic, selectedFacet);
+    if (
+      locationData &&
+      selectedScenario &&
+      selectedOutcome &&
+      selectedStatistic &&
+      selectedFacet
+    ) {
+      return getPlotData(
+        selectedScenario,
+        selectedOutcome,
+        selectedStatistic,
+        selectedFacet,
+      );
     }
     return null;
-  }, [locationData, selectedScenario, selectedOutcome, selectedStatistic, selectedFacet, getPlotData]);
+  }, [
+    locationData,
+    selectedScenario,
+    selectedOutcome,
+    selectedStatistic,
+    selectedFacet,
+    getPlotData,
+  ]);
 
   // Transform plot data for charts
   const chartPanels: FacetPanel[] = useMemo(() => {
@@ -126,15 +150,19 @@ export default function AnalysisView({
 
   // Get available scenarios from data
   const availableScenarios = useMemo(() => {
-    return config.scenarios.filter(s => availableOptions.scenarios.includes(s.id));
+    return config.scenarios.filter((s) =>
+      availableOptions.scenarios.includes(s.id),
+    );
   }, [config.scenarios, availableOptions.scenarios]);
 
   // Handle location switch
-  const handleLocationChange = useCallback((loc: Location) => {
-    if (loc.code === locationCode) return;
-    resetSelections();
-    onLocationChange(loc.code);
-  }, [locationCode, resetSelections, onLocationChange]);
+  const handleLocationChange = useCallback(
+    (loc: Location) => {
+      if (loc.code === locationCode) return;
+      onLocationChange(loc.code);
+    },
+    [locationCode, onLocationChange],
+  );
 
   return (
     <motion.div
@@ -143,11 +171,14 @@ export default function AnalysisView({
       exit={{ opacity: 0 }}
       transition={{ duration: 0.3 }}
       data-testid="analysis-view"
-      className="absolute inset-0 bg-slate-50 flex flex-col overflow-y-auto"
+      className="absolute inset-0 bg-white flex flex-col overflow-y-auto text-ink"
     >
+      <h1 className="sr-only">
+        {config.name} results for {currentLocation?.name || locationCode}
+      </h1>
       {/* Analysis context: location + scenario */}
       <div className="bg-white border-b border-slate-200 flex-shrink-0">
-        <div className="grid gap-2 px-3 py-2 sm:px-4 lg:grid-cols-[minmax(14rem,0.7fr)_minmax(0,1.8fr)] lg:items-center lg:gap-4">
+        <div className="mx-auto grid w-full max-w-6xl gap-4 px-4 py-4 sm:px-8 lg:grid-cols-[minmax(15rem,0.8fr)_minmax(0,1.5fr)] lg:items-center lg:gap-6">
           <div className="flex min-w-0 items-center gap-2">
             {/* Back to map button */}
             <button
@@ -156,13 +187,26 @@ export default function AnalysisView({
               className="flex items-center gap-1.5 px-2 py-1.5 sm:px-3 text-sm font-medium text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
               title="Back to map"
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M10 19l-7-7m0 0l7-7m-7 7h18"
+                />
               </svg>
               <span>Map</span>
             </button>
 
-            <div className="hidden sm:block w-px h-6 bg-slate-200" aria-hidden="true" />
+            <div
+              className="hidden sm:block w-px h-6 bg-slate-200"
+              aria-hidden="true"
+            />
 
             {/* Location switcher */}
             <div className="min-w-0">
@@ -181,22 +225,45 @@ export default function AnalysisView({
 
           {/* Scenario tabs */}
           {availableScenarios.length > 0 && (
-            <section className="min-w-0 lg:border-l lg:border-slate-200 lg:pl-4" aria-labelledby="analysis-scenario-label">
-              <span id="analysis-scenario-label" className="block text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+            <section
+              className="min-w-0 lg:border-l lg:border-slate-200 lg:pl-4"
+              aria-labelledby="analysis-scenario-label"
+            >
+              <span
+                id="analysis-scenario-label"
+                className="block text-[10px] font-semibold uppercase tracking-wide text-slate-500"
+              >
                 Scenario
               </span>
+              <select
+                aria-label="Scenario"
+                value={selectedScenario}
+                onChange={(event) => setSelectedScenario(event.target.value)}
+                className="mt-1 w-full rounded border border-rule bg-white px-3 py-2 text-sm text-ink sm:hidden"
+              >
+                {availableScenarios.map((scenario) => (
+                  <option key={scenario.id} value={scenario.id}>
+                    {scenario.label}
+                  </option>
+                ))}
+              </select>
               <div className="mt-1 grid min-w-0 gap-1.5 xl:grid-cols-[max-content_minmax(0,1fr)] xl:items-center">
-                <div className="flex flex-wrap gap-1" role="group" aria-labelledby="analysis-scenario-label">
-                  {availableScenarios.map(scenario => (
+                <div
+                  className="hidden flex-wrap gap-1 sm:flex"
+                  role="group"
+                  aria-labelledby="analysis-scenario-label"
+                >
+                  {availableScenarios.map((scenario) => (
                     <button
                       key={scenario.id}
                       type="button"
                       aria-pressed={selectedScenario === scenario.id}
                       onClick={() => setSelectedScenario(scenario.id)}
                       className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1
-                        ${selectedScenario === scenario.id
-                          ? 'bg-blue-600 text-white'
-                          : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                        ${
+                          selectedScenario === scenario.id
+                            ? 'bg-ink text-white'
+                            : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                         }`}
                     >
                       {scenario.label}
@@ -205,13 +272,9 @@ export default function AnalysisView({
                 </div>
                 {selectedScenario && scenarioDescriptions[selectedScenario] && (
                   <p className="min-w-0 text-xs leading-5 text-slate-500">
-                    <span className="font-medium text-slate-700">{scenarioDescriptions[selectedScenario]}</span>
-                    {selectedScenarioTimeline && (
-                      <>
-                        <span className="mx-1.5 text-slate-300" aria-hidden="true">·</span>
-                        <span>{selectedScenarioTimeline}</span>
-                      </>
-                    )}
+                    <span className="font-medium text-slate-700">
+                      {scenarioDescriptions[selectedScenario]}
+                    </span>
                   </p>
                 )}
               </div>
@@ -225,19 +288,39 @@ export default function AnalysisView({
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <div className="w-8 h-8 border-2 border-slate-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-3" />
-            <p className="text-slate-500">Loading...</p>
+            <p role="status" className="text-slate-500">
+              Loading results for {currentLocation?.name || locationCode}…
+            </p>
           </div>
         </div>
       ) : error ? (
         <div className="flex-1 flex items-center justify-center">
-          <div className="text-center max-w-md">
+          <div role="alert" className="text-center max-w-md px-4">
             <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              <svg
+                className="w-6 h-6 text-red-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
               </svg>
             </div>
-            <h3 className="text-slate-900 font-medium mb-2">Failed to load data</h3>
+            <h3 className="text-slate-900 font-medium mb-2">
+              Failed to load data
+            </h3>
             <p className="text-slate-500 text-sm">{error}</p>
+            <button
+              onClick={() => loadLocation(locationCode)}
+              className="mt-4 rounded border border-rule px-4 py-2 text-ink"
+            >
+              Retry loading results
+            </button>
           </div>
         </div>
       ) : (
@@ -249,11 +332,20 @@ export default function AnalysisView({
           selectedFacet={selectedFacet}
           facetDimensions={facetDimensions}
           availableFacetDimensions={availableFacetDimensions}
-          availableOutcomes={availableOptions.outcomes}
-          availableStatistics={availableOptions.statistics}
+          availableOutcomes={availableOutcomes}
+          availableStatistics={availableStatistics}
           setSelectedOutcome={setSelectedOutcome}
           setSelectedStatistic={setSelectedStatistic}
           toggleFacetDimension={toggleFacetDimension}
+          facetChoices={facetChoices}
+          setSelectedFacet={setSelectedFacet}
+          selectionNotice={selectionNotice}
+          modelName={config.name}
+          modelId={config.id}
+          timeline={
+            config.scenarios.find((s) => s.id === selectedScenario)?.timeline
+          }
+          scenarioDescription={scenarioDescriptions[selectedScenario]}
           interventionStartYear={config.interventionStartYear}
           locationName={currentLocation?.name}
           scenarioLabel={scenarioLabels[selectedScenario]}

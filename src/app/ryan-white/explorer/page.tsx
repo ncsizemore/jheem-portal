@@ -1,5 +1,6 @@
 'use client';
 
+import { useAnalysisQuery, updateAnalysisQuery } from '@/hooks/useAnalysisQuery';
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
@@ -131,7 +132,9 @@ export default function ExploreV2() {
   }, [citySummaries]);
 
   // View mode: 'map' or 'analysis'
-  const [mode, setMode] = useState<'map' | 'analysis'>('map');
+  const analysisQuery = useAnalysisQuery();
+  const selectedCity = availableCities.find(city => city.code === analysisQuery.get('loc')) ?? null;
+  const mode = selectedCity ? 'analysis' : 'map';
 
   // Map state - centered based on model config
   const [viewState, setViewState] = useState({
@@ -171,15 +174,14 @@ export default function ExploreV2() {
   }, []);
 
   // Selected city for analysis mode
-  const [selectedCity, setSelectedCity] = useState<CityData | null>(null);
+
 
   // Track if instruction panel is collapsed (user must explicitly minimize)
   const [instructionsCollapsed, setInstructionsCollapsed] = useState(false);
 
   // Handle city selection from map
   const handleCityClick = useCallback((city: CityData) => {
-    setSelectedCity(city);
-    setMode('analysis');
+    updateAnalysisQuery({ loc: city.code });
   }, []);
 
   // Memoized marker event handlers (avoids recreating functions on every render)
@@ -196,14 +198,14 @@ export default function ExploreV2() {
 
   // Return to map
   const handleBackToMap = useCallback(() => {
-    setMode('map');
+    updateAnalysisQuery({ loc: null });
   }, []);
 
   // Handle location change from AnalysisView
   const handleLocationChange = useCallback((code: string) => {
     const city = availableCities.find(c => c.code === code);
     if (city) {
-      setSelectedCity(city);
+      updateAnalysisQuery({ loc: city.code });
     }
   }, [availableCities]);
 
