@@ -97,6 +97,9 @@ test('all fourteen outcomes have specific explanations and correctly labeled uni
       'The percentage of people with diagnosed HIV whose virus is suppressed by treatment.',
     ),
   ).toBeVisible();
+  await expect(
+    page.getByRole('button', { name: 'Observed 2019: 68.3%. Source: cdc.hiv', exact: true }),
+  ).toBeVisible();
   await page.getByRole('button', { name: 'Table', exact: true }).click();
   await expect(
     page.getByRole('table', { name: /Viral suppression/ }),

@@ -637,7 +637,7 @@ const NativeSimulationChart = memo(
                           strokeWidth={2}
                           tabIndex={0}
                           role="button"
-                          aria-label={`Observed ${obs.year}: ${formatDisplayValue(obs.value)} ${units}. Source: ${obs.source}`}
+                          aria-label={`Observed ${obs.year}: ${formatDisplayValue(obs.value)}${displayAsPercent ? '' : ` ${units}`}. Source: ${obs.source}`}
                           onFocus={() =>
                             setHoveredObs({
                               year: obs.year,
