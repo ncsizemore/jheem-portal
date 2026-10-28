@@ -40,6 +40,10 @@ export class ResultCache<T> {
     private maxBytes: number,
     private maxEntries: number,
   ) {}
+  /** Read during rendering without changing eviction order. */
+  peek(key: string): T | undefined {
+    return this.entries.get(key)?.value;
+  }
   get(key: string): T | undefined {
     const entry = this.entries.get(key);
     if (!entry) return undefined;

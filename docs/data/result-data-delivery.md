@@ -19,9 +19,9 @@ The browser checks index/plot hashes, exact decoded sizes, model/location/select
 
 ## Loading and retention
 
-Selection changes immediately hide the previous plot. Requests are cancelled on selection/model/location changes, timed out after 30 seconds, and ignored if they finish after supersession. Controls remain usable during plot loading; exports remain disabled until the selected data is ready. The location index determines available choices, so preserving a compatible breakdown does not require downloading unrelated plots.
+Previously viewed results are resolved from the verified in-memory cache during rendering, without an intermediate loading state. Uncached selection changes hide the previous plot and reserve the last ready chart/table height while loading, so old values cannot be mistaken for the new selection and the result area does not collapse. Requests are cancelled on selection/model/location changes, timed out after 30 seconds, and ignored if they finish after supersession. Controls remain usable during plot loading; exports remain disabled until the selected data is ready. The location index determines available choices, so preserving a compatible breakdown does not require downloading unrelated plots.
 
-A recency cache retains at most six plots and 16 MiB of decoded plot payloads, plus eight indexes and 4 MiB of decoded index payloads. These are retained serialized-byte budgets, not measured JavaScript heap usage. The currently rendered/transformed plot has its own working memory. The largest plot in this release is about 5.3 MB decoded; streaming reads reject responses that exceed the expected size before JSON parsing. No predictive prefetching downloads unused outcomes.
+A recency cache retains at most 64 plots and 16 MiB of decoded plot payloads, plus eight indexes and 4 MiB of decoded index payloads. These are retained serialized-byte budgets, not measured JavaScript heap usage. The currently rendered/transformed plot has its own working memory. The largest plot in this release is about 5.3 MB decoded; streaming reads reject responses that exceed the expected size before JSON parsing. The location index is validated once per payload/model/location rather than on every outcome change. No predictive prefetching downloads unused outcomes. A cache miss may still use the browser HTTP cache; visible loading does not necessarily imply another origin request.
 
 ## Releasing or refreshing data
 
@@ -36,12 +36,43 @@ node --import tsx scripts/prepare-result-data.ts \
 
 The output contains compressed `results-v1/` artifacts, `binding.json`, and a per-location `verification.json`. All configured locations must be present. The source URL is the configured original bundle URL. This is a delivery snapshot, not a claim to recover the original simulation's complete historical provenance.
 
-Upload only the `results-v1/` subtree to the matching model prefix, without deleting existing releases:
+### Cost preflight before publishing
+
+The operating target is $0. Publishing data is a separate operation from deploying the portal: **do not republish artifacts for a UI or caching change**. Reuse the local source snapshot, staged files, and test fixtures during development. S3 uploads and storage can cost money even when the site has no visitors.
+
+Run the offline estimate before every publication. Use the saved, complete inventory for the exact destination prefix when available:
+
+```sh
+node scripts/estimate-result-release-cost.mjs \
+  --staged generated-data/result-chunks/staged/ryan-white \
+  --prefix portal/ryan-white/results-v1/ \
+  --inventory generated-data/result-chunks/msa-inventory.json
+```
+
+Without `--inventory`, the estimate conservatively treats every staged object as new. The tool makes no network calls and writes no files. It reports new PUT requests, additional compressed storage, and gross US East S3 Standard cost before credits. Rates were checked on October 26, 2026: $0.005 per 1,000 PUT requests and $0.023 per GiB-month. Recheck [AWS pricing](https://aws.amazon.com/s3/pricing/) before a later release; account allowances and discounts must be established separately. Include the estimate in the release review, including any expected recurring charge, and resolve a departure from the $0 target before upload.
+
+An inventory match means an existing content-addressed key with the same stored size; it does **not** prove remote content integrity or correct headers. The preparer and delivery verifier still provide those checks. A different size at an existing key is an immutable-object conflict: stop and investigate rather than overwriting it. The tool rejects truncated inventories, but cannot establish the freshness of an old snapshot. Refresh an inventory once when needed using the existing `list-objects-v2` command below with automatic pagination enabled (no `--max-items` or `--no-paginate`). LIST operations themselves have request costs; avoid repeated full inventories during development.
+
+The estimate excludes existing storage, retries, verification requests, data transfer, other services, taxes and credits. It is not a spending cap or an estimate of the whole AWS bill. Do not repeatedly query Cost Explorer to monitor tiny charges: its API is charged per request. Existing AWS budget alerts provide detection; they do not stop spending.
+
+### Upload and verify
+
+Upload only the `results-v1/` subtree to the matching model prefix, without deleting existing releases. After the preflight has found no existing-key size conflicts, inspect a dry run with `--size-only`; otherwise recreated local file timestamps can cause unchanged objects to be uploaded again. The size-only comparison is appropriate for these prepared immutable keys, not arbitrary mutable source files:
 
 ```sh
 aws s3 sync generated-data/result-chunks/staged/ryan-white/results-v1/ \
   s3://jheem-data-production/portal/ryan-white/results-v1/ \
+  --size-only --dryrun \
   --content-type application/json --content-encoding gzip \
+  --cache-control 'public,max-age=31536000,immutable'
+```
+
+The AWS dry run still lists remote objects and can incur LIST request costs, but performs no uploads. Check that the planned uploads match the estimate. Then publish with the same comparison; keep the existing metadata on skipped objects and never use this step to repair a conflicting immutable object:
+
+```sh
+aws s3 sync generated-data/result-chunks/staged/ryan-white/results-v1/ \
+  s3://jheem-data-production/portal/ryan-white/results-v1/ \
+  --size-only --content-type application/json --content-encoding gzip \
   --cache-control 'public,max-age=31536000,immutable' --only-show-errors
 ```
 
@@ -59,7 +90,13 @@ node --import tsx scripts/verify-result-delivery.ts --model ryan-white \
 
 The verifier compares every staged object's stored size to S3 and fetches every location index and default plot over CloudFront, checking content hashes, identities, CORS, gzip and immutable caching. Browser regressions cover additional selections, actual exports, delayed responses, retry, URL/history, mobile, and all model families. Review the numerical-equivalence report and refresh affected exact-source browser fixtures when pinning a new release.
 
-The original aggregate files remain untouched for rollback and existing consumers. Roll back the portal deployment to revert the consumer. New artifacts can coexist with old releases and need no cache invalidation. There is no new runtime server or paid service; storage and request usage remain on the existing S3/CloudFront account.
+The original aggregate files remain untouched for rollback and existing consumers. Roll back the portal deployment to revert the consumer. New artifacts can coexist with old releases and need no cache invalidation. This adds no runtime server, but additional storage and requests on the existing S3/CloudFront account can incur charges. Review retained releases deliberately; do not automatically expire or delete objects referenced by a deployed portal or retained for rollback.
+
+### Initial publication cost review
+
+The saved October 26 inventories contain 104,394 objects (104,304 plots and 90 indexes), totaling 2,012,811,835 compressed bytes (1.875 GiB). At the reference rates, one successful upload per object represents **$0.52197 in PUT requests**, plus **$0.04312 per full month** of incremental storage before credits. Ordinary portal deployments incur neither another full upload nor another copy of that storage.
+
+Check account billing and alert delivery separately from the release estimate. Reporting can lag, and forecasts or previous $0 bills are not guarantees of future free usage.
 
 ## Initial release evidence
 

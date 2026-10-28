@@ -1,5 +1,5 @@
 'use client';
-import { useState, useRef, useId, useMemo } from 'react';
+import { useState, useRef, useId, useMemo, useLayoutEffect } from 'react';
 import type { ScenarioConfig } from '@/config/model-configs';
 import type {
   PlotDataFile,
@@ -105,6 +105,18 @@ export default function AnalysisResults({
   const [message, setMessage] = useState('');
   const [pagination, setPagination] = useState({ selection: '', page: 0 });
   const figureRef = useRef<HTMLDivElement>(null);
+  const regionRef = useRef<HTMLDivElement>(null);
+  const [readyHeight, setReadyHeight] = useState(440);
+  useLayoutEffect(() => {
+    const region = regionRef.current;
+    if (!region || loading || loadError || !plotData) return;
+    const measure = () =>
+      setReadyHeight(Math.ceil(region.getBoundingClientRect().height));
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(region);
+    return () => observer.disconnect();
+  }, [loading, loadError, plotData, view]);
   const id = useId();
   const definition = getOutcomeDefinition(
     selectedOutcome,
@@ -409,15 +421,20 @@ export default function AnalysisResults({
         {message}
       </p>
       <div
+        ref={regionRef}
         data-testid="analysis-chart-region"
         role="region"
         aria-label={`${definition.label} results`}
         aria-busy={loading}
         aria-describedby={`${id}-definition`}
         className="mt-4"
+        style={loading ? { minHeight: readyHeight } : undefined}
       >
         {loading ? (
-          <p role="status" className="py-12 text-muted">
+          <p
+            role="status"
+            className="border-t border-rule py-12 text-center text-sm text-muted"
+          >
             Loading selected result…
           </p>
         ) : loadError ? (
