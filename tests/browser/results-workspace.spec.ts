@@ -438,6 +438,133 @@ test('a late plot cannot overwrite a newer selection and controls remain usable'
   ).toBeVisible();
 });
 
+test('revisiting fourteen outcomes neither fetches again nor flashes a loading state', async ({
+  page,
+}) => {
+  const requests: string[] = [];
+  page.on('request', (request) => {
+    if (request.url().includes('/results-v1/plots/'))
+      requests.push(request.url());
+  });
+  await open(page);
+  for (const outcome of baltimore.metadata.outcomes) {
+    await page
+      .getByLabel('Outcome', { exact: true })
+      .selectOption(outcome);
+    await expect(
+      page.getByTestId('analysis-chart-region'),
+    ).toHaveAttribute('aria-busy', 'false');
+  }
+  const before = requests.length;
+  // Record even transitions that disappear before Playwright's next assertion.
+  await page.evaluate(() => {
+    const region = document.querySelector(
+      '[data-testid="analysis-chart-region"]',
+    )!;
+    region.setAttribute('data-busy-transitions', '0');
+    new MutationObserver((records) => {
+      const transitions = records.filter(
+        (record) => record.oldValue === 'false',
+      ).length;
+      if (transitions)
+        region.setAttribute(
+          'data-busy-transitions',
+          String(
+            Number(region.getAttribute('data-busy-transitions')) +
+              transitions,
+          ),
+        );
+    }).observe(region, {
+      attributes: true,
+      attributeFilter: ['aria-busy'],
+      attributeOldValue: true,
+    });
+  });
+  for (const outcome of baltimore.metadata.outcomes) {
+    await page
+      .getByLabel('Outcome', { exact: true })
+      .selectOption(outcome);
+    await expect(
+      page.getByTestId('analysis-chart-region'),
+    ).toHaveAttribute('aria-busy', 'false');
+  }
+  expect(requests).toHaveLength(before);
+  await expect(page.getByTestId('analysis-chart-region')).toHaveAttribute(
+    'data-busy-transitions',
+    '0',
+  );
+});
+
+for (const { width, view } of [
+  { width: 1280, view: 'chart' },
+  { width: 375, view: 'chart' },
+  { width: 375, view: 'table' },
+]) {
+  test(`an uncached selection reserves the ${view} height at ${width}px without showing stale results`, async ({
+    page,
+  }, testInfo) => {
+    await page.setViewportSize({ width, height: 1000 });
+    await open(page);
+    const region = page.getByTestId('analysis-chart-region');
+    if (view === 'table') {
+      await page
+        .getByRole('button', { name: 'Table', exact: true })
+        .click();
+      await expect(region.getByRole('table')).toBeVisible();
+    }
+    const readyHeight = await region.evaluate(
+      (element) => element.getBoundingClientRect().height,
+    );
+    if (view === 'table') expect(readyHeight).toBeGreaterThan(1000);
+    const ref =
+      fixtures.cityManifests['C.12580'].data.cessation.suppression[
+        'mean.and.interval'
+      ].none;
+    let pending: Route | undefined;
+    await page.route(`${base}/${ref.path}`, (route) => {
+      pending = route;
+    });
+    await page
+      .getByLabel('Outcome', { exact: true })
+      .selectOption('suppression');
+    await expect(region).toHaveAttribute('aria-busy', 'true');
+    expect(
+      await region.evaluate(
+        (element) => element.getBoundingClientRect().height,
+      ),
+    ).toBeGreaterThanOrEqual(readyHeight);
+    await expect(region.locator('svg')).toHaveCount(0);
+    const statusOffset = await region.evaluate(
+      (element) => {
+        const text = document.createRange();
+        text.selectNodeContents(element.querySelector('[role="status"]')!);
+        return text.getBoundingClientRect().top - element.getBoundingClientRect().top;
+      },
+    );
+    expect(statusOffset).toBeLessThan(100);
+    await expect(
+      page.getByRole('button', { name: 'PNG', exact: true }),
+    ).toBeDisabled();
+    await expect(
+      page.getByRole('button', { name: 'CSV', exact: true }),
+    ).toBeDisabled();
+    await region.screenshot({
+      path: testInfo.outputPath('loading-reserved-space.png'),
+    });
+    await pending!.fulfill({
+      body: fixtures.artifacts.get(ref.path),
+      contentType: 'application/json',
+    });
+    await expect(region).toHaveAttribute('aria-busy', 'false');
+    await expect(
+      page.getByRole('button', { name: view === 'table' ? 'CSV' : 'PNG', exact: true }),
+    ).toBeEnabled();
+    await page.screenshot({
+      path: testInfo.outputPath('results-ready.png'),
+    });
+  });
+}
+
 test('a failed plot can be retried without reloading the index or losing selections', async ({
   page,
 }) => {

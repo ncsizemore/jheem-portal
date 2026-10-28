@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import type {
   ResultArtifactRef,
   ResultManifest,
@@ -17,7 +17,9 @@ import {
 } from '@/utils/resultData';
 
 const manifests = new ResultCache<unknown>(4 * 1024 * 1024, 8);
-const plots = new ResultCache<unknown>(16 * 1024 * 1024, 6);
+// Small summaries should survive a normal exploration session. Large breakdowns
+// still share the same decoded-byte budget; this is not a JS heap-size limit.
+const plots = new ResultCache<unknown>(16 * 1024 * 1024, 64);
 
 function useArtifact(
   baseUrl: string | undefined,
@@ -26,6 +28,7 @@ function useArtifact(
 ) {
   const key =
     baseUrl && ref ? `${baseUrl}/${ref.path}:${ref.sha256}:${ref.bytes}` : '';
+  const cache = kind === 'plots' ? plots : manifests;
   const [retryCount, setRetryCount] = useState(0);
   const [state, setState] = useState<{
     key: string;
@@ -42,7 +45,6 @@ function useArtifact(
     let active = true;
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 30_000);
-    const cache = kind === 'plots' ? plots : manifests;
     async function load() {
       try {
         const reference = { path: path!, sha256: hash!, bytes: bytes! };
@@ -83,13 +85,16 @@ function useArtifact(
       controller.abort();
       clearTimeout(timer);
     };
-  }, [key, baseUrl, path, hash, bytes, kind, retryCount]);
-  // Hide a previous selection before effects run, including rapid back/forward navigation.
+  }, [key, baseUrl, path, hash, bytes, kind, cache, retryCount]);
+  // Resolve verified cache hits in this render, before the request effect. Never
+  // borrow the previous selection's data, including on rapid back/forward changes.
   const current = state.key === key ? state : undefined;
+  const data = cache.peek(key) ?? current?.data;
+  const error = data ? undefined : current?.error;
   return {
-    data: current?.data,
-    error: current?.error,
-    loading: !!key && !current?.data && !current?.error,
+    data,
+    error,
+    loading: !!key && !data && !error,
     retry,
   };
 }
@@ -104,21 +109,30 @@ export function useResultManifest(
     binding?.locations[location],
     'manifests',
   );
-  let manifest: ResultManifest | null = null;
-  let error = result.error;
+  const parsed = useMemo(() => {
+    if (!result.data) return { manifest: null };
+    try {
+      return { manifest: parseResultManifest(result.data, model, location) };
+    } catch (caught) {
+      return {
+        manifest: null,
+        error:
+          caught instanceof Error
+            ? caught.message
+            : 'These results could not be verified.',
+      };
+    }
+  }, [result.data, model, location]);
+  const manifest: ResultManifest | null = parsed.manifest;
+  let error = result.error || parsed.error;
   if (!binding?.locations[location])
     error = 'Results are not available for this location.';
-  if (result.data) {
-    try {
-      manifest = parseResultManifest(result.data, model, location);
-    } catch (caught) {
-      error =
-        caught instanceof Error
-          ? caught.message
-          : 'These results could not be verified.';
-    }
-  }
-  return { manifest, error, loading: !error && !manifest, retry: result.retry };
+  return {
+    manifest,
+    error,
+    loading: !error && !manifest,
+    retry: result.retry,
+  };
 }
 
 export function useResultPlot(

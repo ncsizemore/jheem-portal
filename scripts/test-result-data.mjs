@@ -120,6 +120,18 @@ test('plot retention is bounded by both decoded size and recency', () => {
   assert.deepEqual(cache.get('d'), { value: 4 });
 });
 
+test('render-time cache reads do not change eviction order', () => {
+  const cache = new ResultCache(100, 2);
+  cache.set('a', { value: 1 }, 10);
+  cache.set('b', { value: 2 }, 10);
+  assert.deepEqual(cache.peek('a'), { value: 1 });
+  cache.set('c', { value: 3 }, 10);
+  assert.equal(cache.peek('a'), undefined);
+  assert.deepEqual(cache.get('b'), { value: 2 });
+  cache.set('d', { value: 4 }, 10);
+  assert.equal(cache.peek('c'), undefined);
+});
+
 test('every configured prerun location has a pinned immutable manifest', async () => {
   const { modelConfigs } = await import('../src/config/model-configs.ts');
   const bindings = JSON.parse(
