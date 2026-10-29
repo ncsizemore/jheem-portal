@@ -1030,3 +1030,46 @@ for (const stateMap of [false, true]) {
     expect(boundaries).toBe(initialBoundaries);
   });
 }
+
+test('whole-population plot changes keep a chart present on every animation frame', async ({
+  page,
+}) => {
+  await open(page);
+  await expect(page.locator('svg.recharts-surface')).toBeVisible();
+  await page.evaluate(() => {
+    const frames: boolean[] = [];
+    Object.assign(window, { resultFrames: frames });
+    const sample = () => {
+      frames.push(
+        Boolean(
+          document.querySelector(
+            '[data-testid="analysis-chart-region"] svg.recharts-surface .recharts-line-curve',
+          ),
+        ),
+      );
+      if (frames.length < 45) requestAnimationFrame(sample);
+    };
+    requestAnimationFrame(sample);
+  });
+  await page.getByLabel('Outcome', { exact: true }).selectOption('suppression');
+  await expect(page.getByTestId('analysis-chart-region')).toHaveAttribute(
+    'aria-label',
+    'Viral suppression results',
+  );
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () =>
+          (window as unknown as { resultFrames: boolean[] }).resultFrames
+            .length,
+      ),
+    )
+    .toBe(45);
+  expect(
+    await page.evaluate(() =>
+      (window as unknown as { resultFrames: boolean[] }).resultFrames.every(
+        Boolean,
+      ),
+    ),
+  ).toBe(true);
+});
