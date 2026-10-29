@@ -151,3 +151,71 @@ test('every configured prerun location has a pinned immutable manifest', async (
       validateResultRef(ref, 'manifests');
   }
 });
+
+test('default entry pointers match all pinned releases and refuse other selections or stale pins', async () => {
+  const { getResultEntryPlot } = await import(
+    '../src/config/result-entry-plots.ts'
+  );
+  const { modelConfigs } = await import('../src/config/model-configs.ts');
+  const releases = JSON.parse(
+    fs.readFileSync('src/config/result-data-releases.json'),
+  );
+  const entries = JSON.parse(
+    fs.readFileSync('src/config/result-entry-plots.json'),
+  );
+  let count = 0;
+  for (const [model, binding] of Object.entries(releases)) {
+    const config = modelConfigs[model];
+    for (const [location, ref] of Object.entries(binding.locations)) {
+      const selection = {
+        scenario: config.scenarios[0].id,
+        outcome: config.defaults.outcome,
+        statistic: config.defaults.statistic,
+        facet: 'none',
+      };
+      const entry = entries[model][location];
+      assert.equal(entry.manifest, ref.sha256);
+      assert.deepEqual(entry.selection, selection);
+      assert.deepEqual(
+        getResultEntryPlot(binding, model, location, selection),
+        entry.plot,
+      );
+      validateResultRef(entry.plot, 'plots');
+      assert.equal(
+        getResultEntryPlot(
+          {
+            ...binding,
+            locations: { [location]: { ...ref, sha256: 'a'.repeat(64) } },
+          },
+          model,
+          location,
+          selection,
+        ),
+        undefined,
+      );
+      for (const key of Object.keys(selection))
+        assert.equal(
+          getResultEntryPlot(binding, model, location, {
+            ...selection,
+            [key]: 'different',
+          }),
+          undefined,
+        );
+      count++;
+    }
+  }
+  assert.equal(count, 90);
+  for (const file of fs
+    .readdirSync('tests/fixtures/result-data')
+    .filter((name) => name.endsWith('-manifest.json'))) {
+    const manifest = JSON.parse(
+      fs.readFileSync(`tests/fixtures/result-data/${file}`),
+    );
+    const entry = entries[manifest.model][manifest.metadata.city];
+    const s = entry.selection;
+    assert.deepEqual(
+      entry.plot,
+      manifest.data[s.scenario][s.outcome][s.statistic][s.facet],
+    );
+  }
+});

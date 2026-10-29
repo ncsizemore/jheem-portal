@@ -14,6 +14,13 @@ function subscribe(callback: () => void) {
 const snapshot = () => window.location.search;
 const serverSnapshot = () => '';
 
+// Do not mount map-only effects while the server's empty query is hydrating.
+const clientReady = () => true;
+const serverReady = () => false;
+export function useAnalysisReady() {
+  return useSyncExternalStore(subscribe, clientReady, serverReady);
+}
+
 export function useAnalysisQuery() {
   return new URLSearchParams(
     useSyncExternalStore(subscribe, snapshot, serverSnapshot),

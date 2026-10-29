@@ -56,37 +56,35 @@ export function useAnalysisState({
   const selectionData = catalog ?? allScenarioData;
   // Explicit changes retain compatible choices. Invalid URL values never enter a data lookup.
   const [notice, setNotice] = useState('');
-  const selectedScenario = choose(
-    query.get('scenario'),
-    config.scenarios[0]?.id ?? '',
-    selectionData ? Object.keys(selectionData) : availableOptions.scenarios,
-  );
+  const selectedScenario = !isDataLoaded
+    ? query.get('scenario') || config.scenarios[0]?.id || ''
+    : choose(
+        query.get('scenario'),
+        config.scenarios[0]?.id ?? '',
+        selectionData ? Object.keys(selectionData) : availableOptions.scenarios,
+      );
   const currentScenario = selectionData
     ? selectionData[selectedScenario]
     : scenarioData;
   const outcomes = currentScenario
     ? Object.keys(currentScenario)
     : availableOptions.outcomes;
-  const selectedOutcome = choose(
-    query.get('outcome'),
-    config.defaults.outcome,
-    outcomes,
-  );
+  const selectedOutcome = !isDataLoaded
+    ? query.get('outcome') || config.defaults.outcome
+    : choose(query.get('outcome'), config.defaults.outcome, outcomes);
   const statistics = currentScenario?.[selectedOutcome]
     ? Object.keys(currentScenario[selectedOutcome])
     : availableOptions.statistics;
-  const selectedStatistic = choose(
-    query.get('summary'),
-    config.defaults.statistic,
-    statistics,
-  );
+  const selectedStatistic = !isDataLoaded
+    ? query.get('summary') || config.defaults.statistic
+    : choose(query.get('summary'), config.defaults.statistic, statistics);
   const facetChoices = getFacetChoices(
     currentScenario?.[selectedOutcome]?.[selectedStatistic],
   );
   const requestedFacet = query.get('breakdown') || 'none';
   const selectedFacet = isDataLoaded
     ? resolveFacet(requestedFacet, facetChoices)
-    : '';
+    : requestedFacet;
   const facetDimensions = { ...EMPTY };
   for (const dim of DIMENSIONS)
     facetDimensions[dim] = selectedFacet.split('+').includes(dim);

@@ -14,8 +14,8 @@
  */
 
 import { useCallback, useMemo } from 'react';
-import { motion } from 'framer-motion';
 import { useResultManifest, useResultPlot } from '@/hooks/useResultData';
+import { getResultEntryPlot } from '@/config/result-entry-plots';
 import { resultDataReleases } from '@/config/result-data-releases';
 import {
   useAnalysisState,
@@ -81,12 +81,18 @@ export default function AnalysisView({
     catalog: manifest?.data,
   });
 
-  const plotResult = useResultPlot(binding, manifest, {
+  const requestedSelection = {
     scenario: selectedScenario,
     outcome: selectedOutcome,
     statistic: selectedStatistic,
     facet: selectedFacet,
-  });
+  };
+  const plotResult = useResultPlot(
+    binding,
+    manifest,
+    requestedSelection,
+    getResultEntryPlot(binding, config.id, locationCode, requestedSelection),
+  );
   const plotData = plotResult.plot;
   const error = manifestResult.error;
   const loading = !error && manifestResult.loading;
@@ -120,10 +126,10 @@ export default function AnalysisView({
 
   // Get available scenarios from data
   const availableScenarios = useMemo(() => {
-    return config.scenarios.filter((s) =>
-      availableOptions.scenarios.includes(s.id),
+    return config.scenarios.filter(
+      (s) => !manifest || availableOptions.scenarios.includes(s.id),
     );
-  }, [config.scenarios, availableOptions.scenarios]);
+  }, [config.scenarios, availableOptions.scenarios, manifest]);
 
   // Handle location switch
   const handleLocationChange = useCallback(
@@ -135,11 +141,7 @@ export default function AnalysisView({
   );
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.3 }}
+    <div
       data-testid="analysis-view"
       className="absolute inset-0 bg-white flex flex-col overflow-y-auto text-ink"
     >
@@ -207,6 +209,7 @@ export default function AnalysisView({
               </span>
               <select
                 aria-label="Scenario"
+                disabled={!manifest}
                 value={selectedScenario}
                 onChange={(event) => setSelectedScenario(event.target.value)}
                 className="mt-1 w-full rounded border border-rule bg-white px-3 py-2 text-sm text-ink sm:hidden"
@@ -228,6 +231,7 @@ export default function AnalysisView({
                       key={scenario.id}
                       type="button"
                       aria-pressed={selectedScenario === scenario.id}
+                      disabled={!manifest}
                       onClick={() => setSelectedScenario(scenario.id)}
                       className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1
                         ${
@@ -253,78 +257,56 @@ export default function AnalysisView({
         </div>
       </div>
 
-      {/* Loading / Error / Results */}
-      {loading ? (
-        <div className="flex-1 flex items-center justify-center">
-          <div className="text-center">
-            <div className="w-8 h-8 border-2 border-slate-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-3" />
-            <p role="status" className="text-slate-500">
-              Loading results for {currentLocation?.name || locationCode}…
-            </p>
-          </div>
-        </div>
-      ) : error ? (
-        <div className="flex-1 flex items-center justify-center">
-          <div role="alert" className="text-center max-w-md px-4">
-            <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg
-                className="w-6 h-6 text-red-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-            </div>
-            <h3 className="text-slate-900 font-medium mb-2">
-              Failed to load data
-            </h3>
-            <p className="text-slate-500 text-sm">{error}</p>
-            <button
-              onClick={retry}
-              className="mt-4 rounded border border-rule px-4 py-2 text-ink"
-            >
-              Retry loading results
-            </button>
-          </div>
-        </div>
-      ) : (
-        <AnalysisResults
-          loading={plotResult.loading}
-          loadError={plotResult.error}
-          onRetry={plotResult.retry}
-          chartPanels={chartPanels}
-          plotData={plotData}
-          selectedOutcome={selectedOutcome}
-          selectedStatistic={selectedStatistic}
-          selectedFacet={selectedFacet}
-          facetDimensions={facetDimensions}
-          availableFacetDimensions={availableFacetDimensions}
-          availableOutcomes={availableOutcomes}
-          availableStatistics={availableStatistics}
-          setSelectedOutcome={setSelectedOutcome}
-          setSelectedStatistic={setSelectedStatistic}
-          toggleFacetDimension={toggleFacetDimension}
-          facetChoices={facetChoices}
-          setSelectedFacet={setSelectedFacet}
-          selectionNotice={selectionNotice}
-          modelName={config.name}
-          modelId={config.id}
-          timeline={
-            config.scenarios.find((s) => s.id === selectedScenario)?.timeline
-          }
-          scenarioDescription={scenarioDescriptions[selectedScenario]}
-          interventionStartYear={config.interventionStartYear}
-          locationName={currentLocation?.name}
-          scenarioLabel={scenarioLabels[selectedScenario]}
-          getOutcomeDisplayName={getOutcomeDisplayName}
-        />
-      )}
-    </motion.div>
+      <AnalysisResults
+        loading={loading || plotResult.loading}
+        controlsDisabled={!manifest}
+        loadingMessage={
+          loading
+            ? `Loading results for ${currentLocation?.name || locationCode}…`
+            : undefined
+        }
+        loadError={error || plotResult.error}
+        onRetry={retry}
+        chartPanels={chartPanels}
+        plotData={plotData}
+        selectedOutcome={selectedOutcome}
+        selectedStatistic={selectedStatistic}
+        selectedFacet={selectedFacet}
+        facetDimensions={facetDimensions}
+        availableFacetDimensions={availableFacetDimensions}
+        availableOutcomes={manifest ? availableOutcomes : [selectedOutcome]}
+        availableStatistics={
+          manifest ? availableStatistics : [selectedStatistic]
+        }
+        setSelectedOutcome={setSelectedOutcome}
+        setSelectedStatistic={setSelectedStatistic}
+        toggleFacetDimension={toggleFacetDimension}
+        facetChoices={
+          manifest
+            ? facetChoices
+            : [
+                {
+                  key: selectedFacet,
+                  label:
+                    selectedFacet === 'none'
+                      ? 'Whole population'
+                      : selectedFacet,
+                },
+              ]
+        }
+        setSelectedFacet={setSelectedFacet}
+        selectionNotice={selectionNotice}
+        modelName={config.name}
+        modelId={config.id}
+        timeline={
+          config.scenarios.find((s) => s.id === selectedScenario)?.timeline
+        }
+        scenarioDescription={scenarioDescriptions[selectedScenario]}
+        interventionStartYear={config.interventionStartYear}
+        locationName={currentLocation?.name}
+        scenarioLabel={scenarioLabels[selectedScenario]}
+        getOutcomeDisplayName={getOutcomeDisplayName}
+      />
+    </div>
   );
 }
