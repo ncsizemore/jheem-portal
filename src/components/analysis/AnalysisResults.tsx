@@ -521,7 +521,7 @@ export default function AnalysisResults({
           data-testid="displayed-result-context"
           className="mt-2 text-xs leading-5 text-muted"
         >
-          Showing {definition.label.toLowerCase()} · {locationName} ·{' '}
+          Showing: {definition.label} · {locationName} ·{' '}
           {scenarioLabel} · {SUMMARY_LABELS[statistic] || statistic} ·{' '}
           {facetLabel(displayedFacet || 'none')}
         </p>
