@@ -15,6 +15,9 @@ test.beforeAll(async () => {
   fixtures = await resultFixtures();
   baltimore = fixtures.baltimore;
 });
+test.beforeEach(async ({ page }) => {
+  await page.route('https://**/*', (route) => route.abort());
+});
 const summary = (name: string) => ({
   name,
   shortName: name.split(',')[0],
@@ -79,7 +82,7 @@ test('all fourteen outcomes have specific explanations and correctly labeled uni
       'false',
     );
     const descriptionId = await page
-      .getByLabel('Outcome', { exact: true })
+      .getByTestId('analysis-chart-region')
       .getAttribute('aria-describedby');
     const text = await page.locator(`[id="${descriptionId}"]`).innerText();
     expect(text.length).toBeGreaterThan(35);
@@ -248,7 +251,14 @@ test('a slow old location cannot replace a newer cached result', async ({
     .click();
   await page.getByRole('combobox', { name: 'Search cities' }).fill('Atlanta');
   await page.getByRole('combobox', { name: 'Search cities' }).press('Enter');
-  await expect(page.getByText(/Loading results for Atlanta/)).toBeVisible();
+  await expect(
+    page.getByText('Updating result…', { exact: true }),
+  ).toBeVisible();
+  await expect(page.getByTestId('displayed-result-context')).toContainText(
+    'Baltimore',
+  );
+  await expect(page.getByLabel('Outcome', { exact: true })).toBeDisabled();
+  await expect(page.locator('svg.recharts-surface')).toBeVisible();
   await page
     .getByRole('button', {
       name: /Atlanta-Sandy-Springs|Atlanta-Sandy Springs/,
@@ -294,10 +304,10 @@ test('mismatched data is rejected and an inline retry recovers', async ({
   );
   await page.goto('/ryan-white/explorer?loc=C.12580');
   await expect(
-    page.getByRole('alert').filter({ hasText: 'Failed to load data' }),
+    page.getByTestId('analysis-view').getByRole('alert'),
   ).toContainText('do not match');
   await page.unroute(manifestUrl);
-  await page.getByRole('button', { name: 'Retry loading results' }).click();
+  await page.getByRole('button', { name: 'Retry loading result' }).click();
   await expect(page.getByLabel('Outcome', { exact: true })).toBeVisible();
 });
 
@@ -414,7 +424,9 @@ test('a late plot cannot overwrite a newer selection and controls remain usable'
     pending = route;
   });
   await page.getByLabel('Outcome', { exact: true }).selectOption('suppression');
-  await expect(page.getByText('Loading selected result…')).toBeVisible();
+  await expect(
+    page.getByText('Updating result…', { exact: true }),
+  ).toBeVisible();
   await expect(
     page.getByRole('button', { name: 'PNG', exact: true }),
   ).toBeDisabled();
@@ -448,12 +460,11 @@ test('revisiting fourteen outcomes neither fetches again nor flashes a loading s
   });
   await open(page);
   for (const outcome of baltimore.metadata.outcomes) {
-    await page
-      .getByLabel('Outcome', { exact: true })
-      .selectOption(outcome);
-    await expect(
-      page.getByTestId('analysis-chart-region'),
-    ).toHaveAttribute('aria-busy', 'false');
+    await page.getByLabel('Outcome', { exact: true }).selectOption(outcome);
+    await expect(page.getByTestId('analysis-chart-region')).toHaveAttribute(
+      'aria-busy',
+      'false',
+    );
   }
   const before = requests.length;
   // Record even transitions that disappear before Playwright's next assertion.
@@ -470,8 +481,7 @@ test('revisiting fourteen outcomes neither fetches again nor flashes a loading s
         region.setAttribute(
           'data-busy-transitions',
           String(
-            Number(region.getAttribute('data-busy-transitions')) +
-              transitions,
+            Number(region.getAttribute('data-busy-transitions')) + transitions,
           ),
         );
     }).observe(region, {
@@ -481,12 +491,11 @@ test('revisiting fourteen outcomes neither fetches again nor flashes a loading s
     });
   });
   for (const outcome of baltimore.metadata.outcomes) {
-    await page
-      .getByLabel('Outcome', { exact: true })
-      .selectOption(outcome);
-    await expect(
-      page.getByTestId('analysis-chart-region'),
-    ).toHaveAttribute('aria-busy', 'false');
+    await page.getByLabel('Outcome', { exact: true }).selectOption(outcome);
+    await expect(page.getByTestId('analysis-chart-region')).toHaveAttribute(
+      'aria-busy',
+      'false',
+    );
   }
   expect(requests).toHaveLength(before);
   await expect(page.getByTestId('analysis-chart-region')).toHaveAttribute(
@@ -500,18 +509,20 @@ for (const { width, view } of [
   { width: 375, view: 'chart' },
   { width: 375, view: 'table' },
 ]) {
-  test(`an uncached selection reserves the ${view} height at ${width}px without showing stale results`, async ({
+  test(`an uncached selection retains the complete ${view} at ${width}px until replacement is ready`, async ({
     page,
   }, testInfo) => {
     await page.setViewportSize({ width, height: 1000 });
     await open(page);
     const region = page.getByTestId('analysis-chart-region');
     if (view === 'table') {
-      await page
-        .getByRole('button', { name: 'Table', exact: true })
-        .click();
+      await page.getByRole('button', { name: 'Table', exact: true }).click();
       await expect(region.getByRole('table')).toBeVisible();
     }
+    const priorMarkup = await region.innerHTML();
+    const priorContext = await page
+      .getByTestId('displayed-result-context')
+      .innerText();
     const readyHeight = await region.evaluate(
       (element) => element.getBoundingClientRect().height,
     );
@@ -533,23 +544,27 @@ for (const { width, view } of [
         (element) => element.getBoundingClientRect().height,
       ),
     ).toBeGreaterThanOrEqual(readyHeight);
-    await expect(region.locator('svg')).toHaveCount(0);
-    const statusOffset = await region.evaluate(
-      (element) => {
-        const text = document.createRange();
-        text.selectNodeContents(element.querySelector('[role="status"]')!);
-        return text.getBoundingClientRect().top - element.getBoundingClientRect().top;
-      },
+    expect(await region.innerHTML()).toBe(priorMarkup);
+    await expect(page.getByTestId('displayed-result-context')).toHaveText(
+      priorContext,
     );
-    expect(statusOffset).toBeLessThan(100);
+    await expect(
+      page.getByRole('heading', { name: 'New HIV infections', exact: true }),
+    ).toBeAttached();
+    await expect(
+      page.getByText('Updating result…', { exact: true }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole('button', { name: /Copy link/ }),
+    ).toBeDisabled();
     await expect(
       page.getByRole('button', { name: 'PNG', exact: true }),
     ).toBeDisabled();
     await expect(
       page.getByRole('button', { name: 'CSV', exact: true }),
     ).toBeDisabled();
-    await region.screenshot({
-      path: testInfo.outputPath('loading-reserved-space.png'),
+    await page.screenshot({
+      path: testInfo.outputPath('continuous-update.png'),
     });
     await pending!.fulfill({
       body: fixtures.artifacts.get(ref.path),
@@ -557,7 +572,17 @@ for (const { width, view } of [
     });
     await expect(region).toHaveAttribute('aria-busy', 'false');
     await expect(
-      page.getByRole('button', { name: view === 'table' ? 'CSV' : 'PNG', exact: true }),
+      page.getByRole('heading', { name: 'Viral suppression', exact: true }),
+    ).toBeAttached();
+    await expect(region).toHaveAttribute(
+      'aria-label',
+      'Viral suppression results',
+    );
+    await expect(
+      page.getByRole('button', {
+        name: view === 'table' ? 'CSV' : 'PNG',
+        exact: true,
+      }),
     ).toBeEnabled();
     await page.screenshot({
       path: testInfo.outputPath('results-ready.png'),
@@ -582,7 +607,7 @@ test('a failed plot can be retried without reloading the index or losing selecti
     '/ryan-white/explorer?loc=C.12580&outcome=suppression&summary=median.and.interval',
   );
   await expect(
-    page.getByTestId('analysis-chart-region').getByRole('alert'),
+    page.getByTestId('analysis-view').getByRole('alert'),
   ).toContainText('could not be loaded');
   await expect(page.getByLabel('Outcome', { exact: true })).toHaveValue(
     'suppression',
@@ -637,110 +662,371 @@ for (const [model, routePath] of [
 }
 
 for (const [scenario, label] of [
-  ["cessation", "Cessation"],
-  ["brief_interruption", "Brief Interruption"],
-  ["prolonged_interruption", "Prolonged Interruption"],
+  ['cessation', 'Cessation'],
+  ['brief_interruption', 'Brief Interruption'],
+  ['prolonged_interruption', 'Prolonged Interruption'],
 ]) {
   test(`study overview opens the chosen area and ${scenario} even when map summaries fail`, async ({
     page,
   }, testInfo) => {
     await setup(page);
     await page.route(`${base}/city-summaries.json`, (route) =>
-      route.fulfill({ status: 503, body: "Unavailable" }),
+      route.fulfill({ status: 503, body: 'Unavailable' }),
     );
-    await page.goto("/ryan-white");
-    if (scenario === "cessation")
+    await page.goto('/ryan-white');
+    if (scenario === 'cessation')
       await page.screenshot({
-        path: testInfo.outputPath("study-overview-desktop.png"),
+        path: testInfo.outputPath('study-overview-desktop.png'),
         fullPage: true,
       });
     await page
-      .getByLabel("Metropolitan area", { exact: true })
-      .selectOption("C.12580");
+      .getByLabel('Metropolitan area', { exact: true })
+      .selectOption('C.12580');
     await page
-      .getByLabel("Service interruption", { exact: true })
+      .getByLabel('Service interruption', { exact: true })
       .selectOption(scenario);
     await page
-      .getByRole("button", { name: "View results", exact: true })
+      .getByRole('button', { name: 'View results', exact: true })
       .click();
     await expect(page).toHaveURL(
       new RegExp(`loc=C.12580&scenario=${scenario}`),
     );
-    await expect(page.getByTestId("analysis-chart-region")).toHaveAttribute(
-      "aria-busy",
-      "false",
+    await expect(page.getByTestId('analysis-chart-region')).toHaveAttribute(
+      'aria-busy',
+      'false',
     );
     await expect(
-      page.getByRole("button", { name: label, exact: true }),
-    ).toHaveAttribute("aria-pressed", "true");
-    await expect(page.getByRole("heading", { level: 1 })).toContainText(
-      "Baltimore",
+      page.getByRole('button', { name: label, exact: true }),
+    ).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.getByRole('heading', { level: 1 })).toContainText(
+      'Baltimore',
     );
     await page
-      .getByRole("link", { name: "Study overview", exact: true })
+      .getByRole('link', { name: 'Study overview', exact: true })
       .click();
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText(
-      "What happens if Ryan White services stop?",
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+      'What happens if Ryan White services stop?',
     );
   });
 }
 
-test("study overview supports narrow-screen selection, coverage and return navigation", async ({
+test('study overview supports narrow-screen selection, coverage and return navigation', async ({
   page,
 }, testInfo) => {
   await page.setViewportSize({ width: 320, height: 812 });
   await setup(page);
-  await page.goto("/ryan-white");
+  await page.goto('/ryan-white');
   await expect(
     page
-      .getByRole("navigation", { name: "Ryan White navigation" })
-      .getByRole("link", { name: "Study overview" }),
-  ).toHaveAttribute("aria-current", "page");
+      .getByRole('navigation', { name: 'Ryan White navigation' })
+      .getByRole('link', { name: 'Study overview' }),
+  ).toHaveAttribute('aria-current', 'page');
   await page.screenshot({
-    path: testInfo.outputPath("study-overview-mobile.png"),
+    path: testInfo.outputPath('study-overview-mobile.png'),
     fullPage: true,
   });
   expect(
     await page
-      .getByRole("navigation", { name: "Ryan White navigation" })
+      .getByRole('navigation', { name: 'Ryan White navigation' })
       .evaluate(
         (nav) =>
           nav.firstElementChild!.scrollWidth <=
           nav.firstElementChild!.clientWidth,
       ),
   ).toBe(true);
-  await page.getByRole("button", { name: "View results", exact: true }).click();
+  await page.getByRole('button', { name: 'View results', exact: true }).click();
   await expect(page).toHaveURL(/\/ryan-white$/);
   await expect(
-    page.getByLabel("Metropolitan area", { exact: true }),
+    page.getByLabel('Metropolitan area', { exact: true }),
   ).toBeFocused();
-  await page.getByRole("link", { name: "Area not listed?" }).click();
+  await page.getByRole('link', { name: 'Area not listed?' }).click();
   await expect(
-    page.getByRole("link", {
-      name: "Explore state-level studies",
+    page.getByRole('link', {
+      name: 'Explore state-level studies',
       exact: false,
     }),
   ).toBeVisible();
   await page
-    .getByText("View all 31 metropolitan areas", { exact: true })
+    .getByText('View all 31 metropolitan areas', { exact: true })
     .click();
-  await expect(page.locator("#coverage li")).toHaveCount(31);
+  await expect(page.locator('#coverage li')).toHaveCount(31);
   await page
-    .getByRole("link", { name: "Baltimore-Columbia-Towson, MD", exact: true })
+    .getByRole('link', { name: 'Baltimore-Columbia-Towson, MD', exact: true })
     .click();
-  await expect(page.getByTestId("analysis-chart-region")).toHaveAttribute(
-    "aria-busy",
-    "false",
+  await expect(page.getByTestId('analysis-chart-region')).toHaveAttribute(
+    'aria-busy',
+    'false',
   );
-  const nav = page.getByRole("navigation", { name: "Ryan White navigation" });
-  await expect(nav.getByRole("link", { name: "Study overview" })).toBeVisible();
+  const nav = page.getByRole('navigation', { name: 'Ryan White navigation' });
+  await expect(nav.getByRole('link', { name: 'Study overview' })).toBeVisible();
   await expect(
-    nav.getByRole("link", { name: "Explore results" }),
-  ).toHaveAttribute("aria-current", "page");
-  await nav.getByRole("link", { name: "Study overview" }).click();
+    nav.getByRole('link', { name: 'Explore results' }),
+  ).toHaveAttribute('aria-current', 'page');
+  await nav.getByRole('link', { name: 'Study overview' }).click();
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= window.innerWidth,
     ),
   ).toBe(true);
 });
+
+test('a failed replacement preserves its complete previous result through retry', async ({
+  page,
+}) => {
+  await open(page);
+  const region = page.getByTestId('analysis-chart-region');
+  const previous = await region.innerHTML();
+  const ref =
+    fixtures.cityManifests['C.12580'].data.cessation.suppression[
+      'mean.and.interval'
+    ].none;
+  let attempts = 0;
+  await page.route(`${base}/${ref.path}`, (route) =>
+    ++attempts === 1 ? route.fulfill({ status: 503 }) : route.fallback(),
+  );
+  await page.getByLabel('Outcome', { exact: true }).selectOption('suppression');
+  await expect(
+    page.getByTestId('analysis-view').getByRole('alert'),
+  ).toContainText('could not be loaded');
+  expect(await region.innerHTML()).toBe(previous);
+  await expect(region).toHaveAttribute(
+    'aria-label',
+    'New HIV infections results',
+  );
+  await expect(
+    page.getByRole('button', { name: 'CSV', exact: true }),
+  ).toBeDisabled();
+  await page.getByRole('button', { name: 'Retry loading result' }).click();
+  await expect(region).toHaveAttribute(
+    'aria-label',
+    'Viral suppression results',
+  );
+  await expect(
+    page.getByRole('button', { name: 'PNG', exact: true }),
+  ).toBeEnabled();
+  expect(attempts).toBe(2);
+});
+
+test('default plot and index load concurrently without exposing an unverified plot', async ({
+  page,
+}) => {
+  await setup(page);
+  let pendingIndex: Route | undefined;
+  const manifestRef = resultBindings['ryan-white'].locations['C.12580'];
+  const plotRef =
+    fixtures.cityManifests['C.12580'].data.cessation.incidence[
+      'mean.and.interval'
+    ].none;
+  const loaded: string[] = [];
+  page.on('response', (response) => loaded.push(response.url()));
+  await page.route(`${base}/${manifestRef.path}`, (route) => {
+    pendingIndex = route;
+  });
+  await page.goto('/ryan-white/explorer?loc=C.12580');
+  await expect
+    .poll(() => loaded.includes(`${base}/${plotRef.path}`))
+    .toBe(true);
+  await expect(page.locator('svg.recharts-surface')).toHaveCount(0);
+  await expect(
+    page.getByRole('button', { name: 'PNG', exact: true }),
+  ).toBeDisabled();
+  await pendingIndex!.fulfill({
+    body: fixtures.artifacts.get(manifestRef.path),
+    contentType: 'application/json',
+  });
+  await expect(page.locator('svg.recharts-surface')).toBeVisible();
+  expect(
+    loaded.filter((url) => url === `${base}/${plotRef.path}`),
+  ).toHaveLength(1);
+});
+
+for (const [model, routePath, location] of [
+  ['ryan-white', '/ryan-white/explorer', 'C.12580'],
+  ['ryan-white-state-ajph', '/ryan-white-state-level/explorer/ajph', 'AL'],
+  ['ryan-white-state-croi', '/ryan-white-state-level/explorer/croi', 'MD'],
+  ['cdc-testing', '/cdc-testing/explorer', 'AL'],
+]) {
+  test(`${model} direct results never request map data`, async ({ page }) => {
+    const unwanted: string[] = [];
+    await page.route('https://**/*', (route) => route.abort());
+    await page.route(/summaries\.json|us-states\.json|mapbox/, (route) => {
+      unwanted.push(route.request().url());
+      return route.abort();
+    });
+    const artifacts =
+      model === 'ryan-white'
+        ? fixtures.artifacts
+        : await stateResultArtifacts(model, location);
+    await routeResultArtifacts(page, resultBindings[model].baseUrl, artifacts);
+    await page.goto(`${routePath}?loc=${location}`);
+    await expect(
+      page.getByRole('button', { name: 'PNG', exact: true }),
+    ).toBeEnabled();
+    await expect(page.locator('svg.recharts-surface')).toBeVisible();
+    expect(unwanted).toEqual([]);
+  });
+}
+
+test('a nondefault direct result fetches no speculative default plot', async ({
+  page,
+}) => {
+  const requested: string[] = [];
+  page.on('request', (request) => {
+    if (request.url().includes('/results-v1/plots/'))
+      requested.push(request.url());
+  });
+  await open(page, '&outcome=suppression');
+  expect(requested).toEqual([
+    `${base}/${fixtures.cityManifests['C.12580'].data.cessation.suppression['mean.and.interval'].none.path}`,
+  ]);
+});
+
+test('map navigation and browser history still work after a direct result', async ({
+  page,
+}) => {
+  await open(page);
+  await page.getByRole('button', { name: 'Map', exact: true }).click();
+  await expect(page).not.toHaveURL(/loc=/);
+  await expect(
+    page
+      .locator('select')
+      .filter({ has: page.locator('option[value="C.12580"]') }),
+  ).toBeVisible();
+  await page.goBack();
+  await expect(page.getByTestId('analysis-chart-region')).toHaveAttribute(
+    'aria-busy',
+    'false',
+  );
+  await expect(page.getByTestId('displayed-result-context')).toContainText(
+    'Baltimore',
+  );
+});
+
+test('scenario changes retain their own labels, timeline, and table until ready', async ({
+  page,
+}) => {
+  await open(page);
+  await page.getByRole('button', { name: 'Table', exact: true }).click();
+  const region = page.getByTestId('analysis-chart-region');
+  const previous = await region.innerHTML();
+  const ref =
+    fixtures.cityManifests['C.12580'].data.brief_interruption.incidence[
+      'mean.and.interval'
+    ].none;
+  let pending: Route | undefined;
+  await page.route(`${base}/${ref.path}`, (route) => {
+    pending = route;
+  });
+  await page
+    .getByRole('button', { name: 'Brief Interruption', exact: true })
+    .click();
+  await expect(region).toHaveAttribute('aria-busy', 'true');
+  expect(await region.innerHTML()).toBe(previous);
+  await expect(page.getByTestId('displayed-result-context')).toContainText(
+    'Cessation',
+  );
+  await expect(page.getByTestId('displayed-result-context')).not.toContainText(
+    'Brief Interruption',
+  );
+  await pending!.fulfill({
+    body: fixtures.artifacts.get(ref.path),
+    contentType: 'application/json',
+  });
+  await expect(region).toHaveAttribute('aria-busy', 'false');
+  await expect(page.getByTestId('displayed-result-context')).toContainText(
+    'Brief Interruption',
+  );
+  await expect(
+    region.getByRole('columnheader', { name: /Brief Interruption/ }).first(),
+  ).toBeVisible();
+});
+
+test('a failed location index keeps the old figure, then retries the requested location', async ({
+  page,
+}) => {
+  await open(page);
+  const ref = resultBindings['ryan-white'].locations['C.12060'];
+  let attempts = 0;
+  await page.route(`${base}/${ref.path}`, (route) =>
+    ++attempts === 1 ? route.fulfill({ status: 503 }) : route.fallback(),
+  );
+  await page
+    .getByRole('button', { name: /Baltimore-Columbia-Towson, MD/ })
+    .click();
+  await page.getByRole('combobox', { name: 'Search cities' }).fill('Atlanta');
+  await page.getByRole('combobox', { name: 'Search cities' }).press('Enter');
+  await expect(
+    page.getByTestId('analysis-view').getByRole('alert'),
+  ).toContainText('could not be loaded');
+  await expect(page.getByTestId('displayed-result-context')).toContainText(
+    'Baltimore',
+  );
+  await expect(page.locator('svg.recharts-surface')).toBeVisible();
+  await expect(page.getByLabel('Outcome', { exact: true })).toBeDisabled();
+  await page.getByRole('button', { name: 'Retry loading result' }).click();
+  await expect(page.getByTestId('displayed-result-context')).toContainText(
+    'Atlanta',
+  );
+  await expect(page.getByLabel('Outcome', { exact: true })).toBeEnabled();
+  expect(attempts).toBe(2);
+});
+
+for (const stateMap of [false, true]) {
+  test(`${stateMap ? 'state' : 'city'} map keeps its controls and layout across result navigation`, async ({
+    page,
+  }) => {
+    let summaries = 0;
+    let boundaries = 0;
+    page.on('request', (request) => {
+      if (request.url().includes('-summaries.json')) summaries++;
+      if (request.url().endsWith('/us-states.json')) boundaries++;
+    });
+    if (stateMap) {
+      const model = 'ryan-white-state-ajph';
+      const stateBase = resultBindings[model].baseUrl;
+      await routeResultArtifacts(
+        page,
+        stateBase,
+        await stateResultArtifacts(model, 'AL'),
+      );
+      await page.route(`${stateBase}/state-summaries.json`, (route) =>
+        route.fulfill({
+          json: { generated: '2026-03-02', states: { AL: summary('Alabama') } },
+        }),
+      );
+      await page.goto('/ryan-white-state-level/explorer/ajph?loc=AL');
+      await expect(
+        page.getByRole('button', { name: 'PNG', exact: true }),
+      ).toBeEnabled();
+    } else await open(page);
+    await page.getByRole('button', { name: 'Map', exact: true }).click();
+    const instructions = page.locator(
+      `button[aria-controls="${stateMap ? 'state' : 'city'}-explorer-instructions"]`,
+    );
+    await expect(instructions).toHaveAttribute('aria-expanded', 'true');
+    // React Strict Mode can start/abort an extra mount request in dev.
+    // Returning to the existing map must add none.
+    const initialSummaries = summaries;
+    const initialBoundaries = boundaries;
+    expect(initialSummaries).toBeGreaterThan(0);
+    if (stateMap) expect(initialBoundaries).toBeGreaterThan(0);
+    await instructions.click();
+    const location = stateMap ? 'AL' : 'C.12580';
+    await page
+      .locator('select')
+      .filter({ has: page.locator(`option[value="${location}"]`) })
+      .selectOption(location);
+    await expect(
+      page.getByRole('button', { name: 'PNG', exact: true }),
+    ).toBeEnabled();
+    await page.setViewportSize({ width: 920, height: 800 });
+    await page.getByRole('button', { name: 'Map', exact: true }).click();
+    await expect(instructions).toHaveAttribute('aria-expanded', 'false');
+    await expect(page.locator('.mapboxgl-canvas')).toBeVisible();
+    const canvas = await page.locator('.mapboxgl-canvas').boundingBox();
+    expect(canvas?.width).toBeGreaterThanOrEqual(900);
+    expect(canvas?.height).toBeGreaterThan(400);
+    expect(summaries).toBe(initialSummaries);
+    expect(boundaries).toBe(initialBoundaries);
+  });
+}

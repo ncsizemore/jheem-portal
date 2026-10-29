@@ -1,5 +1,5 @@
 'use client';
-import { useState, useRef, useId, useMemo, useLayoutEffect } from 'react';
+import { useState, useRef, useId, useMemo, useEffect } from 'react';
 import type { ScenarioConfig } from '@/config/model-configs';
 import type {
   PlotDataFile,
@@ -27,8 +27,12 @@ import { getValueRange } from '@/utils/transformPlotData';
 import { facetLabel } from '@/utils/analysisFacets';
 import { describeScenarioTimeline } from '@/utils/modelTimeline';
 
+const EMPTY_PANELS: FacetPanel[] = [];
+
 export interface AnalysisResultsProps {
   loading?: boolean;
+  loadingMessage?: string;
+  controlsDisabled?: boolean;
   loadError?: string;
   onRetry?: () => void;
   // Data
@@ -67,12 +71,29 @@ export interface AnalysisResultsProps {
   getOutcomeDisplayName?: (outcome: string) => string;
 }
 
+function PendingResultStatus({
+  message,
+  immediate,
+}: {
+  message: string;
+  immediate: boolean;
+}) {
+  const [visible, setVisible] = useState(immediate);
+  useEffect(() => {
+    const timer = setTimeout(() => setVisible(true), 150);
+    return () => clearTimeout(timer);
+  }, []);
+  return visible ? message : null;
+}
+
 export default function AnalysisResults({
   loading = false,
+  loadingMessage,
+  controlsDisabled = false,
   loadError,
   onRetry,
-  chartPanels,
-  plotData,
+  chartPanels: requestedChartPanels,
+  plotData: requestedPlotData,
   selectedOutcome,
   selectedStatistic,
   selectedFacet,
@@ -83,17 +104,69 @@ export default function AnalysisResults({
   setSelectedOutcome,
   setSelectedStatistic,
   toggleFacetDimension,
-  interventionStartYear,
-  locationName = '',
-  scenarioLabel = 'Scenario',
+  interventionStartYear: requestedInterventionStartYear,
+  locationName: requestedLocationName = '',
+  scenarioLabel: requestedScenarioLabel = 'Scenario',
   getOutcomeDisplayName,
   facetChoices,
   setSelectedFacet,
   selectionNotice,
-  modelName = 'JHEEM',
-  timeline,
-  scenarioDescription = '',
+  modelName: requestedModelName = 'JHEEM',
+  modelId,
+  timeline: requestedTimeline,
+  scenarioDescription: requestedScenarioDescription = '',
 }: AnalysisResultsProps) {
+  // A result and its scientific context commit together. Controls describe the
+  // request; the retained snapshot describes only the data currently on screen.
+  const nextDisplay = useMemo(
+    () =>
+      requestedPlotData
+        ? {
+            plotData: requestedPlotData,
+            chartPanels: requestedChartPanels,
+            outcome: selectedOutcome,
+            statistic: selectedStatistic,
+            facet: selectedFacet,
+            locationName: requestedLocationName,
+            scenarioLabel: requestedScenarioLabel,
+            modelName: requestedModelName,
+            modelId,
+            timeline: requestedTimeline,
+            scenarioDescription: requestedScenarioDescription,
+            interventionStartYear: requestedInterventionStartYear,
+          }
+        : null,
+    [
+      requestedPlotData,
+      requestedChartPanels,
+      selectedOutcome,
+      selectedStatistic,
+      selectedFacet,
+      requestedLocationName,
+      requestedScenarioLabel,
+      requestedModelName,
+      modelId,
+      requestedTimeline,
+      requestedScenarioDescription,
+      requestedInterventionStartYear,
+    ],
+  );
+  const complete = !loading && !loadError ? nextDisplay : null;
+  const [lastDisplay, setLastDisplay] = useState(complete);
+  if (complete && complete !== lastDisplay) setLastDisplay(complete);
+  const display =
+    complete || (lastDisplay?.modelId === modelId ? lastDisplay : null);
+  const plotData = display?.plotData ?? null;
+  const chartPanels = display?.chartPanels ?? EMPTY_PANELS;
+  const locationName = display?.locationName ?? requestedLocationName;
+  const scenarioLabel = display?.scenarioLabel ?? requestedScenarioLabel;
+  const modelName = display?.modelName ?? requestedModelName;
+  const timeline = display?.timeline;
+  const scenarioDescription = display?.scenarioDescription ?? '';
+  const interventionStartYear = display?.interventionStartYear;
+  const displayedOutcome = display?.outcome ?? selectedOutcome;
+  const displayedFacet = display?.facet ?? selectedFacet;
+  const canExport = !!display && !loading && !loadError;
   const [view, setView] = useState<'chart' | 'table'>('chart');
   const [separateScales, setSeparateScales] = useState(false);
   const [options, setOptions] = useState<ChartDisplayOptions>({
@@ -105,28 +178,17 @@ export default function AnalysisResults({
   const [message, setMessage] = useState('');
   const [pagination, setPagination] = useState({ selection: '', page: 0 });
   const figureRef = useRef<HTMLDivElement>(null);
-  const regionRef = useRef<HTMLDivElement>(null);
-  const [readyHeight, setReadyHeight] = useState(440);
-  useLayoutEffect(() => {
-    const region = regionRef.current;
-    if (!region || loading || loadError || !plotData) return;
-    const measure = () =>
-      setReadyHeight(Math.ceil(region.getBoundingClientRect().height));
-    measure();
-    const observer = new ResizeObserver(measure);
-    observer.observe(region);
-    return () => observer.disconnect();
-  }, [loading, loadError, plotData, view]);
   const id = useId();
   const definition = getOutcomeDefinition(
-    selectedOutcome,
+    displayedOutcome,
     plotData?.metadata.outcome_metadata?.display_name,
   );
   const units =
     plotData?.metadata.y_label ||
     plotData?.metadata.outcome_metadata?.units ||
     '';
-  const statistic = plotData?.metadata.statistic || selectedStatistic;
+  const statistic =
+    plotData?.metadata.statistic || display?.statistic || selectedStatistic;
   const individual = statistic === 'individual.simulation';
   const intervals = chartPanels.some((p) =>
     p.data.some((d) => d.lower != null || d.baselineLower != null),
@@ -138,7 +200,7 @@ export default function AnalysisResults({
       p.individualSimulations?.some((line) => line.simset === 'Baseline'),
   );
   const faceted = chartPanels.length > 1;
-  const selection = `${locationName}/${scenarioLabel}/${selectedOutcome}/${statistic}/${selectedFacet}`;
+  const selection = `${locationName}/${scenarioLabel}/${displayedOutcome}/${statistic}/${displayedFacet}`;
   const page =
     pagination.selection === selection
       ? Math.min(
@@ -209,11 +271,12 @@ export default function AnalysisResults({
   const exportArgs = {
     locationName,
     scenario: scenarioLabel,
-    outcome: selectedOutcome,
+    outcome: displayedOutcome,
     statistic,
-    facet: selectedFacet,
+    facet: displayedFacet,
   };
   async function downloadPng() {
+    if (!canExport) return;
     setExporting(true);
     setMessage('');
     try {
@@ -235,6 +298,7 @@ export default function AnalysisResults({
     }
   }
   async function copyLink() {
+    if (!canExport) return;
     try {
       await navigator.clipboard.writeText(window.location.href);
       setMessage('Link copied to this analysis.');
@@ -275,7 +339,7 @@ export default function AnalysisResults({
             value={selectedOutcome}
             onChange={(e) => setSelectedOutcome(e.target.value)}
             className={control}
-            aria-describedby={`${id}-definition`}
+            disabled={controlsDisabled}
           >
             {groups.map((group) => (
               <optgroup label={group} key={group}>
@@ -298,7 +362,7 @@ export default function AnalysisResults({
         <summary className="cursor-pointer text-sm font-medium">
           Adjust analysis{' '}
           <span className="sr-only ml-2 font-normal text-muted sm:not-sr-only">
-            {SUMMARY_LABELS[statistic] || statistic} ·{' '}
+            {SUMMARY_LABELS[selectedStatistic] || selectedStatistic} ·{' '}
             {facetLabel(selectedFacet || 'none')}
           </span>
         </summary>
@@ -307,6 +371,7 @@ export default function AnalysisResults({
             Summarize simulations
             <select
               aria-label="Summarize simulations"
+              disabled={controlsDisabled}
               value={selectedStatistic}
               onChange={(e) => setSelectedStatistic(e.target.value)}
               className={`${control} mt-1.5`}
@@ -323,6 +388,7 @@ export default function AnalysisResults({
               Population breakdown
               <select
                 aria-label="Population breakdown"
+                disabled={controlsDisabled}
                 value={selectedFacet}
                 onChange={(e) => setSelectedFacet(e.target.value)}
                 className={`${control} mt-1.5`}
@@ -344,7 +410,7 @@ export default function AnalysisResults({
                 <button
                   key={dim}
                   aria-pressed={facetDimensions[dim]}
-                  disabled={!availableFacetDimensions[dim]}
+                  disabled={controlsDisabled || !availableFacetDimensions[dim]}
                   onClick={() => toggleFacetDimension(dim)}
                   className={action}
                 >
@@ -375,7 +441,7 @@ export default function AnalysisResults({
               key={mode}
               aria-pressed={view === mode}
               onClick={() => setView(mode)}
-              className={`${action} ${view === mode ? 'bg-ink !text-white' : ''}`}
+              className={`${action} ${view === mode ? '!bg-ink !text-white' : ''}`}
             >
               {mode === 'chart' ? 'Chart' : 'Table'}
             </button>
@@ -383,8 +449,9 @@ export default function AnalysisResults({
         </div>
         <button
           className={action}
-          disabled={!chartPanels.length}
+          disabled={!canExport || !chartPanels.length}
           onClick={() => {
+            if (!canExport) return;
             exportToCsv({
               ...exportArgs,
               panels: chartPanels,
@@ -399,12 +466,18 @@ export default function AnalysisResults({
         </button>
         <button
           className={action}
-          disabled={!chartPanels.length || view !== 'chart' || exporting}
+          disabled={
+            !canExport || !chartPanels.length || view !== 'chart' || exporting
+          }
           onClick={downloadPng}
         >
           {exporting ? 'Creating figure…' : 'PNG'}
         </button>
-        <button className={`${action} hidden sm:block`} onClick={copyLink}>
+        <button
+          className={`${action} hidden sm:block`}
+          disabled={!canExport}
+          onClick={copyLink}
+        >
           Copy link
         </button>
         {view === 'chart' && (
@@ -417,40 +490,56 @@ export default function AnalysisResults({
           />
         )}
       </div>
-      <p role="status" aria-live="polite" className="mt-2 text-sm text-muted">
-        {message}
-      </p>
+      <div className="mt-2 min-h-6 text-sm leading-6 text-muted">
+        {loadError ? (
+          <div role="alert">
+            <span>{loadError} </span>
+            <button className="underline underline-offset-4" onClick={onRetry}>
+              Retry loading result
+            </button>
+          </div>
+        ) : (
+          <p role="status" aria-live="polite">
+            {loading ? (
+              <PendingResultStatus
+                key={`${requestedLocationName}/${selectedOutcome}/${selectedStatistic}/${selectedFacet}/${requestedScenarioLabel}`}
+                immediate={!display}
+                message={
+                  display
+                    ? 'Updating result…'
+                    : loadingMessage || 'Loading selected result…'
+                }
+              />
+            ) : (
+              message
+            )}
+          </p>
+        )}
+      </div>
+      {display && (
+        <p
+          data-testid="displayed-result-context"
+          className="mt-2 text-xs leading-5 text-muted"
+        >
+          Showing {definition.label.toLowerCase()} · {locationName} ·{' '}
+          {scenarioLabel} · {SUMMARY_LABELS[statistic] || statistic} ·{' '}
+          {facetLabel(displayedFacet || 'none')}
+        </p>
+      )}
       <div
-        ref={regionRef}
         data-testid="analysis-chart-region"
         role="region"
         aria-label={`${definition.label} results`}
         aria-busy={loading}
         aria-describedby={`${id}-definition`}
         className="mt-4"
-        style={loading ? { minHeight: readyHeight } : undefined}
       >
-        {loading ? (
-          <p
-            role="status"
-            className="border-t border-rule py-12 text-center text-sm text-muted"
-          >
-            Loading selected result…
-          </p>
-        ) : loadError ? (
-          <div role="alert" className="py-12 text-muted">
-            <p>{loadError}</p>
-            <button
-              className={`${action} mt-3 border border-rule`}
-              onClick={onRetry}
-            >
-              Retry loading result
-            </button>
+        {!display ? (
+          <div className="min-h-[440px] border-t border-rule py-12 text-center text-sm text-muted">
+            {!loading &&
+              !loadError &&
+              'No results are available for this selection.'}
           </div>
-        ) : !chartPanels.length ? (
-          <p role="status" className="py-12 text-muted">
-            No results are available for this selection.
-          </p>
         ) : view === 'table' ? (
           <ResultsTable
             panels={chartPanels}
@@ -559,7 +648,11 @@ export default function AnalysisResults({
         {timelineText && (
           <p>{timelineText} Values are annual model summaries.</p>
         )}
-        <button className={`${action} -ml-3 sm:hidden`} onClick={copyLink}>
+        <button
+          className={`${action} -ml-3 sm:hidden`}
+          disabled={!canExport}
+          onClick={copyLink}
+        >
           Copy link to this analysis
         </button>
         <details className="mt-3">

@@ -1,6 +1,6 @@
 # On-demand prerun results
 
-The portal reads a pinned location index followed by one selected plot. It no longer downloads the entire location bundle for a prerun analysis. This applies to all 90 configured locations across Ryan White MSA, AJPH, CROI, and CDC testing. Custom simulation delivery and calibration use their existing contracts.
+The portal reads a pinned location index and one selected plot. Default result links start those two requests together; other selections resolve their plot reference from the index. It no longer downloads the entire location bundle for a prerun analysis. This applies to all 90 configured locations across Ryan White MSA, AJPH, CROI, and CDC testing. Custom simulation delivery and calibration use their existing contracts.
 
 ## Contract and scientific equivalence
 
@@ -19,9 +19,15 @@ The browser checks index/plot hashes, exact decoded sizes, model/location/select
 
 ## Loading and retention
 
-Previously viewed results are resolved from the verified in-memory cache during rendering, without an intermediate loading state. Uncached selection changes hide the previous plot and reserve the last ready chart/table height while loading, so old values cannot be mistaken for the new selection and the result area does not collapse. Requests are cancelled on selection/model/location changes, timed out after 30 seconds, and ignored if they finish after supersession. Controls remain usable during plot loading; exports remain disabled until the selected data is ready. The location index determines available choices, so preserving a compatible breakdown does not require downloading unrelated plots.
+Previously viewed results are resolved from the verified in-memory cache during rendering, without an intermediate loading state. Uncached changes retain one complete displayed-result snapshot: plot/table, title, definition, units, location, scenario, timeline, summary and population breakdown. Requested controls are separate from that snapshot. A visible “Showing…” caption identifies the displayed result, including on mobile. The replacement commits only when its current request is verified. A short status appears after 150 ms for longer updates; its reserved line does not move the plot. A failed request leaves the previous result in place with a retry action.
 
-A recency cache retains at most 64 plots and 16 MiB of decoded plot payloads, plus eight indexes and 4 MiB of decoded index payloads. These are retained serialized-byte budgets, not measured JavaScript heap usage. The currently rendered/transformed plot has its own working memory. The largest plot in this release is about 5.3 MB decoded; streaming reads reject responses that exceed the expected size before JSON parsing. The location index is validated once per payload/model/location rather than on every outcome change. No predictive prefetching downloads unused outcomes. A cache miss may still use the browser HTTP cache; visible loading does not necessarily imply another origin request.
+Requests are cancelled on selection/model/location changes, timed out after 30 seconds, and ignored if they finish after supersession. Outcome/scenario/summary/breakdown controls are disabled while a new location index loads, so its choices are never validated against the previous location's catalogue. Location navigation remains usable. Exports and share buttons are disabled during pending/failed requests because the URL already represents the requested selection. Custom simulations continue to use the same result renderer with their existing delivery contract.
+
+Direct result links wait for URL hydration before mounting either view, and never mount the map or fetch summaries/geometry. Mapbox is a separate lazy module. After an explicit map visit, the mounted map retains its layout, viewport and controls while hidden and inert behind results, avoiding repeated map requests on return.
+
+`src/config/result-entry-plots.json` contains only default plot references derived from the pinned indexes. When the requested selection exactly matches that entry and its index hash matches the current release binding, the existing plot starts alongside the index. Neither is displayed before normal verification. A different selection or stale pointer uses index-then-plot loading. This eliminates a sequential round trip for default views without downloading any other outcomes.
+
+A recency cache retains at most 64 plots and 16 MiB of decoded plot payloads, plus eight indexes and 4 MiB of decoded index payloads. These are retained serialized-byte budgets, not measured JavaScript heap usage. The currently rendered/transformed plot has its own working memory; during replacement it retains the last complete display until the next one commits. The largest plot in this release is about 5.3 MB decoded; streaming reads reject responses that exceed the expected size before JSON parsing. The location index is validated once per payload/model/location rather than on every outcome change. No predictive prefetching downloads unused outcomes. A cache miss may still use the browser HTTP cache; visible loading does not necessarily imply another origin request.
 
 ## Releasing or refreshing data
 
@@ -76,7 +82,13 @@ aws s3 sync generated-data/result-chunks/staged/ryan-white/results-v1/ \
   --cache-control 'public,max-age=31536000,immutable' --only-show-errors
 ```
 
-Use each model's configured data URL/S3 prefix. AJPH uses `ryan-white-state`; CROI uses `ryan-white-state-croi`. Merge the complete staged bindings into `src/config/result-data-releases.json`, retaining the unchanged models. The regression suite rejects missing or extra configured locations and invalid artifact references.
+Use each model's configured data URL/S3 prefix. AJPH uses `ryan-white-state`; CROI uses `ryan-white-state-croi`. Merge the complete staged bindings into `src/config/result-data-releases.json`, retaining the unchanged models. The regression suite rejects missing or extra configured locations and invalid artifact references. After changing the binding, regenerate the default entry pointers from the same local staged indexes (no downloads or uploads):
+
+```sh
+node --import tsx scripts/prepare-result-entry-plots.ts generated-data/result-chunks/staged
+```
+
+The generator verifies each staged index against its pinned hash and size before extracting the default reference. Commit `src/config/result-entry-plots.json` with the changed binding and fixtures. If these pointers accidentally lag a deployed binding, the consumer safely falls back to sequential loading.
 
 After upload, export an inventory and verify delivery before merging the portal change:
 

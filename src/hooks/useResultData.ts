@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback, useMemo } from 'react';
 import type {
   ResultArtifactRef,
   ResultManifest,
+  ResultPlotRef,
   ResultReleaseBinding,
   ResultSelection,
 } from '@/types/result-data';
@@ -139,11 +140,13 @@ export function useResultPlot(
   binding: ResultReleaseBinding | undefined,
   manifest: ResultManifest | null,
   selection: ResultSelection,
+  entryPlot?: ResultPlotRef,
 ) {
-  const ref =
-    manifest?.data[selection.scenario]?.[selection.outcome]?.[
-      selection.statistic
-    ]?.[selection.facet];
+  const ref = manifest
+    ? manifest.data[selection.scenario]?.[selection.outcome]?.[
+        selection.statistic
+      ]?.[selection.facet]
+    : entryPlot;
   const result = useArtifact(
     binding?.baseUrl,
     ref?.selectable ? ref : undefined,

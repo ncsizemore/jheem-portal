@@ -1,0 +1,1360 @@
+{
+  "ryan-white": {
+    "C.12060": {
+      "manifest": "d73e626cda70744723a767e92fcb450b42f30dbd4f54cbad7e150b69d51d9763",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/e1ce97d46be393c33280a7a3f8219e3ec2365e6186da928f26e27df15fb0e3e9.json",
+        "sha256": "e1ce97d46be393c33280a7a3f8219e3ec2365e6186da928f26e27df15fb0e3e9",
+        "bytes": 8385,
+        "selectable": true
+      }
+    },
+    "C.12420": {
+      "manifest": "66226b3e497180c5fe5e8a47821292b089cf2f05c8a2c402ea7d216dbbcca4ef",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/f526fad181f6e148795802175bbc1a68377e37ccc44d020f496df2d83a784805.json",
+        "sha256": "f526fad181f6e148795802175bbc1a68377e37ccc44d020f496df2d83a784805",
+        "bytes": 8232,
+        "selectable": true
+      }
+    },
+    "C.12580": {
+      "manifest": "7b31654505ea642dc4e0b2713fcc4d4ab8b822e6e8cc50b3e9ebc13a9a0e72a5",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/d2b80e839ccebad1a897c40d700fe4f8af7004fdc49b932600ac3bdd4f0869ba.json",
+        "sha256": "d2b80e839ccebad1a897c40d700fe4f8af7004fdc49b932600ac3bdd4f0869ba",
+        "bytes": 8226,
+        "selectable": true
+      }
+    },
+    "C.12940": {
+      "manifest": "f6b1f46cfdf2805ab655e8ff9c49fa08d72fda6143b5487d3a5e00cde1722298",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/51dd15f4f61428d909b8ccd834b709b3a18a87b9839ab35c68799a235af9f5d8.json",
+        "sha256": "51dd15f4f61428d909b8ccd834b709b3a18a87b9839ab35c68799a235af9f5d8",
+        "bytes": 8210,
+        "selectable": true
+      }
+    },
+    "C.14460": {
+      "manifest": "fb2f81565529e503489e6c33f59a680912c8b34d3c44e565bd2e253fa5437d8c",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/edf1eb7affe6b3b0102046268ba1412ca59bfda947a48dd1d5e7d481a36536a5.json",
+        "sha256": "edf1eb7affe6b3b0102046268ba1412ca59bfda947a48dd1d5e7d481a36536a5",
+        "bytes": 8243,
+        "selectable": true
+      }
+    },
+    "C.16740": {
+      "manifest": "2759aee8fadf88caddc86f7958153f8680aec31e3189cfa92d715655907edf2b",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/8afbead720f77f812c7be6475c21eecff0ca8fe485a0435cd4a7f84d20e51a1b.json",
+        "sha256": "8afbead720f77f812c7be6475c21eecff0ca8fe485a0435cd4a7f84d20e51a1b",
+        "bytes": 8240,
+        "selectable": true
+      }
+    },
+    "C.16980": {
+      "manifest": "5360b09fbb2c8a4c145eaae896d9c9959a2edaef6ce38e46eb7a63fa390bd3ca",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/cf0170990ff43ce91f795ba2a3a0868f7143fc9944e75137b2edebdfd5f5d9a3.json",
+        "sha256": "cf0170990ff43ce91f795ba2a3a0868f7143fc9944e75137b2edebdfd5f5d9a3",
+        "bytes": 8351,
+        "selectable": true
+      }
+    },
+    "C.17460": {
+      "manifest": "2c6aba594e874c089783c10f6fa7436810f8ae2381df09a859afd28ebee6f6ad",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/517c27a50c9e1f72b57b872a9b30a9a92f1a9dabd3d5678207a4ed1f2884a4e1.json",
+        "sha256": "517c27a50c9e1f72b57b872a9b30a9a92f1a9dabd3d5678207a4ed1f2884a4e1",
+        "bytes": 8221,
+        "selectable": true
+      }
+    },
+    "C.18140": {
+      "manifest": "ee9a3016569f280c2e9eaba22ee9a13a18a0a782b4da0fa384bb9708a8131032",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/edfd3911ff9a36ce767b48e7fab11a658a3fb727ca2e96e914dcae6cb54b976a.json",
+        "sha256": "edfd3911ff9a36ce767b48e7fab11a658a3fb727ca2e96e914dcae6cb54b976a",
+        "bytes": 8209,
+        "selectable": true
+      }
+    },
+    "C.19100": {
+      "manifest": "86a10f04e83c062ea38b2d5828f165c91d1d4730b934383352d8569f83e69bb9",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/da276816e0d5049b8b84372c73ec0486d2ba5ebe046c07f684b46ea18f65446c.json",
+        "sha256": "da276816e0d5049b8b84372c73ec0486d2ba5ebe046c07f684b46ea18f65446c",
+        "bytes": 8372,
+        "selectable": true
+      }
+    },
+    "C.19820": {
+      "manifest": "4a0b16f86b685d83c9b3d3b70967cde8acd9700f9786f73006ea1653b38cf4b2",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/283e20d239b6a41c99939ed37587b5c4434be880431ae6c743d4732e00c0fbcd.json",
+        "sha256": "283e20d239b6a41c99939ed37587b5c4434be880431ae6c743d4732e00c0fbcd",
+        "bytes": 8235,
+        "selectable": true
+      }
+    },
+    "C.26420": {
+      "manifest": "12650125194248c81ffb91cb2079a0126deae0ae80574d2616c6066065d209cd",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/64418a8a619ec4ed74504edc9c0bd46703d8344df027d6433c98bea2b56269c8.json",
+        "sha256": "64418a8a619ec4ed74504edc9c0bd46703d8344df027d6433c98bea2b56269c8",
+        "bytes": 8381,
+        "selectable": true
+      }
+    },
+    "C.26900": {
+      "manifest": "06f9676c0af9aa409bc2b451398fd4559a854a20006ab30f95eb79f3bc86a39e",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/3da8d4abbd915882508bcce449168830fe10feb1f0922d13b2a59566f73ef90f.json",
+        "sha256": "3da8d4abbd915882508bcce449168830fe10feb1f0922d13b2a59566f73ef90f",
+        "bytes": 8229,
+        "selectable": true
+      }
+    },
+    "C.27260": {
+      "manifest": "4be0d1232e3421b848986a8eb63ee70d376f272e794b84c0698480007c7cda90",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/8e805e9ac40931691dea9698937c5d9d6f2ee7b0f431dcf089e62667cecc5706.json",
+        "sha256": "8e805e9ac40931691dea9698937c5d9d6f2ee7b0f431dcf089e62667cecc5706",
+        "bytes": 8225,
+        "selectable": true
+      }
+    },
+    "C.29820": {
+      "manifest": "ac70b215ca41975b99d8fbd7059c3e9d292642ca57c6a0189d9f228e605d9264",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/ff0f521176d9675e50ef91637d8cb78a92ddaaa66777a7f4eac9999eb5d4965e.json",
+        "sha256": "ff0f521176d9675e50ef91637d8cb78a92ddaaa66777a7f4eac9999eb5d4965e",
+        "bytes": 8268,
+        "selectable": true
+      }
+    },
+    "C.31080": {
+      "manifest": "b407977a92ed52f2d317f6a9be5dd93bc4329427ba766714fb4681324b66f414",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/03b02572add4babb91c93879810431d82eba291e3fde6e82d51527ec3293624c.json",
+        "sha256": "03b02572add4babb91c93879810431d82eba291e3fde6e82d51527ec3293624c",
+        "bytes": 8371,
+        "selectable": true
+      }
+    },
+    "C.32820": {
+      "manifest": "8de2de6582f64852d1b61b6fc071d45e7b9e7b5c67fc9a7411a9359f03075742",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/d389a646fab6160506db360143df0f64744fe88493ad7c8e91e363a31bde047c.json",
+        "sha256": "d389a646fab6160506db360143df0f64744fe88493ad7c8e91e363a31bde047c",
+        "bytes": 8210,
+        "selectable": true
+      }
+    },
+    "C.33100": {
+      "manifest": "e68e38bb06296e96e228891bfe4bbbfab5dbe9fe49322c7397fa25c2dfca0b9d",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/7b32419427e7f2b7dc9bb28925675e578942936ffa7a4237efc59412d26b6615.json",
+        "sha256": "7b32419427e7f2b7dc9bb28925675e578942936ffa7a4237efc59412d26b6615",
+        "bytes": 8375,
+        "selectable": true
+      }
+    },
+    "C.35380": {
+      "manifest": "302954301f50c81a1453ec98af3f05219761c6f49812e79a65ce59c718b59d2c",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/5a74fe32b61c76c5912114174b2b77bab6eda9d10556548cba8416e538ea9d71.json",
+        "sha256": "5a74fe32b61c76c5912114174b2b77bab6eda9d10556548cba8416e538ea9d71",
+        "bytes": 8219,
+        "selectable": true
+      }
+    },
+    "C.35620": {
+      "manifest": "fc39509006e45dda7da9ded8416662ccd75786872251edcfa82a64cde136329c",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/cc1c7092daea01a9e49a65cd6d8486a37c9ff7d552dfdb910aa2f8dcddf12566.json",
+        "sha256": "cc1c7092daea01a9e49a65cd6d8486a37c9ff7d552dfdb910aa2f8dcddf12566",
+        "bytes": 8375,
+        "selectable": true
+      }
+    },
+    "C.36740": {
+      "manifest": "bebb484faabfdd61b850e84a2098b1da48078a65d0fd8cf943fb458e1f1b369e",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/1a3ede3feba45e535cde2ac970dbf60b8d911a70c58d49479652defc56ffa6fb.json",
+        "sha256": "1a3ede3feba45e535cde2ac970dbf60b8d911a70c58d49479652defc56ffa6fb",
+        "bytes": 8288,
+        "selectable": true
+      }
+    },
+    "C.37980": {
+      "manifest": "994751295f930d57bc1d733544c877cbe8b74f0a8c0b9a55335755097b5d948e",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/02ae2e65508bc60c137d718d257388c7cbd20b7c468725f51ef6670478e60d7f.json",
+        "sha256": "02ae2e65508bc60c137d718d257388c7cbd20b7c468725f51ef6670478e60d7f",
+        "bytes": 8311,
+        "selectable": true
+      }
+    },
+    "C.38060": {
+      "manifest": "4712dd9caafd2a1c31274c14dbc54e487a58fe00c1e057891ef45f9e8943647c",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/9045ccb98ce9eb659067c9b86259b711121b7fbce75c387b6ec9f07c848e2e45.json",
+        "sha256": "9045ccb98ce9eb659067c9b86259b711121b7fbce75c387b6ec9f07c848e2e45",
+        "bytes": 8243,
+        "selectable": true
+      }
+    },
+    "C.40140": {
+      "manifest": "4a2ad913333e8207fd1601c4f716efe0351963aaa4df543083efbb520121ea53",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/e202409acf4b9874ee1a38b38e072270007da18d1a5fdb60291327d147321fcf.json",
+        "sha256": "e202409acf4b9874ee1a38b38e072270007da18d1a5fdb60291327d147321fcf",
+        "bytes": 8303,
+        "selectable": true
+      }
+    },
+    "C.40900": {
+      "manifest": "12cab01ce2a0109975182f83a80d8e2994e1b05a6b64580a8b1046e5bc4f24d8",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/1d5d996999906fa9f039258dc3a19311f41a7f66e2e275f89844d58cb0e1d788.json",
+        "sha256": "1d5d996999906fa9f039258dc3a19311f41a7f66e2e275f89844d58cb0e1d788",
+        "bytes": 8237,
+        "selectable": true
+      }
+    },
+    "C.41700": {
+      "manifest": "a782fc294fced71328a740b5d6a089689fe4189590e86d668e9855bf17dc9386",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/c2ea18201bace01e962dbb7e2b4b1df469c3155957958272e22081ef6e20cd05.json",
+        "sha256": "c2ea18201bace01e962dbb7e2b4b1df469c3155957958272e22081ef6e20cd05",
+        "bytes": 8236,
+        "selectable": true
+      }
+    },
+    "C.41740": {
+      "manifest": "ba109bd549387c89689c2cff5f7edffa574060e06257bb37cf5f08c43e1580e2",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/67f02d3fe4b44ad9ef46e1e2da99c6ed14af3de3d9729511bc59f65b0c2ef2bf.json",
+        "sha256": "67f02d3fe4b44ad9ef46e1e2da99c6ed14af3de3d9729511bc59f65b0c2ef2bf",
+        "bytes": 8254,
+        "selectable": true
+      }
+    },
+    "C.41860": {
+      "manifest": "7c7f9c9428349e3a4a131befd4068c8bbbdc4462e46fae58487ae54b89367e09",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/5bbaba3ceb19b08566020ec05c6ec71ec7221da32f4e73b69541a0e76c81bcc6.json",
+        "sha256": "5bbaba3ceb19b08566020ec05c6ec71ec7221da32f4e73b69541a0e76c81bcc6",
+        "bytes": 8245,
+        "selectable": true
+      }
+    },
+    "C.42660": {
+      "manifest": "ab83cdce243c857421db399d224ac992439d8c5fadbf9bc249e69c753f971021",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/2af01714a6804ee44a7aa5818bc1fe4acb05483677dd01d7684465cb71edc97d.json",
+        "sha256": "2af01714a6804ee44a7aa5818bc1fe4acb05483677dd01d7684465cb71edc97d",
+        "bytes": 8244,
+        "selectable": true
+      }
+    },
+    "C.45300": {
+      "manifest": "78103e7775b36d6704bea434d230c844e75f5a0f1d50fbd36ff90cbab97bc082",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/ec97e7675eef77a85c820117bebbf336d8015bab6f8c6d3958fb92788508b0b9.json",
+        "sha256": "ec97e7675eef77a85c820117bebbf336d8015bab6f8c6d3958fb92788508b0b9",
+        "bytes": 8251,
+        "selectable": true
+      }
+    },
+    "C.47900": {
+      "manifest": "8fbdc8e151284d226840b4b60d54b273da98f68942557977ecbcbddaeb8c9bba",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/ca61a8aaefd1258e58e4a70af292ccf8d95f4057014b102599e654bbadc44c3a.json",
+        "sha256": "ca61a8aaefd1258e58e4a70af292ccf8d95f4057014b102599e654bbadc44c3a",
+        "bytes": 8319,
+        "selectable": true
+      }
+    }
+  },
+  "ryan-white-state-ajph": {
+    "AL": {
+      "manifest": "22e01e7951940275a13aeb825fe4c7ecbc4a93520a0c1730e7b14fe03c8055c8",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/014698271574b3384e9dd20f514a3024f8bbe9faf790e03a6fc02a23da816609.json",
+        "sha256": "014698271574b3384e9dd20f514a3024f8bbe9faf790e03a6fc02a23da816609",
+        "bytes": 6705,
+        "selectable": true
+      }
+    },
+    "CA": {
+      "manifest": "0a2f36e76285688c7b4d5ee8bbe137b84dfb24c0e906588fbf0808373532116c",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/db8bab9f55d9fbc44a50c5e11af91700c686e888ee2c5e9892be20d22cf04c86.json",
+        "sha256": "db8bab9f55d9fbc44a50c5e11af91700c686e888ee2c5e9892be20d22cf04c86",
+        "bytes": 6796,
+        "selectable": true
+      }
+    },
+    "FL": {
+      "manifest": "8d02710fb41c8d86fe0c34b317ffc2ef15084ac702e39a26e0b0dcd099497465",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/e8d35a496203b3809244171e47a93c94e4e906ffbd07177c2a5b95ce214366f4.json",
+        "sha256": "e8d35a496203b3809244171e47a93c94e4e906ffbd07177c2a5b95ce214366f4",
+        "bytes": 6795,
+        "selectable": true
+      }
+    },
+    "GA": {
+      "manifest": "a698f5e5f71f4a7e0560096f66ad78a3e36e2a3997c99c09ae03a1b76e221951",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/5fa88f3fc593e08da4077fe29ec14219d5a41954497fc11bedd19a9903dbceff.json",
+        "sha256": "5fa88f3fc593e08da4077fe29ec14219d5a41954497fc11bedd19a9903dbceff",
+        "bytes": 6797,
+        "selectable": true
+      }
+    },
+    "IL": {
+      "manifest": "768750d4eeb00540e3ca5e5e84bd9c70626d0ce2c49bad2d4d95b7d2b2306317",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/e42eb81132afeae8e78521d449aef76c15f0beee60394a26b6c91d072b55df09.json",
+        "sha256": "e42eb81132afeae8e78521d449aef76c15f0beee60394a26b6c91d072b55df09",
+        "bytes": 6765,
+        "selectable": true
+      }
+    },
+    "LA": {
+      "manifest": "9aac2880b7821409f21c796a96569eabc4b1ef27c9ac6c413e22e4d4cab16304",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/eb83adccc93531c57f58f46d54d762faa05f4f1830edda44e4aa56ecdc310a05.json",
+        "sha256": "eb83adccc93531c57f58f46d54d762faa05f4f1830edda44e4aa56ecdc310a05",
+        "bytes": 6735,
+        "selectable": true
+      }
+    },
+    "MO": {
+      "manifest": "6411015b5a10ab67477baeccbe59dc84dd54b6cc44682f26d529e722233be7b8",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/2e6419334099ae6e92b773f8c1c70245cb4098f67efe96db93572ff7d820b806.json",
+        "sha256": "2e6419334099ae6e92b773f8c1c70245cb4098f67efe96db93572ff7d820b806",
+        "bytes": 6703,
+        "selectable": true
+      }
+    },
+    "MS": {
+      "manifest": "212c585ef59d72cf84731ecf765c2253a86c104c91a40a0a9f4622ac4e91ab1d",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/217598d3285bf9f78732367e61eb557f59f2f0204e4b6113de64c5b2d8c52dee.json",
+        "sha256": "217598d3285bf9f78732367e61eb557f59f2f0204e4b6113de64c5b2d8c52dee",
+        "bytes": 6696,
+        "selectable": true
+      }
+    },
+    "NY": {
+      "manifest": "d6c49ff99017c8aaa5bb70ff79d9d03b95a28bb39d93e10de2b90916850c7310",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/98e39cffbb392ae8dd5458191c94c11dae9b87c8e8763e04d33c248fd49f3531.json",
+        "sha256": "98e39cffbb392ae8dd5458191c94c11dae9b87c8e8763e04d33c248fd49f3531",
+        "bytes": 6801,
+        "selectable": true
+      }
+    },
+    "TX": {
+      "manifest": "74386cd1c503c857d6aa8b9e704985966ca8fa08b0fc8144a85ef3ea34982853",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/22cbeee458f9689834d78d77578ff94a2341ce232e577d3223a9698bb6d1f9c6.json",
+        "sha256": "22cbeee458f9689834d78d77578ff94a2341ce232e577d3223a9698bb6d1f9c6",
+        "bytes": 6795,
+        "selectable": true
+      }
+    },
+    "WI": {
+      "manifest": "c2c389403d8080832ee5c1d8b27e589b80131cdbc45d04d5fee77dd24eb0fd10",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/f55fb50adbb0977380648baad72f5e32a436377d06a2c4d7d89a7c98effeb2f9.json",
+        "sha256": "f55fb50adbb0977380648baad72f5e32a436377d06a2c4d7d89a7c98effeb2f9",
+        "bytes": 6689,
+        "selectable": true
+      }
+    }
+  },
+  "ryan-white-state-croi": {
+    "AL": {
+      "manifest": "cdef55ecf659ba4e9cb2eb400ef5474a9a9dd16af662d493d996eaa04554c80b",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/387e50b89178c0124e994f64570c285a5ce737161e054033d038d595e2b34829.json",
+        "sha256": "387e50b89178c0124e994f64570c285a5ce737161e054033d038d595e2b34829",
+        "bytes": 6877,
+        "selectable": true
+      }
+    },
+    "AR": {
+      "manifest": "9c9ea22b8251f4efec58e9524ef8a9297a843fbfd56c0b45a7ca7481445651e0",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/3191c6bfc6bded91deeeb84f6ad4867895b1fa69dc3ed2ad0ac8d37d7d7dca85.json",
+        "sha256": "3191c6bfc6bded91deeeb84f6ad4867895b1fa69dc3ed2ad0ac8d37d7d7dca85",
+        "bytes": 6860,
+        "selectable": true
+      }
+    },
+    "AZ": {
+      "manifest": "a2f5d1b4b036d8319454dd70b1593f304411e3493dbcf565027d45ae5d89d0fb",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/2099ec43429688d4ad7c654e1a92d6ce653f7f122da3c9db54ede564f8c10fa2.json",
+        "sha256": "2099ec43429688d4ad7c654e1a92d6ce653f7f122da3c9db54ede564f8c10fa2",
+        "bytes": 6873,
+        "selectable": true
+      }
+    },
+    "CA": {
+      "manifest": "7fa34c079bc93d4030bf0b7975f2163df49a1f177456e222f5d37d7d4dbc539e",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/e078130eadbd3bae338109842076621e392bd7b8fb3f9930a83ec0683e8ca9c5.json",
+        "sha256": "e078130eadbd3bae338109842076621e392bd7b8fb3f9930a83ec0683e8ca9c5",
+        "bytes": 6967,
+        "selectable": true
+      }
+    },
+    "CO": {
+      "manifest": "863013301d6e4dac7f071f0169f428ad7be03b530c6cb9c5f7d51dbcbd3b7a59",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/4e7cfbacec17f738e6103c9e31d953f9774eaf5909ef8d491f5920c0a3f7cce8.json",
+        "sha256": "4e7cfbacec17f738e6103c9e31d953f9774eaf5909ef8d491f5920c0a3f7cce8",
+        "bytes": 6874,
+        "selectable": true
+      }
+    },
+    "FL": {
+      "manifest": "09e756628dc31eebd6565b10013fd519285e460ec70e4390f05c765815a96732",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/88cb20ae4daf37dc3707c444611c2884258e618aec10c467b03442fe6c74bd7c.json",
+        "sha256": "88cb20ae4daf37dc3707c444611c2884258e618aec10c467b03442fe6c74bd7c",
+        "bytes": 6967,
+        "selectable": true
+      }
+    },
+    "GA": {
+      "manifest": "77471bd6aa079dee978bb138894aba34900f88e84c1a5a71c2051555a41314eb",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/490f7f28e00fe54829c5fd63afbd4d94b96da71e240efd24f59cd80d54394535.json",
+        "sha256": "490f7f28e00fe54829c5fd63afbd4d94b96da71e240efd24f59cd80d54394535",
+        "bytes": 6970,
+        "selectable": true
+      }
+    },
+    "IL": {
+      "manifest": "f4130c39da60706d35d20ead3126ceb10e4e07635fe6ccee34401ba2e9a3af6b",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/b880671f735c4bd3e5dee688694338b5b259e3e99f90e0b9bed4ce4bb11be7ed.json",
+        "sha256": "b880671f735c4bd3e5dee688694338b5b259e3e99f90e0b9bed4ce4bb11be7ed",
+        "bytes": 6926,
+        "selectable": true
+      }
+    },
+    "IN": {
+      "manifest": "c51ef35935a61109a1afc58a50e72bc35492afc6af2129cde6bc3760a9c23dd3",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/122f1e8e55a3bf875ed455f4da031580a7772e1898888e2e8aea8b3339484acd.json",
+        "sha256": "122f1e8e55a3bf875ed455f4da031580a7772e1898888e2e8aea8b3339484acd",
+        "bytes": 7027,
+        "selectable": true
+      }
+    },
+    "KY": {
+      "manifest": "35b220c8c2a6beaa5b0ef400397b8dfcd018d7a9b80aa4b3985c03a148bc426f",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/e06aa79ac03868d1b8daa180f9039c44222a56e2d7cfa2e0c62a9e1c09b21564.json",
+        "sha256": "e06aa79ac03868d1b8daa180f9039c44222a56e2d7cfa2e0c62a9e1c09b21564",
+        "bytes": 6849,
+        "selectable": true
+      }
+    },
+    "LA": {
+      "manifest": "77f6349d000261834282c7da090c3232af14869dfc770c22d252d52d53a352cd",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/f38995d220b5ad800155efb8c759f037faf90866c41fde896869efe08c2e88d5.json",
+        "sha256": "f38995d220b5ad800155efb8c759f037faf90866c41fde896869efe08c2e88d5",
+        "bytes": 6902,
+        "selectable": true
+      }
+    },
+    "MA": {
+      "manifest": "c033e0234a968f1f1804d7bf29047fc6917bc99efd13351c567c2448684c9692",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/992de63ad337ea209b567dee8a32122011e270be2080e73f6541ffd386e68784.json",
+        "sha256": "992de63ad337ea209b567dee8a32122011e270be2080e73f6541ffd386e68784",
+        "bytes": 6876,
+        "selectable": true
+      }
+    },
+    "MD": {
+      "manifest": "7970568a021f3d411b93dbc510f4d2943a5b6f17ab759ee0f3e3966abc5b65b6",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/978bb48884a21bda9d730522e198a6e110ede9d9fd07889b4dfe50f9d051f91d.json",
+        "sha256": "978bb48884a21bda9d730522e198a6e110ede9d9fd07889b4dfe50f9d051f91d",
+        "bytes": 6889,
+        "selectable": true
+      }
+    },
+    "MI": {
+      "manifest": "7afe973b7b245059ff3bb34bfff61442e6970b96548e51ba7516d5c7bf2f2057",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/15909a30c87ca7441ef6df72e2596abd4dd17673e769bb9f31a10a0b1308a48b.json",
+        "sha256": "15909a30c87ca7441ef6df72e2596abd4dd17673e769bb9f31a10a0b1308a48b",
+        "bytes": 6869,
+        "selectable": true
+      }
+    },
+    "MN": {
+      "manifest": "bc159a8b1743ab49461cc2593ed394db48ac168944c1a26b9baed4669d736c54",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/eae95f4efc11a71715a517a500f2d3d1f0f4105fc6a7df480629dbf97639d9b0.json",
+        "sha256": "eae95f4efc11a71715a517a500f2d3d1f0f4105fc6a7df480629dbf97639d9b0",
+        "bytes": 6861,
+        "selectable": true
+      }
+    },
+    "MO": {
+      "manifest": "0978a3b6f6f1198658c38e79c05f21f19d2072b9cfe17bc1eceef077d6ed68eb",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/24251fd57ce6cdaf750ecac4eb7105ac76dcadf34731aa8f54bb586544dcec8e.json",
+        "sha256": "24251fd57ce6cdaf750ecac4eb7105ac76dcadf34731aa8f54bb586544dcec8e",
+        "bytes": 6877,
+        "selectable": true
+      }
+    },
+    "MS": {
+      "manifest": "b0f8f5555bbfe98e49e3e24b52faaad91a59bd6eeefa273f6967bec1f9b42999",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/1ffd34ac3b42e051bc96ee8a22ecd4690580c4ce316d20bf1a6c6699bd86a7e5.json",
+        "sha256": "1ffd34ac3b42e051bc96ee8a22ecd4690580c4ce316d20bf1a6c6699bd86a7e5",
+        "bytes": 6866,
+        "selectable": true
+      }
+    },
+    "NC": {
+      "manifest": "fcd2cf7e98f2287e98ceb82c4a0883ff9e4608313fc2ce2097c4bb94fbd4b3b9",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/e6cf582af606cfb86fd3694975a776b037081974174a4b4e8aa2f3d4991082c6.json",
+        "sha256": "e6cf582af606cfb86fd3694975a776b037081974174a4b4e8aa2f3d4991082c6",
+        "bytes": 6974,
+        "selectable": true
+      }
+    },
+    "NJ": {
+      "manifest": "50e6de723d639cd5fcf5fde9e02478cf57a6df2928a8a39dae3b2cd557366b93",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/96ec79e6cbc5c0f251e2674e4e96b94a2b927d16491f445203826b1aaff0a3d1.json",
+        "sha256": "96ec79e6cbc5c0f251e2674e4e96b94a2b927d16491f445203826b1aaff0a3d1",
+        "bytes": 6943,
+        "selectable": true
+      }
+    },
+    "NV": {
+      "manifest": "82b2321df7a118d7267e72ede31f7c4baa94ffdd90c47306eba367cc7503a3d7",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/23919eb313ab939a884d208fe74afb5d05c45272198cede67295b8e98d0e42a1.json",
+        "sha256": "23919eb313ab939a884d208fe74afb5d05c45272198cede67295b8e98d0e42a1",
+        "bytes": 6858,
+        "selectable": true
+      }
+    },
+    "NY": {
+      "manifest": "b118206ee949de6dcbf5c09cdb42e27aaa2aed8dab6092ca84801059bd0e180d",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/7846fd4ad6cfc9d1f7b50ac2c27d91d62d0c0b7c033cb7f7aa3ff0e9788b0811.json",
+        "sha256": "7846fd4ad6cfc9d1f7b50ac2c27d91d62d0c0b7c033cb7f7aa3ff0e9788b0811",
+        "bytes": 6973,
+        "selectable": true
+      }
+    },
+    "OH": {
+      "manifest": "0bdc4a3b38b5132082fef73aaeeb0a7a8a1a6643c75a2cb006629da4ca3214b6",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/b06b311ee6ec7620f9f7b9bf4d2b7230d7fadf87137ecbbcc4541130b3d40b7d.json",
+        "sha256": "b06b311ee6ec7620f9f7b9bf4d2b7230d7fadf87137ecbbcc4541130b3d40b7d",
+        "bytes": 6891,
+        "selectable": true
+      }
+    },
+    "OK": {
+      "manifest": "c6b37d0fb3521536cb0c0d3a5e4a5d19ff5e815cc896e8eb089f0d45f8ee0f62",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/cc7f293a5746de5a4d132d62ea06920fbbd9d942130780e78b7d7e1513413059.json",
+        "sha256": "cc7f293a5746de5a4d132d62ea06920fbbd9d942130780e78b7d7e1513413059",
+        "bytes": 6862,
+        "selectable": true
+      }
+    },
+    "PA": {
+      "manifest": "f74f8f9965b24c4fcbdbb89a9c96f612738e3369dce7feb4fc3ea2d8968ebd27",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/83cc3d508bd3c7be25935ca3e7abf0c839e681cc0804a8eb344596d277ebc2bf.json",
+        "sha256": "83cc3d508bd3c7be25935ca3e7abf0c839e681cc0804a8eb344596d277ebc2bf",
+        "bytes": 6902,
+        "selectable": true
+      }
+    },
+    "SC": {
+      "manifest": "439abe94d6c7d1d4c3afb99a325c376d79e695199fd0a7bd620a9be697dee915",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/2133ed21e404e625074b41eee9cf837bd797d7db902078840ae4e18b720ad09c.json",
+        "sha256": "2133ed21e404e625074b41eee9cf837bd797d7db902078840ae4e18b720ad09c",
+        "bytes": 6890,
+        "selectable": true
+      }
+    },
+    "TN": {
+      "manifest": "fbc6eae619ccf5c378d629113d335dc272bb6922c90fb209103b96a440a10ee1",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/725c149ebdfd2fe8dbc87def894306fa6fafc5b6530e47ad1d2a4323d74feba8.json",
+        "sha256": "725c149ebdfd2fe8dbc87def894306fa6fafc5b6530e47ad1d2a4323d74feba8",
+        "bytes": 6894,
+        "selectable": true
+      }
+    },
+    "TX": {
+      "manifest": "e3fd42911414a6125d593b9619d3a2e8b283b787352c201ecf26d503135881f2",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/1156f0414a44e9443e69d59fae3d92165c81fdd056724f938cfd5a3c0f540e62.json",
+        "sha256": "1156f0414a44e9443e69d59fae3d92165c81fdd056724f938cfd5a3c0f540e62",
+        "bytes": 6972,
+        "selectable": true
+      }
+    },
+    "VA": {
+      "manifest": "cf9e172e36063381c10d57dff8ce619663c1c4cd1c05285f43683312017fa3d9",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/33dabd23213635687ee540066d9ec1910a958a5074d6d869d329b7cdd5ac79f3.json",
+        "sha256": "33dabd23213635687ee540066d9ec1910a958a5074d6d869d329b7cdd5ac79f3",
+        "bytes": 6872,
+        "selectable": true
+      }
+    },
+    "WA": {
+      "manifest": "8464c99b3fb228a020666f35fdd946745c7dada1e02b49831d76f4e1044699f9",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/f044bac4ef7def310dcdb7542edd157162399c1407e1ac6407dcfcb5d1b666a8.json",
+        "sha256": "f044bac4ef7def310dcdb7542edd157162399c1407e1ac6407dcfcb5d1b666a8",
+        "bytes": 6873,
+        "selectable": true
+      }
+    },
+    "WI": {
+      "manifest": "730d615688be922b0fea4bfbcc791f1e1e1f2d59885860cd93c900082851298c",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/0112818b4f31f34060ab9b351fd77c679321b50cefb8a678e322ad027a3f1a2c.json",
+        "sha256": "0112818b4f31f34060ab9b351fd77c679321b50cefb8a678e322ad027a3f1a2c",
+        "bytes": 6857,
+        "selectable": true
+      }
+    }
+  },
+  "cdc-testing": {
+    "AL": {
+      "manifest": "0f7fa17e6e17232b324d4bc92fb0d30e3da80878a0316fa8710d1c9e76e3fd10",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/9fd0a11f98a0f9b17cd7d6f880b0d09838dadbe078ab9257dd2408d37e7181cb.json",
+        "sha256": "9fd0a11f98a0f9b17cd7d6f880b0d09838dadbe078ab9257dd2408d37e7181cb",
+        "bytes": 22527,
+        "selectable": true
+      }
+    },
+    "AZ": {
+      "manifest": "a7cace7171181203df00d1a7152648d7a971889bfb9be75b24010c6af9cd8e24",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/2f4b40ef9c9828590f9ddc1824b5638e52bb7369a48b049eb4596762adc7dcca.json",
+        "sha256": "2f4b40ef9c9828590f9ddc1824b5638e52bb7369a48b049eb4596762adc7dcca",
+        "bytes": 22547,
+        "selectable": true
+      }
+    },
+    "CA": {
+      "manifest": "5f17cca4c8ea1b6a3c2bb97cbae03f7226cf31c855749a5cd72bc795fd505e6c",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/1fc80801e412dd0f08036297a50248800cc4e4e0d9e0c51e8bfaa371db7d94f0.json",
+        "sha256": "1fc80801e412dd0f08036297a50248800cc4e4e0d9e0c51e8bfaa371db7d94f0",
+        "bytes": 22970,
+        "selectable": true
+      }
+    },
+    "FL": {
+      "manifest": "0ea344009846278225dafb1dec4adfcd2f91e78ebe028c7ea7eea89e385dca10",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/ffb857983e0d73e81b3804344558f9294eab0def5eb7eade89c9fc4c0183076d.json",
+        "sha256": "ffb857983e0d73e81b3804344558f9294eab0def5eb7eade89c9fc4c0183076d",
+        "bytes": 22904,
+        "selectable": true
+      }
+    },
+    "GA": {
+      "manifest": "77df4811beeceb173d30bd2968614dbb02153d2230dc8b189518b5fb78dc8811",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/8f60e2479f7bd3fe1a5fd896d9460b88b76c4fbc1ac2cac04ebc9506bfddecef.json",
+        "sha256": "8f60e2479f7bd3fe1a5fd896d9460b88b76c4fbc1ac2cac04ebc9506bfddecef",
+        "bytes": 22867,
+        "selectable": true
+      }
+    },
+    "IL": {
+      "manifest": "774d01c5d62336a12f4b364876b4e26466b51b108f1f2277f42f7744b2781622",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/ef807d239714df2ea0f030c78f91a444ce8ad1cd8268a3f2c4f9d281404d0151.json",
+        "sha256": "ef807d239714df2ea0f030c78f91a444ce8ad1cd8268a3f2c4f9d281404d0151",
+        "bytes": 22775,
+        "selectable": true
+      }
+    },
+    "KY": {
+      "manifest": "c5c330e9b9c5ba81634873e748c65824779d967f1e0851b8a3df400b25793738",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/4dc586e13076565143cdffea5234a9ea515b16e639d095f51466e1e4f0407087.json",
+        "sha256": "4dc586e13076565143cdffea5234a9ea515b16e639d095f51466e1e4f0407087",
+        "bytes": 22477,
+        "selectable": true
+      }
+    },
+    "LA": {
+      "manifest": "879aa802495f2aa5f51df6e55137ae079dc81b69cf6e4a7017668f975a5a6f4c",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/bd474d6d3ed0848bddcd91bc01d561a627e746baf643e16534c4568f441c33d5.json",
+        "sha256": "bd474d6d3ed0848bddcd91bc01d561a627e746baf643e16534c4568f441c33d5",
+        "bytes": 22734,
+        "selectable": true
+      }
+    },
+    "MD": {
+      "manifest": "cca751708b04d0f3d44c31f12803fd686eca9c78295dc5d1f201397663cffcab",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/2c8236d21bbea09144c851f10b7bec144f03e630fbd9460583d66ff9ad6e2bc9.json",
+        "sha256": "2c8236d21bbea09144c851f10b7bec144f03e630fbd9460583d66ff9ad6e2bc9",
+        "bytes": 22729,
+        "selectable": true
+      }
+    },
+    "MO": {
+      "manifest": "efe1052967422e58c95766701fcbb18cdd14ee8d6660b149505dd64f3cd021ab",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/c22a3daa68d3eefee6e88cabbfbe891dab9e0c90f13a92caad8477a7ed8c1579.json",
+        "sha256": "c22a3daa68d3eefee6e88cabbfbe891dab9e0c90f13a92caad8477a7ed8c1579",
+        "bytes": 22534,
+        "selectable": true
+      }
+    },
+    "MS": {
+      "manifest": "793ac33f5432e36ea80be6e6829317dfb91122a79b5e0139845615724cc6b0e2",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/5563b75753e31be2bcc9b245b6ad5270c268287c514443a4688e6b110d0ac353.json",
+        "sha256": "5563b75753e31be2bcc9b245b6ad5270c268287c514443a4688e6b110d0ac353",
+        "bytes": 22470,
+        "selectable": true
+      }
+    },
+    "NY": {
+      "manifest": "33af955eb38ab1724db87a69f6ded8f71c00359ac0a2626285a3c820253156df",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/6139bd368f8b69afa0994bcbe907dcc88c1ada28412c374a6ee6783ac202907d.json",
+        "sha256": "6139bd368f8b69afa0994bcbe907dcc88c1ada28412c374a6ee6783ac202907d",
+        "bytes": 22949,
+        "selectable": true
+      }
+    },
+    "OH": {
+      "manifest": "32fc9bba738d292c417a3bafd7c103f0a339026b3e18baf9fc8014c58a5677c5",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/636606384a74b9a808ae7a400a7d8e0009eba05006cdc55cee052dcde0292d57.json",
+        "sha256": "636606384a74b9a808ae7a400a7d8e0009eba05006cdc55cee052dcde0292d57",
+        "bytes": 22685,
+        "selectable": true
+      }
+    },
+    "SC": {
+      "manifest": "bd9776d4f54647de0053450b5e01a65c642cb2b0727ab256d3bac5e9ac18d866",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/f8a5949164337ce2f8459f1811b33d0f6d514b5de9d1c598c9ba4d97ab728488.json",
+        "sha256": "f8a5949164337ce2f8459f1811b33d0f6d514b5de9d1c598c9ba4d97ab728488",
+        "bytes": 22559,
+        "selectable": true
+      }
+    },
+    "TN": {
+      "manifest": "3ceac6990e87270eeada7f5f8d117d8e3a8dbe0bc99fd01677d77dea0350e451",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/a7939b197f1285cc0a740b45ed53363ae4bad93327746d18a852b227d45ebfe9.json",
+        "sha256": "a7939b197f1285cc0a740b45ed53363ae4bad93327746d18a852b227d45ebfe9",
+        "bytes": 22613,
+        "selectable": true
+      }
+    },
+    "TX": {
+      "manifest": "90f49022eaa372c9a92ec7f850cf94c6809708aadc45d5916550b2cf4e95c76a",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/b4837a7dd414e4487e48f79a17441cb7c014737201e58e3f629e347748683998.json",
+        "sha256": "b4837a7dd414e4487e48f79a17441cb7c014737201e58e3f629e347748683998",
+        "bytes": 22905,
+        "selectable": true
+      }
+    },
+    "WA": {
+      "manifest": "b3d90b19d6f45d272247160303e56717351c5dfaa9ffe73f4980882da0c805e7",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/3170179a71898b710cc7a021b3a158e6d2152d3e1c4a88bc0352e7cdcad548f4.json",
+        "sha256": "3170179a71898b710cc7a021b3a158e6d2152d3e1c4a88bc0352e7cdcad548f4",
+        "bytes": 22538,
+        "selectable": true
+      }
+    },
+    "WI": {
+      "manifest": "a59fcc10d3a38871264c5a3d58c084b4cf92ed1054d814dd708c3b291972c437",
+      "selection": {
+        "scenario": "cessation",
+        "outcome": "incidence",
+        "statistic": "mean.and.interval",
+        "facet": "none"
+      },
+      "plot": {
+        "path": "results-v1/plots/b207a869ae2248dbe44ab21864a34a992ba9e216b9de2428ed01e330c4f353cf.json",
+        "sha256": "b207a869ae2248dbe44ab21864a34a992ba9e216b9de2428ed01e330c4f353cf",
+        "bytes": 22481,
+        "selectable": true
+      }
+    }
+  }
+}
