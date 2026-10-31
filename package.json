@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "engines": {
-    "node": ">=20.9.0"
+    "node": "24.x"
   },
   "scripts": {
     "dev": "next dev --turbopack",
@@ -21,7 +21,7 @@
     "sync-config": "tsx scripts/sync-config.ts",
     "verify-config": "tsx scripts/sync-config.ts --check",
     "test:contact": "node --import tsx --test scripts/test-contact.mjs",
-    "test:results": "node --import tsx --test scripts/test-analysis-results.mjs scripts/test-result-data.mjs scripts/test-result-release-cost.mjs"
+    "test:results": "node --import tsx --test scripts/test-analysis-results.mjs scripts/test-result-data.mjs scripts/test-result-release-cost.mjs scripts/test-explorer-entry.mjs"
   },
   "dependencies": {
     "@upstash/redis": "^1.37.0",

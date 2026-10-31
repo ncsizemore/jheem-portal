@@ -74,7 +74,11 @@ export function getStatusYear(state: StateSummary): number {
     const firstMetric = Object.values(state.statusMetrics)[0];
     return firstMetric?.year ?? 2024;
   }
-  return state.metrics?.suppressionRate?.year ?? state.metrics?.diagnosedPrevalence?.year ?? 2024;
+  return (
+    state.metrics?.suppressionRate?.year ??
+    state.metrics?.diagnosedPrevalence?.year ??
+    2024
+  );
 }
 
 export interface StateSummaries {
@@ -104,7 +108,10 @@ export function useStateSummaries(dataUrl?: string): UseStateSummariesReturn {
   const effectiveUrl = dataUrl || DEFAULT_DATA_URL;
   const cached = summariesCache[effectiveUrl];
 
-  const [result, setResult] = useState<{ url: string; data: StateSummaries | null }>({
+  const [result, setResult] = useState<{
+    url: string;
+    data: StateSummaries | null;
+  }>({
     url: cached ? effectiveUrl : '',
     data: cached || null,
   });
@@ -117,6 +124,8 @@ export function useStateSummaries(dataUrl?: string): UseStateSummariesReturn {
   useEffect(() => {
     if (summariesCache[effectiveUrl]) return;
     let cancelled = false;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 30_000);
 
     const fetchSummaries = async () => {
       setRequestState({ url: effectiveUrl, loading: true, error: null });
@@ -124,6 +133,7 @@ export function useStateSummaries(dataUrl?: string): UseStateSummariesReturn {
       try {
         const response = await fetch(`${effectiveUrl}/state-summaries.json`, {
           headers: { Accept: 'application/json' },
+          signal: controller.signal,
         });
 
         if (!response.ok) {
@@ -144,14 +154,21 @@ export function useStateSummaries(dataUrl?: string): UseStateSummariesReturn {
           setRequestState({
             url: effectiveUrl,
             loading: false,
-            error: err instanceof Error ? err.message : 'Failed to load state summaries',
+            error: controller.signal.aborted
+              ? 'Map estimates took too long to load.'
+              : err instanceof Error
+                ? err.message
+                : 'Failed to load state summaries',
           });
         }
       } finally {
+        clearTimeout(timeout);
         if (!cancelled) {
-          setRequestState((previous) => previous.url === effectiveUrl
-            ? { ...previous, loading: false }
-            : previous);
+          setRequestState((previous) =>
+            previous.url === effectiveUrl
+              ? { ...previous, loading: false }
+              : previous,
+          );
         }
       }
     };
@@ -159,10 +176,13 @@ export function useStateSummaries(dataUrl?: string): UseStateSummariesReturn {
     fetchSummaries();
     return () => {
       cancelled = true;
+      controller.abort();
+      clearTimeout(timeout);
     };
   }, [effectiveUrl]);
 
-  const summaries = cached || (result.url === effectiveUrl ? result.data : null);
+  const summaries =
+    cached || (result.url === effectiveUrl ? result.data : null);
   const loading = cached
     ? false
     : requestState.url === effectiveUrl

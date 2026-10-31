@@ -1,6 +1,5 @@
 'use client';
 
-import dynamic from 'next/dynamic';
 import { useMemo } from 'react';
 import {
   useAnalysisQuery,
@@ -11,15 +10,7 @@ import type { ModelConfig } from '@/config/model-configs';
 import { STATE_CODE_TO_NAME } from '@/data/states';
 import AnalysisView from '@/components/AnalysisView';
 import ExplorerFrame from '@/components/analysis/ExplorerFrame';
-import ExplorerLoading from '@/components/analysis/ExplorerLoading';
-
-const StateExplorerMap = dynamic(
-  () => import('@/components/maps/StateExplorerMap'),
-  {
-    ssr: false,
-    loading: ExplorerLoading,
-  },
-);
+import StateExplorerMap from '@/components/maps/StateExplorerMap';
 
 export default function StateChoroplethExplorer({
   config,

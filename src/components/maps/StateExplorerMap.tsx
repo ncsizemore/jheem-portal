@@ -10,9 +10,22 @@
 
 import { updateAnalysisQuery } from '@/hooks/useAnalysisQuery';
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
-import { motion } from 'framer-motion';
 import Link from 'next/link';
-import Map, { Source, Layer } from 'react-map-gl/mapbox';
+import dynamic from 'next/dynamic';
+import type { Map as MapInstance } from 'mapbox-gl';
+import { fitExplorerMap, initializeExplorerMap } from './explorerMapViewport';
+const Map = dynamic(
+  () => import('react-map-gl/mapbox').then((m) => m.default),
+  { ssr: false },
+);
+const Source = dynamic(
+  () => import('react-map-gl/mapbox').then((m) => m.Source),
+  { ssr: false },
+);
+const Layer = dynamic(
+  () => import('react-map-gl/mapbox').then((m) => m.Layer),
+  { ssr: false },
+);
 import type { MapMouseEvent } from 'react-map-gl/mapbox';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import {
@@ -22,7 +35,7 @@ import {
   getStatusYear,
 } from '@/hooks/useStateSummaries';
 import type { ModelConfig } from '@/config/model-configs';
-import { STATE_NAME_TO_CODE } from '@/data/states';
+import { STATE_CODE_TO_NAME, STATE_NAME_TO_CODE } from '@/data/states';
 
 interface StateChoroplethExplorerProps {
   config: ModelConfig;
@@ -38,9 +51,8 @@ function getImpactHeadline(modelId: string, headlineOrPeriod: string): string {
   const periodMatch = headlineOrPeriod.match(/\d{4}-\d{4}/);
   const period = periodMatch ? periodMatch[0] : headlineOrPeriod;
 
-  const context = modelId === 'cdc-testing'
-    ? 'if testing stops'
-    : 'if funding stops';
+  const context =
+    modelId === 'cdc-testing' ? 'if testing stops' : 'if funding stops';
   return `Relative increase in new HIV infections ${context}, ${period}`;
 }
 
@@ -65,7 +77,7 @@ function getImpactColor(value: number, min: number, max: number): string {
   const normalized = Math.max(0, Math.min(1, (value - min) / (max - min)));
   const colorIndex = Math.min(
     IMPACT_COLORS.length - 1,
-    Math.floor(normalized * IMPACT_COLORS.length)
+    Math.floor(normalized * IMPACT_COLORS.length),
   );
   return IMPACT_COLORS[colorIndex];
 }
@@ -73,41 +85,56 @@ function getImpactColor(value: number, min: number, max: number): string {
 // GeoJSON for US state boundaries
 const US_STATES_GEOJSON = '/us-states.json';
 
-export default function StateExplorerMap({ config }: StateChoroplethExplorerProps) {
-  const calibrationModel = config.id === 'ryan-white-state-croi' ? 'croi' : 'ajph';
-  const { summaries, loading, error, getStateByName } = useStateSummaries(config.dataUrl);
+export default function StateExplorerMap({
+  config,
+}: StateChoroplethExplorerProps) {
+  const calibrationModel =
+    config.id === 'ryan-white-state-croi' ? 'croi' : 'ajph';
+  const { summaries, loading, error, getStateByName } = useStateSummaries(
+    config.dataUrl,
+  );
 
-  const [statesGeoJson, setStatesGeoJson] = useState<GeoJSON.FeatureCollection | null>(null);
+  const [statesGeoJson, setStatesGeoJson] =
+    useState<GeoJSON.FeatureCollection | null>(null);
   const [geoJsonError, setGeoJsonError] = useState<string | null>(null);
   const [hoveredStateName, setHoveredStateName] = useState<string | null>(null);
-  const [hoveredStateData, setHoveredStateData] = useState<StateSummary | null>(null);
-  const [hoverPosition, setHoverPosition] = useState<{ x: number; y: number } | null>(null);
+  const [hoveredStateData, setHoveredStateData] = useState<StateSummary | null>(
+    null,
+  );
+  const [hoverPosition, setHoverPosition] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
 
   // UI state
-  const [instructionsCollapsed, setInstructionsCollapsed] = useState(false);
+  const [instructionsCollapsed, setInstructionsCollapsed] = useState(
+    () =>
+      typeof window !== 'undefined' &&
+      window.matchMedia('(max-width: 639px)').matches,
+  );
   const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const [viewState, setViewState] = useState({
-    longitude: -98.5,
-    latitude: 39.8,
-    zoom: 3.8,
-  });
+  const mapRef = useRef<MapInstance | null>(null);
 
-  // Derive available states from summaries
-  const availableStates = useMemo(() => {
-    if (!summaries?.states) return [];
-    return Object.entries(summaries.states)
-      .map(([code, state]) => ({
-        code,
-        name: state.name,
-      }))
-      .sort((a, b) => a.name.localeCompare(b.name));
-  }, [summaries]);
+  // Navigation depends on study coverage, not the summary request.
+  const availableStates = useMemo(
+    () =>
+      config.locations
+        .map((code) => ({
+          code,
+          name: STATE_CODE_TO_NAME[code] || code,
+        }))
+        .sort((a, b) => a.name.localeCompare(b.name)),
+    [config.locations],
+  );
 
   // Compute impact range for dynamic color scaling
   const impactRange = useMemo(() => {
     if (!summaries?.states) return { min: 0, max: 100 };
-    const values = Object.values(summaries.states).map(s => s.impact.cessationIncreasePercent);
+    const values = Object.values(summaries.states)
+      .map((s) => s.impact.cessationIncreasePercent)
+      .filter(Number.isFinite);
+    if (!values.length) return { min: 0, max: 0 };
     return {
       min: Math.min(...values),
       max: Math.max(...values),
@@ -117,17 +144,19 @@ export default function StateExplorerMap({ config }: StateChoroplethExplorerProp
   // Load GeoJSON on mount
   useEffect(() => {
     fetch(US_STATES_GEOJSON)
-      .then(res => {
+      .then((res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.json();
       })
-      .then(data => {
+      .then((data) => {
         setStatesGeoJson(data);
         setGeoJsonError(null);
       })
-      .catch(err => {
+      .catch((err) => {
         console.error('Failed to load states GeoJSON:', err);
-        setGeoJsonError('Failed to load map boundaries. Please refresh the page.');
+        setGeoJsonError(
+          'Failed to load map boundaries. Please refresh the page.',
+        );
       });
   }, []);
 
@@ -157,35 +186,40 @@ export default function StateExplorerMap({ config }: StateChoroplethExplorerProp
   }, []);
 
   // Handle mouse move on states layer
-  const onMouseMove = useCallback((event: MapMouseEvent) => {
-    cancelHideTimeout();
-    const feature = event.features?.[0];
-    if (feature?.properties) {
-      const stateName = feature.properties.NAME;
-      const stateData = getStateByName(stateName);
+  const onMouseMove = useCallback(
+    (event: MapMouseEvent) => {
+      cancelHideTimeout();
+      const feature = event.features?.[0];
+      if (feature?.properties) {
+        const stateName = feature.properties.NAME;
+        const stateData = getStateByName(stateName);
 
-      setHoveredStateName(stateName);
-      setHoveredStateData(stateData);
-      // Track screen position for custom hover card
-      setHoverPosition({ x: event.point.x, y: event.point.y });
-    }
-  }, [getStateByName, cancelHideTimeout]);
+        setHoveredStateName(stateName);
+        setHoveredStateData(stateData);
+        // Track screen position for custom hover card
+        setHoverPosition({ x: event.point.x, y: event.point.y });
+      }
+    },
+    [getStateByName, cancelHideTimeout],
+  );
 
   const onMouseLeave = useCallback(() => {
     startHideTimeout();
   }, [startHideTimeout]);
 
-  const onStateClick = useCallback((event: MapMouseEvent) => {
-    const feature = event.features?.[0];
-    const stateName = feature?.properties?.NAME;
-    if (stateName) {
-      const stateCode = STATE_NAME_TO_CODE[stateName];
-      const stateData = getStateByName(stateName);
-      if (stateData && stateCode) {
-        updateAnalysisQuery({ loc: stateCode });
+  const onStateClick = useCallback(
+    (event: MapMouseEvent) => {
+      const feature = event.features?.[0];
+      const stateName = feature?.properties?.NAME;
+      if (stateName) {
+        const stateCode = STATE_NAME_TO_CODE[stateName];
+        if (stateCode && config.locations.includes(stateCode)) {
+          updateAnalysisQuery({ loc: stateCode });
+        }
       }
-    }
-  }, [getStateByName]);
+    },
+    [config.locations],
+  );
 
   const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
 
@@ -202,7 +236,13 @@ export default function StateExplorerMap({ config }: StateChoroplethExplorerProp
       const stateData = summaries.states[stateCode];
       if (stateData) {
         colorEntries.push(stateName);
-        colorEntries.push(getImpactColor(stateData.impact.cessationIncreasePercent, impactRange.min, impactRange.max));
+        colorEntries.push(
+          getImpactColor(
+            stateData.impact.cessationIncreasePercent,
+            impactRange.min,
+            impactRange.max,
+          ),
+        );
       }
     }
 
@@ -214,368 +254,387 @@ export default function StateExplorerMap({ config }: StateChoroplethExplorerProp
       'match',
       ['get', 'NAME'],
       ...colorEntries,
-      'rgba(200, 200, 200, 0.6)' // Default for states without data
+      'rgba(200, 200, 200, 0.6)', // Default for states without data
     ] as unknown as mapboxgl.Expression;
   }, [summaries, impactRange]);
 
   // Count states with data
-  const stateCount = summaries ? Object.keys(summaries.states).length : 0;
-
-  // Loading state
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-slate-50">
-        <div className="text-center" role="status" aria-live="polite">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-slate-600">Loading state data...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Error state - data fetch failed
-  if (error) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-slate-50">
-        <div className="text-center max-w-md">
-          <div className="text-red-500 text-5xl mb-4">⚠</div>
-          <h2 className="text-xl font-semibold text-slate-800 mb-2">Failed to Load Data</h2>
-          <p className="text-slate-600">{error}</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Error state - GeoJSON failed
-  if (geoJsonError) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-slate-50">
-        <div className="text-center max-w-md">
-          <div className="text-amber-500 text-5xl mb-4">⚠</div>
-          <h2 className="text-xl font-semibold text-slate-800 mb-2">Map Failed to Load</h2>
-          <p className="text-slate-600 mb-4">{geoJsonError}</p>
-          <button
-            type="button"
-            onClick={() => window.location.reload()}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            Refresh Page
-          </button>
-        </div>
-      </div>
-    );
-  }
+  const stateCount = config.locations.length;
 
   return (
     <div className="absolute inset-0 overflow-hidden bg-slate-100">
-          <motion.div
-            key="map-mode"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="absolute inset-0"
-          >
-      <Map
-        {...viewState}
-        onMove={evt => setViewState(evt.viewState)}
-        mapboxAccessToken={MAPBOX_TOKEN}
-        mapStyle="mapbox://styles/mapbox/streets-v12"
-        style={{ width: '100%', height: '100%' }}
-        interactiveLayerIds={['state-fills']}
-        onMouseMove={onMouseMove}
-        onMouseLeave={onMouseLeave}
-        onClick={onStateClick}
-        cursor={hoveredStateName ? 'pointer' : 'default'}
-      >
-        {statesGeoJson && (
-          <Source id="states" type="geojson" data={statesGeoJson}>
-            {/* Fill layer - colored by impact */}
-            <Layer
-              id="state-fills"
-              type="fill"
-              paint={{
-                'fill-color': fillColorExpression,
-                'fill-opacity': [
-                  'case',
-                  ['==', ['get', 'NAME'], hoveredStateName || ''],
-                  0.85,
-                  0.65
-                ]
-              }}
-            />
-            {/* Border layer */}
-            <Layer
-              id="state-borders"
-              type="line"
-              paint={{
-                'line-color': [
-                  'case',
-                  ['==', ['get', 'NAME'], hoveredStateName || ''],
-                  '#1e3a5f',
-                  '#64748b'
-                ],
-                'line-width': [
-                  'case',
-                  ['==', ['get', 'NAME'], hoveredStateName || ''],
-                  2,
-                  0.75
-                ]
-              }}
-            />
-          </Source>
-        )}
+      <div key="map-mode" className="absolute inset-0">
+        <Map
+          initialViewState={{ longitude: -98.5, latitude: 39.8, zoom: 3 }}
+          onStyleData={(event) => initializeExplorerMap(event, mapRef)}
+          mapboxAccessToken={MAPBOX_TOKEN}
+          mapStyle="mapbox://styles/mapbox/light-v11"
+          projection="mercator"
+          style={{ width: '100%', height: '100%' }}
+          interactiveLayerIds={['state-fills']}
+          onMouseMove={onMouseMove}
+          onMouseLeave={onMouseLeave}
+          onClick={onStateClick}
+          cursor={hoveredStateName ? 'pointer' : 'default'}
+        >
+          {statesGeoJson && (
+            <Source id="states" type="geojson" data={statesGeoJson}>
+              {/* Fill layer - colored by impact */}
+              <Layer
+                id="state-fills"
+                type="fill"
+                paint={{
+                  'fill-color': fillColorExpression,
+                  'fill-opacity': [
+                    'case',
+                    ['==', ['get', 'NAME'], hoveredStateName || ''],
+                    0.85,
+                    0.65,
+                  ],
+                }}
+              />
+              {/* Border layer */}
+              <Layer
+                id="state-borders"
+                type="line"
+                paint={{
+                  'line-color': [
+                    'case',
+                    ['==', ['get', 'NAME'], hoveredStateName || ''],
+                    '#1e3a5f',
+                    '#64748b',
+                  ],
+                  'line-width': [
+                    'case',
+                    ['==', ['get', 'NAME'], hoveredStateName || ''],
+                    2,
+                    0.75,
+                  ],
+                }}
+              />
+            </Source>
+          )}
+        </Map>
 
-      </Map>
+        {/* Custom hover card */}
+        {hoveredStateData &&
+          hoverPosition &&
+          (() => {
+            const state = hoveredStateData;
+            const impactColor = getImpactColor(
+              state.impact.cessationIncreasePercent,
+              impactRange.min,
+              impactRange.max,
+            );
 
-      {/* Custom hover card */}
-      {hoveredStateData && hoverPosition && (() => {
-        const state = hoveredStateData;
-        const impactColor = getImpactColor(state.impact.cessationIncreasePercent, impactRange.min, impactRange.max);
+            // Smart positioning to avoid edge cutoff
+            const cardWidth = 260;
+            const cardHeight = 200;
+            const padding = 16;
+            const mapContainer = document.querySelector('.mapboxgl-map');
+            const containerWidth = mapContainer?.clientWidth || 1200;
 
-        // Smart positioning to avoid edge cutoff
-        const cardWidth = 260;
-        const cardHeight = 200;
-        const padding = 16;
-        const mapContainer = document.querySelector('.mapboxgl-map');
-        const containerWidth = mapContainer?.clientWidth || 1200;
+            // Horizontal positioning
+            const idealLeft = hoverPosition.x - cardWidth / 2;
+            const clampedLeft = Math.max(
+              padding,
+              Math.min(idealLeft, containerWidth - cardWidth - padding),
+            );
 
-        // Horizontal positioning
-        const idealLeft = hoverPosition.x - cardWidth / 2;
-        const clampedLeft = Math.max(
-          padding,
-          Math.min(idealLeft, containerWidth - cardWidth - padding)
-        );
+            // Arrow position
+            const arrowLeft = hoverPosition.x - clampedLeft;
+            const arrowLeftClamped = Math.max(
+              20,
+              Math.min(arrowLeft, cardWidth - 20),
+            );
 
-        // Arrow position
-        const arrowLeft = hoverPosition.x - clampedLeft;
-        const arrowLeftClamped = Math.max(20, Math.min(arrowLeft, cardWidth - 20));
+            // Vertical: flip below if too close to top
+            const showBelow = hoverPosition.y < cardHeight + padding + 50;
+            const topPos = showBelow
+              ? hoverPosition.y + 20
+              : hoverPosition.y - 12;
 
-        // Vertical: flip below if too close to top
-        const showBelow = hoverPosition.y < cardHeight + padding + 50;
-        const topPos = showBelow ? hoverPosition.y + 20 : hoverPosition.y - 12;
-
-        const handleCardClick = () => {
-          const stateCode = STATE_NAME_TO_CODE[state.name];
-          if (stateCode) {
-            updateAnalysisQuery({ loc: stateCode });
-          }
-        };
-
-        return (
-          <motion.div
-            initial={{ opacity: 0, y: showBelow ? -10 : 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="absolute z-50 pointer-events-auto"
-            style={{
-              left: clampedLeft,
-              top: topPos,
-              transform: showBelow ? 'translateY(0)' : 'translateY(-100%)',
-            }}
-            onMouseEnter={cancelHideTimeout}
-            onMouseLeave={startHideTimeout}
-            onClick={handleCardClick}
-            onKeyDown={(event) => {
-              if (event.key === 'Enter' || event.key === ' ') {
-                event.preventDefault();
-                handleCardClick();
+            const handleCardClick = () => {
+              const stateCode = STATE_NAME_TO_CODE[state.name];
+              if (stateCode) {
+                updateAnalysisQuery({ loc: stateCode });
               }
-            }}
-            role="button"
-            tabIndex={0}
-            aria-label={`Explore ${state.name}`}
-          >
-            <div className="bg-white/98 backdrop-blur-md border border-slate-200 rounded-xl p-3 min-w-[240px] hover:bg-slate-50 transition-colors shadow-lg cursor-pointer">
-              {/* Header */}
-              <h3 className="font-semibold text-slate-800 text-sm mb-2">
-                {state.name}
-              </h3>
+            };
 
-              {/* Current Status - Dynamic metrics from config */}
-              <div className="py-2 border-y border-slate-100">
-                <div className="flex items-baseline justify-between mb-1.5">
-                  <span className="text-[10px] uppercase tracking-wide text-slate-400">
-                    Model Estimate {getStatusYear(state)}
-                  </span>
-                </div>
-                <div className="space-y-1.5">
-                  {getStatusMetrics(state).map((metric, idx) => (
-                    <div key={idx} className="flex items-center justify-between">
-                      <span className="text-xs text-slate-500">{metric.label}</span>
-                      <span className="text-sm font-semibold text-slate-800">
-                        {metric.format === 'percent'
-                          ? `${metric.value.toFixed(0)}%`
-                          : metric.value.toLocaleString()}
+            return (
+              <div
+                className="absolute z-50 pointer-events-auto"
+                style={{
+                  left: clampedLeft,
+                  top: topPos,
+                  transform: showBelow ? 'translateY(0)' : 'translateY(-100%)',
+                }}
+                onMouseEnter={cancelHideTimeout}
+                onMouseLeave={startHideTimeout}
+                onClick={handleCardClick}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    handleCardClick();
+                  }
+                }}
+                role="button"
+                tabIndex={0}
+                aria-label={`Explore ${state.name}`}
+              >
+                <div className="bg-white/98 backdrop-blur-md border border-slate-200 rounded-xl p-3 min-w-[240px] hover:bg-slate-50 transition-colors shadow-lg cursor-pointer">
+                  {/* Header */}
+                  <h3 className="font-semibold text-slate-800 text-sm mb-2">
+                    {state.name}
+                  </h3>
+
+                  {/* Current Status - Dynamic metrics from config */}
+                  <div className="py-2 border-y border-slate-100">
+                    <div className="flex items-baseline justify-between mb-1.5">
+                      <span className="text-[10px] uppercase tracking-wide text-slate-400">
+                        Model Estimate {getStatusYear(state)}
                       </span>
                     </div>
-                  ))}
-                </div>
-              </div>
+                    <div className="space-y-1.5">
+                      {getStatusMetrics(state).map((metric, idx) => (
+                        <div
+                          key={idx}
+                          className="flex items-center justify-between"
+                        >
+                          <span className="text-xs text-slate-500">
+                            {metric.label}
+                          </span>
+                          <span className="text-sm font-semibold text-slate-800">
+                            {metric.format === 'percent'
+                              ? `${metric.value.toFixed(0)}%`
+                              : metric.value.toLocaleString()}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
 
-              {/* Impact */}
-              <div className="pt-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-slate-500 max-w-[180px] leading-snug">{getImpactHeadline(config.id, state.impact.headline)}</span>
-                  <div className="flex items-center gap-1.5">
-                    <div
-                      className="w-2 h-2 rounded-full"
-                      style={{ backgroundColor: impactColor }}
-                    />
-                    <span className="text-sm font-semibold" style={{ color: impactColor }}>
-                      +{state.impact.cessationIncreasePercent}%
-                    </span>
+                  {/* Impact */}
+                  <div className="pt-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-slate-500 max-w-[180px] leading-snug">
+                        {getImpactHeadline(config.id, state.impact.headline)}
+                      </span>
+                      <div className="flex items-center gap-1.5">
+                        <div
+                          className="w-2 h-2 rounded-full"
+                          style={{ backgroundColor: impactColor }}
+                        />
+                        <span
+                          className="text-sm font-semibold"
+                          style={{ color: impactColor }}
+                        >
+                          +{state.impact.cessationIncreasePercent}%
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Click hint */}
+                  <div className="mt-2 pt-2 border-t border-slate-100 flex items-center justify-center gap-1 text-slate-400 text-xs">
+                    <span>Click to explore</span>
+                    <svg
+                      className="w-3 h-3"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 5l7 7-7 7"
+                      />
+                    </svg>
                   </div>
                 </div>
-              </div>
 
-              {/* Click hint */}
-              <div className="mt-2 pt-2 border-t border-slate-100 flex items-center justify-center gap-1 text-slate-400 text-xs">
-                <span>Click to explore</span>
-                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                {/* Arrow pointing to cursor location */}
+                {!showBelow ? (
+                  <div
+                    className="absolute -bottom-1.5 w-3 h-3 bg-white border-r border-b border-slate-200 rotate-45"
+                    style={{
+                      left: arrowLeftClamped,
+                      transform: 'translateX(-50%)',
+                    }}
+                  />
+                ) : (
+                  <div
+                    className="absolute -top-1.5 w-3 h-3 bg-white border-l border-t border-slate-200 rotate-45"
+                    style={{
+                      left: arrowLeftClamped,
+                      transform: 'translateX(-50%)',
+                    }}
+                  />
+                )}
+              </div>
+            );
+          })()}
+
+        <button
+          type="button"
+          onClick={() => {
+            if (mapRef.current) fitExplorerMap(mapRef.current);
+          }}
+          className="absolute bottom-8 right-4 rounded border border-rule bg-white px-3 py-2 text-xs text-ink shadow-sm focus-visible:outline-2"
+        >
+          Reset map
+        </button>
+        {/* Info panel */}
+        <div
+          data-map-panel
+          className="absolute top-3 left-3 right-3 sm:top-4 sm:left-4 sm:right-auto sm:w-80"
+        >
+          <div className="bg-white border border-rule rounded-md overflow-hidden shadow-sm">
+            {/* Header - always visible, clickable to collapse */}
+            <button
+              type="button"
+              onClick={() => setInstructionsCollapsed((prev) => !prev)}
+              aria-expanded={!instructionsCollapsed}
+              aria-controls="state-explorer-instructions"
+              className="w-full px-4 py-3 text-left flex items-center justify-between hover:bg-slate-50 transition-colors"
+            >
+              <h1 className="text-ink font-serif text-xl">
+                {config.id === 'cdc-testing'
+                  ? 'Explore HIV testing results'
+                  : 'Explore Ryan White results'}
+              </h1>
+              <div className={instructionsCollapsed ? '' : 'rotate-180'}>
+                <svg
+                  className="w-4 h-4 text-slate-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M5 15l7-7 7 7"
+                  />
                 </svg>
               </div>
-            </div>
+            </button>
 
-            {/* Arrow pointing to cursor location */}
-            {!showBelow ? (
-              <div
-                className="absolute -bottom-1.5 w-3 h-3 bg-white border-r border-b border-slate-200 rotate-45"
-                style={{ left: arrowLeftClamped, transform: 'translateX(-50%)' }}
-              />
-            ) : (
-              <div
-                className="absolute -top-1.5 w-3 h-3 bg-white border-l border-t border-slate-200 rotate-45"
-                style={{ left: arrowLeftClamped, transform: 'translateX(-50%)' }}
-              />
-            )}
-          </motion.div>
-        );
-      })()}
-
-      {/* Info panel */}
-      <div className="absolute top-3 left-3 right-3 sm:top-4 sm:left-4 sm:right-auto sm:w-80">
-        <div className="bg-white/95 backdrop-blur-md border border-slate-200 rounded-xl overflow-hidden shadow-lg">
-          {/* Header - always visible, clickable to collapse */}
-          <button
-            type="button"
-            onClick={() => setInstructionsCollapsed(prev => !prev)}
-            aria-expanded={!instructionsCollapsed}
-            aria-controls="state-explorer-instructions"
-            className="w-full px-4 py-3 flex items-center justify-between hover:bg-slate-50 transition-colors"
-          >
-            <h1 className="text-slate-800 font-semibold text-sm">
-              {config.name}
-            </h1>
-            <motion.div
-              animate={{ rotate: instructionsCollapsed ? 0 : 180 }}
-              transition={{ duration: 0.2 }}
+            {/* Collapsible instructions */}
+            <div
+              id="state-explorer-instructions"
+              hidden={instructionsCollapsed}
+              className="overflow-hidden"
             >
-              <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-              </svg>
-            </motion.div>
-          </button>
-
-          {/* Collapsible instructions */}
-          <motion.div
-            id="state-explorer-instructions"
-            initial={false}
-            animate={{
-              height: instructionsCollapsed ? 0 : 'auto',
-              opacity: instructionsCollapsed ? 0 : 1
-            }}
-            transition={{ duration: 0.25, ease: 'easeInOut' }}
-            className="overflow-hidden"
-          >
-            <div className="px-4 pb-4 border-t border-slate-100">
-              <p className="mt-3 text-sm leading-relaxed text-slate-600">
-                {config.description}. The pre-run scenarios estimate how changes in Ryan White
-                services could affect future epidemiologic outcomes.
-              </p>
-              <div className="mt-3 space-y-2.5">
-                <div className="flex items-start gap-2.5">
-                  <div className="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <span className="text-blue-600 text-xs font-medium">1</span>
-                  </div>
-                  <p className="text-slate-600 text-sm">
-                    <span className="text-slate-800 font-medium">Choose a location</span> with the selector below or the map
-                  </p>
-                </div>
-                <div className="flex items-start gap-2.5">
-                  <div className="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <span className="text-blue-600 text-xs font-medium">2</span>
-                  </div>
-                  <p className="text-slate-600 text-sm">
-                    <span className="text-slate-800 font-medium">Choose a scenario</span> and review its interruption timeline
-                  </p>
-                </div>
-                <div className="flex items-start gap-2.5">
-                  <div className="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <span className="text-blue-600 text-xs font-medium">3</span>
-                  </div>
-                  <p className="text-slate-600 text-sm">
-                    <span className="text-slate-800 font-medium">Choose an outcome</span> and stratification in the results view
-                  </p>
-                </div>
+              <div className="px-4 pb-4 border-t border-slate-100">
+                <p className="mt-3 text-sm leading-relaxed text-slate-600">
+                  Compare how changes to{' '}
+                  {config.id === 'cdc-testing'
+                    ? 'CDC-funded HIV testing'
+                    : 'Ryan White services'}{' '}
+                  could affect HIV outcomes in {stateCount} states.
+                </p>
+                {config.calibration && (
+                  <Link
+                    href={`/ryan-white-state-level/calibration?model=${calibrationModel}`}
+                    className="mt-4 inline-flex items-center gap-1.5 text-xs font-medium text-blue-700 hover:underline"
+                  >
+                    See how this model fits observed data
+                    <span aria-hidden="true">→</span>
+                  </Link>
+                )}
               </div>
-              <Link
-                href={`/ryan-white-state-level/calibration?model=${calibrationModel}`}
-                className="mt-4 inline-flex items-center gap-1.5 text-xs font-medium text-blue-700 hover:underline"
-              >
-                See how this model fits observed data
-                <span aria-hidden="true">→</span>
-              </Link>
             </div>
-          </motion.div>
 
-          {/* A direct selector keeps the map supplementary and gives keyboard
+            {/* A direct selector keeps the map supplementary and gives keyboard
               and touch users a predictable path into the analysis. */}
-          <div className="px-4 py-3 border-t border-slate-100">
-            <label htmlFor="state-explorer-location" className="block text-xs font-medium text-slate-600 mb-1.5">
-              Choose a state
-            </label>
-            <select
-              id="state-explorer-location"
-              value=""
-              onChange={(event) => {
-                if (!event.target.value) return;
-                updateAnalysisQuery({ loc: event.target.value });
-              }}
-              className="w-full rounded-md border border-slate-300 bg-white px-2.5 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">Select a state to explore…</option>
-              {availableStates.map(state => (
-                <option key={state.code} value={state.code}>{state.name}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* Legend - always visible, condensed */}
-          <div className="px-4 py-2.5 border-t border-slate-100">
-            <div className="flex items-center justify-between text-xs text-slate-500">
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] uppercase tracking-wide text-slate-400">Impact:</span>
-                <div className="flex items-center gap-1">
-                  <div className="w-3 h-3 rounded" style={{ backgroundColor: '#fed7aa' }} />
-                  <div className="w-3 h-3 rounded" style={{ backgroundColor: '#fb923c' }} />
-                  <div className="w-3 h-3 rounded" style={{ backgroundColor: '#ea580c' }} />
-                  <div className="w-3 h-3 rounded" style={{ backgroundColor: '#7c2d12' }} />
-                </div>
-                <span className="text-slate-400">Low → High</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <div className="w-3 h-3 rounded bg-slate-200" />
-                <span>No data</span>
-              </div>
+            <div className="px-4 py-3 border-t border-slate-100">
+              <label
+                htmlFor="state-explorer-location"
+                className="block text-xs font-medium text-slate-600 mb-1.5"
+              >
+                Choose a state
+              </label>
+              <select
+                id="state-explorer-location"
+                value=""
+                onChange={(event) => {
+                  if (!event.target.value) return;
+                  updateAnalysisQuery({ loc: event.target.value });
+                }}
+                className="w-full rounded-md border border-slate-300 bg-white px-2.5 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">Select a state to explore…</option>
+                {availableStates.map((state) => (
+                  <option key={state.code} value={state.code}>
+                    {state.name}
+                  </option>
+                ))}
+              </select>
             </div>
-            <p className="text-[10px] text-slate-400 mt-1.5">
-              {stateCount} states with model projections
-            </p>
+
+            {(loading || error || geoJsonError) && (
+              <p
+                role="status"
+                className="px-4 py-3 text-xs leading-relaxed text-muted border-t border-rule"
+              >
+                {error
+                  ? 'Map estimates are unavailable. You can still choose a state to explore its results.'
+                  : geoJsonError
+                    ? 'Map boundaries are unavailable. Choose a state above to explore its results.'
+                    : 'Loading map estimates… You can choose a state now.'}
+              </p>
+            )}
+            {/* Legend - always visible, condensed */}
+            <div className="px-4 py-2.5 border-t border-slate-100">
+              <div className="flex items-center justify-between text-xs text-slate-500">
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] uppercase tracking-wide text-slate-400">
+                    Impact:
+                  </span>
+                  <div className="flex items-center gap-1">
+                    <div
+                      className="w-3 h-3 rounded"
+                      style={{ backgroundColor: '#fed7aa' }}
+                    />
+                    <div
+                      className="w-3 h-3 rounded"
+                      style={{ backgroundColor: '#fb923c' }}
+                    />
+                    <div
+                      className="w-3 h-3 rounded"
+                      style={{ backgroundColor: '#ea580c' }}
+                    />
+                    <div
+                      className="w-3 h-3 rounded"
+                      style={{ backgroundColor: '#7c2d12' }}
+                    />
+                  </div>
+                  <span className="text-slate-600 tabular-nums">
+                    {summaries
+                      ? `${impactRange.min.toFixed(0)}–${impactRange.max.toFixed(0)}%`
+                      : '—'}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <div className="w-3 h-3 rounded bg-slate-200" />
+                  <span>No data</span>
+                </div>
+              </div>
+              <p className="text-[10px] text-slate-400 mt-1.5">
+                {summaries
+                  ? getImpactHeadline(
+                      config.id,
+                      Object.values(summaries.states)[0]?.impact.headline || '',
+                    )
+                  : 'Relative increase in cumulative HIV infections'}
+                . {stateCount} states with projections.
+              </p>
+            </div>
           </div>
         </div>
       </div>
-          </motion.div>
     </div>
   );
 }

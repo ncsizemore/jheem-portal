@@ -18,6 +18,20 @@ import type {
   SimulationLine,
 } from '@/types/native-plotting';
 
+const panelCache = new WeakMap<PlotDataFile, FacetPanel[]>();
+
+/** Reuse derived panels while their verified, immutable plot is in the LRU.
+ * Weak keys do not keep evicted payloads alive.
+ */
+export function cachedPlotPanels(plot: PlotDataFile): FacetPanel[] {
+  let panels = panelCache.get(plot);
+  if (!panels) {
+    panels = transformPlotData(plot);
+    panelCache.set(plot, panels);
+  }
+  return panels;
+}
+
 /**
  * Create a composite facet key from all facet.by* columns in a data point.
  * For multi-dimensional faceting (e.g., age+race+sex), combines values with " | ".

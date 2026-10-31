@@ -606,7 +606,7 @@ export default function AnalysisResults({
             >
               {visiblePanels.map((panel) => (
                 <div
-                  key={`${selection}/${panel.facetValue}`}
+                  key={`${displayedFacet}/${panel.facetValue}`}
                   data-export-panel={panel.facetLabel}
                   className={
                     faceted ? 'min-w-0 border-t border-rule pt-4' : 'min-w-0'

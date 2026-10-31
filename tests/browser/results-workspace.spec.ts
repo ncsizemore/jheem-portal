@@ -377,7 +377,7 @@ test('cached custom results use the shared definitions without launching compute
 
 test('initial analysis downloads only its small index and selected plot', async ({
   page,
-}) => {
+}, testInfo) => {
   const received: string[] = [];
   page.on('response', (response) => {
     if (response.url().includes('/results-v1/') && response.ok())
@@ -395,6 +395,9 @@ test('initial analysis downloads only its small index and selected plot', async 
   expect(
     resultBindings['ryan-white'].locations['C.12580'].bytes + ref.bytes,
   ).toBeLessThan(250_000);
+  // Dev Strict Mode can abort/remount consumers after a preload has finished.
+  // The deployed build must consume each hint exactly once.
+  if (testInfo.config.metadata.productionBuild) expect(received).toHaveLength(2);
   const count = received.length;
   await page.getByRole('button', { name: 'Table', exact: true }).click();
   await expect(
@@ -409,6 +412,28 @@ test('initial analysis downloads only its small index and selected plot', async 
     `${base}/${manifest.data.cessation.suppression['mean.and.interval'].none.path}`,
   );
   expect(received).toHaveLength(count + 1);
+});
+
+test('static entry starts pinned data before application JavaScript', async ({ page }, testInfo) => {
+  test.skip(!testInfo.config.metadata.productionBuild, 'Verifies deployed HTML and request reuse, without development Strict Mode remounts.');
+  await setup(page);
+  const requested: string[] = [];
+  page.on('request', request => {
+    if (request.url().includes('/results-v1/')) requested.push(request.url());
+  });
+  let release!: () => void;
+  const held = new Promise<void>(resolve => { release = resolve; });
+  await page.route(/\/_next\/.*\.js(?:\?|$)/, async route => {
+    await held;
+    await route.continue().catch(() => {});
+  });
+  try {
+    await page.goto('/ryan-white/explorer?loc=C.12580', {waitUntil:'commit'});
+    await expect.poll(() => requested.length).toBe(2);
+    await expect(page.getByTestId('analysis-view')).toHaveCount(0);
+  } finally { release(); }
+  await expect(page.getByTestId('analysis-chart-region')).toHaveAttribute('aria-busy', 'false');
+  expect(requested).toHaveLength(2);
 });
 
 test('a late plot cannot overwrite a newer selection and controls remain usable', async ({
@@ -835,9 +860,13 @@ test('default plot and index load concurrently without exposing an unverified pl
     contentType: 'application/json',
   });
   await expect(page.locator('svg.recharts-surface')).toBeVisible();
-  expect(
-    loaded.filter((url) => url === `${base}/${plotRef.path}`),
-  ).toHaveLength(1);
+  // Development Strict Mode can abort/restart the consumer of a preload.
+  // Production must reuse it without another transfer.
+  if (test.info().config.metadata.productionBuild) {
+    expect(
+      loaded.filter((url) => url === `${base}/${plotRef.path}`),
+    ).toHaveLength(1);
+  }
 });
 
 for (const [model, routePath, location] of [
@@ -849,10 +878,16 @@ for (const [model, routePath, location] of [
   test(`${model} direct results never request map data`, async ({ page }) => {
     const unwanted: string[] = [];
     await page.route('https://**/*', (route) => route.abort());
-    await page.route(/summaries\.json|us-states\.json|mapbox/, (route) => {
-      unwanted.push(route.request().url());
-      return route.abort();
-    });
+    await page.route(
+      (url) =>
+        /(?:^|\.)mapbox\.com$/.test(url.hostname) ||
+        /(?:^|\/)(?:[^/]*-summaries|us-states)\.json$/.test(url.pathname),
+      (route) => {
+        // Check map data/services, not local module or stylesheet filenames.
+        unwanted.push(route.request().url());
+        return route.abort();
+      },
+    );
     const artifacts =
       model === 'ryan-white'
         ? fixtures.artifacts
@@ -1072,4 +1107,92 @@ test('whole-population plot changes keep a chart present on every animation fram
       ),
     ),
   ).toBe(true);
+});
+
+for (const stateMap of [false, true]) {
+  test(`${stateMap ? 'state' : 'city'} selection works while map summaries never finish`, async ({
+    page,
+  }) => {
+    const model = stateMap ? 'ryan-white-state-ajph' : 'ryan-white';
+    const baseUrl = resultBindings[model].baseUrl;
+    const location = stateMap ? 'AL' : 'C.12580';
+    await routeResultArtifacts(
+      page,
+      baseUrl,
+      stateMap
+        ? await stateResultArtifacts(model, location)
+        : fixtures.artifacts,
+    );
+    let release!: () => void;
+    const held = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    await page.route(`${baseUrl}/*-summaries.json`, async (route) => {
+      await held;
+      await route.abort().catch(() => {});
+    });
+    try {
+      await page.goto(
+        stateMap
+          ? '/ryan-white-state-level/explorer/ajph'
+          : '/ryan-white/explorer',
+      );
+      const selector = page.getByLabel(
+        stateMap ? 'Choose a state' : 'Choose a city',
+      );
+      await expect(selector).toBeEnabled();
+      await expect(selector.locator('option')).toHaveCount(stateMap ? 12 : 32);
+      await selector.selectOption(location);
+      await expect(page.getByTestId('analysis-chart-region')).toHaveAttribute(
+        'aria-busy',
+        'false',
+      );
+      await expect(page.locator('svg.recharts-surface')).toBeVisible();
+    } finally {
+      release();
+    }
+  });
+}
+
+test('chart updates retain their measured SVG and clear observation context', async ({
+  page,
+}) => {
+  await open(page, '&outcome=suppression');
+  const observation = page.getByRole('button', {
+    name: 'Observed 2019: 68.3%. Source: cdc.hiv',
+    exact: true,
+  });
+  await observation.press('Enter');
+  await expect(
+    page.locator('.pointer-events-none').filter({ hasText: 'cdc.hiv:' }),
+  ).toBeVisible();
+  await page.evaluate(() => {
+    Object.assign(window, {
+      retainedChart: document.querySelector('svg.recharts-surface'),
+    });
+  });
+  await page.getByLabel('Outcome', { exact: true }).selectOption('incidence');
+  await expect(page.getByTestId('analysis-chart-region')).toHaveAttribute(
+    'aria-busy',
+    'false',
+  );
+  expect(
+    await page.evaluate(
+      () =>
+        (window as unknown as { retainedChart: Element }).retainedChart ===
+        document.querySelector('svg.recharts-surface'),
+    ),
+  ).toBe(true);
+  // The suppression observation's expanded tooltip must not survive a new plot.
+  await expect(
+    page.locator('.pointer-events-none').filter({ hasText: 'cdc.hiv:' }),
+  ).toHaveCount(0);
+  await page.getByLabel('Outcome', { exact: true }).selectOption('suppression');
+  await expect(page.getByTestId('analysis-chart-region')).toHaveAttribute(
+    'aria-busy',
+    'false',
+  );
+  await expect(
+    page.locator('.pointer-events-none').filter({ hasText: 'cdc.hiv:' }),
+  ).toHaveCount(0);
 });

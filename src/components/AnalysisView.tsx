@@ -23,7 +23,7 @@ import {
 } from '@/hooks/useAnalysisState';
 import AnalysisResults from '@/components/analysis/AnalysisResults';
 import LocationSwitcher from '@/components/analysis/LocationSwitcher';
-import { transformPlotData } from '@/utils/transformPlotData';
+import { cachedPlotPanels } from '@/utils/transformPlotData';
 import type { ModelConfig } from '@/config/model-configs';
 import type { FacetPanel } from '@/types/native-plotting';
 
@@ -121,7 +121,7 @@ export default function AnalysisView({
 
   // Transform plot data for charts
   const chartPanels: FacetPanel[] = useMemo(() => {
-    return plotData ? transformPlotData(plotData) : [];
+    return plotData ? cachedPlotPanels(plotData) : [];
   }, [plotData]);
 
   // Get available scenarios from data
