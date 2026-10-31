@@ -46,3 +46,7 @@ There is no result-data publication, S3 write, bucket inventory, CloudFront inva
 First-plot rendering under CPU constraint remains the next performance target. Profile chart initialization before adding more data packaging or prefetching; the early data hints have already removed the initial request-start dependency. The previous offline common-result bundle experiment remains a candidate for uncached switching, not a proven first-render improvement.
 
 The lighter Mapbox presentation preserves current geographic navigation with limited implementation risk. If tiles remain the dominant visible delay in production, compare a compact vector geographic selector against this version before replacing the renderer. Separate first usable selection, first geographic content, and completed tiles in that comparison.
+
+## Release runtime
+
+The first Vercel preview selected Node 26 from the previous open-ended engine range and failed while compiling Google font imports. Pin Node to `24.x`, matching CI, and record it in `.nvmrc` so deployments cannot silently move to a new major runtime. The dependency lockfile is otherwise unchanged.
