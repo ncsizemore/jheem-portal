@@ -209,9 +209,20 @@ const NativeSimulationChart = memo(
     const safeId = sanitizeId(titleId + panel.facetValue);
 
     // State for observation hover tooltip
-    const [hoveredObs, setHoveredObs] = useState<ObservationHoverInfo | null>(
-      null,
-    );
+    const [hover, setHover] = useState<{
+      panel: FacetPanel;
+      enabled: boolean;
+      value: ObservationHoverInfo | null;
+    }>({ panel, enabled: showObservations, value: null });
+    // Chart instances survive result changes. Observation tooltips belong only
+    // to the immutable panel on which the user opened them.
+    const hoverContextChanged =
+      hover.panel !== panel || hover.enabled !== showObservations;
+    if (hoverContextChanged)
+      setHover({ panel, enabled: showObservations, value: null });
+    const hoveredObs = hoverContextChanged ? null : hover.value;
+    const setHoveredObs = (value: ObservationHoverInfo | null) =>
+      setHover({ panel, enabled: showObservations, value });
 
     // Keep observations as separate array for independent scatter rendering
     // This allows multiple observations per year to be shown
