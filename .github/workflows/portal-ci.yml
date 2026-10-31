@@ -53,7 +53,7 @@ jobs:
         run: npm run build
 
       - name: Verify production explorer entry
-        run: npx playwright test --config=playwright.production.config.ts results-workspace -g 'static entry|initial analysis downloads|nondefault direct|direct results never|summaries never|chart updates retain'
+        run: npx playwright test --config=playwright.production.config.ts results-workspace -g 'static entry|initial analysis downloads|default plot and index|nondefault direct|direct results never|summaries never|chart updates retain'
 
       - name: Audit production dependencies
         run: npm run audit:production

@@ -860,9 +860,13 @@ test('default plot and index load concurrently without exposing an unverified pl
     contentType: 'application/json',
   });
   await expect(page.locator('svg.recharts-surface')).toBeVisible();
-  expect(
-    loaded.filter((url) => url === `${base}/${plotRef.path}`),
-  ).toHaveLength(1);
+  // Development Strict Mode can abort/restart the consumer of a preload.
+  // Production must reuse it without another transfer.
+  if (test.info().config.metadata.productionBuild) {
+    expect(
+      loaded.filter((url) => url === `${base}/${plotRef.path}`),
+    ).toHaveLength(1);
+  }
 });
 
 for (const [model, routePath, location] of [
@@ -874,10 +878,16 @@ for (const [model, routePath, location] of [
   test(`${model} direct results never request map data`, async ({ page }) => {
     const unwanted: string[] = [];
     await page.route('https://**/*', (route) => route.abort());
-    await page.route(/summaries\.json|us-states\.json|mapbox/, (route) => {
-      unwanted.push(route.request().url());
-      return route.abort();
-    });
+    await page.route(
+      (url) =>
+        /(?:^|\.)mapbox\.com$/.test(url.hostname) ||
+        /(?:^|\/)(?:[^/]*-summaries|us-states)\.json$/.test(url.pathname),
+      (route) => {
+        // Check map data/services, not local module or stylesheet filenames.
+        unwanted.push(route.request().url());
+        return route.abort();
+      },
+    );
     const artifacts =
       model === 'ryan-white'
         ? fixtures.artifacts
