@@ -268,32 +268,20 @@ const NativeSimulationChart = memo(
       displayAsPercent,
     ]);
 
-    // Transform data for CI band rendering
-    // Recharts Area fills from 0 by default, so we use stacking:
-    // - ciBase: invisible area from 0 to lower bound
-    // - ciHeight: visible area from lower to upper (the actual CI band)
-    // IMPORTANT: Use null (not 0) for missing data to prevent Recharts from
-    // connecting through y=0, which causes visual artifacts at data boundaries
+    // A range area draws the original lower/upper bounds directly. This avoids
+    // an invisible stacked base and a second series for each interval band.
     const chartDataWithCI = useMemo(() => {
-      return data.map((d) => {
-        // Check if intervention data exists for this year
-        const hasIntervention = d.lower !== undefined && d.upper !== undefined;
-        // Check if baseline data exists for this year
-        const hasBaseline =
-          d.baselineLower !== undefined && d.baselineUpper !== undefined;
-
-        return {
-          ...d,
-          // Intervention CI band - use null if no intervention data
-          ciBase: hasIntervention ? d.lower : null,
-          ciHeight: hasIntervention ? d.upper! - d.lower! : null,
-          // Baseline CI band - use null if no baseline data
-          baselineCiBase: hasBaseline ? d.baselineLower : null,
-          baselineCiHeight: hasBaseline
-            ? d.baselineUpper! - d.baselineLower!
+      return data.map((point) => ({
+        ...point,
+        interval:
+          point.lower != null && point.upper != null
+            ? [point.lower, point.upper]
             : null,
-        };
-      });
+        baselineInterval:
+          point.baselineLower != null && point.baselineUpper != null
+            ? [point.baselineLower, point.baselineUpper]
+            : null,
+      }));
     }, [data]);
 
     // Prepare individual simulation data for Recharts
@@ -414,6 +402,7 @@ const NativeSimulationChart = memo(
                 allowDecimals={false}
                 minTickGap={20}
                 ticks={yearTicks}
+                tickCount={0}
                 tick={{ fill: '#6b7280', fontSize: 12 }}
                 tickLine={{ stroke: '#79858b' }}
                 axisLine={{ stroke: '#79858b' }}
@@ -421,6 +410,7 @@ const NativeSimulationChart = memo(
 
               <YAxis
                 domain={yDomain}
+                interval={0}
                 tickFormatter={formatYAxis}
                 tick={{ fill: '#6b7280', fontSize: 12 }}
                 tickLine={{ stroke: '#79858b' }}
@@ -522,62 +512,31 @@ const NativeSimulationChart = memo(
               {/* === MEAN/MEDIAN RENDERING === */}
               {!isIndividualSimulation && (
                 <>
-                  {/* Baseline confidence interval - stacked areas for proper lower-to-upper band */}
                   {showConfidenceInterval && showBaseline && (
-                    <>
-                      {/* Invisible base from 0 to lower bound */}
-                      <Area
-                        type="monotone"
-                        dataKey="baselineCiBase"
-                        stackId="baselineCI"
-                        stroke="none"
-                        fill="transparent"
-                        legendType="none"
-                        isAnimationActive={false}
-                      />
-                      {/* Visible CI band from lower to upper */}
-                      <Area
-                        type="monotone"
-                        dataKey="baselineCiHeight"
-                        stackId="baselineCI"
-                        stroke="none"
-                        fill={`url(#baselineCI-${safeId})`}
-                        fillOpacity={1}
-                        name="baselineCI"
-                        legendType="none"
-                        isAnimationActive={false}
-                      />
-                    </>
+                    <Area
+                      type="monotone"
+                      dataKey="baselineInterval"
+                      stroke="none"
+                      fill={`url(#baselineCI-${safeId})`}
+                      fillOpacity={1}
+                      name="baselineCI"
+                      legendType="none"
+                      isAnimationActive={false}
+                      connectNulls={false}
+                    />
                   )}
-
-                  {/* Intervention confidence interval - stacked areas for proper lower-to-upper band */}
                   {showConfidenceInterval && (
-                    <>
-                      {/* Invisible base from 0 to lower bound */}
-                      <Area
-                        type="monotone"
-                        dataKey="ciBase"
-                        stackId="interventionCI"
-                        stroke="none"
-                        fill="transparent"
-                        legendType="none"
-                        isAnimationActive={false}
-                        connectNulls={false}
-                      />
-                      {/* Visible CI band from lower to upper */}
-                      <Area
-                        type="monotone"
-                        dataKey="ciHeight"
-                        stackId="interventionCI"
-                        stroke="none"
-                        fill={`url(#interventionCI-${safeId})`}
-                        fillOpacity={1}
-                        name="interventionCI"
-                        legendType="none"
-                        isAnimationActive={false}
-                        connectNulls={false}
-                      />
-                    </>
+                    <Area
+                      type="monotone"
+                      dataKey="interval"
+                      stroke="none"
+                      fill={`url(#interventionCI-${safeId})`}
+                      fillOpacity={1}
+                      name="interventionCI"
+                      legendType="none"
+                      isAnimationActive={false}
+                      connectNulls={false}
+                    />
                   )}
 
                   {/* Baseline line */}
