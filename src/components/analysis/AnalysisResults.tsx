@@ -176,6 +176,7 @@ export default function AnalysisResults({
   });
   const [exporting, setExporting] = useState(false);
   const [message, setMessage] = useState('');
+  const [aboutOpened, setAboutOpened] = useState(false);
   const [pagination, setPagination] = useState({ selection: '', page: 0 });
   const figureRef = useRef<HTMLDivElement>(null);
   const id = useId();
@@ -655,39 +656,47 @@ export default function AnalysisResults({
         >
           Copy link to this analysis
         </button>
-        <details className="mt-3">
+        <details
+          className="mt-3"
+          onToggle={(event) => {
+            if (event.currentTarget.open) setAboutOpened(true);
+          }}
+        >
           <summary className="cursor-pointer font-medium text-ink">
             About this result
           </summary>
-          <div className="mt-3 space-y-2">
-            {definition.note && <p>{definition.note}</p>}
-            <p>
-              Baseline is the model’s comparison scenario without the selected
-              interruption or intervention. The bands describe variation across
-              simulations, not the probability of a particular policy outcome.
-            </p>
-            <p>
-              {modelName} · Results generated:{' '}
-              {plotData?.metadata.generation_time
-                ? new Date(
-                    plotData.metadata.generation_time,
-                  ).toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'short',
-                    day: 'numeric',
-                    timeZone: 'UTC',
-                  })
-                : loading
-                  ? 'loading…'
-                  : 'unavailable'}
-              .
-            </p>
-            <p>
-              CSV includes model values, available uncertainty bounds, and
-              observed data with sources. Display settings affect the chart and
-              PNG only.
-            </p>
-          </div>
+          {aboutOpened && (
+            <div className="mt-3 space-y-2">
+              {definition.note && <p>{definition.note}</p>}
+              <p>
+                Baseline is the model’s comparison scenario without the
+                selected interruption or intervention. The bands describe
+                variation across simulations, not the probability of a
+                particular policy outcome.
+              </p>
+              <p>
+                {modelName} · Results generated:{' '}
+                {plotData?.metadata.generation_time
+                  ? new Date(
+                      plotData.metadata.generation_time,
+                    ).toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'short',
+                      day: 'numeric',
+                      timeZone: 'UTC',
+                    })
+                  : loading
+                    ? 'loading…'
+                    : 'unavailable'}
+                .
+              </p>
+              <p>
+                CSV includes model values, available uncertainty bounds,
+                and observed data with sources. Display settings affect the
+                chart and PNG only.
+              </p>
+            </div>
+          )}
         </details>
       </div>
       {plotData && (

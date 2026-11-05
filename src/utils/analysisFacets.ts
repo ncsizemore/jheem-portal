@@ -12,7 +12,9 @@ export const DIMENSION_LABELS: Record<Dimension, string> = {
 
 export function canonicalFacet(key: string): string {
   const parts = key.split('+');
-  return DIMENSIONS.filter((dim) => parts.includes(dim)).join('+') || 'none';
+  return (
+    DIMENSIONS.filter((dim) => parts.includes(dim)).join('+') || 'none'
+  );
 }
 
 export function facetLabel(key: string): string {
@@ -58,7 +60,8 @@ export function getFacetChoices(
     if (b.key === 'none') return 1;
     return (
       a.key.split('+').length - b.key.split('+').length ||
-      a.label.localeCompare(b.label)
+      // These labels come from the fixed English DIMENSION_LABELS above.
+      (a.label < b.label ? -1 : a.label > b.label ? 1 : 0)
     );
   });
 }

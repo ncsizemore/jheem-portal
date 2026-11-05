@@ -8,6 +8,7 @@ import {
 } from '../src/utils/analysisFacets.ts';
 import { transformPlotData, getValueRange } from '../src/utils/transformPlotData.ts';
 import { buildResultsCsv } from '../src/utils/exportCsv.ts';
+import { formatModelTime } from '../src/utils/modelTimeline.ts';
 import { OUTCOME_DEFINITIONS } from '../src/utils/outcomeDefinitions.ts';
 const release = JSON.parse(
   readFileSync(
@@ -110,4 +111,16 @@ test('percentage scales use 0–100 while retaining values above 100', () => {
   assert.ok(
     getValueRange([{ year: 2030, value: 120, upper: 135 }], [], false, true, undefined, true)[1] >= 135
   );
+});
+
+test('model-time captions preserve UTC month rounding across year boundaries', () => {
+  for (const [value, expected] of [
+    [2025, 'January 2025'],
+    [2025.5, 'July 2025'],
+    [2025.75, 'October 2025'],
+    [2025 + 11 / 12, 'December 2025'],
+    [2025.999, 'January 2026'],
+  ]) {
+    assert.equal(formatModelTime(value), expected);
+  }
 });

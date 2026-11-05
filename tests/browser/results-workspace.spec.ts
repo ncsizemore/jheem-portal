@@ -109,6 +109,137 @@ test('all fourteen outcomes have specific explanations and correctly labeled uni
   await expect(page.getByText('Values in %.', { exact: false })).toBeVisible();
 });
 
+test('rendered uncertainty bands follow published lower and upper bounds', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await open(page);
+  for (const outcome of ['incidence', 'suppression']) {
+    await page
+      .getByLabel('Outcome', { exact: true })
+      .selectOption(outcome);
+    await expect(
+      page.getByTestId('analysis-chart-region'),
+    ).toHaveAttribute('aria-busy', 'false');
+    const plot =
+      baltimore.data.cessation[outcome]['mean.and.interval'].none;
+    const bands = page.locator('.recharts-area-area[fill^="url("]');
+    await expect(bands).toHaveCount(2);
+    await expect(bands.nth(0)).toHaveAttribute('d', /^M/);
+    await expect(bands.nth(1)).toHaveAttribute('d', /^M/);
+    const checks = await page
+      .getByTestId('analysis-chart-region')
+      .evaluate((region, sim) => {
+        const ticks = (axis: string, coordinate: string) =>
+          [
+            ...region.querySelectorAll(
+              `.${axis} .recharts-cartesian-axis-tick`,
+            ),
+          ].map((tick) => {
+            const label = tick.textContent || '';
+            return {
+              value:
+                parseFloat(label) *
+                (label.endsWith('K')
+                  ? 1000
+                  : label.endsWith('M')
+                    ? 1000000
+                    : 1),
+              pixel: Number(
+                tick.querySelector('line')!.getAttribute(coordinate),
+              ),
+            };
+          });
+        const x = ticks('recharts-xAxis', 'x1');
+        const y = ticks('recharts-yAxis', 'y1');
+        const scale = (value: number, axis: typeof x) =>
+          axis[0].pixel +
+          ((value - axis[0].value) * (axis[1].pixel - axis[0].pixel)) /
+            (axis[1].value - axis[0].value);
+        return ['Baseline', 'Cessation'].map((series) => {
+          const path = region.querySelector<SVGPathElement>(
+            `.recharts-area-area[fill*="${series === 'Baseline' ? 'baselineCI-' : 'interventionCI-'}"]`,
+          )!;
+          const points = sim
+            .filter((point) => point.simset === series)
+            .sort((a, b) => a.year - b.year);
+          const checked = points.slice(1, -1).map((point) => {
+            const px = scale(point.year, x);
+            const upper = scale(point['value.upper']!, y);
+            const lower = scale(point['value.lower']!, y);
+            return (
+              lower - upper < 0.4 ||
+              (path.isPointInFill(new DOMPoint(px, upper + 0.1)) &&
+                path.isPointInFill(new DOMPoint(px, lower - 0.1)) &&
+                !path.isPointInFill(new DOMPoint(px, upper - 0.1)) &&
+                !path.isPointInFill(new DOMPoint(px, lower + 0.1)))
+            );
+          });
+          return {
+            series,
+            count: checked.length,
+            correct: checked.every(Boolean),
+            firstYear: points[0].year,
+            startX: path.getPointAtLength(0).x,
+            expectedStartX: scale(points[0].year, x),
+          };
+        });
+      }, plot.sim!);
+    for (const check of checks) {
+      expect(check.count).toBeGreaterThan(5);
+      expect(
+        check.correct,
+        `${outcome}/${check.series} interval bounds`,
+      ).toBe(true);
+      expect(check.startX).toBeCloseTo(check.expectedStartX, 2);
+    }
+    await page.screenshot({ path: test.info().outputPath(`${outcome}.png`) });
+  }
+});
+
+test('supporting details open on demand with current dates and observations', async ({
+  page,
+}) => {
+  await open(page, '&outcome=suppression');
+  await expect(
+    page.getByRole('table', { name: /Observed values and sources/ }),
+  ).toHaveCount(0);
+  await page
+    .getByText('Observed data and sources (45)', { exact: true })
+    .click();
+  await expect(
+    page.getByRole('table', { name: /Observed values and sources/ }),
+  ).toBeVisible();
+  await expect(
+    page
+      .getByRole('table', { name: /Observed values and sources/ })
+      .getByText('68.3', { exact: true }),
+  ).toBeVisible();
+  await page.getByText('About this result', { exact: true }).click();
+  const date = new Date(
+    baltimore.data.cessation.suppression[
+      'mean.and.interval'
+    ].none.metadata.generation_time,
+  ).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    timeZone: 'UTC',
+  });
+  await expect(
+    page.getByText(`Results generated: ${date}`, { exact: false }),
+  ).toBeVisible();
+  await page
+    .getByLabel('Outcome', { exact: true })
+    .selectOption('incidence');
+  await expect(
+    page.getByText('No observed data are included for this selection.'),
+  ).toBeVisible();
+  await expect(
+    page.getByRole('table', { name: /Observed values and sources/ }),
+  ).toHaveCount(0);
+});
+
 test('combined breakdowns, summary changes, direct links and history preserve the analysis', async ({
   page,
 }) => {
