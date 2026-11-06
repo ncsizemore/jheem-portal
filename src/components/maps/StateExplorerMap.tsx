@@ -12,22 +12,11 @@ import { updateAnalysisQuery } from '@/hooks/useAnalysisQuery';
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
-import type { Map as MapInstance } from 'mapbox-gl';
-import { fitExplorerMap, initializeExplorerMap } from './explorerMapViewport';
-const Map = dynamic(
-  () => import('react-map-gl/mapbox').then((m) => m.default),
-  { ssr: false },
-);
-const Source = dynamic(
-  () => import('react-map-gl/mapbox').then((m) => m.Source),
-  { ssr: false },
-);
-const Layer = dynamic(
-  () => import('react-map-gl/mapbox').then((m) => m.Layer),
-  { ssr: false },
-);
-import type { MapMouseEvent } from 'react-map-gl/mapbox';
-import 'mapbox-gl/dist/mapbox-gl.css';
+import type { GeographicMapProps } from './GeographicMap';
+import { useMapPreviewPosition } from './useMapPreviewPosition';
+const GeographicMap = dynamic(() => import('./GeographicMap'), {
+  ssr: false,
+});
 import {
   useStateSummaries,
   type StateSummary,
@@ -44,7 +33,10 @@ interface StateChoroplethExplorerProps {
 // Construct model-specific headline for impact metric
 // Handles both old format (full headline) and new format (just period)
 // TODO: Simplify once all workflows regenerate data with new format
-function getImpactHeadline(modelId: string, headlineOrPeriod: string): string {
+function getImpactHeadline(
+  modelId: string,
+  headlineOrPeriod: string,
+): string {
   // Extract period from either format
   // Old: "Relative increase in new HIV infections if funding stops, 2025-2030"
   // New: "2025-2030"
@@ -71,7 +63,8 @@ const IMPACT_COLORS = [
 // Dynamic color scale based on data range
 // Maps value to color palette using linear interpolation within min/max range
 function getImpactColor(value: number, min: number, max: number): string {
-  if (max === min) return IMPACT_COLORS[Math.floor(IMPACT_COLORS.length / 2)];
+  if (max === min)
+    return IMPACT_COLORS[Math.floor(IMPACT_COLORS.length / 2)];
 
   // Normalize to 0-1 range, then map to color index
   const normalized = Math.max(0, Math.min(1, (value - min) / (max - min)));
@@ -82,29 +75,20 @@ function getImpactColor(value: number, min: number, max: number): string {
   return IMPACT_COLORS[colorIndex];
 }
 
-// GeoJSON for US state boundaries
-const US_STATES_GEOJSON = '/us-states.json';
-
 export default function StateExplorerMap({
   config,
 }: StateChoroplethExplorerProps) {
   const calibrationModel =
     config.id === 'ryan-white-state-croi' ? 'croi' : 'ajph';
-  const { summaries, loading, error, getStateByName } = useStateSummaries(
-    config.dataUrl,
-  );
+  const { summaries, loading, error } = useStateSummaries(config.dataUrl);
 
-  const [statesGeoJson, setStatesGeoJson] =
-    useState<GeoJSON.FeatureCollection | null>(null);
-  const [geoJsonError, setGeoJsonError] = useState<string | null>(null);
-  const [hoveredStateName, setHoveredStateName] = useState<string | null>(null);
-  const [hoveredStateData, setHoveredStateData] = useState<StateSummary | null>(
-    null,
-  );
+  const [hoveredStateData, setHoveredStateData] =
+    useState<StateSummary | null>(null);
   const [hoverPosition, setHoverPosition] = useState<{
     x: number;
     y: number;
   } | null>(null);
+  const previewPlacement = useMapPreviewPosition(hoverPosition, 260);
 
   // UI state
   const [instructionsCollapsed, setInstructionsCollapsed] = useState(
@@ -113,8 +97,6 @@ export default function StateExplorerMap({
       window.matchMedia('(max-width: 639px)').matches,
   );
   const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  const mapRef = useRef<MapInstance | null>(null);
 
   // Navigation depends on study coverage, not the summary request.
   const availableStates = useMemo(
@@ -141,29 +123,9 @@ export default function StateExplorerMap({
     };
   }, [summaries]);
 
-  // Load GeoJSON on mount
-  useEffect(() => {
-    fetch(US_STATES_GEOJSON)
-      .then((res) => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.json();
-      })
-      .then((data) => {
-        setStatesGeoJson(data);
-        setGeoJsonError(null);
-      })
-      .catch((err) => {
-        console.error('Failed to load states GeoJSON:', err);
-        setGeoJsonError(
-          'Failed to load map boundaries. Please refresh the page.',
-        );
-      });
-  }, []);
-
   // Hover timeout management (allows moving from map to hover card)
   const startHideTimeout = useCallback(() => {
     hoverTimeoutRef.current = setTimeout(() => {
-      setHoveredStateName(null);
       setHoveredStateData(null);
       setHoverPosition(null);
     }, 200);
@@ -185,78 +147,40 @@ export default function StateExplorerMap({
     };
   }, []);
 
-  // Handle mouse move on states layer
-  const onMouseMove = useCallback(
-    (event: MapMouseEvent) => {
+  const mapLocations = useMemo(
+    () =>
+      availableStates.map((state) => {
+        const data = summaries?.states[state.code];
+        return {
+          ...state,
+          color: data
+            ? getImpactColor(
+                data.impact.cessationIncreasePercent,
+                impactRange.min,
+                impactRange.max,
+              )
+            : undefined,
+        };
+      }),
+    [availableStates, summaries, impactRange],
+  );
+  const previewLocation: GeographicMapProps['onPreview'] = useCallback(
+    (code, position) => {
       cancelHideTimeout();
-      const feature = event.features?.[0];
-      if (feature?.properties) {
-        const stateName = feature.properties.NAME;
-        const stateData = getStateByName(stateName);
-
-        setHoveredStateName(stateName);
-        setHoveredStateData(stateData);
-        // Track screen position for custom hover card
-        setHoverPosition({ x: event.point.x, y: event.point.y });
-      }
+      setHoveredStateData(summaries?.states[code] || null);
+      setHoverPosition(position);
     },
-    [getStateByName, cancelHideTimeout],
+    [summaries, cancelHideTimeout],
   );
-
-  const onMouseLeave = useCallback(() => {
-    startHideTimeout();
-  }, [startHideTimeout]);
-
-  const onStateClick = useCallback(
-    (event: MapMouseEvent) => {
-      const feature = event.features?.[0];
-      const stateName = feature?.properties?.NAME;
-      if (stateName) {
-        const stateCode = STATE_NAME_TO_CODE[stateName];
-        if (stateCode && config.locations.includes(stateCode)) {
-          updateAnalysisQuery({ loc: stateCode });
-        }
-      }
-    },
-    [config.locations],
+  const selectLocation = useCallback(
+    (code: string) => updateAnalysisQuery({ loc: code }),
+    [],
   );
-
-  const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
-
-  // Build the fill color expression for the choropleth
-  const fillColorExpression = useMemo(() => {
-    if (!summaries) {
-      return 'rgba(200, 200, 200, 0.6)' as const;
-    }
-
-    const colorEntries: string[] = [];
-
-    // Map each state name to its color based on impact
-    for (const [stateName, stateCode] of Object.entries(STATE_NAME_TO_CODE)) {
-      const stateData = summaries.states[stateCode];
-      if (stateData) {
-        colorEntries.push(stateName);
-        colorEntries.push(
-          getImpactColor(
-            stateData.impact.cessationIncreasePercent,
-            impactRange.min,
-            impactRange.max,
-          ),
-        );
-      }
-    }
-
-    if (colorEntries.length === 0) {
-      return 'rgba(200, 200, 200, 0.6)' as const;
-    }
-
-    return [
-      'match',
-      ['get', 'NAME'],
-      ...colorEntries,
-      'rgba(200, 200, 200, 0.6)', // Default for states without data
-    ] as unknown as mapboxgl.Expression;
-  }, [summaries, impactRange]);
+  const clearPreview = useCallback(() => {
+    cancelHideTimeout();
+    setHoveredStateData(null);
+    setHoverPosition(null);
+  }, [cancelHideTimeout]);
 
   // Count states with data
   const stateCount = config.locations.length;
@@ -264,57 +188,14 @@ export default function StateExplorerMap({
   return (
     <div className="absolute inset-0 overflow-hidden bg-slate-100">
       <div key="map-mode" className="absolute inset-0">
-        <Map
-          initialViewState={{ longitude: -98.5, latitude: 39.8, zoom: 3 }}
-          onStyleData={(event) => initializeExplorerMap(event, mapRef)}
-          mapboxAccessToken={MAPBOX_TOKEN}
-          mapStyle="mapbox://styles/mapbox/light-v11"
-          projection="mercator"
-          style={{ width: '100%', height: '100%' }}
-          interactiveLayerIds={['state-fills']}
-          onMouseMove={onMouseMove}
-          onMouseLeave={onMouseLeave}
-          onClick={onStateClick}
-          cursor={hoveredStateName ? 'pointer' : 'default'}
-        >
-          {statesGeoJson && (
-            <Source id="states" type="geojson" data={statesGeoJson}>
-              {/* Fill layer - colored by impact */}
-              <Layer
-                id="state-fills"
-                type="fill"
-                paint={{
-                  'fill-color': fillColorExpression,
-                  'fill-opacity': [
-                    'case',
-                    ['==', ['get', 'NAME'], hoveredStateName || ''],
-                    0.85,
-                    0.65,
-                  ],
-                }}
-              />
-              {/* Border layer */}
-              <Layer
-                id="state-borders"
-                type="line"
-                paint={{
-                  'line-color': [
-                    'case',
-                    ['==', ['get', 'NAME'], hoveredStateName || ''],
-                    '#1e3a5f',
-                    '#64748b',
-                  ],
-                  'line-width': [
-                    'case',
-                    ['==', ['get', 'NAME'], hoveredStateName || ''],
-                    2,
-                    0.75,
-                  ],
-                }}
-              />
-            </Source>
-          )}
-        </Map>
+        <GeographicMap
+          mode="state"
+          locations={mapLocations}
+          onSelect={selectLocation}
+          onPreview={previewLocation}
+          onLeave={startHideTimeout}
+          onMove={clearPreview}
+        />
 
         {/* Custom hover card */}
         {hoveredStateData &&
@@ -327,33 +208,6 @@ export default function StateExplorerMap({
               impactRange.max,
             );
 
-            // Smart positioning to avoid edge cutoff
-            const cardWidth = 260;
-            const cardHeight = 200;
-            const padding = 16;
-            const mapContainer = document.querySelector('.mapboxgl-map');
-            const containerWidth = mapContainer?.clientWidth || 1200;
-
-            // Horizontal positioning
-            const idealLeft = hoverPosition.x - cardWidth / 2;
-            const clampedLeft = Math.max(
-              padding,
-              Math.min(idealLeft, containerWidth - cardWidth - padding),
-            );
-
-            // Arrow position
-            const arrowLeft = hoverPosition.x - clampedLeft;
-            const arrowLeftClamped = Math.max(
-              20,
-              Math.min(arrowLeft, cardWidth - 20),
-            );
-
-            // Vertical: flip below if too close to top
-            const showBelow = hoverPosition.y < cardHeight + padding + 50;
-            const topPos = showBelow
-              ? hoverPosition.y + 20
-              : hoverPosition.y - 12;
-
             const handleCardClick = () => {
               const stateCode = STATE_NAME_TO_CODE[state.name];
               if (stateCode) {
@@ -363,12 +217,9 @@ export default function StateExplorerMap({
 
             return (
               <div
-                className="absolute z-50 pointer-events-auto"
-                style={{
-                  left: clampedLeft,
-                  top: topPos,
-                  transform: showBelow ? 'translateY(0)' : 'translateY(-100%)',
-                }}
+                className="fixed z-50 pointer-events-auto"
+                ref={previewPlacement.ref}
+                style={previewPlacement.style}
                 onMouseEnter={cancelHideTimeout}
                 onMouseLeave={startHideTimeout}
                 onClick={handleCardClick}
@@ -382,7 +233,7 @@ export default function StateExplorerMap({
                 tabIndex={0}
                 aria-label={`Explore ${state.name}`}
               >
-                <div className="bg-white/98 backdrop-blur-md border border-slate-200 rounded-xl p-3 min-w-[240px] hover:bg-slate-50 transition-colors shadow-lg cursor-pointer">
+                <div className="bg-white/98  border border-slate-200 rounded-md p-3 hover:bg-slate-50 transition-colors shadow-md cursor-pointer">
                   {/* Header */}
                   <h3 className="font-semibold text-slate-800 text-sm mb-2">
                     {state.name}
@@ -391,7 +242,7 @@ export default function StateExplorerMap({
                   {/* Current Status - Dynamic metrics from config */}
                   <div className="py-2 border-y border-slate-100">
                     <div className="flex items-baseline justify-between mb-1.5">
-                      <span className="text-[10px] uppercase tracking-wide text-slate-400">
+                      <span className="text-[10px] uppercase tracking-wide text-slate-500">
                         Model Estimate {getStatusYear(state)}
                       </span>
                     </div>
@@ -418,17 +269,17 @@ export default function StateExplorerMap({
                   <div className="pt-2">
                     <div className="flex items-center justify-between">
                       <span className="text-xs text-slate-500 max-w-[180px] leading-snug">
-                        {getImpactHeadline(config.id, state.impact.headline)}
+                        {getImpactHeadline(
+                          config.id,
+                          state.impact.headline,
+                        )}
                       </span>
                       <div className="flex items-center gap-1.5">
                         <div
                           className="w-2 h-2 rounded-full"
                           style={{ backgroundColor: impactColor }}
                         />
-                        <span
-                          className="text-sm font-semibold"
-                          style={{ color: impactColor }}
-                        >
+                        <span className="text-sm font-semibold text-ink">
                           +{state.impact.cessationIncreasePercent}%
                         </span>
                       </div>
@@ -436,7 +287,7 @@ export default function StateExplorerMap({
                   </div>
 
                   {/* Click hint */}
-                  <div className="mt-2 pt-2 border-t border-slate-100 flex items-center justify-center gap-1 text-slate-400 text-xs">
+                  <div className="mt-2 pt-2 border-t border-slate-100 flex items-center justify-center gap-1 text-slate-500 text-xs">
                     <span>Click to explore</span>
                     <svg
                       className="w-3 h-3"
@@ -453,38 +304,10 @@ export default function StateExplorerMap({
                     </svg>
                   </div>
                 </div>
-
-                {/* Arrow pointing to cursor location */}
-                {!showBelow ? (
-                  <div
-                    className="absolute -bottom-1.5 w-3 h-3 bg-white border-r border-b border-slate-200 rotate-45"
-                    style={{
-                      left: arrowLeftClamped,
-                      transform: 'translateX(-50%)',
-                    }}
-                  />
-                ) : (
-                  <div
-                    className="absolute -top-1.5 w-3 h-3 bg-white border-l border-t border-slate-200 rotate-45"
-                    style={{
-                      left: arrowLeftClamped,
-                      transform: 'translateX(-50%)',
-                    }}
-                  />
-                )}
               </div>
             );
           })()}
 
-        <button
-          type="button"
-          onClick={() => {
-            if (mapRef.current) fitExplorerMap(mapRef.current);
-          }}
-          className="absolute bottom-8 right-4 rounded border border-rule bg-white px-3 py-2 text-xs text-ink shadow-sm focus-visible:outline-2"
-        >
-          Reset map
-        </button>
         {/* Info panel */}
         <div
           data-map-panel
@@ -574,23 +397,21 @@ export default function StateExplorerMap({
               </select>
             </div>
 
-            {(loading || error || geoJsonError) && (
+            {(loading || error) && (
               <p
                 role="status"
                 className="px-4 py-3 text-xs leading-relaxed text-muted border-t border-rule"
               >
                 {error
                   ? 'Map estimates are unavailable. You can still choose a state to explore its results.'
-                  : geoJsonError
-                    ? 'Map boundaries are unavailable. Choose a state above to explore its results.'
-                    : 'Loading map estimates… You can choose a state now.'}
+                  : 'Loading map estimates… You can choose a state now.'}
               </p>
             )}
             {/* Legend - always visible, condensed */}
             <div className="px-4 py-2.5 border-t border-slate-100">
               <div className="flex items-center justify-between text-xs text-slate-500">
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] uppercase tracking-wide text-slate-400">
+                  <span className="text-[10px] uppercase tracking-wide text-slate-500">
                     Impact:
                   </span>
                   <div className="flex items-center gap-1">
@@ -618,15 +439,16 @@ export default function StateExplorerMap({
                   </span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <div className="w-3 h-3 rounded bg-slate-200" />
-                  <span>No data</span>
+                  <div className="w-3 h-3 rounded border border-slate-300 bg-[#f9faf8]" />
+                  <span>Outside study</span>
                 </div>
               </div>
-              <p className="text-[10px] text-slate-400 mt-1.5">
+              <p className="text-xs leading-relaxed text-slate-600 mt-2">
                 {summaries
                   ? getImpactHeadline(
                       config.id,
-                      Object.values(summaries.states)[0]?.impact.headline || '',
+                      Object.values(summaries.states)[0]?.impact
+                        .headline || '',
                     )
                   : 'Relative increase in cumulative HIV infections'}
                 . {stateCount} states with projections.

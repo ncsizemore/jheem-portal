@@ -60,10 +60,16 @@ export function getStatusMetrics(state: StateSummary): MetricValue[] {
   // Fall back to legacy fields
   const metrics: MetricValue[] = [];
   if (state.metrics?.suppressionRate) {
-    metrics.push(state.metrics.suppressionRate);
+    metrics.push({
+      ...state.metrics.suppressionRate,
+      format: state.metrics.suppressionRate.format ?? 'percent',
+    });
   }
   if (state.metrics?.diagnosedPrevalence) {
-    metrics.push(state.metrics.diagnosedPrevalence);
+    metrics.push({
+      ...state.metrics.diagnosedPrevalence,
+      format: state.metrics.diagnosedPrevalence.format ?? 'count',
+    });
   }
   return metrics;
 }

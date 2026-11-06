@@ -4,19 +4,13 @@ import { updateAnalysisQuery } from '@/hooks/useAnalysisQuery';
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
-import type { Map as MapInstance } from 'mapbox-gl';
-import { fitExplorerMap, initializeExplorerMap } from './explorerMapViewport';
-const Map = dynamic(
-  () => import('react-map-gl/mapbox').then((m) => m.default),
-  { ssr: false },
-);
-const Marker = dynamic(
-  () => import('react-map-gl/mapbox').then((m) => m.Marker),
-  { ssr: false },
-);
+import type { GeographicMapProps } from './GeographicMap';
+import { useMapPreviewPosition } from './useMapPreviewPosition';
+const GeographicMap = dynamic(() => import('./GeographicMap'), {
+  ssr: false,
+});
 import { ALL_CITIES, CityData } from '@/data/cities';
 import { ryanWhiteConfig } from '@/config/model-configs';
-import 'mapbox-gl/dist/mapbox-gl.css';
 
 // Use model config for this explorer instance
 const MODEL_CONFIG = ryanWhiteConfig;
@@ -101,7 +95,11 @@ function getSuppressionColor(rate: number): {
       glow: 'rgba(249, 115, 22, 0.5)',
       bg: 'bg-orange-500',
     }; // Below target
-  return { ring: '#dc2626', glow: 'rgba(220, 38, 38, 0.5)', bg: 'bg-red-600' }; // Needs improvement
+  return {
+    ring: '#dc2626',
+    glow: 'rgba(220, 38, 38, 0.5)',
+    bg: 'bg-red-600',
+  }; // Needs improvement
 }
 
 // Get marker size based on prevalence (larger epidemic = bigger marker)
@@ -129,9 +127,9 @@ export default function CityExplorerMap() {
     null,
   );
   const [citySummariesLoading, setCitySummariesLoading] = useState(true);
-  const [citySummariesError, setCitySummariesError] = useState<string | null>(
-    null,
-  );
+  const [citySummariesError, setCitySummariesError] = useState<
+    string | null
+  >(null);
 
   // Load city summaries on mount
   useEffect(() => {
@@ -192,15 +190,13 @@ export default function CityExplorerMap() {
     }));
   }, [citySummaries]);
 
-  // Map state - centered based on model config
-  const mapRef = useRef<MapInstance | null>(null);
-
   // Hover state for map
   const [hoveredCity, setHoveredCity] = useState<CityData | null>(null);
   const [hoverPosition, setHoverPosition] = useState<{
     x: number;
     y: number;
   } | null>(null);
+  const previewPlacement = useMapPreviewPosition(hoverPosition, 280);
   const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Clear hover with delay (allows moving from dot to card)
@@ -242,99 +238,55 @@ export default function CityExplorerMap() {
     updateAnalysisQuery({ loc: city.code });
   }, []);
 
-  // Memoized marker event handlers (avoids recreating functions on every render)
-  const handleMarkerMouseEnter = useCallback(
-    (city: CityData, e: React.MouseEvent<HTMLButtonElement>) => {
-      cancelHideTimeout();
-      setHoveredCity(city);
-      const rect = e.currentTarget.getBoundingClientRect();
-      setHoverPosition({ x: rect.left + rect.width / 2, y: rect.top });
-    },
-    [cancelHideTimeout],
+  const mapLocations = useMemo(
+    () =>
+      availableCities.map((city) => {
+        const summary = citySummaries?.cities[city.code];
+        return {
+          ...city,
+          color: summary
+            ? getSuppressionColor(summary.metrics.suppressionRate.value)
+                .ring
+            : undefined,
+          size: summary
+            ? getMarkerSize(summary.metrics.diagnosedPrevalence.value)
+            : 14,
+        };
+      }),
+    [availableCities, citySummaries],
   );
-
-  const handleMarkerMouseLeave = useCallback(() => {
-    startHideTimeout();
-  }, [startHideTimeout]);
-
-  const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
+  const previewLocation: GeographicMapProps['onPreview'] = useCallback(
+    (code, position) => {
+      cancelHideTimeout();
+      setHoveredCity(
+        availableCities.find((city) => city.code === code) || null,
+      );
+      setHoverPosition(position);
+    },
+    [availableCities, cancelHideTimeout],
+  );
+  const selectLocation = useCallback(
+    (code: string) => updateAnalysisQuery({ loc: code }),
+    [],
+  );
+  const clearPreview = useCallback(() => {
+    cancelHideTimeout();
+    setHoveredCity(null);
+    setHoverPosition(null);
+  }, [cancelHideTimeout]);
 
   return (
     <div className="absolute inset-0 overflow-hidden bg-slate-100">
       <div key="map-mode" className="absolute inset-0">
-        <Map
-          initialViewState={{ longitude: -98.5, latitude: 39.8, zoom: 3 }}
-          onStyleData={(event) => initializeExplorerMap(event, mapRef)}
-          mapboxAccessToken={MAPBOX_TOKEN}
-          mapStyle="mapbox://styles/mapbox/light-v11"
-          projection="mercator"
-          style={{ width: '100%', height: '100%' }}
-        >
-          {availableCities.map((city) => {
-            const summary = citySummaries?.cities[city.code];
-            const suppression = summary?.metrics.suppressionRate.value ?? 75;
-            const prevalence =
-              summary?.metrics.diagnosedPrevalence.value ?? 15000;
-            const colors = summary
-              ? getSuppressionColor(suppression)
-              : { ring: '#64748b', glow: 'transparent' };
-            const size = summary ? getMarkerSize(prevalence) : 14;
-            const isActive = hoveredCity?.code === city.code;
+        <GeographicMap
+          mode="city"
+          locations={mapLocations}
+          onSelect={selectLocation}
+          onPreview={previewLocation}
+          onLeave={startHideTimeout}
+          onMove={clearPreview}
+        />
 
-            return (
-              <Marker
-                key={city.code}
-                longitude={city.coordinates[0]}
-                latitude={city.coordinates[1]}
-                anchor="center"
-              >
-                <button
-                  type="button"
-                  aria-label={`Explore ${city.name}`}
-                  onClick={() => handleCityClick(city)}
-                  onMouseEnter={(e) => handleMarkerMouseEnter(city, e)}
-                  onMouseLeave={handleMarkerMouseLeave}
-                  className="relative transition-transform duration-200 hover:scale-110"
-                  style={{ transform: isActive ? 'scale(1.15)' : undefined }}
-                >
-                  {/* Outer ring - color by suppression rate */}
-                  <div
-                    className="rounded-full flex items-center justify-center transition-all duration-200"
-                    style={{
-                      width: size,
-                      height: size,
-                      backgroundColor: 'rgba(255,255,255,0.95)',
-                      border: `3px solid ${colors.ring}`,
-                      boxShadow: isActive
-                        ? '0 0 0 4px rgba(30,58,95,.12)'
-                        : '0 1px 3px rgba(0,0,0,.12)',
-                    }}
-                  >
-                    {/* Inner dot */}
-                    <div
-                      className="rounded-full"
-                      style={{
-                        width: size * 0.4,
-                        height: size * 0.4,
-                        backgroundColor: colors.ring,
-                      }}
-                    />
-                  </div>
-                </button>
-              </Marker>
-            );
-          })}
-        </Map>
-
-        <button
-          type="button"
-          onClick={() => {
-            if (mapRef.current) fitExplorerMap(mapRef.current);
-          }}
-          className="absolute bottom-8 right-4 rounded border border-rule bg-white px-3 py-2 text-xs text-ink shadow-sm focus-visible:outline-2"
-        >
-          Reset map
-        </button>
         {/* Info panel */}
         <div
           data-map-panel
@@ -377,9 +329,9 @@ export default function CityExplorerMap() {
             >
               <div className="px-4 pb-4 border-t border-slate-100">
                 <p className="mt-3 text-sm leading-relaxed text-slate-600">
-                  Compare how interruptions to Ryan White services could affect
-                  HIV outcomes in {STUDY_CITIES.length} metropolitan areas
-                  through 2030.
+                  Compare how interruptions to Ryan White services could
+                  affect HIV outcomes in {STUDY_CITIES.length} metropolitan
+                  areas through 2030.
                 </p>
                 <Link
                   href="/ryan-white/calibration"
@@ -428,24 +380,39 @@ export default function CityExplorerMap() {
                   : 'Loading map estimates… You can choose a city now.'}
               </p>
             )}
-            {/* Legend - always visible */}
-            <div className="px-4 py-2.5 border-t border-slate-100 flex items-center gap-4 text-xs text-slate-500">
-              <div className="flex items-center gap-1.5">
-                <div className="flex gap-0.5">
-                  <div className="w-2 h-2 rounded-full bg-orange-500" />
-                  <div className="w-2 h-2 rounded-full bg-sky-500" />
-                  <div className="w-2 h-2 rounded-full bg-blue-600" />
-                </div>
-                <span>Suppression</span>
+            <div className="border-t border-slate-100 px-4 py-3 text-xs text-slate-600">
+              <div className="flex items-center justify-between">
+                <span>Viral suppression</span>
+                <span className="text-[10px] text-muted">
+                  Model estimates
+                </span>
               </div>
-              <div className="w-px h-3 bg-slate-200" />
-              <div className="flex items-center gap-1.5">
-                <div className="flex items-center gap-0.5">
-                  <div className="w-1.5 h-1.5 rounded-full bg-slate-400" />
-                  <div className="w-2.5 h-2.5 rounded-full bg-slate-400" />
-                </div>
-                <span>Diagnosed HIV</span>
+              <div
+                className="mt-2 flex h-1.5 overflow-hidden rounded-sm"
+                aria-hidden="true"
+              >
+                {[
+                  '#dc2626',
+                  '#f97316',
+                  '#fbbf24',
+                  '#0ea5e9',
+                  '#3b82f6',
+                  '#1d4ed8',
+                ].map((color) => (
+                  <span
+                    key={color}
+                    className="flex-1"
+                    style={{ backgroundColor: color }}
+                  />
+                ))}
               </div>
+              <div className="mt-1 flex justify-between text-[10px] tabular-nums text-muted">
+                <span>&lt;64%</span>
+                <span>≥82%</span>
+              </div>
+              <p className="mt-2 text-[11px] text-muted">
+                Marker size: people with diagnosed HIV
+              </p>
             </div>
           </div>
         </div>
@@ -459,43 +426,11 @@ export default function CityExplorerMap() {
               ? getSuppressionColor(summary.metrics.suppressionRate.value)
               : null;
 
-            // Smart positioning to avoid edge cutoff
-            const cardWidth = 280;
-            const cardHeight = 220;
-            const padding = 16;
-            const windowWidth =
-              typeof window !== 'undefined' ? window.innerWidth : 1200;
-
-            // Horizontal: calculate ideal centered position, then clamp to viewport
-            const idealLeft = hoverPosition.x - cardWidth / 2;
-            const clampedLeft = Math.max(
-              padding,
-              Math.min(idealLeft, windowWidth - cardWidth - padding),
-            );
-
-            // Calculate arrow position (where the marker is relative to the card)
-            const arrowLeft = hoverPosition.x - clampedLeft;
-            // Clamp arrow to stay within card bounds (with some padding)
-            const arrowLeftClamped = Math.max(
-              20,
-              Math.min(arrowLeft, cardWidth - 20),
-            );
-
-            // Vertical: flip below if too close to top
-            const showBelow = hoverPosition.y < cardHeight + padding + 50;
-            const topPos = showBelow
-              ? hoverPosition.y + 35
-              : hoverPosition.y - 12;
-
             return (
               <div
                 className="fixed z-50"
-                style={{
-                  left: clampedLeft,
-                  top: topPos,
-                  transform: showBelow ? 'translateY(0)' : 'translateY(-100%)',
-                  cursor: 'pointer',
-                }}
+                ref={previewPlacement.ref}
+                style={previewPlacement.style}
                 onMouseEnter={cancelHideTimeout}
                 onMouseLeave={startHideTimeout}
                 onClick={() => hoveredCity && handleCityClick(hoveredCity)}
@@ -512,7 +447,7 @@ export default function CityExplorerMap() {
                 tabIndex={0}
                 aria-label={`Explore ${hoveredCity.name}`}
               >
-                <div className="bg-white/98 backdrop-blur-md border border-slate-200 rounded-xl p-3 min-w-[240px] hover:bg-slate-50 transition-colors shadow-lg">
+                <div className="bg-white/98  border border-slate-200 rounded-md p-3 hover:bg-slate-50 transition-colors shadow-md">
                   {/* Header - single line */}
                   <h3 className="font-semibold text-slate-800 text-sm mb-2">
                     {summary?.shortName || hoveredCity.name.split(',')[0]},{' '}
@@ -523,8 +458,9 @@ export default function CityExplorerMap() {
                   {summary && (
                     <div className="py-2 border-y border-slate-100">
                       <div className="flex items-baseline justify-between mb-1.5">
-                        <span className="text-[10px] uppercase tracking-wide text-slate-400">
-                          Model Estimate {summary.metrics.suppressionRate.year}
+                        <span className="text-[10px] uppercase tracking-wide text-slate-500">
+                          Model Estimate{' '}
+                          {summary.metrics.suppressionRate.year}
                         </span>
                       </div>
                       <div className="space-y-1.5">
@@ -538,14 +474,16 @@ export default function CityExplorerMap() {
                               style={{ backgroundColor: colors?.ring }}
                             />
                             <span className="text-sm font-semibold text-slate-800">
-                              {summary.metrics.suppressionRate.value.toFixed(0)}
+                              {summary.metrics.suppressionRate.value.toFixed(
+                                0,
+                              )}
                               %
                             </span>
                           </div>
                         </div>
                         <div className="flex items-center justify-between">
                           <span className="text-xs text-slate-500">
-                            People with HIV
+                            People with diagnosed HIV
                           </span>
                           <span className="text-sm font-semibold text-slate-800">
                             {summary.metrics.diagnosedPrevalence.value.toLocaleString()}
@@ -559,7 +497,7 @@ export default function CityExplorerMap() {
                   {summary && (
                     <div className="pt-2">
                       <div className="flex items-baseline justify-between mb-1.5">
-                        <span className="text-[10px] uppercase tracking-wide text-slate-400">
+                        <span className="text-[10px] uppercase tracking-wide text-slate-500">
                           Cessation Scenario
                         </span>
                         <span className="text-[10px] text-slate-400">
@@ -569,9 +507,9 @@ export default function CityExplorerMap() {
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-xs text-slate-500">
-                          Cumulative new HIV cases
+                          Cumulative new infections
                         </span>
-                        <span className="text-sm font-semibold text-amber-600">
+                        <span className="text-sm font-semibold text-amber-800">
                           +{summary.impact.cessationIncreasePercent}%
                         </span>
                       </div>
@@ -579,7 +517,7 @@ export default function CityExplorerMap() {
                   )}
 
                   {/* Click hint */}
-                  <div className="mt-2 pt-2 border-t border-slate-100 flex items-center justify-center gap-1 text-slate-400 text-xs">
+                  <div className="mt-2 pt-2 border-t border-slate-100 flex items-center justify-center gap-1 text-slate-500 text-xs">
                     <span>Click to explore</span>
                     <svg
                       className="w-3 h-3"
@@ -596,24 +534,6 @@ export default function CityExplorerMap() {
                     </svg>
                   </div>
                 </div>
-                {/* Arrow - points toward the marker */}
-                {!showBelow ? (
-                  <div
-                    className="absolute -bottom-1.5 w-3 h-3 bg-white border-r border-b border-slate-200 rotate-45"
-                    style={{
-                      left: arrowLeftClamped,
-                      transform: 'translateX(-50%)',
-                    }}
-                  />
-                ) : (
-                  <div
-                    className="absolute -top-1.5 w-3 h-3 bg-white border-l border-t border-slate-200 rotate-45"
-                    style={{
-                      left: arrowLeftClamped,
-                      transform: 'translateX(-50%)',
-                    }}
-                  />
-                )}
               </div>
             );
           })()}

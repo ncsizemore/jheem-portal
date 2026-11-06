@@ -3,11 +3,18 @@ declare module 'react-simple-maps' {
 
   export interface GeographyObject {
     rsmKey: string;
-    properties: Record<string, string | number | boolean | null | undefined>;
+    properties: Record<
+      string,
+      string | number | boolean | null | undefined
+    >;
   }
 
   export interface ComposableMapProps extends SVGProps<SVGSVGElement> {
-    projection?: string;
+    projection?:
+      | string
+      | (((coordinates: [number, number]) => [number, number]) & {
+          invert: (coordinates: [number, number]) => [number, number];
+        });
     projectionConfig?: Record<string, unknown>;
     width?: number;
     height?: number;
@@ -22,7 +29,8 @@ declare module 'react-simple-maps' {
     outline?: string;
   };
 
-  export interface GeographyProps extends Omit<SVGProps<SVGPathElement>, 'style'> {
+  export interface GeographyProps
+    extends Omit<SVGProps<SVGPathElement>, 'style'> {
     geography: GeographyObject;
     style?: {
       default?: GeographyStyleState;
@@ -34,4 +42,20 @@ declare module 'react-simple-maps' {
   export const ComposableMap: ComponentType<ComposableMapProps>;
   export const Geographies: ComponentType<GeographiesProps>;
   export const Geography: ComponentType<GeographyProps>;
+  export interface MapPosition {
+    coordinates: [number, number];
+    zoom: number;
+  }
+  export const ZoomableGroup: ComponentType<
+    SVGProps<SVGGElement> & {
+      center?: [number, number];
+      zoom?: number;
+      minZoom?: number;
+      maxZoom?: number;
+      translateExtent?: [[number, number], [number, number]];
+      onMoveStart?: () => void;
+      onMoveEnd?: (position: MapPosition) => void;
+    }
+  >;
+  export function useZoomPanContext(): { k: number };
 }
