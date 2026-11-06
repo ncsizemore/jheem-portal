@@ -1175,7 +1175,7 @@ for (const stateMap of [false, true]) {
     const initialSummaries = summaries;
     const initialBoundaries = boundaries;
     expect(initialSummaries).toBeGreaterThan(0);
-    if (stateMap) expect(initialBoundaries).toBeGreaterThan(0);
+    expect(initialBoundaries).toBe(0);
     await instructions.click();
     const location = stateMap ? 'AL' : 'C.12580';
     await page
@@ -1188,8 +1188,8 @@ for (const stateMap of [false, true]) {
     await page.setViewportSize({ width: 920, height: 800 });
     await page.getByRole('button', { name: 'Map', exact: true }).click();
     await expect(instructions).toHaveAttribute('aria-expanded', 'false');
-    await expect(page.locator('.mapboxgl-canvas')).toBeVisible();
-    const canvas = await page.locator('.mapboxgl-canvas').boundingBox();
+    await expect(page.locator('[data-geographic-map]')).toBeVisible();
+    const canvas = await page.locator('[data-geographic-map]').boundingBox();
     expect(canvas?.width).toBeGreaterThanOrEqual(900);
     expect(canvas?.height).toBeGreaterThan(400);
     expect(summaries).toBe(initialSummaries);
