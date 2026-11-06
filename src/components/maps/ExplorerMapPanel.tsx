@@ -57,7 +57,7 @@ export default function ExplorerMapPanel({
         {legend}
         {calibrationHref && (
           <Link href={calibrationHref} prefetch={false} className="atlas-calibration">
-            See how the model fits observed data{' '}
+            See how this model fits observed data{' '}
             <span aria-hidden="true">↗</span>
           </Link>
         )}
