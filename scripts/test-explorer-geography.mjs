@@ -50,10 +50,7 @@ test('every modeled state and city has valid geographic coverage', () => {
     const city = ALL_CITIES.find((item) => item.code === code);
     assert.ok(city, code);
     const [x, y] = projectGeography(city.coordinates);
-    assert.ok(
-      x >= 0 && x <= MAP_WIDTH && y >= 0 && y <= MAP_HEIGHT,
-      city.name,
-    );
+    assert.ok(x >= 0 && x <= MAP_WIDTH && y >= 0 && y <= MAP_HEIGHT, city.name);
     const restored = projectGeography.invert([x, y]);
     assert.ok(
       restored.every(
@@ -105,4 +102,57 @@ test('legacy map summaries retain percentage units without modifying the source'
     ],
   );
   assert.equal(JSON.stringify(state), before);
+});
+
+test('prepared Albers coordinates agree with the independent D3 projection', async () => {
+  const { createRequire } = await import('node:module');
+  const require = createRequire(import.meta.url);
+  const { geoConicEqualArea } = require(
+    require.resolve('d3-geo', {
+      paths: [require.resolve('react-simple-maps')],
+    }),
+  );
+  const reference = geoConicEqualArea()
+    .parallels([29.5, 45.5])
+    .rotate([96, 0])
+    .center([0, 38])
+    .scale(1100)
+    .translate([500, 310]);
+  for (const city of ALL_CITIES) {
+    const point = projectGeography(city.coordinates);
+    const expected = reference(city.coordinates);
+    point.forEach((value, i) =>
+      assert.ok(Math.abs(value - expected[i]) < 1e-9, city.name),
+    );
+  }
+  assert.ok(
+    projectGeography([-122.33, 47.61])[1] <
+      projectGeography([-118.24, 34.05])[1],
+    'north must render above south',
+  );
+});
+
+test('decorative context has the neighboring countries and all five Great Lakes', async () => {
+  const context = JSON.parse(
+    await readFile(
+      new URL('../src/data/explorer-context.json', import.meta.url),
+      'utf8',
+    ),
+  );
+  assert.deepEqual(
+    context
+      .filter((item) => item.kind === 'lake')
+      .map((item) => item.name)
+      .sort(),
+    [
+      'Lake Erie',
+      'Lake Huron',
+      'Lake Michigan',
+      'Lake Ontario',
+      'Lake Superior',
+    ],
+  );
+  for (const name of ['Canada', 'Mexico', 'Cuba', 'The Bahamas'])
+    assert.ok(context.some((item) => item.name === name));
+  for (const item of context) assert.match(item.path, /^M[\d.,LZM-]+Z$/);
 });

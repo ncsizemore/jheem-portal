@@ -10,10 +10,11 @@
 
 import { updateAnalysisQuery } from '@/hooks/useAnalysisQuery';
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
-import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import type { GeographicMapProps } from './GeographicMap';
 import { useMapPreviewPosition } from './useMapPreviewPosition';
+import ExplorerMapPanel from './ExplorerMapPanel';
+import { IMPACT_COLORS, getImpactColor } from './mapScales';
 const GeographicMap = dynamic(() => import('./GeographicMap'), {
   ssr: false,
 });
@@ -33,10 +34,7 @@ interface StateChoroplethExplorerProps {
 // Construct model-specific headline for impact metric
 // Handles both old format (full headline) and new format (just period)
 // TODO: Simplify once all workflows regenerate data with new format
-function getImpactHeadline(
-  modelId: string,
-  headlineOrPeriod: string,
-): string {
+function getImpactHeadline(modelId: string, headlineOrPeriod: string): string {
   // Extract period from either format
   // Old: "Relative increase in new HIV infections if funding stops, 2025-2030"
   // New: "2025-2030"
@@ -48,33 +46,6 @@ function getImpactHeadline(
   return `Relative increase in new HIV infections ${context}, ${period}`;
 }
 
-// Orange color palette for impact visualization (lightest to darkest)
-const IMPACT_COLORS = [
-  '#fed7aa', // orange-200 - lowest impact
-  '#fdba74', // orange-300
-  '#fb923c', // orange-400
-  '#f97316', // orange-500
-  '#ea580c', // orange-600
-  '#c2410c', // orange-700
-  '#9a3412', // orange-800
-  '#7c2d12', // orange-900 - highest impact
-];
-
-// Dynamic color scale based on data range
-// Maps value to color palette using linear interpolation within min/max range
-function getImpactColor(value: number, min: number, max: number): string {
-  if (max === min)
-    return IMPACT_COLORS[Math.floor(IMPACT_COLORS.length / 2)];
-
-  // Normalize to 0-1 range, then map to color index
-  const normalized = Math.max(0, Math.min(1, (value - min) / (max - min)));
-  const colorIndex = Math.min(
-    IMPACT_COLORS.length - 1,
-    Math.floor(normalized * IMPACT_COLORS.length),
-  );
-  return IMPACT_COLORS[colorIndex];
-}
-
 export default function StateExplorerMap({
   config,
 }: StateChoroplethExplorerProps) {
@@ -82,20 +53,15 @@ export default function StateExplorerMap({
     config.id === 'ryan-white-state-croi' ? 'croi' : 'ajph';
   const { summaries, loading, error } = useStateSummaries(config.dataUrl);
 
-  const [hoveredStateData, setHoveredStateData] =
-    useState<StateSummary | null>(null);
+  const [hoveredStateData, setHoveredStateData] = useState<StateSummary | null>(
+    null,
+  );
   const [hoverPosition, setHoverPosition] = useState<{
     x: number;
     y: number;
   } | null>(null);
   const previewPlacement = useMapPreviewPosition(hoverPosition, 260);
 
-  // UI state
-  const [instructionsCollapsed, setInstructionsCollapsed] = useState(
-    () =>
-      typeof window !== 'undefined' &&
-      window.matchMedia('(max-width: 639px)').matches,
-  );
   const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Navigation depends on study coverage, not the summary request.
@@ -185,11 +151,105 @@ export default function StateExplorerMap({
   // Count states with data
   const stateCount = config.locations.length;
 
+  const impactHeadline = summaries
+    ? getImpactHeadline(
+        config.id,
+        Object.values(summaries.states)[0]?.impact.headline || '',
+      )
+    : 'Relative increase in cumulative HIV infections';
   return (
-    <div className="absolute inset-0 overflow-hidden bg-slate-100">
-      <div key="map-mode" className="absolute inset-0">
+    <div className="atlas-explorer">
+      <div key="map-mode" className="atlas-layout">
+        <ExplorerMapPanel
+          id="state-explorer-instructions"
+          eyebrow={
+            config.id === 'cdc-testing'
+              ? 'CDC-funded testing · State study'
+              : 'Ryan White · State study'
+          }
+          title="Explore state projections"
+          description={
+            <>
+              Compare how changes to{' '}
+              {config.id === 'cdc-testing'
+                ? 'CDC-funded HIV testing'
+                : 'Ryan White services'}{' '}
+              could affect HIV outcomes in {stateCount} states.
+            </>
+          }
+          calibrationHref={
+            config.calibration
+              ? `/ryan-white-state-level/calibration?model=${calibrationModel}`
+              : undefined
+          }
+          status={
+            loading || error
+              ? error
+                ? 'Map estimates are unavailable. You can still choose a state to explore its results.'
+                : 'Loading map estimates… You can choose a state now.'
+              : undefined
+          }
+          legend={
+            <>
+              <h2 className="atlas-key-title">Projected increase (%)</h2>
+              <p className="atlas-key-note">{impactHeadline}.</p>
+              <div className="atlas-color-key" aria-hidden="true">
+                {IMPACT_COLORS.map((color) => (
+                  <div key={color}>
+                    <i style={{ backgroundColor: color }} />
+                  </div>
+                ))}
+              </div>
+              <div className="atlas-impact-range" aria-label="Impact range">
+                <span>
+                  {summaries ? `+${impactRange.min.toFixed(0)}%` : '—'}
+                </span>
+                <span>
+                  {summaries ? `+${impactRange.max.toFixed(0)}%` : '—'}
+                </span>
+              </div>
+              <p className="atlas-key-note">
+                Darker states indicate a larger projected increase. Scale
+                reflects this study’s range.
+              </p>
+              <div className="atlas-outside-key">
+                <i aria-hidden="true" />
+                Outside study
+              </div>
+              {mapLocations.some((state) => !state.color) && (
+                <p className="atlas-key-note">
+                  Gray states in this study: estimates unavailable.
+                </p>
+              )}
+            </>
+          }
+        >
+          <label htmlFor="state-explorer-location">Choose a state</label>
+          <select
+            id="state-explorer-location"
+            value=""
+            onChange={(event) => {
+              if (event.target.value)
+                updateAnalysisQuery({ loc: event.target.value });
+            }}
+          >
+            <option value="">Select a state to explore…</option>
+            {availableStates.map((state) => (
+              <option key={state.code} value={state.code}>
+                {state.name}
+              </option>
+            ))}
+          </select>
+        </ExplorerMapPanel>
+
         <GeographicMap
           mode="state"
+          title={
+            config.id === 'cdc-testing'
+              ? 'The impact of ending HIV testing'
+              : 'The impact of ending Ryan White services'
+          }
+          subtitle={`${stateCount} states · Projected increase in new HIV infections`}
           locations={mapLocations}
           onSelect={selectLocation}
           onPreview={previewLocation}
@@ -233,11 +293,9 @@ export default function StateExplorerMap({
                 tabIndex={0}
                 aria-label={`Explore ${state.name}`}
               >
-                <div className="bg-white/98  border border-slate-200 rounded-md p-3 hover:bg-slate-50 transition-colors shadow-md cursor-pointer">
+                <div className="atlas-preview cursor-pointer">
                   {/* Header */}
-                  <h3 className="font-semibold text-slate-800 text-sm mb-2">
-                    {state.name}
-                  </h3>
+                  <h3 className="text-ink mb-3">{state.name}</h3>
 
                   {/* Current Status - Dynamic metrics from config */}
                   <div className="py-2 border-y border-slate-100">
@@ -269,10 +327,7 @@ export default function StateExplorerMap({
                   <div className="pt-2">
                     <div className="flex items-center justify-between">
                       <span className="text-xs text-slate-500 max-w-[180px] leading-snug">
-                        {getImpactHeadline(
-                          config.id,
-                          state.impact.headline,
-                        )}
+                        {getImpactHeadline(config.id, state.impact.headline)}
                       </span>
                       <div className="flex items-center gap-1.5">
                         <div
@@ -287,8 +342,8 @@ export default function StateExplorerMap({
                   </div>
 
                   {/* Click hint */}
-                  <div className="mt-2 pt-2 border-t border-slate-100 flex items-center justify-center gap-1 text-slate-500 text-xs">
-                    <span>Click to explore</span>
+                  <div className="atlas-preview-action">
+                    <span>Explore projections</span>
                     <svg
                       className="w-3 h-3"
                       fill="none"
@@ -307,155 +362,6 @@ export default function StateExplorerMap({
               </div>
             );
           })()}
-
-        {/* Info panel */}
-        <div
-          data-map-panel
-          className="absolute top-3 left-3 right-3 sm:top-4 sm:left-4 sm:right-auto sm:w-80"
-        >
-          <div className="bg-white border border-rule rounded-md overflow-hidden shadow-sm">
-            {/* Header - always visible, clickable to collapse */}
-            <button
-              type="button"
-              onClick={() => setInstructionsCollapsed((prev) => !prev)}
-              aria-expanded={!instructionsCollapsed}
-              aria-controls="state-explorer-instructions"
-              className="w-full px-4 py-3 text-left flex items-center justify-between hover:bg-slate-50 transition-colors"
-            >
-              <h1 className="text-ink font-serif text-xl">
-                {config.id === 'cdc-testing'
-                  ? 'Explore HIV testing results'
-                  : 'Explore Ryan White results'}
-              </h1>
-              <div className={instructionsCollapsed ? '' : 'rotate-180'}>
-                <svg
-                  className="w-4 h-4 text-slate-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M5 15l7-7 7 7"
-                  />
-                </svg>
-              </div>
-            </button>
-
-            {/* Collapsible instructions */}
-            <div
-              id="state-explorer-instructions"
-              hidden={instructionsCollapsed}
-              className="overflow-hidden"
-            >
-              <div className="px-4 pb-4 border-t border-slate-100">
-                <p className="mt-3 text-sm leading-relaxed text-slate-600">
-                  Compare how changes to{' '}
-                  {config.id === 'cdc-testing'
-                    ? 'CDC-funded HIV testing'
-                    : 'Ryan White services'}{' '}
-                  could affect HIV outcomes in {stateCount} states.
-                </p>
-                {config.calibration && (
-                  <Link
-                    href={`/ryan-white-state-level/calibration?model=${calibrationModel}`}
-                    className="mt-4 inline-flex items-center gap-1.5 text-xs font-medium text-blue-700 hover:underline"
-                  >
-                    See how this model fits observed data
-                    <span aria-hidden="true">→</span>
-                  </Link>
-                )}
-              </div>
-            </div>
-
-            {/* A direct selector keeps the map supplementary and gives keyboard
-              and touch users a predictable path into the analysis. */}
-            <div className="px-4 py-3 border-t border-slate-100">
-              <label
-                htmlFor="state-explorer-location"
-                className="block text-xs font-medium text-slate-600 mb-1.5"
-              >
-                Choose a state
-              </label>
-              <select
-                id="state-explorer-location"
-                value=""
-                onChange={(event) => {
-                  if (!event.target.value) return;
-                  updateAnalysisQuery({ loc: event.target.value });
-                }}
-                className="w-full rounded-md border border-slate-300 bg-white px-2.5 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">Select a state to explore…</option>
-                {availableStates.map((state) => (
-                  <option key={state.code} value={state.code}>
-                    {state.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {(loading || error) && (
-              <p
-                role="status"
-                className="px-4 py-3 text-xs leading-relaxed text-muted border-t border-rule"
-              >
-                {error
-                  ? 'Map estimates are unavailable. You can still choose a state to explore its results.'
-                  : 'Loading map estimates… You can choose a state now.'}
-              </p>
-            )}
-            {/* Legend - always visible, condensed */}
-            <div className="px-4 py-2.5 border-t border-slate-100">
-              <div className="flex items-center justify-between text-xs text-slate-500">
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] uppercase tracking-wide text-slate-500">
-                    Impact:
-                  </span>
-                  <div className="flex items-center gap-1">
-                    <div
-                      className="w-3 h-3 rounded"
-                      style={{ backgroundColor: '#fed7aa' }}
-                    />
-                    <div
-                      className="w-3 h-3 rounded"
-                      style={{ backgroundColor: '#fb923c' }}
-                    />
-                    <div
-                      className="w-3 h-3 rounded"
-                      style={{ backgroundColor: '#ea580c' }}
-                    />
-                    <div
-                      className="w-3 h-3 rounded"
-                      style={{ backgroundColor: '#7c2d12' }}
-                    />
-                  </div>
-                  <span className="text-slate-600 tabular-nums">
-                    {summaries
-                      ? `${impactRange.min.toFixed(0)}–${impactRange.max.toFixed(0)}%`
-                      : '—'}
-                  </span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <div className="w-3 h-3 rounded border border-slate-300 bg-[#f9faf8]" />
-                  <span>Outside study</span>
-                </div>
-              </div>
-              <p className="text-xs leading-relaxed text-slate-600 mt-2">
-                {summaries
-                  ? getImpactHeadline(
-                      config.id,
-                      Object.values(summaries.states)[0]?.impact
-                        .headline || '',
-                    )
-                  : 'Relative increase in cumulative HIV infections'}
-                . {stateCount} states with projections.
-              </p>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );
