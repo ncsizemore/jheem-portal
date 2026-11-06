@@ -1165,11 +1165,12 @@ for (const stateMap of [false, true]) {
         page.getByRole('button', { name: 'PNG', exact: true }),
       ).toBeEnabled();
     } else await open(page);
+    await page.setViewportSize({ width: 390, height: 844 });
     await page.getByRole('button', { name: 'Map', exact: true }).click();
     const instructions = page.locator(
       `button[aria-controls="${stateMap ? 'state' : 'city'}-explorer-instructions"]`,
     );
-    await expect(instructions).toHaveAttribute('aria-expanded', 'true');
+    await expect(instructions).toHaveAttribute('aria-expanded', 'false');
     // React Strict Mode can start/abort an extra mount request in dev.
     // Returning to the existing map must add none.
     const initialSummaries = summaries;
@@ -1177,6 +1178,7 @@ for (const stateMap of [false, true]) {
     expect(initialSummaries).toBeGreaterThan(0);
     expect(initialBoundaries).toBe(0);
     await instructions.click();
+    await expect(instructions).toHaveAttribute('aria-expanded', 'true');
     const location = stateMap ? 'AL' : 'C.12580';
     await page
       .locator('select')
@@ -1187,11 +1189,15 @@ for (const stateMap of [false, true]) {
     ).toBeEnabled();
     await page.setViewportSize({ width: 920, height: 800 });
     await page.getByRole('button', { name: 'Map', exact: true }).click();
-    await expect(instructions).toHaveAttribute('aria-expanded', 'false');
+    await expect(instructions).toHaveAttribute('aria-expanded', 'true');
     await expect(page.locator('[data-geographic-map]')).toBeVisible();
     const canvas = await page.locator('[data-geographic-map]').boundingBox();
     expect(canvas?.width).toBeGreaterThanOrEqual(900);
     expect(canvas?.height).toBeGreaterThan(400);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await expect(instructions).toBeVisible();
+    await expect(instructions).toHaveAttribute('aria-expanded', 'true');
+    await expect(page.locator('.atlas-guide')).toBeVisible();
     expect(summaries).toBe(initialSummaries);
     expect(boundaries).toBe(initialBoundaries);
   });
@@ -1269,7 +1275,7 @@ for (const stateMap of [false, true]) {
           : '/ryan-white/explorer',
       );
       const selector = page.getByLabel(
-        stateMap ? 'Choose a state' : 'Choose a city',
+        stateMap ? 'Choose a state' : 'Choose a metropolitan area',
       );
       await expect(selector).toBeEnabled();
       await expect(selector.locator('option')).toHaveCount(stateMap ? 12 : 32);

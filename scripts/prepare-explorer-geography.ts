@@ -15,15 +15,14 @@ function distanceToSegment(p: Point, a: Point, b: Point) {
           0,
           Math.min(
             1,
-            ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) /
-              (dx * dx + dy * dy),
+            ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / (dx * dx + dy * dy),
           ),
         )
       : 0;
   return Math.hypot(p[0] - a[0] - t * dx, p[1] - a[1] - t * dy);
 }
-function simplify(points: Point[]): Point[] {
-  let distance = 0.12,
+function simplify(points: Point[], tolerance = 0.12): Point[] {
+  let distance = tolerance,
     index = 0;
   for (let i = 1; i < points.length - 1; i++) {
     const d = distanceToSegment(
@@ -38,8 +37,8 @@ function simplify(points: Point[]): Point[] {
   }
   if (!index) return [points[0], points[points.length - 1]];
   return [
-    ...simplify(points.slice(0, index + 1)).slice(0, -1),
-    ...simplify(points.slice(index)),
+    ...simplify(points.slice(0, index + 1), tolerance).slice(0, -1),
+    ...simplify(points.slice(index), tolerance),
   ];
 }
 async function main() {
@@ -109,10 +108,9 @@ async function main() {
           code,
           name,
           path,
-          label: (knownCenter
-            ? projectGeography(knownCenter)
-            : centroid
-          ).map((n) => +n.toFixed(1)),
+          label: (knownCenter ? projectGeography(knownCenter) : centroid).map(
+            (n) => +n.toFixed(1),
+          ),
         },
       ];
     })
@@ -126,12 +124,45 @@ async function main() {
       );
     }
   } else await writeFile(destination, output);
+  const contextSource = JSON.parse(
+    await readFile('scripts/data/explorer-context.geojson', 'utf8'),
+  ) as GeoJSON.FeatureCollection<
+    GeoJSON.MultiPolygon,
+    { name: string; kind: string }
+  >;
+  const context = contextSource.features.map((feature) => ({
+    ...feature.properties,
+    path: feature.geometry.coordinates
+      .flatMap((polygon) =>
+        polygon.map((ring) => {
+          const points = ring.map((p) => projectGeography(p as Point));
+          const simplified = simplify(points, 0.3);
+          return (
+            (simplified.length < 4 ? points : simplified)
+              .map(
+                (p, i) =>
+                  `${i ? 'L' : 'M'}${p.map((v) => +v.toFixed(1)).join(',')}`,
+              )
+              .join('') + 'Z'
+          );
+        }),
+      )
+      .join(''),
+  }));
+  const contextOutput = JSON.stringify(context) + '\n';
+  const contextDestination = 'src/data/explorer-context.json';
+  if (process.argv.includes('--check')) {
+    if ((await readFile(contextDestination, 'utf8')) !== contextOutput)
+      throw new Error('Explorer context is stale; regenerate geography.');
+  } else await writeFile(contextDestination, contextOutput);
   console.log({
     states: states.length,
     originalPoints,
     displayPoints,
     bytes: Buffer.byteLength(output),
     gzip: gzipSync(output).length,
+    contextBytes: Buffer.byteLength(contextOutput),
+    contextGzip: gzipSync(contextOutput).length,
   });
 }
 main().catch((error) => {

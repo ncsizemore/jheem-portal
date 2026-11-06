@@ -2,10 +2,15 @@
 
 import { updateAnalysisQuery } from '@/hooks/useAnalysisQuery';
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
-import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import type { GeographicMapProps } from './GeographicMap';
 import { useMapPreviewPosition } from './useMapPreviewPosition';
+import ExplorerMapPanel from './ExplorerMapPanel';
+import {
+  getMarkerSize,
+  getSuppressionColor,
+  SUPPRESSION_BANDS,
+} from './mapScales';
 const GeographicMap = dynamic(() => import('./GeographicMap'), {
   ssr: false,
 });
@@ -57,79 +62,15 @@ interface CitySummaries {
 // Derive scenario IDs from config for city data
 const ALL_SCENARIOS = MODEL_CONFIG.scenarios.map((s) => s.id);
 
-// Get color based on suppression rate using blue-to-orange diverging scale
-// Blue = high suppression (good), Orange/Red = low suppression (concerning)
-// Thresholds based on actual data range (64-86%)
-function getSuppressionColor(rate: number): {
-  ring: string;
-  glow: string;
-  bg: string;
-} {
-  if (rate >= 82)
-    return {
-      ring: '#1d4ed8',
-      glow: 'rgba(29, 78, 216, 0.5)',
-      bg: 'bg-blue-700',
-    }; // Excellent
-  if (rate >= 77)
-    return {
-      ring: '#3b82f6',
-      glow: 'rgba(59, 130, 246, 0.5)',
-      bg: 'bg-blue-500',
-    }; // Very good
-  if (rate >= 72)
-    return {
-      ring: '#0ea5e9',
-      glow: 'rgba(14, 165, 233, 0.5)',
-      bg: 'bg-sky-500',
-    }; // Good
-  if (rate >= 67)
-    return {
-      ring: '#fbbf24',
-      glow: 'rgba(251, 191, 36, 0.5)',
-      bg: 'bg-amber-400',
-    }; // Moderate
-  if (rate >= 64)
-    return {
-      ring: '#f97316',
-      glow: 'rgba(249, 115, 22, 0.5)',
-      bg: 'bg-orange-500',
-    }; // Below target
-  return {
-    ring: '#dc2626',
-    glow: 'rgba(220, 38, 38, 0.5)',
-    bg: 'bg-red-600',
-  }; // Needs improvement
-}
-
-// Get marker size based on prevalence (larger epidemic = bigger marker)
-function getMarkerSize(prevalence: number): number {
-  // Scale from 12px (small) to 24px (large) based on prevalence
-  // Using log scale since prevalence varies widely
-  const minSize = 14;
-  const maxSize = 28;
-  const minPrev = 5000;
-  const maxPrev = 50000;
-  const normalized = Math.max(
-    0,
-    Math.min(
-      1,
-      (Math.log(prevalence) - Math.log(minPrev)) /
-        (Math.log(maxPrev) - Math.log(minPrev)),
-    ),
-  );
-  return minSize + normalized * (maxSize - minSize);
-}
-
 export default function CityExplorerMap() {
   // City summaries for map display
   const [citySummaries, setCitySummaries] = useState<CitySummaries | null>(
     null,
   );
   const [citySummariesLoading, setCitySummariesLoading] = useState(true);
-  const [citySummariesError, setCitySummariesError] = useState<
-    string | null
-  >(null);
+  const [citySummariesError, setCitySummariesError] = useState<string | null>(
+    null,
+  );
 
   // Load city summaries on mount
   useEffect(() => {
@@ -224,15 +165,6 @@ export default function CityExplorerMap() {
     };
   }, []);
 
-  // Selected city for analysis mode
-
-  // Track if instruction panel is collapsed (user must explicitly minimize)
-  const [instructionsCollapsed, setInstructionsCollapsed] = useState(
-    () =>
-      typeof window !== 'undefined' &&
-      window.matchMedia('(max-width: 639px)').matches,
-  );
-
   // Handle city selection from map
   const handleCityClick = useCallback((city: CityData) => {
     updateAnalysisQuery({ loc: city.code });
@@ -244,9 +176,10 @@ export default function CityExplorerMap() {
         const summary = citySummaries?.cities[city.code];
         return {
           ...city,
+          shortLabel:
+            summary?.shortName || city.name.split(',')[0].split('-')[0],
           color: summary
             ? getSuppressionColor(summary.metrics.suppressionRate.value)
-                .ring
             : undefined,
           size: summary
             ? getMarkerSize(summary.metrics.diagnosedPrevalence.value)
@@ -275,147 +208,113 @@ export default function CityExplorerMap() {
     setHoverPosition(null);
   }, [cancelHideTimeout]);
 
+  const years = [
+    ...new Set(
+      Object.values(citySummaries?.cities || {}).map(
+        (city) => city.metrics.suppressionRate.year,
+      ),
+    ),
+  ];
   return (
-    <div className="absolute inset-0 overflow-hidden bg-slate-100">
-      <div key="map-mode" className="absolute inset-0">
+    <div className="atlas-explorer">
+      <div key="map-mode" className="atlas-layout">
+        <ExplorerMapPanel
+          id="city-explorer-instructions"
+          eyebrow="Ryan White · City study"
+          title="Explore local projections"
+          description={
+            <>
+              Compare how interruptions to Ryan White services could affect HIV
+              outcomes in {STUDY_CITIES.length} metropolitan areas through 2030.
+            </>
+          }
+          calibrationHref="/ryan-white/calibration"
+          status={
+            citySummariesLoading || citySummariesError
+              ? citySummariesError
+                ? 'Map estimates are unavailable. You can still choose a city to explore its results.'
+                : 'Loading map estimates… You can choose a city now.'
+              : undefined
+          }
+          legend={
+            <>
+              <h2 className="atlas-key-title">Viral suppression (%)</h2>
+              <p className="atlas-key-note">
+                Darker markers indicate higher suppression.
+              </p>
+              <div
+                className="atlas-color-key"
+                aria-label="Viral suppression color scale"
+              >
+                {SUPPRESSION_BANDS.map((band) => (
+                  <div key={band.label} aria-label={band.description}>
+                    <i style={{ backgroundColor: band.color }} />
+                    <span aria-hidden="true">{band.label}</span>
+                  </div>
+                ))}
+              </div>
+              {mapLocations.some((city) => !city.color) && (
+                <p className="atlas-key-note">
+                  Unfilled markers: map estimates unavailable.
+                </p>
+              )}
+              <div className="atlas-size-key">
+                <h2 className="atlas-key-title">People with diagnosed HIV</h2>
+                <div
+                  className="atlas-size-examples"
+                  aria-label="Marker diameter uses a logarithmic scale from 5,000 to 50,000 people, capped at both ends"
+                >
+                  {[5000, 15000, 50000].map((value, index) => (
+                    <div key={value}>
+                      <i
+                        style={{
+                          width: getMarkerSize(value),
+                          height: getMarkerSize(value),
+                        }}
+                      />
+                      <span>{['≤5,000', '15,000', '≥50,000'][index]}</span>
+                    </div>
+                  ))}
+                </div>
+                <p className="atlas-key-note">
+                  Size uses a log scale; capped at 50,000.
+                </p>
+              </div>
+            </>
+          }
+        >
+          <label htmlFor="city-explorer-location">
+            Choose a metropolitan area
+          </label>
+          <select
+            id="city-explorer-location"
+            value=""
+            onChange={(event) => {
+              const city = availableCities.find(
+                (item) => item.code === event.target.value,
+              );
+              if (city) handleCityClick(city);
+            }}
+          >
+            <option value="">Select a city to explore…</option>
+            {availableCities.map((city) => (
+              <option key={city.code} value={city.code}>
+                {city.name}
+              </option>
+            ))}
+          </select>
+        </ExplorerMapPanel>
+
         <GeographicMap
           mode="city"
+          title="Local HIV epidemics"
+          subtitle={`Model estimates${years.length === 1 ? `, ${years[0]}` : ''} · ${STUDY_CITIES.length} metropolitan areas`}
           locations={mapLocations}
           onSelect={selectLocation}
           onPreview={previewLocation}
           onLeave={startHideTimeout}
           onMove={clearPreview}
         />
-
-        {/* Info panel */}
-        <div
-          data-map-panel
-          className="absolute top-3 left-3 right-3 sm:top-4 sm:left-4 sm:right-auto sm:w-80"
-        >
-          <div className="bg-white border border-rule rounded-md overflow-hidden shadow-sm">
-            {/* Header row - always visible */}
-            <button
-              type="button"
-              onClick={() => setInstructionsCollapsed((prev) => !prev)}
-              aria-expanded={!instructionsCollapsed}
-              aria-controls="city-explorer-instructions"
-              className="w-full px-4 py-3 text-left flex items-center justify-between hover:bg-slate-50 transition-colors"
-            >
-              <h1 className="text-ink font-serif text-xl">
-                Explore Ryan White results
-              </h1>
-              <div className={instructionsCollapsed ? '' : 'rotate-180'}>
-                <svg
-                  className="w-4 h-4 text-slate-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M5 15l7-7 7 7"
-                  />
-                </svg>
-              </div>
-            </button>
-
-            {/* Collapsible content */}
-            <div
-              id="city-explorer-instructions"
-              hidden={instructionsCollapsed}
-              className="overflow-hidden"
-            >
-              <div className="px-4 pb-4 border-t border-slate-100">
-                <p className="mt-3 text-sm leading-relaxed text-slate-600">
-                  Compare how interruptions to Ryan White services could
-                  affect HIV outcomes in {STUDY_CITIES.length} metropolitan
-                  areas through 2030.
-                </p>
-                <Link
-                  href="/ryan-white/calibration"
-                  className="mt-4 inline-flex items-center gap-1.5 text-xs font-medium text-blue-700 hover:underline"
-                >
-                  See how this model fits observed data
-                  <span aria-hidden="true">→</span>
-                </Link>
-              </div>
-            </div>
-
-            <div className="px-4 py-3 border-t border-slate-100">
-              <label
-                htmlFor="city-explorer-location"
-                className="block text-xs font-medium text-slate-600 mb-1.5"
-              >
-                Choose a city
-              </label>
-              <select
-                id="city-explorer-location"
-                value=""
-                onChange={(event) => {
-                  const city = availableCities.find(
-                    (item) => item.code === event.target.value,
-                  );
-                  if (city) handleCityClick(city);
-                }}
-                className="w-full rounded-md border border-slate-300 bg-white px-2.5 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">Select a city to explore…</option>
-                {availableCities.map((city) => (
-                  <option key={city.code} value={city.code}>
-                    {city.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {(citySummariesLoading || citySummariesError) && (
-              <p
-                role="status"
-                className="px-4 py-3 text-xs leading-relaxed text-muted border-t border-rule"
-              >
-                {citySummariesError
-                  ? 'Map estimates are unavailable. You can still choose a city to explore its results.'
-                  : 'Loading map estimates… You can choose a city now.'}
-              </p>
-            )}
-            <div className="border-t border-slate-100 px-4 py-3 text-xs text-slate-600">
-              <div className="flex items-center justify-between">
-                <span>Viral suppression</span>
-                <span className="text-[10px] text-muted">
-                  Model estimates
-                </span>
-              </div>
-              <div
-                className="mt-2 flex h-1.5 overflow-hidden rounded-sm"
-                aria-hidden="true"
-              >
-                {[
-                  '#dc2626',
-                  '#f97316',
-                  '#fbbf24',
-                  '#0ea5e9',
-                  '#3b82f6',
-                  '#1d4ed8',
-                ].map((color) => (
-                  <span
-                    key={color}
-                    className="flex-1"
-                    style={{ backgroundColor: color }}
-                  />
-                ))}
-              </div>
-              <div className="mt-1 flex justify-between text-[10px] tabular-nums text-muted">
-                <span>&lt;64%</span>
-                <span>≥82%</span>
-              </div>
-              <p className="mt-2 text-[11px] text-muted">
-                Marker size: people with diagnosed HIV
-              </p>
-            </div>
-          </div>
-        </div>
 
         {/* Hover preview card */}
         {hoveredCity &&
@@ -447,9 +346,9 @@ export default function CityExplorerMap() {
                 tabIndex={0}
                 aria-label={`Explore ${hoveredCity.name}`}
               >
-                <div className="bg-white/98  border border-slate-200 rounded-md p-3 hover:bg-slate-50 transition-colors shadow-md">
+                <div className="atlas-preview">
                   {/* Header - single line */}
-                  <h3 className="font-semibold text-slate-800 text-sm mb-2">
+                  <h3 className="text-ink mb-3">
                     {summary?.shortName || hoveredCity.name.split(',')[0]},{' '}
                     {hoveredCity.name.split(',').slice(-1)[0]?.trim()}
                   </h3>
@@ -459,8 +358,7 @@ export default function CityExplorerMap() {
                     <div className="py-2 border-y border-slate-100">
                       <div className="flex items-baseline justify-between mb-1.5">
                         <span className="text-[10px] uppercase tracking-wide text-slate-500">
-                          Model Estimate{' '}
-                          {summary.metrics.suppressionRate.year}
+                          Model Estimate {summary.metrics.suppressionRate.year}
                         </span>
                       </div>
                       <div className="space-y-1.5">
@@ -471,12 +369,10 @@ export default function CityExplorerMap() {
                           <div className="flex items-center gap-1.5">
                             <div
                               className="w-2 h-2 rounded-full"
-                              style={{ backgroundColor: colors?.ring }}
+                              style={{ backgroundColor: colors || undefined }}
                             />
                             <span className="text-sm font-semibold text-slate-800">
-                              {summary.metrics.suppressionRate.value.toFixed(
-                                0,
-                              )}
+                              {summary.metrics.suppressionRate.value}
                               %
                             </span>
                           </div>
@@ -498,7 +394,7 @@ export default function CityExplorerMap() {
                     <div className="pt-2">
                       <div className="flex items-baseline justify-between mb-1.5">
                         <span className="text-[10px] uppercase tracking-wide text-slate-500">
-                          Cessation Scenario
+                          If services end
                         </span>
                         <span className="text-[10px] text-slate-400">
                           {summary.impact.startYear || 2025}-
@@ -507,7 +403,7 @@ export default function CityExplorerMap() {
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-xs text-slate-500">
-                          Cumulative new infections
+                          Increase in new infections
                         </span>
                         <span className="text-sm font-semibold text-amber-800">
                           +{summary.impact.cessationIncreasePercent}%
@@ -517,8 +413,8 @@ export default function CityExplorerMap() {
                   )}
 
                   {/* Click hint */}
-                  <div className="mt-2 pt-2 border-t border-slate-100 flex items-center justify-center gap-1 text-slate-500 text-xs">
-                    <span>Click to explore</span>
+                  <div className="atlas-preview-action">
+                    <span>Explore projections</span>
                     <svg
                       className="w-3 h-3"
                       fill="none"
