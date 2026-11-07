@@ -25,16 +25,18 @@ const MODEL_SECTIONS = [
   {
     root: '/ryan-white-state-level', label: 'Ryan White: State-Level',
     links: [
-      { href: '/ryan-white-state-level/explorer/ajph', label: '11 States (2025–2030)' },
-      { href: '/ryan-white-state-level/explorer/croi', label: '30 States (2026–2031)' },
-      { href: '/ryan-white-state-level/custom', label: 'Custom Simulations' },
+      { href: '/ryan-white-state-level', label: 'Study overview', shortLabel: 'Overview' },
+      { href: '/ryan-white-state-level/explorer/ajph', label: '11 States (2025–2030)', shortLabel: '11 states' },
+      { href: '/ryan-white-state-level/explorer/croi', label: '30 States (2026–2031)', shortLabel: '30 states' },
+      { href: '/ryan-white-state-level/custom', label: 'Custom scenarios', shortLabel: 'Custom' },
     ],
   },
   {
     root: '/cdc-testing', label: 'CDC Testing',
     links: [
-      { href: '/cdc-testing/explorer', label: 'Prerun Explorer' },
-      { href: '/cdc-testing/custom', label: 'Custom Simulations' },
+      { href: '/cdc-testing', label: 'Study overview', shortLabel: 'Overview' },
+      { href: '/cdc-testing/explorer', label: 'Explore results', shortLabel: 'Results' },
+      { href: '/cdc-testing/custom', label: 'Custom scenarios' },
     ],
   },
 ];
@@ -53,7 +55,7 @@ function NavigationForPath({ pathname }: { pathname: string }) {
   const [modelsOpen, setModelsOpen] = useState(false);
   const modelsButton = useRef<HTMLButtonElement>(null);
   const mobileButton = useRef<HTMLButtonElement>(null);
-  const isPublicPage = pathname === '/' || pathname === '/work-with-us' || pathname === '/ryan-white';
+  const isPublicPage = ['/', '/work-with-us', '/ryan-white', '/ryan-white-state-level', '/cdc-testing'].includes(pathname);
   const section = MODEL_SECTIONS.find(({ root }) => matchesRoute(pathname, root))
     ?? (pathname === '/explore' ? MODEL_SECTIONS[0] : undefined);
   const activeModel = (href: string) => matchesRoute(pathname, href)

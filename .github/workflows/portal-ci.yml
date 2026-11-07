@@ -53,7 +53,7 @@ jobs:
         run: npm run build
 
       - name: Verify production explorer entry
-        run: npx playwright test --config=playwright.production.config.ts results-workspace geographic-map -g 'static entry|initial analysis downloads|default plot and index|nondefault direct|direct results never|summaries never|chart updates retain|rendered uncertainty|supporting details|geography|mobile map|map keeps'
+        run: npx playwright test --config=playwright.production.config.ts results-workspace geographic-map study-overviews -g 'static entry|initial analysis downloads|default plot and index|nondefault direct|direct results never|summaries never|chart updates retain|rendered uncertainty|supporting details|geography|mobile map|map keeps|overview|state findings'
 
       - name: Audit production dependencies
         run: npm run audit:production

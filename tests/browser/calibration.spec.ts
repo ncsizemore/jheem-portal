@@ -106,9 +106,13 @@ test('presents model fit as contextual evidence rather than a primary workflow',
   await expect(page.locator('header nav').getByRole('link', { name: 'Model fit' })).toHaveCount(0);
 
   await page.goto('/ryan-white-state-level');
-  await expect(page.getByRole('link', { name: 'View model fit' })).toHaveAttribute(
+  await expect(page.getByRole('link', { name: '11-state model fit' })).toHaveAttribute(
     'href',
     '/ryan-white-state-level/calibration?model=ajph',
+  );
+  await expect(page.getByRole('link', { name: '30-state model fit' })).toHaveAttribute(
+    'href',
+    '/ryan-white-state-level/calibration?model=croi',
   );
   await expect(page.locator('header nav').getByRole('link', { name: 'Model fit' })).toHaveCount(0);
 
