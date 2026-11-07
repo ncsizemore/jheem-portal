@@ -1,317 +1,369 @@
-'use client';
+import type { Metadata } from "next";
+import Link from "next/link";
+import Footer from "@/components/Footer";
+import CopyCitation from "@/components/study/CopyCitation";
+import StateResultsForm from "@/components/study/StateResultsForm";
+import {
+  ajphStateLevelConfig,
+  croiStateLevelConfig,
+  type ModelConfig,
+} from "@/config/model-configs";
 
-import { useState } from 'react';
-import Link from 'next/link';
-import Footer from '@/components/Footer';
+export const metadata: Metadata = {
+  title: "Ryan White services & state HIV outcomes | JHEEM",
+  description:
+    "Explore how interruptions to Ryan White services could affect HIV outcomes in two state-level studies: 11 states through 2030 and 30 states through 2031.",
+};
+
+const paperTitle =
+  "Projected Increase in HIV Incidence in 11 States if Ryan White Ends: A Simulation Study";
+const authors =
+  "Schnure M, Forster R, Jones JL, Lesko CR, Batey DS, Butler I, Ward D, Musgrove K, Althoff KN, Jain MK, Gebo KA, Dowdy DW, Shah M, Kasaie P, Fojo AT";
+const paperUrl = "https://doi.org/10.2105/AJPH.2025.308409";
+const citation = `${authors}. ${paperTitle}. Am J Public Health. 2026;116(5):732–735. doi:10.2105/AJPH.2025.308409`;
+
+function scenarioChoices(config: ModelConfig) {
+  return config.scenarios.map((scenario) => {
+    const timeline = scenario.timeline;
+    const months = timeline?.serviceResumeTime
+      ? Math.round(
+          (timeline.serviceResumeTime - timeline.serviceInterruptionStartTime) *
+            12,
+        )
+      : null;
+    // Keep the distinguishing assumption visible in narrow native selectors.
+    const label = scenario.id.endsWith("_conservative")
+      ? `${months ? `${months} months` : "Cessation"} (conservative)`
+      : months
+        ? `${months}-month interruption`
+        : "Permanent cessation";
+    return {
+      id: scenario.id,
+      label,
+    };
+  });
+}
+
+// Published AJPH estimates, not a calculation from either interactive release.
+const publishedScenarios = [
+  {
+    name: "Brief interruption",
+    gap: "18 months",
+    increase: "26%",
+    additional: "26,951",
+  },
+  {
+    name: "Prolonged interruption",
+    gap: "42 months",
+    increase: "52%",
+    additional: "53,594",
+  },
+  {
+    name: "Permanent cessation",
+    gap: "Services do not resume",
+    increase: "68%",
+    additional: "69,695",
+  },
+];
 
 export default function RyanWhiteStateLevelPage() {
-  const [citationCopied, setCitationCopied] = useState(false);
-
-  const handleCopyCitation = async () => {
-    const citation = 'Schnure M, Forster R, Jones JL, Lesko CR, Batey DS, Butler I, Ward D, Musgrove K, Althoff KN, Jain MK, Gebo KA, Dowdy DW, Shah M, Kasaie P, Fojo AT. HIV Incidence Could Rise by 68% in 11 States if Ryan White Ends: A Simulation Study. Am J Public Health. 2026;116(5). doi:10.2105/AJPH.2025.308409';
-
-    try {
-      await navigator.clipboard.writeText(citation);
-      setCitationCopied(true);
-      setTimeout(() => setCitationCopied(false), 2000);
-    } catch (error) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error('Failed to copy citation:', error);
-      }
-      alert('Unable to copy to clipboard. Please select and copy the citation manually.');
-    }
-  };
-
-  const states = [
-    'Alabama', 'California', 'Florida', 'Georgia', 'Illinois', 'Louisiana',
-    'Mississippi', 'Missouri', 'New York', 'Texas', 'Wisconsin'
-  ];
-
   return (
-    <div className="min-h-screen bg-white">
-      {/* Publication Header */}
-      <header className="border-b border-gray-200">
-        <div className="max-w-4xl mx-auto px-6 pt-16 pb-12">
-          <div className="flex items-center gap-3 text-sm text-gray-500 mb-6">
-            <span className="font-medium text-gray-900">AJPH</span>
-            <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
-            <span>May 2026</span>
+    <div className="editorial-page bg-white text-ink">
+      <header className="border-b border-rule">
+        <div className="site-container grid gap-7 py-10 sm:py-14 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,0.8fr)] lg:gap-20">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-hopkins-blue">
+              Ryan White · State-level studies
+            </p>
+            <h1 className="editorial-title mt-5 max-w-3xl text-[2.6rem] leading-[1.08] sm:text-[3.4rem]">
+              What would losing Ryan White services mean for your state?
+            </h1>
           </div>
-          <h1 className="text-3xl md:text-[2.5rem] md:leading-tight font-normal text-gray-900 leading-tight mb-6">
-            HIV Incidence Could Rise by 68% in 11 States if Ryan White Ends: A Simulation Study
-          </h1>
-          <p className="text-gray-500 leading-relaxed mb-8">
-            Schnure M, Forster R, Jones JL, Lesko CR, Batey DS, Butler I, Ward D,
-            Musgrove K, Althoff KN, Jain MK, Gebo KA, Dowdy DW, Shah M, Kasaie P, Fojo AT
-          </p>
-          <div className="flex flex-wrap items-center gap-4">
+          <div className="self-end">
+            <p className="text-lg leading-relaxed text-muted">
+              We modeled how temporary interruptions and permanent loss of
+              services could affect new HIV infections and other outcomes across
+              U.S. states.
+            </p>
+            <p className="mt-4 text-sm leading-relaxed text-muted">
+              Both studies compare disrupted services with continued Ryan White
+              services. Their locations, dates, and assumptions differ.
+            </p>
             <a
-              href="https://ajph.aphapublications.org/doi/10.2105/AJPH.2025.308409"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-md hover:bg-gray-800 transition-colors"
+              href="#local-results"
+              className="editorial-link mt-5 inline-block text-sm"
             >
-              Read Paper
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-              </svg>
+              Choose a study and state <span aria-hidden="true">↓</span>
             </a>
-            <a
-              href="https://www.croiwebcasts.org/console/player/55174?mediaType=slideVideo&"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-md hover:bg-gray-800 transition-colors"
-            >
-              Watch Presentation
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-              </svg>
-            </a>
-            <button
-              onClick={handleCopyCitation}
-              className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-                citationCopied
-                  ? 'bg-green-100 text-green-700'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
-              {citationCopied ? (
-                <>
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  Copied
-                </>
-              ) : (
-                <>
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                  </svg>
-                  Cite
-                </>
-              )}
-            </button>
           </div>
         </div>
       </header>
 
-      {/* Key Finding */}
-      <section className="border-b border-gray-200">
-        <div className="max-w-4xl mx-auto px-6 py-16">
-          <p className="text-2xl md:text-[1.75rem] md:leading-snug font-light text-gray-900 leading-snug mb-6 max-w-3xl">
-            If the Ryan White HIV/AIDS Program ends permanently,
-            we project{' '}
-            <span className="font-semibold">69,695 additional HIV infections</span>{' '}
-            by 2030—a 68% increase across 11 U.S. states representing 63% of all people diagnosed with HIV.
-          </p>
-          <p className="text-gray-600 leading-relaxed max-w-2xl">
-            This state-level analysis complements our city-level study, using the same
-            validated HIV transmission model to project impacts across entire state populations.
-            State-level variation is substantial, ranging from a 45% increase in Texas to 126% in Missouri.
-          </p>
-        </div>
-      </section>
-
-      {/* Tools */}
-      <section className="border-b border-gray-200">
-        <div className="max-w-4xl mx-auto px-6 py-10">
-          <div className="grid md:grid-cols-3 gap-4">
-            <Link
-              href="/ryan-white-state-level/explorer/ajph"
-              className="group flex items-center justify-between p-5 bg-white border border-gray-200 rounded-lg hover:border-hopkins-blue hover:shadow-md transition-all"
-            >
-              <div>
-                <p className="font-medium text-gray-900 group-hover:text-hopkins-blue transition-colors">
-                  11 States (2025–2030)
-                </p>
-                <p className="text-sm text-gray-500">
-                  AJPH · May 2026
-                </p>
-              </div>
-              <svg className="w-5 h-5 text-gray-400 group-hover:text-hopkins-blue transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </Link>
-            <Link
-              href="/ryan-white-state-level/explorer/croi"
-              className="group flex items-center justify-between p-5 bg-white border border-gray-200 rounded-lg hover:border-hopkins-blue hover:shadow-md transition-all"
-            >
-              <div>
-                <p className="font-medium text-gray-900 group-hover:text-hopkins-blue transition-colors">
-                  30 States (2026–2031)
-                </p>
-                <p className="text-sm text-gray-500">
-                  CROI 2026
-                </p>
-              </div>
-              <svg className="w-5 h-5 text-gray-400 group-hover:text-hopkins-blue transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </Link>
-            <Link
-              href="/ryan-white"
-              className="group flex items-center justify-between p-5 bg-white border border-gray-200 rounded-lg hover:border-gray-400 hover:shadow-md transition-all"
-            >
-              <div>
-                <p className="font-medium text-gray-900">
-                  City-Level Analysis
-                </p>
-                <p className="text-sm text-gray-500">
-                  31-city MSA study
-                </p>
-              </div>
-              <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </Link>
-          </div>
-          <div className="mt-8 flex flex-col gap-4 border-t border-gray-200 pt-6 sm:flex-row sm:items-center sm:justify-between">
-            <div className="max-w-2xl">
-              <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">
-                Model evidence
-              </p>
-              <h2 className="mt-1 font-medium text-gray-900">
-                How well does the model fit?
-              </h2>
-              <p className="mt-1 text-sm leading-relaxed text-gray-500">
-                Compare model estimates with observed HIV and service data for the state-level analyses.
-              </p>
-            </div>
-            <Link
-              href="/ryan-white-state-level/calibration?model=ajph"
-              className="inline-flex flex-shrink-0 items-center gap-1.5 text-sm font-medium text-hopkins-blue hover:underline"
-            >
-              View model fit
-              <span aria-hidden="true">→</span>
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Scenarios */}
-      <section className="border-b border-gray-200 bg-slate-50">
-        <div className="max-w-4xl mx-auto px-6 py-16">
-          <h2 className="text-lg font-medium text-gray-900 mb-2">
-            Policy Scenarios Modeled
+      <section
+        id="local-results"
+        aria-labelledby="local-results-heading"
+        className="scroll-mt-6 border-b border-rule sm:scroll-mt-44"
+      >
+        <div className="site-container py-10 sm:py-12">
+          <h2 id="local-results-heading" className="editorial-section-title">
+            Explore your state
           </h2>
-          <p className="text-gray-600 mb-10 max-w-2xl">
-            We simulated three funding disruption scenarios starting July 2025 to understand how
-            different policy outcomes would affect HIV transmission through 2030.
+          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted">
+            Choose the study that covers your state and time period, then
+            compare a scenario with continued services.
           </p>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            <div>
-              <div className="flex items-baseline gap-2 mb-3">
-                <span className="text-3xl font-light text-gray-900">1.5</span>
-                <span className="text-sm text-gray-500">years</span>
-              </div>
-              <h3 className="font-medium text-gray-900 mb-2">Brief Interruption</h3>
-              <p className="text-sm text-gray-600 leading-relaxed">
-                Services resume January 2027.
-                Projected impact: <span className="font-medium text-gray-900">+26%</span> new infections (26,951 additional).
+          <div className="mt-7 grid items-start gap-8 lg:grid-cols-2 lg:gap-10">
+            <section
+              aria-labelledby="ajph-heading"
+              className="min-w-0 border-t-2 border-hopkins-blue bg-paper p-6 sm:p-8"
+            >
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">
+                Published study · AJPH · 2026
               </p>
-            </div>
-
-            <div>
-              <div className="flex items-baseline gap-2 mb-3">
-                <span className="text-3xl font-light text-gray-900">3.5</span>
-                <span className="text-sm text-gray-500">years</span>
-              </div>
-              <h3 className="font-medium text-gray-900 mb-2">Prolonged Interruption</h3>
-              <p className="text-sm text-gray-600 leading-relaxed">
-                Services resume January 2029.
-                Projected impact: <span className="font-medium text-gray-900">+52%</span> new infections (53,594 additional).
+              <h3
+                id="ajph-heading"
+                className="mt-3 font-serif text-[2rem] leading-tight tracking-[-0.02em]"
+              >
+                {ajphStateLevelConfig.locations.length} states ·{" "}
+                <span className="whitespace-nowrap">2025–2030</span>
+              </h3>
+              <p className="mt-3 text-sm leading-relaxed text-muted">
+                Interruptions begin in July 2025. Compare an 18-month or
+                42-month interruption with permanent cessation.
               </p>
-            </div>
-
-            <div>
-              <div className="flex items-baseline gap-2 mb-3">
-                <span className="text-3xl font-light text-red-800">∞</span>
-                <span className="text-sm text-gray-500">permanent</span>
-              </div>
-              <h3 className="font-medium text-gray-900 mb-2">Complete Cessation</h3>
-              <p className="text-sm text-gray-600 leading-relaxed">
-                Program ends with no recovery.
-                Projected impact: <span className="font-medium text-red-800">+68%</span> (69,695 excess infections).
-                State range: 45% to 126%.
+              <StateResultsForm
+                id="ajph"
+                action="/ryan-white-state-level/explorer/ajph"
+                label="Explore 11-state results"
+                locations={ajphStateLevelConfig.locations}
+                scenarios={scenarioChoices(ajphStateLevelConfig)}
+              />
+            </section>
+            <section
+              aria-labelledby="croi-heading"
+              className="min-w-0 border-t-2 border-hopkins-blue bg-paper p-6 sm:p-8"
+            >
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">
+                Conference study · CROI · 2026
               </p>
-            </div>
+              <h3
+                id="croi-heading"
+                className="mt-3 font-serif text-[2rem] leading-tight tracking-[-0.02em]"
+              >
+                {croiStateLevelConfig.locations.length} states ·{" "}
+                <span className="whitespace-nowrap">2026–2031</span>
+              </h3>
+              <p className="mt-3 text-sm leading-relaxed text-muted">
+                Interruptions begin in July 2026. Compare a 30-month
+                interruption with permanent cessation, including conservative
+                impact assumptions.
+              </p>
+              <StateResultsForm
+                id="croi"
+                action="/ryan-white-state-level/explorer/croi"
+                label="Explore 30-state results"
+                locations={croiStateLevelConfig.locations}
+                scenarios={scenarioChoices(croiStateLevelConfig)}
+              />
+            </section>
+          </div>
+          <p className="mt-6 text-sm leading-relaxed text-muted">
+            State not listed?{" "}
+            <Link href="/ryan-white" className="editorial-link">
+              Explore our city-level study
+            </Link>{" "}
+            or{" "}
+            <Link href="/work-with-us#contact" className="editorial-link">
+              discuss a local question with our team
+            </Link>
+            .
+          </p>
+        </div>
+      </section>
+
+      <section
+        id="findings"
+        aria-labelledby="findings-heading"
+        className="scroll-mt-44 border-b border-rule"
+      >
+        <div className="site-container grid gap-8 py-12 sm:py-16 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.3fr)] lg:gap-20">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">
+              Findings from the 11-state publication
+            </p>
+            <h2 id="findings-heading" className="editorial-section-title mt-4">
+              Longer interruptions,
+              <br />
+              greater effects.
+            </h2>
+            <p className="mt-5 text-base leading-relaxed text-muted">
+              Losing care and support services can disrupt HIV treatment. The
+              model estimates how that could reduce viral suppression—the
+              control of HIV through treatment—and increase transmission.
+            </p>
+            <p className="mt-4 text-base leading-relaxed text-muted">
+              The published study projected more new infections under all three
+              scenarios, with substantial differences between states.
+            </p>
+            <a
+              href={paperUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="editorial-link mt-5 inline-block text-sm"
+            >
+              Read the paper <span aria-hidden="true">↗</span>
+            </a>
+          </div>
+          <div>
+            <table className="w-full border-collapse text-left text-sm">
+              <caption className="pb-5 text-left text-base font-medium leading-relaxed">
+                Additional new HIV infections, 2025–2030
+                <br />
+                <span className="font-normal text-muted">
+                  Across the 11 study states, compared with continued services
+                </span>
+              </caption>
+              <thead className="border-y border-rule text-xs text-muted">
+                <tr>
+                  <th scope="col" className="py-3 pr-4 font-medium">
+                    Scenario / service gap
+                  </th>
+                  <th scope="col" className="py-3 text-right font-medium">
+                    Projected increase
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {publishedScenarios.map((scenario) => (
+                  <tr key={scenario.name} className="border-b border-rule">
+                    <th scope="row" className="py-4 pr-4 font-medium">
+                      {scenario.name}
+                      <span className="mt-1 block font-normal text-muted">
+                        {scenario.gap}
+                      </span>
+                    </th>
+                    <td className="py-4 text-right">
+                      <span className="font-serif text-[2.25rem] tabular-nums text-hopkins-blue">
+                        +{scenario.increase}
+                      </span>
+                      <span className="mt-1 block text-xs tabular-nums text-muted">
+                        {scenario.additional} additional
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <p className="mt-5 text-sm leading-relaxed text-muted">
+              With permanent cessation, projected increases ranged from 45% in
+              Texas to 126% in Missouri. The estimate of 69,695 additional
+              infections had a 95% credible interval of 18,943–123,628.
+            </p>
+            <p className="mt-3 text-xs leading-relaxed text-muted">
+              These figures summarize the 11-state AJPH publication. The
+              30-state CROI study uses different dates and assumptions; its
+              results are available separately above.
+            </p>
           </div>
         </div>
       </section>
 
-      {/* States */}
-      <section className="border-b border-gray-200">
-        <div className="max-w-4xl mx-auto px-6 py-16">
-          <h2 className="text-lg font-medium text-gray-900 mb-2">
-            States Studied
-          </h2>
-          <p className="text-gray-600 mb-8">
-            These 11 states represent 63% of all people diagnosed with HIV in the United States,
-            selected for geographic diversity, Medicaid expansion status, and Ending the HIV Epidemic prioritization.
-          </p>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-8 gap-y-3">
-            {states.map((state) => (
-              <span key={state} className="text-sm text-gray-600 py-1">
-                {state}
-              </span>
-            ))}
-          </div>
-          <p className="text-sm text-gray-500 mt-6">
-            <span className="font-medium">Highest projected impact:</span> Missouri (+126%), Alabama (+111%), Wisconsin (+108%), Illinois (+101%)
-          </p>
-        </div>
-      </section>
-
-      {/* Citation - Compact */}
-      <section className="bg-slate-50">
-        <div className="max-w-4xl mx-auto px-6 py-10">
-          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-6">
-            <div className="flex-1 min-w-0">
-              <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">
-                Full Citation
+      <section
+        id="publication"
+        aria-labelledby="publication-heading"
+        className="scroll-mt-44"
+      >
+        <div className="site-container grid gap-10 py-12 sm:py-16 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,0.8fr)] lg:gap-20">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">
+              Publication · American Journal of Public Health · 2026
+            </p>
+            <h2
+              id="publication-heading"
+              className="mt-4 font-serif text-2xl leading-snug sm:text-[1.875rem]"
+            >
+              {paperTitle}
+            </h2>
+            <p className="mt-4 text-sm leading-relaxed text-muted">
+              {authors}.
+            </p>
+            <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-3 text-sm">
+              <a
+                href={paperUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="editorial-link"
+              >
+                Read the publication <span aria-hidden="true">↗</span>
+              </a>
+              <CopyCitation citation={citation} />
+            </div>
+            <p className="mt-3 text-xs text-muted">
+              116(5):732–735 · doi:10.2105/AJPH.2025.308409
+            </p>
+            <div className="mt-8 border-t border-rule pt-6">
+              <h3 className="text-base font-medium">
+                The 30-state study at CROI 2026
+              </h3>
+              <p className="mt-2 text-sm leading-relaxed text-muted">
+                Melissa Schnure presents the expanded state-level analysis.
               </p>
-              <p className="text-sm text-gray-600 leading-relaxed">
-                Schnure M, et al. HIV Incidence Could Rise by 68% in 11 States if Ryan White Ends:
-                A Simulation Study. <em>Am J Public Health.</em> 2026;116(5).{' '}
-                <a
-                  href="https://ajph.aphapublications.org/doi/10.2105/AJPH.2025.308409"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-hopkins-blue hover:underline"
+              <a
+                href="https://www.croiwebcasts.org/console/player/55174?mediaType=slideVideo"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="editorial-link mt-3 inline-block text-sm"
+              >
+                Watch the conference presentation{" "}
+                <span aria-hidden="true">↗</span>
+              </a>
+            </div>
+          </div>
+          <div className="space-y-7 border-t border-rule pt-6 lg:border-t-0 lg:border-l lg:pl-8 lg:pt-0">
+            <div>
+              <h3 className="text-base font-medium">
+                How well do the models fit?
+              </h3>
+              <p className="mt-2 text-sm leading-relaxed text-muted">
+                Compare model estimates with observed HIV and service data for
+                each study.
+              </p>
+              <div className="mt-3 flex flex-wrap gap-x-6 gap-y-3 text-sm">
+                <Link
+                  href="/ryan-white-state-level/calibration?model=ajph"
+                  prefetch={false}
+                  className="editorial-link"
                 >
-                  doi:10.2105/AJPH.2025.308409
-                </a>
-              </p>
+                  11-state model fit <span aria-hidden="true">→</span>
+                </Link>
+                <Link
+                  href="/ryan-white-state-level/calibration?model=croi"
+                  prefetch={false}
+                  className="editorial-link"
+                >
+                  30-state model fit <span aria-hidden="true">→</span>
+                </Link>
+              </div>
             </div>
-            <button
-              onClick={handleCopyCitation}
-              className={`flex-shrink-0 inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-                citationCopied
-                  ? 'bg-green-100 text-green-700'
-                  : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
-              }`}
-            >
-              {citationCopied ? (
-                <>
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  Copied
-                </>
-              ) : (
-                <>
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                  </svg>
-                  Copy Full Citation
-                </>
-              )}
-            </button>
+            <div>
+              <h3 className="text-base font-medium">
+                Have a different scenario in mind?
+              </h3>
+              <p className="mt-2 text-sm leading-relaxed text-muted">
+                Choose a study and specify changes in viral suppression to run a
+                custom simulation.
+              </p>
+              <Link
+                href="/ryan-white-state-level/custom"
+                prefetch={false}
+                className="editorial-link mt-3 inline-block text-sm"
+              >
+                Set up a custom scenario <span aria-hidden="true">→</span>
+              </Link>
+            </div>
           </div>
         </div>
       </section>
-
       <Footer />
     </div>
   );
