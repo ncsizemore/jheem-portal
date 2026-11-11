@@ -3,7 +3,9 @@
  * Handles exporting chart data to CSV format for all view modes
  */
 
-import { StateAgeData } from '@/data/hiv-age-projections';
+import type { StateAgeData } from '@/data/hiv-age-projections';
+
+import { AGES, type AgeGroup } from '@/lib/aging-state';
 
 export type ViewMode = 'state' | 'race' | 'sex';
 
@@ -18,19 +20,26 @@ export function exportToCSV(
   data: StateAgeData[],
   yearRange: [number, number],
   normalized: boolean,
-  viewMode: ViewMode = 'state'
+  viewMode: ViewMode = 'state',
+  ages: readonly AgeGroup[] = AGES,
 ): void {
   // Build CSV headers
-  const headers = buildHeaders(viewMode, normalized);
+  const headers = buildHeaders(viewMode, normalized, ages);
 
   // Build CSV rows from data
-  const rows = data.flatMap(state => {
+  const rows = data.flatMap((state) => {
     // Extract state name and demographic info from state_name
-    const { stateName, demographic } = parseStateName(state.state_name, viewMode);
+    const { stateName, demographic } = parseStateName(
+      state.state_name,
+      viewMode,
+    );
 
     return state.data
-      .filter(yearData => yearData.year >= yearRange[0] && yearData.year <= yearRange[1])
-      .map(yearData => {
+      .filter(
+        (yearData) =>
+          yearData.year >= yearRange[0] && yearData.year <= yearRange[1],
+      )
+      .map((yearData) => {
         const row = [stateName];
 
         // Add demographic column if applicable
@@ -44,16 +53,17 @@ export function exportToCSV(
         // Calculate total for percentage calculations if needed
         let total = 0;
         if (normalized) {
-          total = Object.values(yearData.age_cohorts).reduce((sum, val) => sum + val, 0);
+          total = Object.values(yearData.age_cohorts).reduce(
+            (sum, val) => sum + val,
+            0,
+          );
         }
 
         // Add age cohort data
         row.push(
-          formatValue(yearData.age_cohorts['13-24'], normalized, total),
-          formatValue(yearData.age_cohorts['25-34'], normalized, total),
-          formatValue(yearData.age_cohorts['35-44'], normalized, total),
-          formatValue(yearData.age_cohorts['45-54'], normalized, total),
-          formatValue(yearData.age_cohorts['55+'], normalized, total)
+          ...ages.map((age) =>
+            formatValue(yearData.age_cohorts[age], normalized, total),
+          ),
         );
 
         return row;
@@ -62,7 +72,7 @@ export function exportToCSV(
 
   // Combine headers and rows
   const csvContent = [headers, ...rows]
-    .map(row => row.map(escapeCSVValue).join(','))
+    .map((row) => row.map(escapeCSVValue).join(','))
     .join('\n');
 
   // Trigger download
@@ -72,12 +82,16 @@ export function exportToCSV(
 /**
  * Build CSV headers based on view mode
  */
-function buildHeaders(viewMode: ViewMode, normalized: boolean): string[] {
+function buildHeaders(
+  viewMode: ViewMode,
+  normalized: boolean,
+  ages: readonly AgeGroup[],
+): string[] {
   const baseHeaders = ['State'];
 
   // Add demographic column header
   if (viewMode === 'race') {
-    baseHeaders.push('Race');
+    baseHeaders.push('Race and ethnicity');
   } else if (viewMode === 'sex') {
     baseHeaders.push('Transmission Category');
   }
@@ -87,13 +101,7 @@ function buildHeaders(viewMode: ViewMode, normalized: boolean): string[] {
 
   // Add age cohort headers
   const suffix = normalized ? ' (%)' : '';
-  baseHeaders.push(
-    `Age 13-24${suffix}`,
-    `Age 25-34${suffix}`,
-    `Age 35-44${suffix}`,
-    `Age 45-54${suffix}`,
-    `Age 55+${suffix}`
-  );
+  baseHeaders.push(...ages.map((age) => `Age ${age}${suffix}`));
 
   return baseHeaders;
 }
@@ -102,15 +110,22 @@ function buildHeaders(viewMode: ViewMode, normalized: boolean): string[] {
  * Parse state name to extract state and demographic info
  * Format: "California - Black" or "California"
  */
-function parseStateName(fullName: string, viewMode: ViewMode): { stateName: string; demographic: string } {
+function parseStateName(
+  fullName: string,
+  viewMode: ViewMode,
+): { stateName: string; demographic: string } {
   if (viewMode === 'state') {
-    return { stateName: fullName, demographic: '' };
+    return {
+      stateName: fullName === 'Total' ? 'Combined study states' : fullName,
+      demographic: '',
+    };
   }
 
   const parts = fullName.split(' - ');
   return {
-    stateName: parts[0] || fullName,
-    demographic: parts[1] || ''
+    stateName:
+      parts[0] === 'Total' ? 'Combined study states' : parts[0] || fullName,
+    demographic: parts[1] || '',
   };
 }
 
@@ -120,9 +135,13 @@ function parseStateName(fullName: string, viewMode: ViewMode): { stateName: stri
  * @param normalized - Whether to convert to percentage
  * @param total - Total for percentage calculation (only used if normalized=true)
  */
-function formatValue(value: number, normalized: boolean, total: number = 0): string {
-  if (normalized && total > 0) {
-    const percentage = (value / total) * 100;
+function formatValue(
+  value: number,
+  normalized: boolean,
+  total: number = 0,
+): string {
+  if (normalized) {
+    const percentage = total > 0 ? (value / total) * 100 : 0;
     return percentage.toFixed(1); // 1 decimal place for percentages
   }
   return value.toFixed(0); // Whole numbers for case counts
@@ -142,7 +161,11 @@ function escapeCSVValue(value: string): string {
 /**
  * Trigger browser download of CSV file
  */
-function downloadCSV(csvContent: string, viewMode: ViewMode, yearRange: [number, number]): void {
+function downloadCSV(
+  csvContent: string,
+  viewMode: ViewMode,
+  yearRange: [number, number],
+): void {
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
@@ -160,5 +183,5 @@ function downloadCSV(csvContent: string, viewMode: ViewMode, yearRange: [number,
   document.body.removeChild(link);
 
   // Clean up
-  URL.revokeObjectURL(url);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
