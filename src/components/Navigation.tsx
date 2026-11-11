@@ -55,7 +55,7 @@ function NavigationForPath({ pathname }: { pathname: string }) {
   const [modelsOpen, setModelsOpen] = useState(false);
   const modelsButton = useRef<HTMLButtonElement>(null);
   const mobileButton = useRef<HTMLButtonElement>(null);
-  const isPublicPage = ['/', '/work-with-us', '/ryan-white', '/ryan-white-state-level', '/cdc-testing'].includes(pathname);
+  const isPublicPage = ['/', '/work-with-us', '/ryan-white', '/ryan-white-state-level', '/cdc-testing', '/aging'].includes(pathname);
   const section = MODEL_SECTIONS.find(({ root }) => matchesRoute(pathname, root))
     ?? (pathname === '/explore' ? MODEL_SECTIONS[0] : undefined);
   const activeModel = (href: string) => matchesRoute(pathname, href)
