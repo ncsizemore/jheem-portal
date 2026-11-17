@@ -32,7 +32,7 @@ email. Provider acceptance is not proof of inbox placement.
 
 ## Privacy and operations
 
-Messages and optional email addresses are held by Resend and the team Gmail inbox.
+Messages and optional email addresses are held by Resend and the institutional team inbox.
 The application does not store submissions in another database and does not log
 message bodies, addresses, IPs, or provider response bodies. It logs only a generic
 service-unavailable event. This does not promise anonymity from hosting/provider
@@ -76,24 +76,23 @@ rollback, and the remaining alerting limitations. Keep credentials out of Git.
 
 ## Inbox handover
 
-The current shared inbox is configured centrally and public pages use descriptive
-links. On 24 October 2026, the inbox owner confirmed that they had already
-configured Gmail forwarding to their Hopkins email. Forwarding setup is complete;
-there is no need to collect or record the Hopkins address here. The forwarding
-settings were not independently inspected by this work. Keep Gmail's copy in the
-Inbox. Gmail does not forward messages it classifies as spam; review that folder
-periodically.
+As of 17 November 2026, the public team address is `CIPHERteam@jh.edu`.
+Both sites derive their inquiry links from their central contact settings. JHEEM's
+contact-form recipient and copy control use the same setting. The address is
+shown as a clickable email in the contact sections; other navigation links can
+retain descriptive labels.
 
-The person receiving forwarded messages should own initial triage. Confirm a
-backup responder before relying on an unattended shared inbox. Replies sent from
-Hopkins do not automatically appear in Gmail's Sent folder. If several people
-start handling inquiries, use a shared institutional mailbox or agree how to
-retain the group correspondence; do not share personal passwords.
+Mailbox membership, permissions and forwarding are managed through Johns Hopkins;
+the websites do not configure those settings. Assign an initial responder and a
+backup, with access to the shared correspondence. Confirm real delivery to the
+new address with an explicitly authorized test and inbox confirmation; local
+recipient checks alone do not establish inbox placement.
 
-Forwarding setup: Gmail Settings → See all settings → Forwarding and POP/IMAP →
-Add a forwarding address. Verify the confirmation at the destination, then enable
-forwarding and retain Gmail's copy. Verify the applied setting; no extra website
-submission is necessary merely to configure forwarding.
+The owner confirmed Gmail-to-Hopkins forwarding on 24 October 2026. That remains
+historical setup for the old inbox, not a requirement for the new contact address.
+Keep the old inbox available for prior correspondents and any separately configured
+administrative or recovery uses until those are reviewed. Infrastructure-alert
+recipients are configured separately from the public contact settings.
 
 A visitor can omit their reply address. Those messages are valid inquiries but
 cannot receive a direct reply. If someone includes patient information despite
@@ -108,11 +107,9 @@ confirmation establishes alert-email delivery.
 ## Maintenance cadence
 
 - At each deployment: existing CI, route checks, and a non-sending form check.
-- Periodically: review Gmail spam, Redis monitor run history, provider quota usage,
+- Periodically: review the team inbox and junk folder, Redis monitor run history, provider quota usage,
   and whether someone remains responsible for inquiries.
 - Quarterly or when notified: review publications, preprint status, roster, and
   news links. Preserve the explicit TB/PEARL group boundaries.
-- On a contact-address change: update both sites' central settings and forwarding;
+- On a contact-address change: update both sites' central settings; review mailbox routing if needed and
   update the operations alert destination separately if intended.
-
-Reference: https://support.google.com/mail/answer/10957?hl=en

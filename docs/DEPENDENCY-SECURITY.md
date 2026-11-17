@@ -18,3 +18,12 @@ lockfile updates now leave both the full dependency audit and the production-onl
   controls, an owner-visible removal trigger, and a review date.
 - Development-only findings remain actionable, but they should be triaged separately so they do not
   obscure production exposure.
+
+## November 2026 contact release
+
+Next.js and its ESLint configuration are updated from 16.4.1 to 16.4.6. The build
+reported [GHSA-mfr8-8qww-v76h](https://github.com/vercel/next.js/security/advisories/GHSA-mfr8-8qww-v76h),
+which affects Next.js 16.3.0–16.4.4. The portal does not use the reported nested
+`use cache` / `unstable_cache` pattern; the supported patch removes the affected
+dependency rather than relying on that reachability assessment. No audit exception
+is added.
